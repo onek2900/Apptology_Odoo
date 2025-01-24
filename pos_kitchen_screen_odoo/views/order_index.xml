@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="pos_kitchen_screen_odoo.index" name="Pos Order Tracking">&lt;!DOCTYPE html&gt;
+        <html>
+            <head>
+                <title t-esc="title" />
+
+                <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+                <meta http-equiv="content-type" content="text/html, charset=utf-8" />
+
+                <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta name="mobile-web-app-capable" content="yes" />
+                <script type="text/javascript">
+                    var odoo =
+                    <t t-out="json.dumps({
+                        'csrf_token': request.csrf_token(None),
+                        '__session_info__': session_info,
+                        'debug': debug,
+                        'kitchen_screen': kitchen_screen,
+                        'shopId': shop_id,
+                        'screen': screen,
+                    })" />;
+                </script>
+                <t t-call-assets="apptology_order_tracking.assets" />
+            </head>
+            <body></body>
+        </html>
+    </template>
+</odoo>

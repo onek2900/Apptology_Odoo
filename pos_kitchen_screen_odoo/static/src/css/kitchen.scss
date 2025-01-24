@@ -1,0 +1,318 @@
+// Variables
+$primary-color: #4a90e2;
+$success-color: #2ecc71;
+$danger-color: #e74c3c;
+$secondary-color: #34495e;
+$text-light: #ffffff;
+$card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$transition-speed: 0.3s;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin card-hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+// Main Dashboard Styles
+.kitchen-dashboard {
+  padding: 20px;
+  background-color: #f5f7fa;
+  //min-height: 100vh;
+  // Add these styles to your existing SCSS file
+
+  .section-header {
+    position: relative;
+    margin-bottom: 2rem;
+
+    h3 {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0;
+
+      .order-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: $primary-color;
+        color: white;
+        border-radius: 20px;
+        padding: 0.2rem 0.8rem;
+        font-size: 1rem;
+        font-weight: 500;
+        min-width: 35px;
+        height: 28px;
+
+        // Animation for count changes
+        animation: pulseCount 0.3s ease-out;
+
+        @keyframes pulseCount {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.2);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+      }
+    }
+
+    // Different color for completed section count
+    .completed-section & {
+      .order-count {
+        background: $success-color;
+      }
+    }
+  }
+
+  // Add to your existing media queries if needed
+  @media (max-width: 768px) {
+    .section-header {
+      h3 {
+        font-size: 1.5rem;
+
+        .order-count {
+          font-size: 0.9rem;
+          padding: 0.15rem 0.6rem;
+        }
+      }
+    }
+  }
+
+  .dashboard-section {
+    //height: calc(100vh - 100px);
+    //overflow-y: auto;
+    padding: 15px;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    // Row of cards
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: -0.75rem; // Negative margin to offset card padding
+
+      // Column containing the card
+      > [class*='col-'] {
+        display: flex;
+        padding: 0.75rem;
+      }
+    }
+  }
+
+  h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    border-bottom: 3px solid $primary-color;
+    padding-bottom: 0.5rem;
+    display: inline-block;
+  }
+}
+
+// Card Styles
+.order-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all $transition-speed ease;
+  border: none;
+  box-shadow: $card-shadow;
+
+  &:hover {
+    @include card-hover;
+  }
+
+  .card-header {
+    padding: 1rem;
+    border: none;
+    flex-shrink: 0; // Prevent header from shrinking
+
+    &.bg-secondary {
+      background: $secondary-color !important;
+    }
+
+    &.bg-success {
+      background: $success-color !important;
+    }
+  }
+
+  .order-info {
+    ul {
+      li {
+        margin-bottom: 0.5rem;
+        @include flex-center;
+        gap: 0.5rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        i {
+          font-size: 1rem;
+          width: 20px;
+        }
+
+        &.fw-bold {
+          font-size: 1.1rem;
+          margin-bottom: 0.75rem;
+        }
+      }
+    }
+  }
+
+  // Make list group expand to fill available space
+  .list-group {
+    flex: 1 1 auto;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 2px;
+    }
+  }
+}
+
+// Order Items List
+.list-group {
+  .list-group-item {
+    padding: 0.75rem 1rem;
+    border-left: none;
+    border-right: none;
+    @include flex-center;
+    gap: 1rem;
+
+    .qty {
+      font-weight: 600;
+      color: $primary-color;
+      font-size: 1.1rem;
+      min-width: 40px;
+    }
+
+    .product-info {
+      flex: 1;
+
+      .product-name {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+      }
+
+      .note {
+        color: #666;
+        display: block;
+        margin-top: 0.25rem;
+
+        i {
+          margin-right: 0.5rem;
+          color: #999;
+        }
+      }
+    }
+  }
+}
+
+// Action Buttons
+.card-footer {
+  background: transparent;
+  padding: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; // Prevent footer from shrinking
+
+  .btn {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all $transition-speed ease;
+    color: white;
+
+    i {
+      margin-right: 0.5rem;
+    }
+
+    &.btn-primary {
+      background: $primary-color;
+      border-color: $primary-color;
+
+      &:hover {
+        background: darken($primary-color, 10%);
+      }
+    }
+
+    &.btn-outline-danger {
+      color: $danger-color;
+      border-color: $danger-color;
+
+      &:hover {
+        background: $danger-color;
+        color: $text-light;
+      }
+    }
+  }
+}
+
+// Animation
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 992px) {
+  .kitchen-dashboard {
+    .dashboard-section {
+      height: auto;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .order-card {
+    margin-bottom: 1rem;
+  }
+
+  .card-footer {
+    .btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  }
+}

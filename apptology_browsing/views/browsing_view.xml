@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="apptology_browsing_action" model="ir.actions.client">
+        <field name="name">Apptology Browse</field>
+        <field name="tag">browse_apptology</field>
+    </record>
+
+    <menuitem
+        id="apptology_browsing_action_menu"
+        name="Browse App"
+        sequence="1"
+        action="apptology_browsing_action"
+        />
+</odoo>

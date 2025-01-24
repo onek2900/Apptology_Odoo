@@ -1,0 +1,61 @@
+.btn-primary, .text-bg-primary {
+  color: #FFFFFF !important;
+  background-color: #222222 !important; // Set to base color
+  border-color: #222222 !important; // Border matches the base color
+  &:hover {
+    background-color: lighten(#222222, 10%) !important; // Slightly lighter on hover for visual feedback
+    border-color: lighten(#222222, 10%) !important;
+  }
+}
+
+.paymentline .btn-link {
+  color: #222222 !important;
+}
+
+.btn-primary.disabled {
+    color: #BBBBBB;                   // Muted light gray for disabled text
+    background-color: #444444;        // Dark, muted background color to indicate disabled state
+    border-color: #444444;            // Matching border color for consistency
+}
+
+.btn-check:focus + .btn-primary, .btn-primary:focus {
+  color: #FFFFFF;
+  background-color: darken(#222222, 10%); // Darker shade of the base color
+  border-color: darken(#222222, 20%); // Even darker for border emphasis
+  box-shadow: 0 0 0 0.25rem rgba(34, 34, 34, 0.5); // Subtle shadow using base color
+}
+
+
+.floor-selector .btn-light, .pos-rightheader .btn-light, {
+  color: #CCCCCC; // Light gray for text to fit with the dark theme
+  background-color: #333333; // Lighter shade than the base color
+  border-color: #333333; // Matches background color for a cohesive look
+  &:hover {
+    background-color: lighten(#333333, 10%); // Slightly lighter on hover
+    border-color: lighten(#333333, 10%);
+  }
+}
+
+.order-row:hover, .order-row.highlight.bg-primary  {
+    color: #dddddd;
+    background-color: #222222 !important;
+}
+
+.btn-outline-primary {
+    color: #222222;
+    border-color: #222222;
+  &:hover {
+    color: #dddddd;
+    background-color: #222222;
+  }
+}
+
+.pos-topheader {
+  background-color: #333333 !important; // Lighter shade than the base color
+  border-color: #333333 !important;
+}
+
+.order-button.floor-button {
+  color: #DDDDDD !important;
+}
+

@@ -1,0 +1,26 @@
+<!-- Template -->
+<templates>
+    <t t-name="pos_kitchen_screen_odoo.OrderScreenDashboard">
+        <main class="kitchen-display">
+            <div class="order-section flex-1 w-50">
+                <h2 class="section-title">In preparation</h2>
+                <div class="order-grid">
+                    <div class="order-item in-progress" t-foreach="orderInProgress" t-as="order" t-key="order_index">
+                        <div class="tracking-number" t-esc="order.tracking_number"/>
+                        <span t-esc="order.note ? order.note : ''"/>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-section w-50 flex-1">
+                <h2 class="section-title">Ready to collect</h2>
+                <div class="order-grid">
+                    <div class="order-item ready" t-foreach="orderCompleted" t-as="order" t-key="order_index">
+                        <div class="tracking-number" t-esc="order.tracking_number"/>
+                        <span t-esc="order.note ? order.note : ''"/>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </t>
+</templates>

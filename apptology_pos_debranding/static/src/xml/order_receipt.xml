@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'pos-receipt-order-data')]/p[text()='Powered by Odoo']" position="replace">
+           <p>Powered by Apptology</p>
+        </xpath>
+    </t>
+        <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'pos-receipt-order-data')]/p[text()='Odoo Point of Sale']" position="replace">
+           <p>Powered by Apptology</p>
+        </xpath>
+    </t>
+</templates>

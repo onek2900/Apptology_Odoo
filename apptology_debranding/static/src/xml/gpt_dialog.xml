@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-inherit="web_editor.web_edior.ChatGPTPromptDialog" t-inherit-mode="extension">
+        <div class="d-flex flex-wrap align-items-baseline mb-1 lh-1" position="replace">
+            <div class="d-flex flex-wrap align-items-baseline mb-1 lh-1">
+                <strong class="me-1 text-truncate">
+                    <t t-esc="message.author === 'user' ? 'You' : 'ApptologyBot'"/>
+                </strong>
+            </div>
+        </div>
+    </t>
+</templates>

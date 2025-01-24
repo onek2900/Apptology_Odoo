@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension">
+        <div class="paymentline electronic_payment" position="inside">
+            <t t-elif="line.payment_status == 'cancelled'">
+                <div class="electronic_status">
+                    Transaction cancelled
+                </div>
+                <div class="button send_payment_request highlight text-bg-primary" title="Send Payment Request" t-on-click="() => this.props.sendPaymentRequest(line)">
+                    Retry
+                </div>
+            </t>
+        </div>
+        <t t-elif="line.payment_status == 'retry'" position="replace">
+            <t t-elif="line.payment_status == 'retry'">
+                <t t-if="line.payment_method.use_payment_terminal === 'NRP'">
+                    <div class="electronic_status">
+                        Pending
+                    </div>
+                    <div class="near-pay">
+                        <div class="button  highlight text-bg-danger" title="Send Payment cancel Request"
+                             t-on-click="() => this.props.sendPaymentCancel(line)">
+                            Failed
+                        </div>
+                        <div class="button highlight text-bg-success" title="Send Payment success Request"
+                             t-on-click="() => this.props.sendForceDone(line)">
+                            Success
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div class="electronic_status">
+                        Transaction cancelled
+                    </div>
+                    <div class="button send_payment_request highlight text-bg-primary" title="Send Payment Request"
+                         t-on-click="() => this.props.sendPaymentRequest(line)">
+                        Retry
+                    </div>
+                </t>
+            </t>
+        </t>
+    </t>
+</templates>

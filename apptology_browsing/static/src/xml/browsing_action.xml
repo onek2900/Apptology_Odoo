@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="apptology_browsing.BrowsingComponent">
+        <iframe src="https://ds.apptologyinc.com" width="100%" height="100%" style="border: none;"></iframe>
+    </t>
+</templates>

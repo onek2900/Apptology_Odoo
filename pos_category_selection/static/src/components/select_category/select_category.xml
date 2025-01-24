@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="pos_category_selection.SelectCategory">
+        <div class="category-container">
+            <div class="category-grid">
+                <t t-foreach="props.categories" t-as="category" t-key="category.id">
+                    <div class="category-item" t-on-click="() => props.onClick(category.id)">
+                        <img t-if="category.imageUrl"
+                             class="category-image"
+                             t-att-src="category.imageUrl"
+                             alt="Category" />
+                        <span class="category-name" t-esc="category_index != 0 ? category.name : 'All'" />
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

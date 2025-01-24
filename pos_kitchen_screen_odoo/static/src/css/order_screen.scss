@@ -1,0 +1,138 @@
+// Variables
+$background-dark: #1e2837;
+$in-progress-bg: rgba(108, 117, 136, 0.95);
+$ready-bg: #2ecc71; // Fresh green color
+$text-color: #ffffff;
+$spacing-unit: 1rem;
+$border-radius: 24px;
+
+// Main Styles
+.kitchen-display {
+  min-height: 100vh;
+  display: flex;
+  gap: 1rem;
+  background: $background-dark;
+  padding: $spacing-unit * 2;
+  color: $text-color;
+  overflow-y: auto;
+}
+
+.order-section {
+  margin-bottom: $spacing-unit * 3;
+
+  .section-title {
+    font-size: clamp(1rem, 2.5vw, 4rem);
+    font-weight: 600;
+    margin-bottom: $spacing-unit * 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    padding-left: $spacing-unit;
+  }
+}
+
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: $spacing-unit * 1.5;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+
+  @media (min-width: 1440px) {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+}
+
+.order-item {
+  aspect-ratio: 2/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $border-radius;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+
+  &.ready {
+    background: $ready-bg;
+    box-shadow: 0 4px 15px rgba($ready-bg, 0.3);
+
+    &:hover {
+      background: lighten($ready-bg, 5%);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.in-progress {
+    background: $in-progress-bg;
+
+    &:hover {
+      background: lighten($in-progress-bg, 5%);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.tracking-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: $text-color;
+  text-align: center;
+  line-height: 1;
+  user-select: none; // Prevents text selection
+
+  @media (min-width: 768px) {
+    font-size: 4rem;
+  }
+
+  @media (min-width: 1440px) {
+    font-size: 5rem;
+  }
+
+  @media (min-width: 2560px) {
+    font-size: 8rem;
+  }
+}
+
+// Custom Scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// Smooth fade-in animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.order-item {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+// 4K Display Support
+@media (min-width: 3840px) {
+  .order-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  .tracking-number {
+    font-size: 9rem;
+  }
+}

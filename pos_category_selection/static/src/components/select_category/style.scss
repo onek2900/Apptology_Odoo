@@ -1,0 +1,65 @@
+/* Container for all categories */
+.category-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Grid layout with 3 items per row */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Default: 3 items per row */
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+/* 3 items per row for screens between 769px and 1024px */
+@media (min-width: 769px) and (max-width: 1173px) {
+    .category-grid {
+        grid-template-columns: repeat(3, 1fr); /* 3 items per row */
+    }
+}
+
+@media (max-width: 768px) {
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 items per row on small screens */
+    }
+}
+
+/* Individual category item styling */
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.category-item:hover {
+    background-color: #e2e6ea;
+}
+
+/* Image styling */
+.category-image {
+    height: 75%;
+    border-radius: 0.5rem;
+}
+
+/* Text styling */
+.category-name {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 100%;
+}

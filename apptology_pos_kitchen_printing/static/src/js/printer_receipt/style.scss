@@ -1,0 +1,48 @@
+.line-list {
+  padding-left: 10px;
+  padding-right: 10px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.line-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__category {
+    width: 120px;
+    color: #666;
+  }
+
+  &__product {
+    flex: 1;
+    margin: 0 20px;
+  }
+
+  &__qty {
+    width: 60px;
+    text-align: right;
+  }
+
+  @media screen and (max-width: 600px) {
+    padding: 8px 0;
+
+    &__category {
+      width: 100px;
+    }
+
+    &__product {
+      margin: 0 10px;
+    }
+
+    &__qty {
+      width: 40px;
+    }
+  }
+}

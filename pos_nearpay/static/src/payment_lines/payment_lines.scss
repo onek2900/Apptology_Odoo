@@ -1,0 +1,16 @@
+.paymentlines .electronic_payment div.near-pay :last-child {
+  all: unset;
+}
+
+.paymentlines .electronic_payment div.near-pay :first-child{
+  all: unset;
+}
+.paymentlines .electronic_payment div.near-pay {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  .button {
+    padding: 16px;
+    width: 100%;
+  }
+}

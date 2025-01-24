@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates>
+    <t t-name="apptology_pos_kitchen_printing.PrinterReceipt">
+        <div class="pos-receipt pb-3 ">
+<!--            <ReceiptHeader data="props.headerData"/>-->
+            <div class="printer-name d-flex justify-content-center mb-3">
+                <h6 class="m-auto" t-esc="props.printer.config.name"/>
+            </div>
+            <div class="pos-receipt-contact">
+                <div t-if="props.headerData.cashier" class="cashier">
+                    <div>Served by
+                        <t t-esc="props.headerData.cashier"/>
+                    </div>
+                </div>
+
+                <div class="fw-bolder" t-if="props.headerData.trackingNumber and !props.headerData.bigTrackingNumber">
+                    <span class="fs-2" t-esc="props.headerData.trackingNumber"/>
+                </div>
+            </div>
+            <br/>
+            <br/>
+
+
+            <div class="line-list">
+                <t t-foreach="props.data" t-as="line" t-key="line_index">
+                    <div class="line-item">
+                        <span class="line-item__category d-flex flex-column">
+                            <t t-foreach="line.category_ids" t-as="cat" t-key="cat_index">
+                                <span t-esc="cat.name"/>
+                            </t>
+                        </span>
+                        <span class="line-item__product" t-esc="line.name"/>
+                        <span class="line-item__qty" t-esc="line.quantity" />
+                    </div>
+                </t>
+            </div>
+
+
+        </div>
+    </t>
+</templates>
