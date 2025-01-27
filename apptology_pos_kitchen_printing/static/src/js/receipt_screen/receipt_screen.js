@@ -70,8 +70,7 @@ patch(ReceiptScreen.prototype, {
                     const productName = item.name;
                     const productQty = item.quantity;
                     const customerNote = item.customerNote;
-                    console.log(`OrderlinesQTY:${productName}:${productQty}`);
-                    console.log(`customerNote:${customerNote}`);
+                    console.log(`OrderlinesQTY:${productName}:${productQty}:${customerNote}`);
 
                 })
                 console.log(`Order Completed`);
