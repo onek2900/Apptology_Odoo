@@ -9,7 +9,7 @@
                              class="category-image"
                              t-att-src="category.imageUrl"
                              alt="Category" />
-                        <span class="category-name" t-esc="category_index != 0 ? category.name : 'All'" />
+                        <span class="category-name" t-esc="category.name ? category.name : 'All'" />
                     </div>
                 </t>
             </div>

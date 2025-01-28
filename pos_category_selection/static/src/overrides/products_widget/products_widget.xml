@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates>
     <t t-inherit="point_of_sale.ProductsWidget" t-inherit-mode="extension">
-        <CategorySelector
-            categories="getCategories()"
-            onClick="(id) => this.pos.setSelectedCategoryId(id)"
-            showImage="showCategoryImages"
-            class="ui.isSmall ? 'scrollbar-hidden' : ''" position="replace"
-        >
-            <div  class="category-section d-flex align-items-center">
+        <CategorySelector position="replace">
+            <div class="category-section d-flex align-items-center">
                 <div t-if="categorySelected" t-on-click="onClickBack" class="btn bg-view h-100">
                     <i class="fa fa-2x fa-angle-left pb-1"/>
                 </div>
@@ -21,10 +16,16 @@
                     onClick="(id) => this.onSelectCategory(id)"
                 />
             </t>
+            <t t-if="categorySelected and !subcategorySelected">
+                <SelectCategory
+                    categories="subcategoriesForSelector"
+                    onClick="(id) => this.onSelectSubcategory(id)"
+                />
+            </t>
         </div>
 
         <div class="product-list-container flex-grow-1 overflow-y-auto" position="attributes">
-            <attribute name="t-if">categorySelected</attribute>
+            <attribute name="t-if">subcategorySelected</attribute>
         </div>
     </t>
 </templates>
