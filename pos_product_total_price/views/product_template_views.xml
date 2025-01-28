@@ -5,7 +5,7 @@
         <field name="name">product.template.view.form.inherit.total_price
         </field>
         <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//group[@name='group_standard_price']/label[@for='list_price']" position="before">
                 <label for="total_price"/>

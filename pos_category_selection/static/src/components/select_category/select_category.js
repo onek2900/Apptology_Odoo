@@ -18,9 +18,9 @@ export class SelectCategory extends Component {
                 id: Number,
                 name: { type: String, optional: true },
                 imageUrl: { type: [String, Boolean], optional: true },
+                hasChildren: { type: Boolean, optional: true },
             },
         },
         onClick: { type: Function },
     };
-
 }
