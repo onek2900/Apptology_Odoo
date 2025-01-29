@@ -14,7 +14,7 @@ class ProductTemplate(models.Model):
         compute='_compute_total_price',
         inverse='_inverse_total_price',
         store=True,
-        digits='Product Price',
+        digits=(16, 4),
         help="Total price including taxes. This price will be used in POS."
     )
 
@@ -38,7 +38,7 @@ class ProductTemplate(models.Model):
 
     def _inverse_total_price(self):
         """
-        When total_price is modified, compute and update list_price by removing taxes.
+        When total_price is modified, compute and update list_price.
         """
         for product in self:
             if not product.taxes_id:

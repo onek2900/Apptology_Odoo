@@ -9,52 +9,54 @@ ProductsWidget.components = { ...ProductsWidget.components, SelectCategory };
 patch(ProductsWidget.prototype, {
     setup() {
         super.setup();
+        this.pos.categorySelected=false
+        this.pos.subcategorySelected=false
+        this.pos.currentCategoryId=0
         this.state = useState({
             ...this.state,
-            categorySelected: false,
-            subcategorySelected: false,
-            currentCategoryId: 0,
+            categorySelected: this.pos.categorySelected,
+            subcategorySelected: this.pos.subcategorySelected,
+            currentCategoryId: this.pos.currentCategoryId,
         });
     },
 
     onSelectCategory(selectedCategory) {
-        this.state.currentCategoryId = selectedCategory;
-                if (selectedCategory === 0) {
-            this.state.categorySelected = true;
-            this.state.subcategorySelected = true;
+        this.pos.currentCategoryId = selectedCategory;
+            if (selectedCategory === 0) {
+            this.pos.categorySelected = true;
+            this.pos.subcategorySelected = true;
             this.pos.setSelectedCategoryId(0);
             return;
         }
         const hasSubcategories = this.pos.db.get_category_childs_ids(selectedCategory).length > 0;
 
         if (hasSubcategories) {
-            this.state.categorySelected = true;
-            this.state.subcategorySelected = false;
+            this.pos.categorySelected = true;
+            this.pos.subcategorySelected = false;
         } else {
-            this.state.categorySelected = true;
-            this.state.subcategorySelected = true;
+            this.pos.categorySelected = true;
+            this.pos.subcategorySelected = true;
             this.pos.setSelectedCategoryId(selectedCategory);
         }
     },
 
-
     onSelectSubcategory(selectedCategory) {
-        this.state.subcategorySelected = true;
+        this.pos.subcategorySelected = true;
         this.pos.setSelectedCategoryId(selectedCategory);
     },
     onClickBack() {
-        const hasSubcategories = this.pos.db.get_category_childs_ids(this.state.currentCategoryId).length > 0;
-
-        if (!hasSubcategories || this.state.currentCategoryId === 0) {
-            this.state.categorySelected = false;
-            this.state.subcategorySelected = false;
-            this.state.currentCategoryId = 0;
+        this.pos.searchProductWord=""
+        const hasSubcategories = this.pos.db.get_category_childs_ids(this.pos.currentCategoryId).length > 0;
+        if (!hasSubcategories || this.pos.currentCategoryId === 0) {
+            this.pos.categorySelected = false;
+            this.pos.subcategorySelected = false;
+            this.pos.currentCategoryId = 0;
             this.pos.setSelectedCategoryId(0);
-        } else if (this.state.subcategorySelected) {
-            this.state.subcategorySelected = false;
+        } else if (this.pos.subcategorySelected) {
+            this.pos.subcategorySelected = false;
         } else {
-            this.state.categorySelected = false;
-            this.state.currentCategoryId = 0;
+            this.pos.categorySelected = false;
+            this.pos.currentCategoryId = 0;
             this.pos.setSelectedCategoryId(0);
         }
     },
@@ -64,11 +66,11 @@ patch(ProductsWidget.prototype, {
     },
 
     get categorySelected() {
-        return this.state.categorySelected;
+        return this.pos.categorySelected;
     },
 
     get subcategorySelected() {
-        return this.state.subcategorySelected;
+        return this.pos.subcategorySelected;
     },
     get categoriesForSelector() {
         return [
@@ -91,7 +93,7 @@ patch(ProductsWidget.prototype, {
     },
 
     get subcategoriesForSelector() {
-        return this.pos.db.get_category_childs_ids(this.state.currentCategoryId)
+        return this.pos.db.get_category_childs_ids(this.pos.currentCategoryId)
             .map((id) => this.pos.db.category_by_id[id])
             .map((category) => ({
                 id: category.id,

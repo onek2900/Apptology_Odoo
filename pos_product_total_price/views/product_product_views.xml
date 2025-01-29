@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit Form View to add total price field-->
+    <record id="product_product_view_form" model="ir.ui.view">
+        <field name="name">product.product.view.form.inherit.total_price
+        </field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='group_standard_price']/label[@for='lst_price']" position="before">
+                <label for="variant_total_price"/>
+                <div name="total_pricing" class="o_row">
+                    <field name="variant_total_price" class="oe_inline" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

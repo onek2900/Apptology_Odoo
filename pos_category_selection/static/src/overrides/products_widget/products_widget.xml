@@ -27,5 +27,6 @@
         <div class="product-list-container flex-grow-1 overflow-y-auto" position="attributes">
             <attribute name="t-if">subcategorySelected</attribute>
         </div>
+
     </t>
 </templates>

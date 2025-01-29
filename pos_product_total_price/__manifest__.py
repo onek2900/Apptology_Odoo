@@ -6,7 +6,8 @@
     'summary': 'Pos Product Total Price',
     'depends': ['point_of_sale'],
     'data': [
-        'views/product_template_views.xml'
+        'views/product_template_views.xml',
+        'views/product_product_views.xml'
     ],
     'installable': True,
     'application': False,
