@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates id="template" xml:space="preserve">
-    <t
-        t-name="Chrome"
-        t-inherit="point_of_sale.Navbar"
-        t-inherit-mode="extension"
-    >
-        <xpath expr="//div[hasclass('pos-branding')]/img" position="attributes">
-            <attribute name="src">/logo.png</attribute>
+    <t t-name="point_of_sale.Navbar" t-inherit="point_of_sale.Navbar"
+       t-inherit-mode="extension">
+        <xpath expr="//img[hasclass('pos-logo')]" position="attributes">
+            <attribute name="t-att-src">'/web/image/res.company/' + pos.company.id + '/logo'</attribute>
         </xpath>
     </t>
 </templates>

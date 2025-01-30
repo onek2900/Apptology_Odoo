@@ -11,11 +11,11 @@
     'data': [
         'views/pos.xml',
     ],
-    "assets": {
+    'assets': {
         'point_of_sale._assets_pos': [
-            'apptology_pos_debranding/static/src/xml/pos_branding.xml'
+            'apptology_pos_debranding/static/src/xml/pos_branding.xml',
             'apptology_pos_debranding/static/src/xml/order_receipt.xml'
-        ]
+        ],
     },
     'installable': True,
     'auto_install': False,
