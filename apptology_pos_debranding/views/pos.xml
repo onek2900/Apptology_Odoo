@@ -2,7 +2,7 @@
 <odoo>
     <template id="pos_debranding" inherit_id="point_of_sale.index">
         <xpath expr="//title" position="replace">
-            <title>POS</title>
+            <title>Apptology POS</title>
         </xpath>
     </template>
 </odoo>
