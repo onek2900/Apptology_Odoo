@@ -1,0 +1,105 @@
+body{
+    &.o_web_client {
+        .o_Message{
+            background-color: transparent;
+        }
+        .o_Attachment{
+            &.o-has-card-details{
+                color: #121212;
+            }
+        }
+        .o-mail-Form-chatter{
+            .o_ChatterContainer{
+                .o_ChatterTopbar_actions{
+                    *{
+                        border: 0px !important;
+                    }
+                    .btn{
+                        padding: 0.6rem 1rem !important;
+                        background-color: transparent !important;
+                        border: none !important;
+                        color:var(--biz-theme-primary-color) !important;
+                    }
+                }
+            }
+        }
+        &.chatter_style_bottom {
+            .o_form_view_container{
+                .o_control_panel{
+                    margin-bottom: 8px !important;
+                }
+            }
+            &.sh_attachment_sided_preview{
+                .o_form_view_container{
+                    .o_form_sheet_bg{
+                        .o_list_table{
+                            width: auto;
+                        }
+                    }
+                }
+            }
+            &:not(.sh_attachment_sided_preview){
+                .o_action_manager {
+                    .o_view_controller.o_form_view {
+                        .o_content {
+                            display: block;
+                            height: 100%;
+                            .o_form_renderer:not(.o_form_nosheet){
+                                flex-flow: wrap !important;
+                            }
+                            .o_form_sheet_bg {
+                                .o_form_statusbar {
+                                    margin: 0;
+                                }
+                                width: 100%;
+                                min-width: 100% !important;
+                            }
+                        }
+                        .o-mail-Form-chatter {
+                            width: 100%;
+                            margin: 0;
+                            padding-bottom: 1rem !important;
+                            flex-basis: 100%;
+                            scrollbar-width: none; 
+                            &::-webkit-scrollbar {
+                                display: none;
+                            }
+            
+                            &.o_Chatter {
+                                height: 100%;
+                            }
+                            .o_Chatter_scrollPanel {
+                                scrollbar-width: none; 
+                                &::-webkit-scrollbar {
+                                    display: none;
+                                }
+                            }
+                        }
+                    }
+            
+                }
+                .o_form_view {
+                    .o-mail-Form-chatter {
+                        border: 0;
+                        max-width: 100% !important;
+                        margin-bottom: 1rem;
+                    }
+                }
+                .o_view_controller.o_form_view{
+                    flex-direction: column !important;
+                    overflow: auto;
+                    .o_form_view_container{
+                        width:100% !important;
+                    }
+                }
+                .oe_chatter{
+                    --formView-sheetBg-padding-x: 16px;
+                    padding-left: var(--formView-sheetBg-padding-x) !important;
+                    padding-right: var(--formView-sheetBg-padding-x) !important;
+                    padding-top: 8px !important;
+                    padding-bottom: 8px;
+                }
+            }
+        }
+    }
+}

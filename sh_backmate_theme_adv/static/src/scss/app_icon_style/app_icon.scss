@@ -1,0 +1,1049 @@
+@font-face {
+	font-family: 'icomoon';
+	  src:  url('/sh_backmate_theme_adv/static/src/fonts/icomoon.eot?95rnq0');
+	  src:  url('/sh_backmate_theme_adv/static/src/fonts/icomoon.eot?95rnq0#iefix') format('embedded-opentype'),
+		url('/sh_backmate_theme_adv/static/src/fonts/icomoon.woff2?95rnq0') format('woff2'),
+		url('/sh_backmate_theme_adv/static/src/fonts/icomoon.ttf?95rnq0') format('truetype'),
+		url('/sh_backmate_theme_adv/static/src/fonts/icomoon.woff?95rnq0') format('woff'),
+		url('/sh_backmate_theme_adv/static/src/fonts/icomoon.svg?95rnq0#icomoon') format('svg');
+	  font-weight: normal;
+	  font-style: normal;
+	  font-display: block;
+  }
+  [class^="sh-"], [class*=" sh-"] {
+	/* use !important to prevent issues with browser extensions that change fonts */
+	font-family: 'icomoon' !important;
+	speak: never;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+  
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+  }
+  
+  .sh-sh_entmate_theme_sh_dynamic_action_action_menu:before {
+	content: "\e98b";
+  }
+  .sh-sh_entmate_theme_sh_dynamic_action_action_menu-dt .path1:before {
+	content: "\e98c";
+	opacity: 0.4;
+  }
+  .sh-sh_entmate_theme_sh_dynamic_action_action_menu-dt .path2:before {
+	content: "\e98d";
+	margin-left: -1em;
+  }
+  .sh-sign_menu_document:before {
+	content: "\e9b2";
+  }
+  .sh-sign_menu_document-dt .path1:before {
+	content: "\e9b3";
+  }
+  .sh-sign_menu_document-dt .path2:before {
+	content: "\e9b4";
+	margin-left: -1em;
+	opacity: 0.4;
+  }
+  .sh-account_consolidation_menu_consolidation:before {
+	content: "\e9b5";
+  }
+  .sh-account_consolidation_menu_consolidation-dt .path1:before {
+	content: "\e9b6";
+	opacity: 0.4;
+  }
+  .sh-account_consolidation_menu_consolidation-dt .path2:before {
+	content: "\e9b7";
+	margin-left: -1em;
+  }
+  .sh-iot_iot_menu_root:before {
+	content: "\e9ac";
+  }
+  .sh-iot_iot_menu_root-dt .path1:before {
+	content: "\e9ad";
+  }
+  .sh-iot_iot_menu_root-dt .path2:before {
+	content: "\e9ae";
+	margin-left: -1em;
+	opacity: 0.4;
+  }
+  .sh-quality_control_menu_quality_root:before {
+	content: "\e99d";
+  }
+  .sh-quality_control_menu_quality_root-dt .path1:before {
+	content: "\e99a";
+	opacity: 0.4;
+  }
+  .sh-quality_control_menu_quality_root-dt .path2:before {
+	content: "\e99b";
+	margin-left: -1em;
+  }
+  .sh-data_recycle_menu_data_cleaning_root:before {
+	content: "\e9af";
+  }
+  .sh-data_recycle_menu_data_cleaning_root-dt .path1:before {
+	content: "\e9b0";
+	opacity: 0.4;
+  }
+  .sh-data_recycle_menu_data_cleaning_root-dt .path2:before {
+	content: "\e9b1";
+	margin-left: -1em;
+  }
+  .sh-website_menu_website_configuration:before {
+	content: "\e98a";
+  }
+  .sh-website_menu_website_configuration-dt .path1:before {
+	content: "\e987";
+	opacity: 0.4;
+  }
+  .sh-website_menu_website_configuration-dt .path2:before {
+	content: "\e988";
+	margin-left: -1em;
+  }
+  .sh-utm_menu_link_tracker_root:before {
+	content: "\e99e";
+  }
+  .sh-utm_menu_link_tracker_root-dt .path1:before {
+	content: "\e9a0";
+	opacity: 0.4;
+  }
+  .sh-utm_menu_link_tracker_root-dt .path2:before {
+	content: "\e9a1";
+	margin-left: -1em;
+  }
+  .sh-helpdesk_menu_helpdesk_root:before {
+	content: "\e99c";
+  }
+  .sh-helpdesk_menu_helpdesk_root-dt .path1:before {
+	content: "\e998";
+	opacity: 0.4;
+  }
+  .sh-helpdesk_menu_helpdesk_root-dt .path2:before {
+	content: "\e999";
+	margin-left: -1em;
+  }
+  .sh-survey_menu_surveys:before {
+	content: "\e9ab";
+  }
+  .sh-survey_menu_surveys-dt .path1:before {
+	content: "\e975";
+	opacity: 0.4;
+  }
+  .sh-survey_menu_surveys-dt .path2:before {
+	content: "\e976";
+	margin-left: -1em;
+  }
+  
+  .sh-im_livechat_menu_livechat_root:before {
+	content: "\e989";
+  }
+  .sh-im_livechat_menu_livechat_root-dt .path1:before {
+	content: "\e985";
+	opacity: 0.4;
+  }
+  .sh-im_livechat_menu_livechat_root-dt .path2:before {
+	content: "\e986";
+	margin-left: -1em;
+  }
+  .sh-lunch_menu_lunch:before {
+	content: "\e906";
+  }
+  .sh-lunch_menu_lunch-dt .path1:before {
+	content: "\e956";
+	opacity: 0.4;
+  }
+  .sh-lunch_menu_lunch-dt .path2:before {
+	content: "\e957";
+	margin-left: -1em;
+  }
+  .sh-hr_expense_menu_hr_expense_root:before {
+	content: "\e907";
+  }
+  .sh-hr_expense_menu_hr_expense_root-dt .path1:before {
+	content: "\e94d";
+	opacity: 0.4;
+  }
+  .sh-hr_expense_menu_hr_expense_root-dt .path2:before {
+	content: "\e950";
+	margin-left: -1em;
+  }
+  .sh-hr_holidays_menu_hr_holidays_root:before {
+	content: "\e910";
+  }
+  .sh-hr_holidays_menu_hr_holidays_root-dt .path1:before {
+	content: "\e981";
+	opacity: 0.4;
+  }
+  .sh-hr_holidays_menu_hr_holidays_root-dt .path2:before {
+	content: "\e982";
+	margin-left: -1em;
+  }
+  .sh-stock_menu_stock_root:before {
+	content: "\e913";
+  }
+  .sh-stock_menu_stock_root-dt .path1:before {
+	content: "\e95b";
+	opacity: 0.4;
+  }
+  .sh-stock_menu_stock_root-dt .path2:before {
+	content: "\e964";
+	margin-left: -1em;
+  }
+  .sh-mass_mailing_sms_mass_mailing_sms_menu_root:before {
+	content: "\e915";
+  }
+  .sh-mass_mailing_sms_mass_mailing_sms_menu_root-dt .path1:before {
+	content: "\e977";
+	opacity: 0.4;
+  }
+  .sh-mass_mailing_sms_mass_mailing_sms_menu_root-dt .path2:before {
+	content: "\e978";
+	margin-left: -1em;
+  }
+  .sh-account_menu_finance:before {
+	content: "\e926";
+  }
+  .sh-account_menu_finance-dt .path1:before {
+	content: "\e954";
+	opacity: 0.4;
+  }
+  .sh-account_menu_finance-dt .path2:before {
+	content: "\e955";
+	margin-left: -1em;
+  }
+  .sh-contacts_menu_contacts:before {
+	content: "\e929";
+  }
+  .sh-contacts_menu_contacts-dt .path1:before {
+	content: "\e93a";
+	opacity: 0.4;
+  }
+  .sh-contacts_menu_contacts-dt .path2:before {
+	content: "\e93b";
+	margin-left: -1em;
+  }
+  .sh-calendar_mail_menu_calendar:before {
+	content: "\e92b";
+  }
+  .sh-calendar_mail_menu_calendar-dt .path1:before {
+	content: "\e971";
+	opacity: 0.4;
+  }
+  .sh-calendar_mail_menu_calendar-dt .path2:before {
+	content: "\e972";
+	margin-left: -1em;
+  }
+  .sh-account_accountant_menu_accounting:before {
+	content: "\e900";
+  }
+  .sh-account_accountant_menu_accounting-dt .path1:before {
+	content: "\e92d";
+	opacity: 0.4;
+  }
+  .sh-account_accountant_menu_accounting-dt .path2:before {
+	content: "\e92e";
+	margin-left: -1em;
+  }
+  .sh-hr_appraisal_menu_hr_appraisal_root:before {
+	content: "\e901";
+  }
+  .sh-hr_appraisal_menu_hr_appraisal_root-dt .path1:before {
+	content: "\e92f";
+  }
+  .sh-hr_appraisal_menu_hr_appraisal_root-dt .path2:before {
+	content: "\e9ab";
+	margin-left: -1em;
+	opacity: 0.4;
+  }
+  .sh-approvals_approvals_menu_root:before {
+	content: "\e902";
+  }
+  .sh-approvals_approvals_menu_root-dt .path1:before {
+	content: "\e930";
+	opacity: 0.4;
+  }
+  .sh-approvals_approvals_menu_root-dt .path2:before {
+	content: "\e931";
+	margin-left: -1em;
+  }
+  .sh-base_menu_management:before {
+	content: "\e903";
+  }
+  .sh-base_menu_management-dt .path1:before {
+	content: "\e949";
+	opacity: 0.4;
+  }
+  .sh-base_menu_management-dt .path2:before {
+	content: "\e94c";
+	margin-left: -1em;
+  }
+  .sh-hr_attendance_menu_hr_attendance_root:before {
+	content: "\e904";
+  }
+  .sh-hr_attendance_menu_hr_attendance_root-dt .path1:before {
+	content: "\e934";
+	opacity: 0.4;
+  }
+  .sh-hr_attendance_menu_hr_attendance_root-dt .path2:before {
+	content: "\e935";
+	margin-left: -1em;
+  }
+  .sh-stock_barcode_stock_barcode_menu:before {
+	content: "\e905";
+  }
+  .sh-stock_barcode_stock_barcode_menu-dt .path1:before {
+	content: "\e936";
+	opacity: 0.4;
+  }
+  .sh-stock_barcode_stock_barcode_menu-dt .path2:before {
+	content: "\e937";
+	margin-left: -1em;
+  }
+  .sh-crm_crm_menu_root:before {
+	content: "\e908";
+  }
+  .sh-crm_crm_menu_root-dt .path1:before {
+	content: "\e93c";
+	opacity: 0.4;
+  }
+  .sh-crm_crm_menu_root-dt .path2:before {
+	content: "\e93d";
+	margin-left: -1em;
+  }
+  .sh-base_menu_board_root:before {
+	content: "\e909";
+  }
+  .sh-base_menu_board_root-dt .path1:before {
+	content: "\e93e";
+	opacity: 0.4;
+  }
+  .sh-base_menu_board_root-dt .path2:before {
+	content: "\e93f";
+	margin-left: -1em;
+  }
+  .sh-mail_menu_root_discuss:before {
+	content: "\e90a";
+  }
+  .sh-mail_menu_root_discuss-dt .path1:before {
+	content: "\e940";
+	opacity: 0.4;
+  }
+  .sh-mail_menu_root_discuss-dt .path2:before {
+	content: "\e941";
+	margin-left: -1em;
+  }
+  .sh-documents_menu_root:before {
+	content: "\e90b";
+  }
+  .sh-documents_menu_root-dt .path1:before {
+	content: "\e942";
+	opacity: 0.4;
+  }
+  .sh-documents_menu_root-dt .path2:before {
+	content: "\e943";
+	margin-left: -1em;
+  }
+  .sh-website_slides_website_slides_menu_root:before {
+	content: "\e90c";
+  }
+  .sh-website_slides_website_slides_menu_root-dt .path1:before {
+	content: "\e944";
+  }
+  .sh-website_slides_website_slides_menu_root-dt .path2:before {
+	content: "\e945";
+	margin-left: -1em;
+	opacity: 0.4;
+  }
+  .sh-mass_mailing_mass_mailing_menu_root:before {
+	content: "\e90d";
+  }
+  .sh-mass_mailing_mass_mailing_menu_root-dt .path1:before {
+	content: "\e946";
+	opacity: 0.4;
+  }
+  .sh-mass_mailing_mass_mailing_menu_root-dt .path2:before {
+	content: "\e947";
+	margin-left: -1em;
+  }
+  .sh-hr_menu_hr_root:before {
+	content: "\e90e";
+  }
+  .sh-hr_menu_hr_root-dt .path1:before {
+	content: "\e953";
+	opacity: 0.4;
+  }
+  .sh-hr_menu_hr_root-dt .path2:before {
+	content: "\e958";
+	margin-left: -1em;
+  }
+  .sh-event_event_main_menu:before {
+	content: "\e90f";
+  }
+  .sh-event_event_main_menu-dt .path1:before {
+	content: "\e94a";
+	opacity: 0.4;
+  }
+  .sh-event_event_main_menu-dt .path2:before {
+	content: "\e94b";
+	margin-left: -1em;
+  }
+  .sh-industry_fsm_fsm_menu_root:before {
+	content: "\e911";
+  }
+  .sh-industry_fsm_fsm_menu_root-dt .path1:before {
+	content: "\e94e";
+	opacity: 0.4;
+  }
+  .sh-industry_fsm_fsm_menu_root-dt .path2:before {
+	content: "\e94f";
+	margin-left: -1em;
+  }
+  .sh-fleet_menu_root:before {
+	content: "\e912";
+  }
+  .sh-fleet_menu_root-dt .path1:before {
+	content: "\e951";
+	opacity: 0.4;
+  }
+  .sh-fleet_menu_root-dt .path2:before {
+	content: "\e952";
+	margin-left: -1em;
+  }
+  .sh-maintenance_menu_maintenance_title:before {
+	content: "\e916";
+  }
+  .sh-maintenance_menu_maintenance_title-dt .path1:before {
+	content: "\e959";
+	opacity: 0.4;
+  }
+  .sh-maintenance_menu_maintenance_title-dt .path2:before {
+	content: "\e95a";
+	margin-left: -1em;
+  }
+  .sh-mrp_menu_mrp_root:before {
+	content: "\e917";
+  }
+  .sh-mrp_menu_mrp_root-dt .path1:before {
+	content: "\e965";
+	opacity: 0.4;
+  }
+  .sh-mrp_menu_mrp_root-dt .path2:before {
+	content: "\e966";
+	margin-left: -1em;
+  }
+  .sh-marketing_automation_marketing_automation_menu:before {
+	content: "\e918";
+  }
+  .sh-marketing_automation_marketing_automation_menu-dt .path1:before {
+	content: "\e95c";
+	opacity: 0.4;
+  }
+  .sh-marketing_automation_marketing_automation_menu-dt .path2:before {
+	content: "\e95d";
+	margin-left: -1em;
+  }
+  .sh-project_todo_menu_todo_todos:before {
+	content: "\e919";
+  }
+  .sh-project_todo_menu_todo_todos-dt .path1:before {
+	content: "\e95e";
+	opacity: 0.4;
+  }
+  .sh-project_todo_menu_todo_todos-dt .path2:before {
+	content: "\e95f";
+	margin-left: -1em;
+  }
+  .sh-hr_work_entry_contract_enterprise_menu_hr_payroll_root:before {
+	content: "\e91a";
+  }
+  .sh-hr_work_entry_contract_enterprise_menu_hr_payroll_root-dt .path1:before {
+	content: "\e960";
+	opacity: 0.4;
+  }
+  .sh-hr_work_entry_contract_enterprise_menu_hr_payroll_root-dt .path2:before {
+	content: "\e961";
+	margin-left: -1em;
+  }
+  .sh-planning_planning_menu_root:before {
+	content: "\e91b";
+  }
+  .sh-planning_planning_menu_root-dt .path1:before {
+	content: "\e962";
+	opacity: 0.4;
+  }
+  .sh-planning_planning_menu_root-dt .path2:before {
+	content: "\e963";
+	margin-left: -1em;
+  }
+  .sh-mrp_plm_menu_mrp_plm_root:before {
+	content: "\e91c";
+  }
+  .sh-mrp_plm_menu_mrp_plm_root-dt .path1:before {
+	content: "\e914";
+	opacity: 0.4;
+  }
+  .sh-mrp_plm_menu_mrp_plm_root-dt .path2:before {
+	content: "\e932";
+	margin-left: -1em;
+  }
+  .sh-point_of_sale_menu_point_root:before {
+	content: "\e91d";
+  }
+  .sh-point_of_sale_menu_point_root-dt .path1:before {
+	content: "\e969";
+	opacity: 0.4;
+  }
+  .sh-point_of_sale_menu_point_root-dt .path2:before {
+	content: "\e96a";
+	margin-left: -1em;
+  }
+  .sh-project_menu_main_pm:before {
+	content: "\e91e";
+  }
+  .sh-project_menu_main_pm-dt .path1:before {
+	content: "\e97d";
+	opacity: 0.4;
+  }
+  .sh-project_menu_main_pm-dt .path2:before {
+	content: "\e97e";
+	margin-left: -1em;
+  }
+  .sh-purchase_menu_purchase_root:before {
+	content: "\e91f";
+  }
+  .sh-purchase_menu_purchase_root-dt .path1:before {
+	content: "\e967";
+	opacity: 0.4;
+  }
+  .sh-purchase_menu_purchase_root-dt .path2:before {
+	content: "\e968";
+	margin-left: -1em;
+  }
+  .sh-hr_recruitment_menu_hr_recruitment_root:before {
+	content: "\e920";
+  }
+  .sh-hr_recruitment_menu_hr_recruitment_root-dt .path1:before {
+	content: "\e96b";
+	opacity: 0.4;
+  }
+  .sh-hr_recruitment_menu_hr_recruitment_root-dt .path2:before {
+	content: "\e96c";
+	margin-left: -1em;
+  }
+  .sh-hr_referral_menu_hr_referral_root:before {
+	content: "\e921";
+  }
+  .sh-hr_referral_menu_hr_referral_root-dt .path1:before {
+	content: "\e96d";
+  }
+  .sh-hr_referral_menu_hr_referral_root-dt .path2:before {
+	content: "\e96e";
+	margin-left: -1em;
+	opacity: 0.4;
+  }
+  .sh-sale_renting_rental_menu_root:before {
+	content: "\e922";
+  }
+  .sh-sale_renting_rental_menu_root-dt .path1:before {
+	content: "\e96f";
+	opacity: 0.4;
+  }
+  .sh-sale_renting_rental_menu_root-dt .path2:before {
+	content: "\e970";
+	margin-left: -1em;
+  }
+  .sh-repair_menu_repair_order:before {
+	content: "\e923";
+  }
+  .sh-repair_menu_repair_order-dt .path1:before {
+	content: "\e933";
+	opacity: 0.4;
+  }
+  .sh-repair_menu_repair_order-dt .path2:before {
+	content: "\e938";
+	margin-left: -1em;
+  }
+  .sh-sale_sale_menu_root:before {
+	content: "\e924";
+  }
+  .sh-sale_sale_menu_root-dt .path1:before {
+	content: "\e973";
+	opacity: 0.4;
+  }
+  .sh-sale_sale_menu_root-dt .path2:before {
+	content: "\e974";
+	margin-left: -1em;
+  }
+  .sh-base_menu_administration:before {
+	content: "\e925";
+  }
+  .sh-base_menu_administration-dt .path1:before {
+	content: "\e939";
+	opacity: 0.4;
+  }
+  .sh-base_menu_administration-dt .path2:before {
+	content: "\e948";
+	margin-left: -1em;
+  }
+  .sh-social_menu_social_global:before {
+	content: "\e927";
+  }
+  .sh-social_menu_social_global-dt .path1:before {
+	content: "\e979";
+	opacity: 0.4;
+  }
+  .sh-social_menu_social_global-dt .path2:before {
+	content: "\e97a";
+	margin-left: -1em;
+  }
+  .sh-sale_subscription_menu_sale_subscription_root:before {
+	content: "\e928";
+  }
+  .sh-sale_subscription_menu_sale_subscription_root-dt .path1:before {
+	content: "\e97b";
+	opacity: 0.4;
+  }
+  .sh-sale_subscription_menu_sale_subscription_root-dt .path2:before {
+	content: "\e97c";
+	margin-left: -1em;
+  }
+  .sh-base_menu_tests:before {
+	content: "\e92a";
+  }
+  .sh-base_menu_tests-dt .path1:before {
+	content: "\e97f";
+	opacity: 0.4;
+  }
+  .sh-base_menu_tests-dt .path2:before {
+	content: "\e980";
+	margin-left: -1em;
+  }
+  .sh-hr_timesheet_timesheet_menu_root:before {
+	content: "\e92c";
+  }
+  .sh-hr_timesheet_timesheet_menu_root-dt .path1:before {
+	content: "\e983";
+	opacity: 0.4;
+  }
+  .sh-hr_timesheet_timesheet_menu_root-dt .path2:before {
+	content: "\e984";
+	margin-left: -1em;
+  }
+  /* Dashboards */ 
+  .sh-spreadsheet_dashboard_spreadsheet_dashboard_menu_root:before {
+	content: "\e909";
+  }
+  .sh-spreadsheet_dashboard_spreadsheet_dashboard_menu_root-dt .path1:before {
+	content: "\e93e";
+	opacity: 0.4;
+  }
+  .sh-spreadsheet_dashboard_spreadsheet_dashboard_menu_root-dt .path2:before {
+	content: "\e93f";
+	margin-left: -1em;
+  }
+  /* Web push notification */ 
+  .sh-sh_entmate_theme_sh_push_notification_root:before {
+	content: "\e9bb";
+  }
+  .sh-sh_entmate_theme_sh_push_notification_root-dt .path1:before {
+	content: "\e9bc";
+	opacity: 0.4;
+  }
+  .sh-sh_entmate_theme_sh_push_notification_root-dt .path2:before {
+	content: "\e9bd";
+	margin-left: -1em;
+  }
+  
+  // Light Icon // 
+  
+  
+  .sh-website_menu_website_configuration-l:before {
+	content: "\b9f8";
+  }
+  .sh-sh_entmate_theme_sh_push_notification_root-l:before {
+	content: "\b9f9";
+  }
+  .sh-training-l:before {
+	content: "\b9fa";
+  }
+  .sh-hr_timesheet_timesheet_menu_root-l:before {
+	content: "\b9fb";
+  }
+  .sh-hr_holidays_menu_hr_holidays_root-l:before {
+	content: "\b9fc";
+  }
+  .sh-base_menu_tests-l:before {
+	content: "\b9fd";
+  }
+  .sh-survey_menu_surveys-l:before {
+	content: "\b9fe";
+  }
+  .sh-sale_subscription_menu_sale_subscription_root-l:before {
+	content: "\b9ff";
+  }
+  .sh-social_menu_social_global-l:before {
+	content: "\ba00";
+  }
+  .sh-mass_mailing_sms_mass_mailing_sms_menu_root-l:before {
+	content: "\ba01";
+  }
+  .sh-sign_menu_document-l:before {
+	content: "\ba02";
+  }
+  .sh-base_menu_administration-l:before {
+	content: "\ba03";
+  }
+  .sh-sale_sale_menu_root-l:before {
+	content: "\ba04";
+  }
+  .sh-repair_menu_repair_order-l:before {
+	content: "\ba05";
+  }
+  .sh-sale_renting_rental_menu_root-l:before {
+	content: "\b9c7";
+  }
+  .sh-hr_referral_menu_hr_referral_root-l:before {
+	content: "\b9c8";
+  }
+  .sh-hr_recruitment_menu_hr_recruitment_root-l:before {
+	content: "\b9c9";
+  }
+  .sh-quality_control_menu_quality_root-l:before {
+	content: "\b9ca";
+  }
+  .sh-purchase_menu_purchase_root-l:before {
+	content: "\b9cb";
+  }
+  .sh-project_menu_main_pm-l:before {
+	content: "\b9cc";
+  }
+  .sh-point_of_sale_menu_point_root-l:before {
+	content: "\b9cd";
+  }
+  .sh-mrp_plm_menu_mrp_plm_root-l:before {
+	content: "\b9ce";
+  }
+  .sh-planning_planning_menu_root-l:before {
+	content: "\b9cf";
+  }
+  .sh-hr_work_entry_contract_enterprise_menu_hr_payroll_root-l:before {
+	content: "\b9d0";
+  }
+  .sh-project_todo_menu_todo_todos-l:before {
+	content: "\b9d1";
+  }
+  .sh-membership_menu_association-l:before {
+	content: "\b9d2";
+  }
+  .sh-marketing_automation_marketing_automation_menu-l:before {
+	content: "\b9d3";
+  }
+  .sh-mrp_menu_mrp_root-l:before {
+	content: "\b9d4";
+  }
+  .sh-maintenance_menu_maintenance_title-l:before {
+	content: "\b9d5";
+  }
+  .sh-lunch_menu_lunch-l:before {
+	content: "\b9d6";
+  }
+  .sh-Loan-Application-l:before {
+	content: "\b9d7";
+  }
+  .sh-im_livechat_menu_livechat_root-l:before {
+	content: "\b9d8";
+  }
+  .sh-utm_menu_link_tracker_root-l:before {
+	content: "\b9d9";
+  }
+  .sh-knowledge_knowledge_menu_root-l:before {
+	content: "\b9da";
+  }
+  .sh-iot_iot_menu_root-l:before {
+	content: "\b9db";
+  }
+  .sh-account_menu_finance-l:before {
+	content: "\b9dc";
+  }
+  .sh-stock_menu_stock_root-l:before {
+	content: "\b9dd";
+  }
+  .sh-idea-management-l:before {
+	content: "\b9de";
+  }
+  .sh-helpdesk_menu_helpdesk_root-l:before {
+	content: "\b9df";
+  }
+  .sh-Goal-Management-l:before {
+	content: "\b9e0";
+  }
+  .sh-sh_entmate_theme_sh_dynamic_action_action_menu-l:before {
+	content: "\b9e1";
+  }
+  .sh-fleet_menu_root-l:before {
+	content: "\b9e2";
+  }
+  .sh-industry_fsm_fsm_menu_root-l:before {
+	content: "\b9e3";
+  }
+  .sh-hr_expense_menu_hr_expense_root-l:before {
+	content: "\b9e4";
+  }
+  .sh-event_event_main_menu-l:before {
+	content: "\b9e5";
+  }
+  .sh-hr_menu_hr_root-l:before {
+	content: "\b9e6";
+  }
+  .sh-mass_mailing_mass_mailing_menu_root-l:before {
+	content: "\b9e7";
+  }
+  .sh-website_slides_website_slides_menu_root-l:before {
+	content: "\b9e8";
+  }
+  .sh-documents_menu_root-l:before {
+	content: "\b9e9";
+  }
+  .sh-mail_menu_root_discuss-l:before {
+	content: "\b9ea";
+  }
+  .sh-data_recycle_menu_data_cleaning_root-l:before {
+	content: "\b9eb";
+  }
+  .sh-spreadsheet_dashboard_spreadsheet_dashboard_menu_root-l:before {
+	content: "\b9ec";
+  }
+  .sh-crm_crm_menu_root-l:before {
+	content: "\b9ed";
+  }
+  .sh-contacts_menu_contacts-l:before {
+	content: "\b9ee";
+  }
+  .sh-Consolidation-l:before {
+	content: "\b9ef";
+  }
+  .sh-complain-management-l:before {
+	content: "\b9f0";
+  }
+  .sh-calendar_mail_menu_calendar-l:before {
+	content: "\b9f1";
+  }
+  .sh-stock_barcode_stock_barcode_menu-l:before {
+	content: "\b9f2";
+  }
+  .sh-hr_attendance_menu_hr_attendance_root-l:before {
+	content: "\b9f3";
+  }
+  .sh-base_menu_management-l:before {
+	content: "\b9f4";
+  }
+  .sh-approvals_approvals_menu_root-l:before {
+	content: "\b9f5";
+  }
+  .sh-hr_appraisal_menu_hr_appraisal_root-l:before {
+	content: "\b9f6";
+  }
+  .sh-account_accountant_menu_accounting-l:before {
+	content: "\b9f7";
+  }
+  
+  
+  
+  
+  
+  
+  // .sh-website_menu_website_configuration-l:before {
+  //   content: "\e9f8";
+  // }
+  // .sh-sh_entmate_theme_sh_push_notification_root-l:before {
+  //   content: "\e9f9";
+  // }
+  // .sh-training-l:before {
+  //   content: "\e9fa";
+  // }
+  // .sh-hr_timesheet_timesheet_menu_root-l:before {
+  //   content: "\e9fb";
+  // }
+  // .sh-hr_holidays_menu_hr_holidays_root-l:before {
+  //   content: "\e9fc";
+  // }
+  // .sh-base_menu_tests-l:before {
+  //   content: "\e9fd";
+  // }
+  // .sh-survey_menu_surveys-l:before {
+  //   content: "\e9fe";
+  // }
+  // .sh-sale_subscription_menu_sale_subscription_root-l:before {
+  //   content: "\e9ff";
+  // }
+  // .sh-social_menu_social_global-l:before {
+  //   content: "\ea00";
+  // }
+  // .sh-mass_mailing_sms_mass_mailing_sms_menu_root-l:before {
+  //   content: "\ea01";
+  // }
+  // .sh-sign_menu_document-l:before {
+  //   content: "\ea02";
+  // }
+  // .sh-base_menu_administration-l:before {
+  //   content: "\ea03";
+  // }
+  // .sh-sale_sale_menu_root-l:before {
+  //   content: "\ea04";
+  // }
+  // .sh-repair_menu_repair_order-l:before {
+  //   content: "\ea05";
+  // }
+  // .sh-sale_renting_rental_menu_root-l:before {
+  //   content: "\e9c7";
+  // }
+  // .sh-hr_referral_menu_hr_referral_root-l:before {
+  //   content: "\e9c8";
+  // }
+  // .sh-hr_recruitment_menu_hr_recruitment_root-l:before {
+  //   content: "\e9c9";
+  // }
+  // .sh-quality_control_menu_quality_root-l:before {
+  //   content: "\e9ca";
+  // }
+  // .sh-purchase_menu_purchase_root-l:before {
+  //   content: "\e9cb";
+  // }
+  // .sh-project_menu_main_pm-l:before {
+  //   content: "\e9cc";
+  // }
+  // .sh-point_of_sale_menu_point_root-l:before {
+  //   content: "\e9cd";
+  // }
+  // .sh-mrp_plm_menu_mrp_plm_root-l:before {
+  //   content: "\e9ce";
+  // }
+  // .sh-planning_planning_menu_root-l:before {
+  //   content: "\e9cf";
+  // }
+  // .sh-hr_work_entry_contract_enterprise_menu_hr_payroll_root-l:before {
+  //   content: "\e9d0";
+  // }
+  // .sh-project_todo_menu_todo_todos-l:before {
+  //   content: "\e9d1";
+  // }
+  // .sh-membership_menu_association-l:before {
+  //   content: "\e9d2";
+  // }
+  // .sh-marketing_automation_marketing_automation_menu-l:before {
+  //   content: "\e9d3";
+  // }
+  // .sh-mrp_menu_mrp_root-l:before {
+  //   content: "\e9d4";
+  // }
+  // .sh-maintenance_menu_maintenance_title-l:before {
+  //   content: "\e9d5";
+  // }
+  // .sh-lunch_menu_lunch-l:before {
+  //   content: "\e9d6";
+  // }
+  // .sh-Loan-Application-l:before {
+  //   content: "\e9d7";
+  // }
+  // .sh-im_livechat_menu_livechat_root-l:before {
+  //   content: "\e9d8";
+  // }
+  // .sh-utm_menu_link_tracker_root-l:before {
+  //   content: "\e9d9";
+  // }
+  // .sh-knowledge_knowledge_menu_root-l:before {
+  //   content: "\e9da";
+  // }
+  // .sh-iot_iot_menu_root-l:before {
+  //   content: "\e9db";
+  // }
+  // .sh-account_menu_finance-l:before {
+  //   content: "\e9dc";
+  // }
+  // .sh-stock_menu_stock_root-l:before {
+  //   content: "\e9dd";
+  // }
+  // .sh-idea-management-l:before {
+  //   content: "\e9de";
+  // }
+  // .sh-helpdesk_menu_helpdesk_root-l:before {
+  //   content: "\e9df";
+  // }
+  // .sh-Goal-Management-l:before {
+  //   content: "\e9e0";
+  // }
+  // .sh-sh_entmate_theme_sh_dynamic_action_action_menu-l:before {
+  //   content: "\e9e1";
+  // }
+  // .sh-fleet_menu_root-l:before {
+  //   content: "\e9e2";
+  // }
+  // .sh-industry_fsm_fsm_menu_root-l:before {
+  //   content: "\e9e3";
+  // }
+  // .sh-hr_expense_menu_hr_expense_root-l:before {
+  //   content: "\e9e4";
+  // }
+  // .sh-event_event_main_menu-l:before {
+  //   content: "\e9e5";
+  // }
+  // .sh-hr_menu_hr_root-l:before {
+  //   content: "\e9e6";
+  // }
+  // .sh-mass_mailing_mass_mailing_menu_root-l:before {
+  //   content: "\e9e7";
+  // }
+  // .sh-website_slides_website_slides_menu_root-l:before {
+  //   content: "\e9e8";
+  // }
+  // .sh-documents_menu_root-l:before {
+  //   content: "\e9e9";
+  // }
+  // .sh-mail_menu_root_discuss-l:before {
+  //   content: "\e9ea";
+  // }
+  // .sh-data_recycle_menu_data_cleaning_root-l:before {
+  //   content: "\e9eb";
+  // }
+  // .sh-spreadsheet_dashboard_spreadsheet_dashboard_menu_root-l:before {
+  //   content: "\e9ec";
+  // }
+  // .sh-crm_crm_menu_root-l:before {
+  //   content: "\e9ed";
+  // }
+  // .sh-contacts_menu_contacts-l:before {
+  //   content: "\e9ee";
+  // }
+  // .sh-Consolidation-l:before {
+  //   content: "\e9ef";
+  // }
+  // .sh-complain-management-l:before {
+  //   content: "\e9f0";
+  // }
+  // .sh-calendar_mail_menu_calendar-l:before {
+  //   content: "\e9f1";
+  // }
+  // .sh-stock_barcode_stock_barcode_menu-l:before {
+  //   content: "\e9f2";
+  // }
+  // .sh-hr_attendance_menu_hr_attendance_root-l:before {
+  //   content: "\e9f3";
+  // }
+  // .sh-base_menu_management-l:before {
+  //   content: "\e9f4";
+  // }
+  // .sh-approvals_approvals_menu_root-l:before {
+  //   content: "\e9f5";
+  // }
+  // .sh-hr_appraisal_menu_hr_appraisal_root-l:before {
+  //   content: "\e9f6";
+  // }
+  // .sh-account_accountant_menu_accounting-l:before {
+  //   content: "\e9f7";
+  // }
+  
+  
+  
+  
