@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates>
+    <t t-name="CustomerScreenDashboard">
+        <div class="order-container">
+            <div class="order-header">
+                <div class="company-logo">
+                    <img src="/logo.png" alt="Company Logo"/>
+                </div>
+                <div class="order-title">
+                    <h2>Your Order</h2>
+                    <div class="order-number">Order #: <span t-out="state.order_name" /></div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="state.orders" t-as="order" t-key="order_index">
+                        <tr>
+                            <td class="product-cell">
+                                <img t-attf-src="/web/image/product.product/{{order.product_id}}/image_1024" class="product-image"/>
+                                <span t-out="order.product_name"/>
+                            </td>
+                            <td class="quantity-cell"><span t-out="order.quantity"/> Units</td>
+                            <td class="price-cell"><span t-out="state.currency_symbol"/> <span t-out="order.total_price"/></td>
+                        </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="order-total">
+                <div class="total-box">
+                    <div class="total-row">
+                        <span class="total-label">Total:</span>
+                        <span class="total-amount"><span t-out="state.currency_symbol"/> <span t-out="state.total_amount"/></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-footer">
+                <p>Powered by <span class="odoo-brand">Apptology</span></p>
+            </div>
+        </div>
+    </t>
+</templates>

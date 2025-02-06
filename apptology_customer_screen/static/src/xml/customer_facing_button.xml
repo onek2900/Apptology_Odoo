@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="point_of_sale.CustomerFacingDisplayButton" t-inherit-mode="extension">
+        <xpath expr="//button" position="replace">
+
+        <a class="menu-item navbar-button btn btn-light rounded-0 d-flex align-items-center px-3 cursor-pointer" t-att-href="this.pos.base_url+'/apptology_customer_screen'" target="_blank">
+            <span class="ms-1">Customer Screen</span>
+        </a>
+        </xpath>
+    </t>
+</templates>

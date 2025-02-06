@@ -1,0 +1,233 @@
+// Variables
+$primary-color: #2c3e50;
+$secondary-color: #7f8c8d;
+$accent-color: #875A7B;
+$border-color: #ecf0f1;
+$background-light: #f8f9fa;
+$white: #fff;
+$shadow-color: rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@mixin card-shadow {
+    box-shadow: 0 2px 10px $shadow-color;
+}
+
+// Base Styles
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: 'Roboto', sans-serif;
+    background: #f5f5f5;
+}
+
+// Order Container
+.order-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: $white;
+    @include card-shadow;
+    border-radius: 8px;
+}
+
+// Header Styles
+.order-header {
+    @include flex-between;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid $border-color;
+
+    .company-logo {
+        img {
+            max-height: 60px;
+            object-fit: contain;
+        }
+    }
+
+    .order-title {
+        h2 {
+            color: $primary-color;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .order-number {
+            color: $secondary-color;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+    }
+}
+
+// Table Container and Scrollbar
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 20px 0;
+
+    &::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+    -webkit-overflow-scrolling: touch;
+}
+
+// Table Styles
+.order-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+
+        th {
+            background: $background-light;
+            padding: 12px;
+            text-align: left;
+            color: $primary-color;
+            font-weight: 600;
+            border-bottom: 2px solid $border-color;
+        }
+    }
+
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid $border-color;
+        background: $white;
+    }
+
+    .product-cell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .product-image {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: $background-light;
+        }
+    }
+
+    .quantity-cell,
+    .price-cell {
+        color: $primary-color;
+    }
+}
+
+// Total Section
+.order-total {
+    margin-top: 30px;
+    display: flex;
+    justify-content: flex-end;
+
+    .total-box {
+        background: $primary-color;
+        color: $white;
+        padding: 20px;
+        border-radius: 8px;
+        min-width: 200px;
+
+        .total-row {
+            @include flex-between;
+            margin: 5px 0;
+        }
+
+        .total-amount {
+            font-size: 20px;
+            font-weight: 600;
+        }
+    }
+}
+
+// Footer
+.order-footer {
+    margin-top: 30px;
+    text-align: center;
+    color: $secondary-color;
+    font-size: 12px;
+
+    .odoo-brand {
+        font-weight: 600;
+        color: $accent-color;
+    }
+}
+
+// Responsive Styles
+@media screen and (max-width: 768px) {
+    .order-container {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    .table-container {
+        max-height: 300px;
+    }
+
+    .order-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+
+        .company-logo {
+            margin-bottom: 10px;
+        }
+    }
+
+    .order-table {
+        .product-cell {
+            flex-direction: column;
+            text-align: center;
+
+            .product-image {
+                margin: 0 auto 10px;
+            }
+        }
+    }
+}
+
+// Print Styles
+@media print {
+    body {
+        padding: 0;
+        background: $white;
+    }
+
+    .order-container {
+        box-shadow: none;
+        margin: 0;
+        padding: 10px;
+    }
+
+    .total-box {
+        border: 1px solid $border-color;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+}
