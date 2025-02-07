@@ -16,7 +16,6 @@ patch(OrderWidget.prototype, {
      */
     setup() {
         this.orm = useService("orm");
-
         /**
          * Processes order lines into a standardized format
          * @param {Object} lines - Raw order lines from props

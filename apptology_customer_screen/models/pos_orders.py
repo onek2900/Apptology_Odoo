@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models
+from odoo.http import request
 
 
 class PosOrder(models.Model):
@@ -11,7 +12,7 @@ class PosOrder(models.Model):
         order_name = order_details[0].get('order_name') if order_details else ""
         currency_symbol = order_details[0].get(
             'currency_symbol') if order_details else ""
-        new_list = []
+        product_list = []
         for line in order_details:
             price = line.get('price', 0)
             quantity = line.get('quantity', 0)
@@ -19,7 +20,7 @@ class PosOrder(models.Model):
             product_name = line.get('product_name', '')
             product_id = line.get('product_id', '')
             discount = line.get('discount')
-
+            image_1024 = request.env['product.product'].sudo().browse(product_id).image_1024
             # Fetch taxes
             taxes = self.env['account.tax'].sudo().browse(tax_ids)
 
@@ -45,19 +46,20 @@ class PosOrder(models.Model):
             quantity = round(quantity, 2)
             total_price = round(total_price, 2)
 
-            new_list.append(
+            product_list.append(
                 {
                     'quantity': quantity,
                     'total_price': round(total_price, 2),
                     'product_name': product_name,
                     'product_id': product_id,
+                    'product_image':image_1024,
                 })
         total_amount = round(sum(
-            line.get('total_price', 0) for line in new_list), 2)
+            line.get('total_price', 0) for line in product_list), 2)
         message = {
             'res_model': self._name,
             'message': 'pos_order_line_updated',
-            'orders': new_list,
+            'orders': product_list,
             'order_name': order_name,
             'currency_symbol':currency_symbol,
             'total_amount': total_amount,

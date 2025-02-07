@@ -25,7 +25,7 @@
                         <t t-foreach="state.orders" t-as="order" t-key="order_index">
                         <tr>
                             <td class="product-cell">
-                                <img t-attf-src="/web/image/product.product/{{order.product_id}}/image_1024" class="product-image"/>
+                                <img t-att-src="'data:image/jpeg;base64,' + order.product_image" class="product-image"/>
                                 <span t-out="order.product_name"/>
                             </td>
                             <td class="quantity-cell"><span t-out="order.quantity"/> Units</td>
