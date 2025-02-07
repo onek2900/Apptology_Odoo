@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Tender Management menu-->
+    <menuitem id="apptology_deliverect_root" name="Apptology Deliverect"/>
+    <!--    Tender menu-->
+    <menuitem id="deliverect_configuration_menu" name="Configuration" action="deliverect_configuration_action"
+              parent="apptology_deliverect_root"/>
+</odoo>

@@ -1,0 +1,35 @@
+<odoo>
+    <!-- Action Window -->
+    <record id="deliverect_configuration_action" model="ir.actions.act_window">
+        <field name="name">Deliverect Configuration</field>
+        <field name="res_model">deliverect.configuration</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Form View -->
+    <record id="deliverect_configuration_view_form" model="ir.ui.view">
+        <field name="name">deliverect.configuration.view.form</field>
+        <field name="model">deliverect.configuration</field>
+        <field name="arch" type="xml">
+            <form string="Deliverect Configuration">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                    <group>
+                        <group string="API Credentials">
+                            <field name="client_id"/>
+                            <field name="client_secret"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Actions">
+                            <button name="action_sync_product" type="object" string="Sync Product"
+                                    class="btn-primary" help="Sync available POS products to Deliverect."/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
