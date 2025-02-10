@@ -9,7 +9,8 @@
     'depends': ['pos_restaurant', 'web', 'bus'],
     'data': [
         'security/ir.model.access.csv',
-        'views/deliverect_configuration_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/product_product_views.xml',
         'views/menu_views.xml',
     ],
     'license': 'LGPL-3',

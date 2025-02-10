@@ -1,1 +1,5 @@
-from . import deliverect_configuration
+from . import res_config_settings
+from . import deliverect_api
+from . import deliverect_channel
+from . import product_product
+from . import deliverect_allergens

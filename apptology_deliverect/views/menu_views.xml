@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <!--    Tender Management menu-->
-    <menuitem id="apptology_deliverect_root" name="Apptology Deliverect"/>
-    <!--    Tender menu-->
-    <menuitem id="deliverect_configuration_menu" name="Configuration" action="deliverect_configuration_action"
-              parent="apptology_deliverect_root"/>
+    <record id="action_update_channels" model="ir.actions.server">
+        <field name="name">Update Channels</field>
+        <field name="model_id" ref="model_deliverect_channel"/>
+        <field name="state">code</field>
+        <field name="code">model.update_channel()</field>
+    </record>
+    <record id="action_sync_products" model="ir.actions.server">
+        <field name="name">Sync Products</field>
+        <field name="model_id" ref="model_product_product"/>
+        <field name="state">code</field>
+        <field name="code">model.action_sync_product()</field>
+    </record>
+    <record id="action_update_allergens" model="ir.actions.server">
+        <field name="name">Update Allergens</field>
+        <field name="model_id" ref="model_deliverect_allergens"/>
+        <field name="state">code</field>
+        <field name="code">model.update_allergens()</field>
+    </record>
+    <menuitem id="menu_deliverect" name="Deliverect" parent="point_of_sale.menu_point_root"/>
+    <menuitem id="submenu_update_channels" name="Update Channels" parent="menu_deliverect"
+              action="action_update_channels"/>
+    <menuitem id="submenu_sync_products" name="Force Sync Products" parent="menu_deliverect"
+              action="action_sync_products"/>
+    <menuitem id="submenu_update_allergens" name="Update Allergens" parent="menu_deliverect"
+              action="action_update_allergens"/>
 </odoo>
