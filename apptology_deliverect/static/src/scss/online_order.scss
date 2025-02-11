@@ -1,0 +1,145 @@
+.online-order-screen {
+    .leftpane {
+        width: 380px;
+        background: white;
+        border-left: 1px solid var(--gray-300);
+
+        .order-details {
+            .product-list {
+                .product-header {
+                    .product-info {
+                        .product-name {
+                            color: #2B2B2B;
+                            font-size: 15px;
+                            font-weight: 500;
+                            margin-bottom: 4px;
+                        }
+
+                        .product-quantity {
+                            color: #6B6B6B;
+                            font-size: 13px;
+                        }
+                    }
+
+                    .product-price {
+                        color: #2B2B2B;
+                        font-size: 15px;
+                        font-weight: 500;
+                    }
+                }
+            }
+
+            .totals-section {
+                background: #F8F9FA;
+                margin-top: auto;
+
+                .total-line {
+                    .total-text {
+                        color: #2B2B2B;
+                        font-size: 20px;
+                        font-weight: 600;
+                    }
+                }
+
+                .tax-line {
+                    .tax-text {
+                        color: #6B6B6B;
+                        font-size: 16px;
+                        font-weight: 500;
+                    }
+                }
+            }
+        }
+    }
+
+    .rightpane {
+        .orders {
+            .header-row {
+                background: var(--gray-700);
+                color: white;
+                font-weight: 500;
+            }
+
+            .order-row {
+                display: flex;
+                align-items: center;
+                border-bottom: 1px solid var(--gray-200);
+                cursor: pointer;
+
+                &:hover {
+                    background: var(--gray-100);
+                }
+
+                .col {
+                    &.wide {
+                        min-width: 140px;
+                    }
+
+                    &.narrow {
+                        width: 100px;
+                    }
+
+                    &.action-buttons {
+                        width: 120px;
+                        display: flex;
+                        justify-content: flex-start;
+                        gap: 8px;
+                    }
+
+                    &.end {
+                        text-align: left;
+                    }
+                }
+
+                .btn-action {
+                    background: none;
+                    border: none;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+
+                    i.fa {
+                        font-size: 18px;
+                    }
+
+                    &:hover {
+                        transform: scale(1.1);
+                    }
+
+                    &.approve {
+                        color: var(--success);
+                        &:hover {
+                            background-color: rgba(40, 167, 69, 0.1);
+                        }
+                    }
+
+                    &.decline {
+                        color: var(--danger);
+                        &:hover {
+                            background-color: rgba(220, 53, 69, 0.1);
+                        }
+                    }
+
+                    &.delete {
+                        color: var(--gray-600);
+                        &:hover {
+                            background-color: rgba(73, 80, 87, 0.1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+:root {
+    --primary: #007bff;
+    --danger: #dc3545;
+    --success: #28a745;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+}

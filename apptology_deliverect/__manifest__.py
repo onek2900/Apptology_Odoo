@@ -13,6 +13,11 @@
         'views/product_product_views.xml',
         'views/menu_views.xml',
     ],
+    'assets': {
+        'point_of_sale._assets_pos': [
+            'apptology_deliverect/static/src/**/*',
+        ],
+    },
     'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
