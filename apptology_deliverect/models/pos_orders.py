@@ -15,3 +15,13 @@ class PosOrder(models.Model):
         ('3', 'Eat In'),
         ('4', 'Curbside')
     ], string='Order Type', default='1')
+    order_approved=fields.Boolean(string='Order Approved',default=False)
+    is_deliverect_order=fields.Boolean(string='Deliverect Order',default=False)
+
+    def update_order_status(self,status):
+        print('inside change order state',self)
+        if status=='approved':
+            self.write({'state':'paid','order_approved':True})
+        else:
+            self.write({'state':'cancel'})
+        print(self.order_approved,self.state)

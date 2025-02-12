@@ -12,7 +12,6 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def create_or_get_partner(customer_data):
-        print('in create partner')
         partner = request.env['res.partner'].sudo().search([('email', '=', customer_data['email'])],
                                                            limit=1)
         if not partner:
@@ -21,8 +20,6 @@ class DeliverectWebhooks(http.Controller):
                 'email': customer_data['email'],
                 'company_name': customer_data['companyName'],
             })
-            print('new customer created',partner)
-
         return partner.id
 
     @staticmethod
@@ -53,24 +50,17 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def create_order_data(self, data):
-        print('create order data')
         number = data['channelOrderId'].replace('T', '')
-
         # Format: Order-xxxxx-xxx-xxxx
-        sequence = "00000"  # Take 5 digits
-        branch = number[-7:-4].zfill(3)  # Take 3 digits
-        order_num = number[-4:].zfill(4)  # Take last 4 digits
-
+        sequence = "00009"
+        branch = number[-7:-4].zfill(3)
+        order_num = number[-4:].zfill(4)
         pos_reference = f"Order-{sequence}-{branch}-{order_num}"
-
         pos_config = request.env['pos.config'].sudo().search([], limit=1)
-
-        print('pos config :',pos_config)
         pos_session = pos_config.current_session_id
         order_lines = []
         for item in data['items']:
             product = request.env['product.product'].sudo().search([('default_code', '=', item['plu'])], limit=1)
-            print('product categories:',product.pos_categ_ids)
             if product:
                 order_lines.append((0, 0, {
                     'full_product_name': product.name,
@@ -82,9 +72,6 @@ class DeliverectWebhooks(http.Controller):
                     'price_subtotal_incl': item['price'] * item['quantity'],
                     'discount': 0,
                 }))
-        print(order_lines)
-        print('pos session id :',pos_session.id)
-        # TODO when order type is eat in - has not synced the floor
         return {
             'user_id': 2,
             'company_id': request.env.company.id,
@@ -92,11 +79,12 @@ class DeliverectWebhooks(http.Controller):
             'partner_id': self.create_or_get_partner(data['customer']),
             'lines': order_lines,
             'order_type':str(data['orderType']),
-            'amount_paid': data['payment']['amount'],
-            'amount_total': data['payment']['amount'],
-            'amount_tax': data['taxTotal'],
+            'amount_paid': data['payment']['amount']/100,
+            'amount_total': data['payment']['amount']/100,
+            'amount_tax': data['taxTotal']/100,
             'amount_return': 0.0,
             'pos_reference': pos_reference,
+            'is_deliverect_order':True,
             'name': data['channelOrderDisplayId'],
             'note': data['note'],
             'last_order_preparation_change': '{}',
@@ -104,14 +92,11 @@ class DeliverectWebhooks(http.Controller):
             'order_status':'draft',
             'order_ref': pos_reference,
             'is_cooking':True,
-            'hour':"39",
-            'minutes':"12",
-            'floor':"12"
+            'floor':'Online'
         }
 
     @http.route('/deliverect/pos/register', type='json', methods=['POST'], auth="none", csrf=False)
     def register_pos(self):
-        print('register pos successful')
         config_param = request.env['ir.config_parameter'].sudo()
         base_url = config_param.get_param('web.base.url')
         try:
@@ -141,13 +126,13 @@ class DeliverectWebhooks(http.Controller):
 
     @http.route('/deliverect/pos/orders', type='http', methods=['POST'], auth='public', csrf=False)
     def receive_pos_order(self):
-        print('pos order webhook')
         try:
+            print('pos order webhook')
             data = json.loads(request.httprequest.data)
+            print('data :',data)
             pos_order_data = self.create_order_data(self, data)
             print('pos order data :',pos_order_data)
             order = request.env['pos.order'].sudo().create(pos_order_data)
-            print('order created in pos :',order)
             return Response(
                 json.dumps({'status': 'success', 'message': 'Order created',
                             'order_id': order.id}),

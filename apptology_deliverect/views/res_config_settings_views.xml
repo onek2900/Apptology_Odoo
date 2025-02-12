@@ -9,23 +9,28 @@
                 <block title="Deliverect" id="deliverect_section">
                     <setting>
                         <div class="content-group">
-                            <div class="row mt8">
+                            <div class="row">
                                 <label for="client_id" class="col-lg-3 o_light_label">Client ID</label>
-                                <field name="client_id" class="col-lg-9"/>
+                                <field name="client_id" class="col-lg-9" placeholder="Enter your Deliverect Client ID"/>
                             </div>
-                            <div class="row mt8">
+                            <div class="row">
                                 <label for="client_secret" class="col-lg-3 o_light_label">Client Secret</label>
-                                <field name="client_secret" class="col-lg-9"/>
+                                <field name="client_secret" class="col-lg-9"
+                                       placeholder="Enter your Deliverect Client Secret"/>
                             </div>
-                            <div class="row mt8">
+                            <div class="row">
                                 <label for="location_id" class="col-lg-3 o_light_label">Location ID</label>
-                                <field name="location_id" class="col-lg-9"/>
+                                <field name="location_id" class="col-lg-9" placeholder="Enter your Deliverect Client Secret"/>
                             </div>
-                            <div class="row mt8">
+                            <div class="row">
                                 <label for="account_id" class="col-lg-3 o_light_label">Account ID</label>
-                                <field name="account_id" class="col-lg-9"/>
+                                <field name="account_id" class="col-lg-9" placeholder="Enter your Deliverect Client Secret"/>
                             </div>
                         </div>
+                    </setting>
+                    <setting string="Automatic Approval"
+                             help="Automatically approve online orders.">
+                        <field name="automatic_approval" class="w-100"/>
                     </setting>
                 </block>
             </xpath>

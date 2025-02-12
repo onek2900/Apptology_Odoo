@@ -8,6 +8,7 @@ class ResConfigSettings(models.TransientModel):
     client_secret = fields.Char(string="Client Secret")
     account_id = fields.Char(string="Account ID")
     location_id = fields.Char(string="Location ID")
+    automatic_approval = fields.Boolean(string="Automatic Approval")
 
     def set_values(self):
         super(ResConfigSettings, self).set_values()
@@ -15,6 +16,7 @@ class ResConfigSettings(models.TransientModel):
         self.env['ir.config_parameter'].sudo().set_param('client_secret', self.client_secret or '')
         self.env['ir.config_parameter'].sudo().set_param('account_id', self.account_id or '')
         self.env['ir.config_parameter'].sudo().set_param('location_id', self.location_id or '')
+        self.env['ir.config_parameter'].sudo().set_param('automatic_approval', self.automatic_approval or '')
 
     @api.model
     def get_values(self):
@@ -24,6 +26,7 @@ class ResConfigSettings(models.TransientModel):
             client_id=config_parameter.get_param('client_id', ''),
             client_secret=config_parameter.get_param('client_secret', ''),
             account_id=config_parameter.get_param('account_id', ''),
-            location_id=config_parameter.get_param('location_id', '')
+            location_id=config_parameter.get_param('location_id', ''),
+            automatic_approval=config_parameter.get_param('automatic_approval', ''),
         )
         return res

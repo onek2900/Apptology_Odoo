@@ -51,10 +51,21 @@ class OrderScreen(http.Controller):
                                                         limit=1)
 
         pos_orders = request.env["pos.order"].sudo().search(
-            ["&", ("lines.is_cooking", "=", True),
+            ["&", ("lines.is_cooking", "=", True),("is_deliverect_order", "=", False),
              ("lines.product_id.pos_categ_ids", "in",
               kitchen_screen.pos_categ_ids.ids), ('session_id', '=', pos_session_id.id)], order="date_order")
-        values = {"orders": pos_orders.read(), "order_lines": pos_orders.lines.read()}
+        print(pos_orders)
+        approved_deliverect_orders = request.env["pos.order"].sudo().search(["&",
+            ("lines.is_cooking", "=", True),
+            ("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids),
+            ("session_id", "=", pos_session_id.id),
+            ("order_approved", "=", True),
+            ("is_deliverect_order", "=", True)
+        ], order="date_order")
+        print(approved_deliverect_orders.mapped('pos_reference'))
+        combined_orders = pos_orders | approved_deliverect_orders
+        print(combined_orders.mapped('pos_reference'))
+        values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
         return values
 
     @http.route("/apptology_kitchen_screen", auth="public", type="http", website=True)

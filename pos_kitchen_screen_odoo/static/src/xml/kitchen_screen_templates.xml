@@ -18,18 +18,28 @@
                             <t t-foreach="orderInProgress" t-as="order" t-key="order.id">
                                 <div class="col-12 col-md-4 fade-in">
                                     <div class="order-card card">
-                                        <div class="card-header bg-secondary text-white">
+                                        <t t-log="'cond :',order.is_deliverect_order"/>
+                                        <div
+                                                t-attf-class="card-header #{order.is_deliverect_order?'bg-secondary-online':'bg-secondary'} text-white">
                                             <div class="order-info">
                                                 <ul class="list-unstyled m-0">
                                                     <li class="fw-bold" style="font-size:2rem;">
-                                                        <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
+                                                        <t t-if="order.is_deliverect_order">
+                                                            <t
+                                                                    t-esc="'O' + ' #' + order.tracking_number"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
+                                                        </t>
                                                     </li>
                                                     <li class="fw-bold">
                                                         <t t-esc="order.pos_reference"/>
                                                     </li>
                                                     <li>
                                                         <i class="fa fa-building"/>
-                                                        <span>Floor <t t-esc="order.floor"/></span>
+                                                        <span>Floor
+                                                            <t t-esc="order.floor"/>
+                                                        </span>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -57,11 +67,13 @@
 
                                         <div class="card-footer">
                                             <div class="d-flex gap-3">
-                                                <button class="btn btn-primary flex-grow-1" t-on-click="(ev) => this.done_order(order.id)">
+                                                <button class="btn btn-primary flex-grow-1"
+                                                        t-on-click="(ev) => this.done_order(order.id)">
                                                     <i class="fa fa-check"/>
                                                     Accept
                                                 </button>
-                                                <button class="btn btn-outline-danger" t-on-click="(ev) => this.cancel_order(order.id)">
+                                                <button class="btn btn-outline-danger"
+                                                        t-on-click="(ev) => this.cancel_order(order.id)">
                                                     <i class="fa fa-times"/>
                                                     Cancel
                                                 </button>
@@ -95,7 +107,7 @@
                                         <div class="card-header bg-success text-white">
                                             <div class="order-info">
                                                 <ul class="list-unstyled m-0">
-                                                   <li class="fw-bold" style="font-size:2rem;">
+                                                    <li class="fw-bold" style="font-size:2rem;">
                                                         <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
                                                     </li>
                                                     <li class="fw-bold">
@@ -104,7 +116,9 @@
 
                                                     <li>
                                                         <i class="fa fa-building"/>
-                                                        <span>Floor <t t-esc="order.floor"/></span>
+                                                        <span>Floor
+                                                            <t t-esc="order.floor"/>
+                                                        </span>
                                                     </li>
                                                 </ul>
                                             </div>

@@ -3,6 +3,7 @@ $primary-color: #4a90e2;
 $success-color: #2ecc71;
 $danger-color: #e74c3c;
 $secondary-color: #34495e;
+$secondary-color-online: #5b80a4;
 $text-light: #ffffff;
 $card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 $transition-speed: 0.3s;
@@ -153,7 +154,9 @@ $transition-speed: 0.3s;
     &.bg-secondary {
       background: $secondary-color !important;
     }
-
+    &.bg-secondary-online {
+      background: $secondary-color-online !important;
+    }
     &.bg-success {
       background: $success-color !important;
     }

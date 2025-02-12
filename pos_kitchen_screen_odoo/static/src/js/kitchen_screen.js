@@ -62,7 +62,7 @@ const useOrderManagement = (rpc, shopId) => {
             const result = await rpc("/pos/kitchen/get_order_details", {
                 shop_id: shopId
             });
-
+            console.log('result :',result)
             return {
                 order_details: result.orders,
                 lines: result.order_lines,

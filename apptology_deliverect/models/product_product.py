@@ -45,6 +45,7 @@ class ProductProduct(models.Model):
         response = requests.post(url, json=payload, headers=headers)
         _logger.info(f"Product sync response: {response.status_code} - {response.text}")
 
+
     def create_product_data(self):
         """Prepare product data for syncing"""
         products_to_sync = self.env['product.product'].sudo().search(
@@ -56,15 +57,19 @@ class ProductProduct(models.Model):
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         product_data = products_to_sync.mapped(lambda product: {
             "name": product.name,
-            "plu": product.default_code or f'SKU-{product.id}',
-            "price": product.list_price,
-            "deliveryTax": product.delivery_tax*1000,
-            "takeawayTax": product.takeaway_tax*1000,
-            "eatInTax": product.eat_in_tax*1000,
+            "isCombo":product.detailed_type == 'combo',
+            "subProducts":product,
+            "plu": product.default_code,
+            "price": int(product.lst_price*100),
+            "deliveryTax": product.taxes_id.amount*1000,
+            "takeawayTax": product.taxes_id.amount*1000,
+            "eatInTax": product.taxes_id.amount*1000,
             "visible": product.all_channel_visible,
             "posCategoryIds": [str(cat.id) for cat in product.pos_categ_ids] if product.pos_categ_ids else [],
-            "imageUrl": f"https://eb6b-115-245-156-254.ngrok-free.app/web/image/product.product/17/image_128",
-            "productTags": [allergen.allergen_id for allergen in product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
+            "imageUrl": f"{base_url}/web/image/product.product/{product.id}/image_128",
+            "productTags": [allergen.allergen_id for allergen in product.allergens_and_tag_ids] if
+            product.allergens_and_tag_ids else [],
+
         })
         print(product_data)
         return {
