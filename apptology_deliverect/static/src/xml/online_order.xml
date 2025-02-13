@@ -10,35 +10,67 @@
                             <div class="col wide p-2">Receipt Number</div>
                             <div class="col p-2">Cashier</div>
                             <div class="col p-2">Customer</div>
+                            <div class="col end p-2">Order Status</div>
                             <div class="col end p-2">Total</div>
-                            <div class="col action-buttons p-2">Actions</div>
+                            <div class="col action-buttons p-2"></div>
                         </div>
-                        <t t-foreach="state.lines" t-as="line" t-key="line.id">
-                            <div class="order-row" t-att-data-id="line.id" t-on-click="() => this.onClickOrder(line)">
+                        <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
+                            <div class="order-row" t-att-data-id="order.id" t-on-click="() => this.onClickOrder(order)">
                                 <div class="col wide p-2">
-                                    <div><t t-esc="line.date_order"/></div>
+                                    <div><t t-esc="order.date_order"/></div>
                                 </div>
                                 <div class="col wide p-2">
-                                    <div><t t-esc="line.name"/></div>
+                                    <div><t t-esc="order.pos_reference"/></div>
                                 </div>
                                 <div class="col p-2">
-                                    <div>Administrator</div>
+                                    <div><t t-esc="order.user_id[1]"/> </div>
                                 </div>
                                 <div class="col p-2">
-                                    <div>Jake</div>
+                                    <div><t t-esc="order.partner_id[1]"/></div>
                                 </div>
                                 <div class="col end p-2">
-                                    <div><t t-esc="line.amount_total"/></div>
+                                    <t t-log="order.order_status,order.online_order_status"/>
+                                    <t t-log="order.order_status == 'draft' and order.online_order_status == 'open'"/>
+                                    <div class="status-pill" t-att-class="{
+                                        'status-draft': order.order_status == 'draft' and order.online_order_status == 'open',
+                                        'status-waiting': order.order_status == 'draft' and order.online_order_status == 'approved',
+                                        'status-ready': order.order_status == 'ready',
+                                        'status-cancel': order.order_status == 'cancel'
+                                    }">
+                                        <t t-if="order.order_status == 'draft' and order.online_order_status == 'open'">
+                                            Open
+                                        </t>
+                                        <t t-elif="order.order_status == 'draft' and order.online_order_status == 'approved'">
+                                            Cooking
+                                        </t>
+                                        <t t-elif="order.order_status=='ready'">
+                                            Ready
+                                        </t>
+                                        <t t-elif="order.order_status=='cancel'">
+                                            Cancel
+                                        </t>
+                                    </div>
+                                </div>
+                                <div class="col end p-2">
+                                    <div><t t-esc="order.amount_total"/></div>
                                 </div>
                                 <div class="col action-buttons p-2">
-                                    <button class="btn-action approve" t-att-data-id="line.id"
-                                            t-on-click.stop="() => this.onApproveOrder(line.id)">
-                                        <i class="fa fa-check" aria-hidden="true"/>
-                                    </button>
-                                    <button class="btn-action decline" t-att-data-id="line.id"
-                                            t-on-click.stop="() => this.onDeclineOrder(line.id)">
-                                        <i class="fa fa-times" aria-hidden="true"/>
-                                    </button>
+                                    <t t-if="order.online_order_status=='open'">
+                                        <button class="btn-action approve" t-att-data-id="order.id"
+                                                t-on-click.stop="() => this.onApproveOrder(order.id)">
+                                            <i class="fa fa-check" aria-hidden="true"/>
+                                        </button>
+                                        <button class="btn-action decline" t-att-data-id="order.id"
+                                                t-on-click.stop="() => this.onDeclineOrder(order.id)">
+                                            <i class="fa fa-times" aria-hidden="true"/>
+                                        </button>
+                                    </t>
+                                    <t t-elif="order.online_order_status=='approved'">
+                                        <div class="status-badge approved">Approved</div>
+                                    </t>
+                                    <t t-elif="order.online_order_status=='rejected'">
+                                        <div class="status-badge rejected">Rejected</div>
+                                    </t>
                                 </div>
                             </div>
                         </t>
@@ -46,33 +78,34 @@
                 </div>
                 <div class="leftpane d-flex flex-column h-100">
                     <div class="order-details d-flex flex-column h-100">
-                        <div class="product-list flex-grow-1">
-                            <t t-log="'state orderlines :',state.orderLines"/>
-                            <t t-foreach="state.orderLines" t-as="orderLine"
-                               t-key="orderLine.id">
-                                <t t-log="'orderLine :',orderLine"/>
-                                <div class="product-header d-flex justify-content-between align-items-start p-3">
-                                <div class="product-info">
-                                    <div class="product-name"><t
-                                            t-esc="orderLine.full_product_name"/></div>
-                                    <div class="product-quantity"><t t-esc="orderLine.qty"/>
-                                        Units
-                                        x ₹
-                                        <t t-esc="orderLine.price_unit"/>
-                                        /
-                                        Units</div>
-                                </div>
-                                    <div class="product-price">₹ <t
-                                            t-esc="orderLine.price_subtotal_incl"/></div>
+                        <t t-if="state.clickedOrder.lines">
+                            <div class="product-list flex-grow-1">
+                                <t t-foreach="state.clickedOrder.lines" t-as="order"
+                                   t-key="order.id">
+                                    <div class="product-header d-flex justify-content-between align-items-start p-3">
+                                    <div class="product-info">
+                                        <div class="product-name"><t
+                                                t-esc="order.full_product_name"/></div>
+                                        <div class="product-quantity"><t t-esc="order.qty"/>
+                                            Units
+                                            x ₹
+                                            <t t-esc="order.price_unit"/>
+                                            /
+                                            Units</div>
+                                    </div>
+                                        <div class="product-price">₹ <t
+                                                t-esc="order.price_subtotal_incl"/></div>
+                                    </div>
+                                </t>
                             </div>
-                            </t>
-                        </div>
+                        </t>
                         <div class="totals-section">
                             <div class="total-line d-flex justify-content-end p-3">
-                                <div class="total-text">Total: ₹ <t t-esc="state.orderDetails.amountTotal"/></div>
+                                <div class="total-text">Total: ₹
+                                    <t t-esc="state.clickedOrder.amount_total">0.00</t></div>
                             </div>
                             <div class="tax-line d-flex justify-content-end px-3 pb-2">
-                                <div class="tax-text">Taxes: ₹ <t t-esc="state.orderDetails.amountTax"/></div>
+                                <div class="tax-text">Taxes: ₹ <t t-esc="state.clickedOrder.amount_tax">0.00</t></div>
                             </div>
                         </div>
                     </div>

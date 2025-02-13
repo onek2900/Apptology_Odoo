@@ -2,11 +2,16 @@
 <templates id="template" xml:space="preserve">
     <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
         <xpath expr="//li[hasclass('ticket-button')]" position="after">
-            <li class="test-button" t-on-click="onClickOnlineOrder">
-                <a class="dropdown-item with-badge py-2">
-                    Online Orders
-                </a>
-            </li>
+            <t t-if="!this.pos.config.auto_approve">
+                <li class="test-button" t-on-click="onClickOnlineOrder">
+                    <a class="dropdown-item with-badge py-2">
+                        Online Orders
+                        <t t-log="'onlineOrderCount : ',state.onlineOrderCount"/>
+                        <span t-if="state.onlineOrderCount>0" class="badge text-bg-info rounded-pill py-1 ms-2"
+                              t-esc="state.onlineOrderCount"/>
+                    </a>
+                </li>
+            </t>
         </xpath>
     </t>
 </templates>

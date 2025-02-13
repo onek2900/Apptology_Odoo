@@ -8,7 +8,7 @@ class ResConfigSettings(models.TransientModel):
     client_secret = fields.Char(string="Client Secret")
     account_id = fields.Char(string="Account ID")
     location_id = fields.Char(string="Location ID")
-    automatic_approval = fields.Boolean(string="Automatic Approval")
+    automatic_approval = fields.Boolean(string="Automatic Approval",related='pos_config_id.auto_approve', readonly=False)
 
     def set_values(self):
         super(ResConfigSettings, self).set_values()

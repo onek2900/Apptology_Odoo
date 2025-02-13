@@ -58,6 +58,7 @@ class DeliverectWebhooks(http.Controller):
         pos_reference = f"Order-{sequence}-{branch}-{order_num}"
         pos_config = request.env['pos.config'].sudo().search([], limit=1)
         pos_session = pos_config.current_session_id
+        is_auto_approve=request.env['ir.config_parameter'].sudo().get_param('automatic_approval')
         order_lines = []
         for item in data['items']:
             product = request.env['product.product'].sudo().search([('default_code', '=', item['plu'])], limit=1)
@@ -66,10 +67,10 @@ class DeliverectWebhooks(http.Controller):
                     'full_product_name': product.name,
                     'is_cooking':True,
                     'product_id': product.id,
-                    'price_unit': item['price'],
+                    'price_unit': item['price']/100,
                     'qty': item['quantity'],
-                    'price_subtotal': item['price'] * item['quantity'],
-                    'price_subtotal_incl': item['price'] * item['quantity'],
+                    'price_subtotal': item['price'] * item['quantity']/100,
+                    'price_subtotal_incl': item['price'] * item['quantity']/100,
                     'discount': 0,
                 }))
         return {
@@ -83,14 +84,14 @@ class DeliverectWebhooks(http.Controller):
             'amount_total': data['payment']['amount']/100,
             'amount_tax': data['taxTotal']/100,
             'amount_return': 0.0,
+            'online_order_status':'approved' if is_auto_approve else 'open',
+            'is_online_order':True,
             'pos_reference': pos_reference,
-            'is_deliverect_order':True,
             'name': data['channelOrderDisplayId'],
             'note': data['note'],
             'last_order_preparation_change': '{}',
             'to_invoice': True,
             'order_status':'draft',
-            'order_ref': pos_reference,
             'is_cooking':True,
             'floor':'Online'
         }
@@ -129,7 +130,6 @@ class DeliverectWebhooks(http.Controller):
         try:
             print('pos order webhook')
             data = json.loads(request.httprequest.data)
-            print('data :',data)
             pos_order_data = self.create_order_data(self, data)
             print('pos order data :',pos_order_data)
             order = request.env['pos.order'].sudo().create(pos_order_data)

@@ -18,13 +18,12 @@
                             <t t-foreach="orderInProgress" t-as="order" t-key="order.id">
                                 <div class="col-12 col-md-4 fade-in">
                                     <div class="order-card card">
-                                        <t t-log="'cond :',order.is_deliverect_order"/>
                                         <div
-                                                t-attf-class="card-header #{order.is_deliverect_order?'bg-secondary-online':'bg-secondary'} text-white">
+                                                t-attf-class="card-header #{order.is_online_order?'bg-secondary-online':'bg-secondary'} text-white">
                                             <div class="order-info">
                                                 <ul class="list-unstyled m-0">
                                                     <li class="fw-bold" style="font-size:2rem;">
-                                                        <t t-if="order.is_deliverect_order">
+                                                        <t t-if="order.is_online_order">
                                                             <t
                                                                     t-esc="'O' + ' #' + order.tracking_number"/>
                                                         </t>
@@ -108,7 +107,13 @@
                                             <div class="order-info">
                                                 <ul class="list-unstyled m-0">
                                                     <li class="fw-bold" style="font-size:2rem;">
-                                                        <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
+                                                        <t t-if="order.is_online_order">
+                                                            <t
+                                                                    t-esc="'O' + ' #' + order.tracking_number"/>
+                                                        </t>
+                                                        <t t-else="">
+                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
+                                                        </t>
                                                     </li>
                                                     <li class="fw-bold">
                                                         <t t-esc="order.pos_reference"/>

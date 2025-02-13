@@ -13,7 +13,7 @@ class ProductProduct(models.Model):
     _inherit = "product.product"
 
     product_type = fields.Selection(
-        selection=[('1', 'Product'), ('2', 'Modifier'), ('3', 'Modifier Group'), ('4', 'Bundle')])
+        selection=[('1', 'Product'), ('2', 'Modifier'), ('3', 'Modifier Group'), ('4', 'Bundle')],default='1')
     all_channel_visible = fields.Boolean(string="All Channels Visible",default=True)
     hide_channel_ids = fields.Many2many('deliverect.channel', string="Hide Channels")
     delivery_tax = fields.Float(string="Delivery Tax")
@@ -58,7 +58,6 @@ class ProductProduct(models.Model):
         product_data = products_to_sync.mapped(lambda product: {
             "name": product.name,
             "isCombo":product.detailed_type == 'combo',
-            "subProducts":product,
             "plu": product.default_code,
             "price": int(product.lst_price*100),
             "deliveryTax": product.taxes_id.amount*1000,
