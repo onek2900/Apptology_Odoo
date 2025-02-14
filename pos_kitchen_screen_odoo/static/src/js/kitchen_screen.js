@@ -62,7 +62,6 @@ const useOrderManagement = (rpc, shopId) => {
             const result = await rpc("/pos/kitchen/get_order_details", {
                 shop_id: shopId
             });
-            console.log('result :',result)
             return {
                 order_details: result.orders,
                 lines: result.order_lines,
@@ -133,7 +132,9 @@ export class KitchenScreenDashboard extends Component {
             ready_count: 0,
             lines: [],
             loading: false,
-            error: null
+            error: null,
+            showCancelConfirm: false,
+            orderToCancel: null,
         });
 
         this.orderManagement = useOrderManagement(this.rpc, shopId);
@@ -275,7 +276,17 @@ export class KitchenScreenDashboard extends Component {
      * Cancel order
      * @param {Integer} orderId - Integer object
      */
+    async showCancelConfirm(orderId) {
+        this.state.showCancelConfirm = true;
+        this.state.orderToCancel = orderId;
+    };
+    async closeCancelConfirm() {
+        this.state.showCancelConfirm = false;
+        this.state.orderToCancel = null;
+    }
     async cancel_order(orderId) {
+        this.state.showCancelConfirm = false;
+        this.state.orderToCancel = null;
         await this.updateOrderStatus(
             orderId,
             ORDER_STATUSES.CANCEL,

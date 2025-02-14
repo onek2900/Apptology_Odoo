@@ -42,7 +42,6 @@ const useOrderManagement = (rpc, screenId) => {
             const result = await rpc("/pos.order/get_order_details", {
                 screen_id: screenId
             });
-            console.log('order fetched :',result)
             return {
                 order_details: result.orders,
             };

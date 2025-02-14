@@ -50,12 +50,12 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def create_order_data(self, data):
-        number = data['channelOrderId'].replace('T', '')
         # Format: Order-xxxxx-xxx-xxxx
-        sequence = "00009"
-        branch = number[-7:-4].zfill(3)
-        order_num = number[-4:].zfill(4)
-        pos_reference = f"Order-{sequence}-{branch}-{order_num}"
+        channel_order_id=data['channelOrderId']
+        numeric_part = ''.join(filter(str.isdigit, channel_order_id))
+        last_7_digits = numeric_part[-7:].zfill(7)
+        channel_id=data['channel']
+        pos_reference = f"Order-{int(channel_id):05d}-{last_7_digits[:3]}-{last_7_digits[3:]}"
         pos_config = request.env['pos.config'].sudo().search([], limit=1)
         pos_session = pos_config.current_session_id
         is_auto_approve=request.env['ir.config_parameter'].sudo().get_param('automatic_approval')
@@ -74,6 +74,7 @@ class DeliverectWebhooks(http.Controller):
                     'discount': 0,
                 }))
         return {
+            'online_order_id':data['_id'],
             'user_id': 2,
             'company_id': request.env.company.id,
             'session_id': pos_session.id,
@@ -87,7 +88,7 @@ class DeliverectWebhooks(http.Controller):
             'online_order_status':'approved' if is_auto_approve else 'open',
             'is_online_order':True,
             'pos_reference': pos_reference,
-            'name': data['channelOrderDisplayId'],
+            'name': f"Online/{data['channelOrderDisplayId']}",
             'note': data['note'],
             'last_order_preparation_change': '{}',
             'to_invoice': True,
@@ -127,18 +128,27 @@ class DeliverectWebhooks(http.Controller):
 
     @http.route('/deliverect/pos/orders', type='http', methods=['POST'], auth='public', csrf=False)
     def receive_pos_order(self):
+        print('***ORDER UPDATE***')
         try:
-            print('pos order webhook')
             data = json.loads(request.httprequest.data)
-            pos_order_data = self.create_order_data(self, data)
-            print('pos order data :',pos_order_data)
-            order = request.env['pos.order'].sudo().create(pos_order_data)
-            return Response(
-                json.dumps({'status': 'success', 'message': 'Order created',
-                            'order_id': order.id}),
-                content_type='application/json',
-                status=200
-            )
+            if data['status']==100 and data['_id']:
+                print('***ORDER CANCELLED***',data['_id'])
+                order = request.env['pos.order'].sudo().search([('online_order_id', '=', data['_id'])],limit=1)
+                print('order :',order)
+                order.write({
+                    'online_order_status': 'cancelled',
+                    'state':'cancel'
+                })
+            else:
+                print('***ORDER CREATED***')
+                pos_order_data = self.create_order_data(self, data)
+                order = request.env['pos.order'].sudo().create(pos_order_data)
+                return Response(
+                    json.dumps({'status': 'success', 'message': 'Order created',
+                                'order_id': order.id}),
+                    content_type='application/json',
+                    status=200
+                )
         except Exception as e:
             _logger.error(f"Error processing order webhook: {str(e)}")
             return Response(

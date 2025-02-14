@@ -70,7 +70,6 @@ class ProductProduct(models.Model):
             product.allergens_and_tag_ids else [],
 
         })
-        print(product_data)
         return {
             'categories': pos_categories,
             'products': product_data

@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 from email.policy import default
+import requests
+import logging
 
 from odoo import api, fields, models
+_logger = logging.getLogger(__name__)
 
 
 class PosOrder(models.Model):
@@ -15,6 +18,7 @@ class PosOrder(models.Model):
         ('3', 'Eat In'),
         ('4', 'Curbside')
     ], string='Order Type', default='1')
+    online_order_id = fields.Char(string='Online Order ID')
     online_order_status = fields.Selection([
         ('open', 'Open'),
         ('approved', 'Approved'),
@@ -31,6 +35,7 @@ class PosOrder(models.Model):
     is_online_order = fields.Boolean(string='Is Online Order', default=False)
     declined_time = fields.Datetime(string='Cancelled Date Time')
 
+
     @api.depends('online_order_status')
     def _compute_order_priority(self):
         for order in self:
@@ -41,20 +46,42 @@ class PosOrder(models.Model):
             elif order.online_order_status == 'rejected':
                 order.order_priority = 3
             else:
-                # for pos orders
-                order.order_priority = 0
+                order.order_priority = 4
+
+    def update_order_status_in_deliverect(self,status):
+        url = f"https://api.staging.deliverect.com/orderStatus/{self.online_order_id}"
+        print('url :', url)
+        token = self.env['deliverect.api'].sudo().generate_auth_token()
+        print('token :', token)
+        payload = {
+            'orderId': self.online_order_id,
+            'receiptId': self.pos_reference,
+            'status': status,
+        }
+        print('payload :', payload)
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": f"Bearer {token}"
+        }
+        response = requests.post(url, json=payload, headers=headers)
+        print('response :', response)
+        _logger.info(f"Deliverect Order Status Update : {response.status_code} - {response.text}")
 
     def update_order_status(self, status):
         if status == 'approved':
             self.write({'online_order_status': 'approved'})
+            self.update_order_status_in_deliverect(20)
+            self.update_order_status_in_deliverect(50)
         else:
             self.write({'online_order_status': 'rejected',
                         'declined_time': fields.Datetime.now(),
                         'order_status':'cancel'})
+            self.update_order_status_in_deliverect(110)
+
 
     @api.model
     def get_new_orders(self):
-        print('New orders :',self.search_count([('online_order_status', '=', 'open'),('is_online_order', '=', True)]))
         return self.search_count([('online_order_status', '=', 'open'),('is_online_order', '=', True)])
 
 
@@ -65,7 +92,7 @@ class PosOrder(models.Model):
         orders = self.search_read(
             ['|',
                 ('declined_time', '=', False),
-                ('declined_time', '>', expiration_time),
+                ('declined_time', '>', expiration_time),('is_online_order', '=', True)
             ],
             ['id', 'online_order_status', 'pos_reference','order_status', 'amount_total', 'amount_tax', 'date_order', 'partner_id',
              'user_id', 'lines'],order="order_priority, date_order DESC"

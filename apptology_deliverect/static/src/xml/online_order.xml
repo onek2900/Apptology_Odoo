@@ -4,6 +4,21 @@
         <div class="online-order-screen screen h-100 bg-100" t-att-class="{ 'd-none': !props.isShown }">
             <div class="screen-full-width d-flex w-100 h-100">
                 <div class="rightpane pane-border d-flex flex-column flex-grow-1 w-100 h-100 h-lg-100 bg-300 overflow-y-auto">
+<!--                    <div class="controls d-flex align-items-center justify-content-between mt-1 mt-lg-0 p-2 bg-400">-->
+<!--                        <t>-->
+<!--                            <div class="buttons d-flex gap-2">-->
+<!--                                <button class="discard btn btn-lg btn-light"-->
+<!--                                        t-on-click="() => this.closeOnlineOrderScreen()">-->
+<!--                                    <span class="search-icon">-->
+<!--                                        <i class="fa fa-angle-double-left"/>-->
+<!--                                    </span>-->
+<!--                                    <t>-->
+<!--                                        Back-->
+<!--                                    </t>-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                        </t>-->
+<!--                    </div>-->
                     <div class="orders overflow-y-auto flex-grow-1">
                         <div class="header-row d-flex text-bg-700 fw-bolder">
                             <div class="col wide p-2">Date</div>
@@ -29,8 +44,6 @@
                                     <div><t t-esc="order.partner_id[1]"/></div>
                                 </div>
                                 <div class="col end p-2">
-                                    <t t-log="order.order_status,order.online_order_status"/>
-                                    <t t-log="order.order_status == 'draft' and order.online_order_status == 'open'"/>
                                     <div class="status-pill" t-att-class="{
                                         'status-draft': order.order_status == 'draft' and order.online_order_status == 'open',
                                         'status-waiting': order.order_status == 'draft' and order.online_order_status == 'approved',

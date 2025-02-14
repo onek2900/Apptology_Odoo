@@ -5,12 +5,11 @@ import { patch } from "@web/core/utils/patch";
 
 patch(PosStore.prototype, {
     async get_online_orders() {
-        console.log('inside get online orders method')
         try {
             var new_orders = await this.orm.call("pos.order", "get_new_orders", []);
             return new_orders
         } catch(error){
-            console.log("Error fetching new online orders:",error)
+            console.error("Error fetching new online orders:",error)
         }
     },
 });
