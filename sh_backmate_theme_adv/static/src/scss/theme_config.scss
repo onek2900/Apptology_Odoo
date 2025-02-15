@@ -62,7 +62,7 @@
 	background: url('/sh_backmate_theme_adv/static/src/img/sidebar_img/side3.png');background-size: contain;box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08), 0 6px 6px rgba(0, 0, 0, 0.11) !important;border-radius: 4px;overflow: hidden;width: 46px;height: 46px;
 }
 .sh_color_box_1 {
-	background: #111c43;box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08), 0 6px 6px rgba(0, 0, 0, 0.11);border-radius: 4px;overflow: hidden;width: 46px;height: 46px;
+	background: #2b2b2b;box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08), 0 6px 6px rgba(0, 0, 0, 0.11);border-radius: 4px;overflow: hidden;width: 46px;height: 46px;
 }
 .sh_pre_color_box_1 {
 	background: url('/sh_backmate_theme_adv/static/src/img/predefined_icon_img/theme_template_1.svg');background-size: cover;box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08), 0 6px 6px rgba(0, 0, 0, 0.11);border-radius: 4px;background-repeat: no-repeat;overflow: hidden;width: 46px;height: 46px;
@@ -115,7 +115,7 @@
 	}
 }
 .theme_setting_img {
-	object-fit: contain;height: 80%;height: 15px;width: 15px;color: #111c43;
+	object-fit: contain;height: 80%;height: 15px;width: 15px;color: #C2DA63;
 }
 .compress_img {
 	display: none;
@@ -622,7 +622,7 @@
 #pre_theme_color_id {
 	.pre_theme_color_box {
 		.fa {
-			color: #111c43;right: auto;left: 50%;top: 50%;transform: translate(-50%, -50%);font-size: 18px;
+			color: #C2DA63;right: auto;left: 50%;top: 50%;transform: translate(-50%, -50%);font-size: 18px;
 			&:before {
 				content: "\f00c";
 			}
@@ -635,9 +635,9 @@
 			+ {
 				span {
 					&:before {
-						color: #111c43;content: "\f00c";font-size: 18px;
+						color: #C2DA63;content: "\f00c";font-size: 18px;
 					}
-					position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);right: auto;color: #111c43;
+					position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);right: auto;color: #C2DA63;
 				}
 			}
 		}
