@@ -10,7 +10,7 @@ dict_pre_theme_color_style = {
     'pre_color_1': {
         'theme_color': 'color_1',
         'theme_style': 'style_1',
-        'primary_color': '#111c43',
+        'primary_color': '#c2da63',
         'secondary_color': '#FFFFFF',
         'kanban_box_style': 'style_2',
         'header_background_color': '#ebedf6',
@@ -19,7 +19,7 @@ dict_pre_theme_color_style = {
         'sidebar_is_show_nav_bar': True,
         'sidebar_collapse_style': 'expanded',
         'sidebar_background_style': 'color',
-        'sidebar_background_color': '#111c43',
+        'sidebar_background_color': '#2b2b2b',
         'sidebar_font_color': '#e2e8f0',
         'separator_color': '#111c43',
         'separator_style': 'style_7',
