@@ -146,6 +146,8 @@ class PosOrder(models.Model):
         for line in self.lines:
             if line.order_status != "ready":
                 line.order_status = "cancel"
+        print('current order id :', self)
+        self.update_order_status_in_deliverect(110)
 
     def order_progress_change(self):
         """Calling function from js to change the order status"""
@@ -161,6 +163,9 @@ class PosOrder(models.Model):
             self.order_status = "ready"
         else:
             self.order_status = "ready"
+        print('current order id :',self)
+        self.update_order_status_in_deliverect(70)
+        self.update_order_status_in_deliverect(90)
 
 
     def check_order(self, order_name):

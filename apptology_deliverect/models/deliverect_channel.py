@@ -14,7 +14,6 @@ class DeliverectChannel(models.Model):
 
     def update_channel(self):
         """Fetch and update Deliverect channels"""
-        print('update_channel')
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         if not token:
             _logger.error("No authentication token received. Aborting channel update.")
@@ -30,7 +29,6 @@ class DeliverectChannel(models.Model):
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             channels = response.json()
-            print(channels)
             for channel in channels:
                 vals = {"name": channel.get("name")}
                 self.env["deliverect.channel"].update_or_create_channel(channel.get("channelId"), vals)
@@ -40,7 +38,6 @@ class DeliverectChannel(models.Model):
     @api.model
     def update_or_create_channel(self, channel_id, vals):
         """Create or update a channel record"""
-        print('update_or_create_channel')
         channel = self.search([('channel_id', '=', channel_id)], limit=1)
         if channel:
             channel.write(vals)

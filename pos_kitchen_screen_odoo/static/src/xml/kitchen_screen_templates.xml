@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <templates>
     <t t-name="KitchenCustomDashBoard">
+       <div class="confirmation-popup" t-att-class="{'show': state.showCancelConfirm}">
+            <div class="popup-content">
+                <h4>Confirm Cancellation</h4>
+                <p>Are you sure you want to cancel this order?</p>
+                <div class="popup-actions">
+                    <button class="btn btn-secondary" t-on-click="() => this.closeCancelConfirm()">
+                        No, Keep Order
+                    </button>
+                    <button class="btn btn-danger" t-on-click="() => this.cancel_order(state.orderToCancel)">
+                        Yes, Cancel Order
+                    </button>
+                </div>
+            </div>
+        </div>
         <div class="kitchen-dashboard">
             <div class="row g-4">
                 <!-- In Progress Section -->
@@ -72,7 +86,7 @@
                                                     Accept
                                                 </button>
                                                 <button class="btn btn-outline-danger"
-                                                        t-on-click="(ev) => this.cancel_order(order.id)">
+                                                        t-on-click="(ev) => this.showCancelConfirm(order.id)">
                                                     <i class="fa fa-times"/>
                                                     Cancel
                                                 </button>
