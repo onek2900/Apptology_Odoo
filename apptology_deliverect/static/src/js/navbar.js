@@ -17,7 +17,6 @@ patch(Navbar.prototype, {
         },
     initiateServices(){
         this.onlineOrderCount();
-        this.onClickOnlineOrder();
         this.startPollingOrderCount();
     },
     async onClickOnlineOrder() {

@@ -76,7 +76,7 @@ export class OnlineOrderScreen extends Component {
         this.env.services.pos.showScreen("ProductScreen");
     }
     onClickOrder(order){
-        this.state.clickedOrder=order
+        this.state.clickedOrder = order
     }
 
 }

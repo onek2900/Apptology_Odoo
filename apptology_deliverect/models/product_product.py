@@ -45,11 +45,24 @@ class ProductProduct(models.Model):
         response = requests.post(url, json=payload, headers=headers)
         _logger.info(f"Product sync response: {response.status_code} - {response.text}")
 
+    def image_upload(self, product_tmpl_id):
+        attachment_id = self.env['ir.attachment'].sudo().search(
+            domain=[('res_model', '=', 'product.template'),
+                    ('res_id', '=', product_tmpl_id),
+                    ('res_field', '=', 'image_1920')]
+        )
+        product_image_url = False
+        if attachment_id:
+            attachment_id.write({'public': True})
+            base_url = self.env['ir.config_parameter'].sudo().get_param(
+                'web.base.url')
+            product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
+        return product_image_url
 
     def create_product_data(self):
         """Prepare product data for syncing"""
         products_to_sync = self.env['product.product'].sudo().search(
-            [('active', '=', True), ('available_in_pos', '=', True)], limit=5)
+            [('active', '=', True), ('available_in_pos', '=', True)])
         pos_categories = self.env['pos.category'].sudo().search([]).mapped(lambda p: {
             "name": p.name,
             "posCategoryId": p.id
@@ -58,18 +71,19 @@ class ProductProduct(models.Model):
         product_data = products_to_sync.mapped(lambda product: {
             "name": product.name,
             "isCombo":product.detailed_type == 'combo',
-            "plu": product.default_code,
+            "plu": f"P-{product.id}",
             "price": int(product.lst_price*100),
             "deliveryTax": product.taxes_id.amount*1000,
             "takeawayTax": product.taxes_id.amount*1000,
             "eatInTax": product.taxes_id.amount*1000,
             "visible": product.all_channel_visible,
             "posCategoryIds": [str(cat.id) for cat in product.pos_categ_ids] if product.pos_categ_ids else [],
-            "imageUrl": f"{base_url}/web/image/product.product/{product.id}/image_128",
+            "imageUrl": self.image_upload(product.product_tmpl_id.id),
             "productTags": [allergen.allergen_id for allergen in product.allergens_and_tag_ids] if
             product.allergens_and_tag_ids else [],
 
         })
+        print('product data :',product_data)
         return {
             'categories': pos_categories,
             'products': product_data

@@ -23,9 +23,78 @@ class DeliverectWebhooks(http.Controller):
         return partner.id
 
     @staticmethod
-    def create_product_data():
-        products = request.env['product.product'].sudo().search([('active', '=', True),
+    def image_upload(self, product_tmpl_id):
+        attachment_id = request.env['ir.attachment'].sudo().search(
+            domain=[('res_model', '=', 'product.template'),
+                    ('res_id', '=', product_tmpl_id),
+                    ('res_field', '=', 'image_1920')]
+        )
+        print('attachment id :', attachment_id)
+        product_image_url = False
+        if attachment_id:
+            attachment_id.write({'public': True})
+            base_url = request.env['ir.config_parameter'].sudo().get_param(
+                'web.base.url')
+            product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
+        return product_image_url
+
+    @staticmethod
+    def convert_combo(combo_product):
+        deliverect_products = []
+
+        # Convert main combo product (Type 1)
+        main_product = {
+            "productType": 1,
+            "plu": f"COMBO-{combo_product.id}",
+            "price": int(combo_product.list_price * 100),
+            "name": combo_product.name,
+            "subProducts": []
+        }
+
+        # Process combo attributes (Type 3 - modifier groups)
+        for combo in combo_product.combo_ids:
+            modifier_group_plu = f"COPT-{combo.id}"
+            main_product["subProducts"].append(modifier_group_plu)
+
+            modifier_group = {
+                "productType": 3,
+                "plu": modifier_group_plu,
+                "name": combo.name,
+                "subProducts": [],
+            }
+
+            # Process combo lines (Type 2 - modifiers)
+            for line in combo.combo_line_ids:
+                product = line.product_id
+                modifier_plu = f"CPRO-{product.id}"
+                modifier_group["subProducts"].append(modifier_plu)
+
+                modifier = {
+                    "productType": 2,
+                    "plu": modifier_plu,
+                    "price": 123,
+                    "name": product.name,
+                }
+                deliverect_products.append(modifier)
+
+            deliverect_products.append(modifier_group)
+
+        deliverect_products.insert(0, main_product)
+        return deliverect_products
+
+
+
+    @staticmethod
+    def create_product_data(self):
+        # for rec in request.env['product.template'].sudo().browse(67).combo_ids:
+        #     print(rec.combo_line_ids.read())
+
+        products = request.env['product.template'].sudo().search([('active', '=', True),
+                                                                  ('detailed_type','!=','combo'),
+                                                                  ('is_product_variant','=',False),
+                                                                  ('attribute_line_ids','=',False),
                                                                  ('available_in_pos', '=', True)])
+        print('normal :',products)
         pos_categories = request.env['pos.category'].sudo().search([]).mapped(
             lambda category: {
                 "name": category.name,
@@ -33,13 +102,17 @@ class DeliverectWebhooks(http.Controller):
             })
         product_data = products.mapped(lambda product: {
             "name": product.name,
-            "plu": product.default_code or f'SKU-{product.id}',
-            "price": product.list_price,
-            "deliveryTax": 11,
-            "visible": product.all_channel_visible,
-            "posCategoryIds": [str(cat.id) for cat in product.pos_categ_ids] if product.pos_categ_ids else [],
-            "imageUrl": f"/web/image/product.product/{product.id}/image_1024" if product.image_1920 else ""
+            "plu": f"P-{product.id}",
+            "price": int(product.list_price*100),
+            "imageUrl": self.image_upload(self,product.id),
         })
+        combo_products=request.env['product.template'].sudo().search([('detailed_type','=','combo')])
+        print('combo :',combo_products)
+        for combo in combo_products:
+            data = self.convert_combo(combo)
+            product_data+=data
+        print('final product data :')
+
         return {
             "priceLevels": [],
             'categories': pos_categories,
@@ -50,18 +123,24 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def create_order_data(self, data):
+        print('create order data function')
         # Format: Order-xxxxx-xxx-xxxx
         channel_order_id=data['channelOrderId']
         numeric_part = ''.join(filter(str.isdigit, channel_order_id))
         last_7_digits = numeric_part[-7:].zfill(7)
         channel_id=data['channel']
         pos_reference = f"Order-{int(channel_id):05d}-{last_7_digits[:3]}-{last_7_digits[3:]}"
-        pos_config = request.env['pos.config'].sudo().search([], limit=1)
-        pos_session = pos_config.current_session_id
+        config_id = request.env['pos.config'].sudo().search([('name', '=', 'Restaurant')], limit=1).id
+        pos_session = request.env['pos.session'].sudo().search([
+            ('config_id', '=', config_id),
+            ('state', '=', 'opened')
+        ], limit=1)
         is_auto_approve=request.env['ir.config_parameter'].sudo().get_param('automatic_approval')
         order_lines = []
         for item in data['items']:
-            product = request.env['product.product'].sudo().search([('default_code', '=', item['plu'])], limit=1)
+            product = request.env['product.product'].sudo().search([('id', '=', int(item['plu'].split('-')[1]))],
+            limit=1)
+            print('product found :',product)
             if product:
                 order_lines.append((0, 0, {
                     'full_product_name': product.name,
@@ -73,6 +152,7 @@ class DeliverectWebhooks(http.Controller):
                     'price_subtotal_incl': item['price'] * item['quantity']/100,
                     'discount': 0,
                 }))
+
         return {
             'online_order_id':data['_id'],
             'user_id': 2,
@@ -92,7 +172,6 @@ class DeliverectWebhooks(http.Controller):
             'note': data['note'],
             'last_order_preparation_change': '{}',
             'to_invoice': True,
-            'order_status':'draft',
             'is_cooking':True,
             'floor':'Online'
         }
@@ -115,8 +194,10 @@ class DeliverectWebhooks(http.Controller):
 
     @http.route('/deliverect/pos/products', type='http', methods=['GET'], auth="none", csrf=False)
     def sync_products(self):
+        print('inside product sync')
         try:
-            product_data = self.create_product_data()
+            product_data = self.create_product_data(self)
+            print('product data')
             return request.make_response(
                 json.dumps(product_data),
                 headers={'Content-Type': 'application/json'},
@@ -131,6 +212,7 @@ class DeliverectWebhooks(http.Controller):
         print('***ORDER UPDATE***')
         try:
             data = json.loads(request.httprequest.data)
+            print('data :',data)
             if data['status']==100 and data['_id']:
                 print('***ORDER CANCELLED***',data['_id'])
                 order = request.env['pos.order'].sudo().search([('online_order_id', '=', data['_id'])],limit=1)
@@ -142,6 +224,7 @@ class DeliverectWebhooks(http.Controller):
             else:
                 print('***ORDER CREATED***')
                 pos_order_data = self.create_order_data(self, data)
+                print('pos order data :',pos_order_data)
                 order = request.env['pos.order'].sudo().create(pos_order_data)
                 return Response(
                     json.dumps({'status': 'success', 'message': 'Order created',
