@@ -16,6 +16,7 @@ export class OnlineOrderScreen extends Component {
         this.state = useState({
             clickedOrder:{},
             openOrders:[],
+            currency_symbol:this.env.services.pos.currency.symbol
         });
         this.initiateServices();
         onWillUnmount(()=>clearInterval(this.pollingInterval))
