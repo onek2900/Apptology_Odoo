@@ -3,7 +3,7 @@
     <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
         <xpath expr="//li[hasclass('ticket-button')]" position="after">
             <t t-if="!this.pos.config.auto_approve">
-                <li class="test-button" t-on-click="onClickOnlineOrder">
+                <li t-on-click="onClickOnlineOrder">
                     <a class="dropdown-item with-badge py-2">
                         Online Orders
                         <span t-if="state.onlineOrderCount>0" class="badge text-bg-info rounded-pill py-1 ms-2"
@@ -11,6 +11,26 @@
                     </a>
                 </li>
             </t>
+            <li t-on-click="openKitchenScreen">
+                <a class="dropdown-item with-badge py-2">
+                    Open Kitchen Screen
+                </a>
+            </li>
+            <li t-on-click="openOrderScreen">
+                <a class="dropdown-item with-badge py-2">
+                    Open Order Screen
+                </a>
+            </li>
+        </xpath>
+        <xpath expr="//div[hasclass('status-buttons')]" position="inside">
+                <button class="oe_status btn btn-light rounded-0" t-on-click="autoApproveOrders">
+                    <t t-if="!this.pos.config.auto_approve">
+                        Auto Approve
+                    </t>
+                    <t t-else="">
+                        Manual Approve
+                    </t>
+                </button>
         </xpath>
     </t>
 </templates>

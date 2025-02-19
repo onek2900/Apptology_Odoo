@@ -6,7 +6,7 @@
     'category': 'Point Of Sale',
     'summary': '',
     'description': '',
-    'depends': ['pos_restaurant', 'web', 'bus'],
+    'depends': ['pos_restaurant', 'web', 'bus','pos_kitchen_screen_odoo'],
     'data': [
         'security/ir.model.access.csv',
         'views/res_config_settings_views.xml',
