@@ -1,7 +1,8 @@
-from odoo import http, _, fields
+from odoo import http, _, fields, Command
 from odoo.http import request, Response
 import json
 import logging
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -10,15 +11,18 @@ class DeliverectWebhooks(http.Controller):
     """Controller for handling Deliverect webhooks and API integration."""
 
     @staticmethod
-    def create_or_get_partner(customer_data):
-        partner = request.env['res.partner'].sudo().search([('email', '=', customer_data['email'])],
-                                                           limit=1)
+    def find_partner(channel_id):
+        channel = request.env['deliverect.channel'].sudo().search([('channel_id', '=', channel_id)],
+                                                                  limit=1)
+        print('channel :', channel.read())
+        partner = request.env['res.partner'].sudo().search([('channel_id', '=', channel_id)])
+        print('partner :', partner)
         if not partner:
             partner = request.env['res.partner'].sudo().create({
-                'name': customer_data['name'],
-                'email': customer_data['email'],
-                'company_name': customer_data['companyName'],
+                'name': channel['name'],
+                'channel_id': channel_id
             })
+            print('created partner :', partner)
         return partner.id
 
     @staticmethod
@@ -126,19 +130,26 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def create_product_data(self):
-        products = request.env['product.template'].sudo().search([('active', '=', True),
+        products = request.env['product.product'].sudo().search([('active', '=', True),
                                                                   ('detailed_type', '!=', 'combo'),
                                                                   ('attribute_line_ids', '=', False),
                                                                   ('available_in_pos', '=', True)])
         return products.mapped(lambda product: {
             "name": product.name,
-            "plu": f"PT-{product.id}",
-            "price": int(product.list_price * 100),
+            "plu": f"P-{product.id}",
+            "price": int(product.lst_price * 100),
             "productType": 1,
             "deliveryTax": product.taxes_id.amount * 1000,
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
-            "imageUrl": self.image_upload(self, product.id),
+            "imageUrl": self.image_upload(self, product.product_tmpl_id.id),
+        })
+
+    @staticmethod
+    def generate_order_notification():
+        channel = "new_pos_order"
+        request.env["bus.bus"]._sendone(channel, "notification", {
+            "message": "New Order Received"
         })
 
     @staticmethod
@@ -146,11 +157,10 @@ class DeliverectWebhooks(http.Controller):
         product_data = self.create_product_data(self)
         combo_products = request.env['product.template'].sudo().search([('detailed_type', '=', 'combo')])
         variant_templates = request.env['product.template'].sudo().search([('attribute_line_ids', '!=', False)])
-        for combo in combo_products:
-            product_data += self.create_combo_product_data(self, combo)
-        for template in variant_templates:
-            product_data += self.create_variant_product_data(self, template)
-
+        # for combo in combo_products:
+        #     product_data += self.create_combo_product_data(self, combo)
+        # for template in variant_templates:
+        #     product_data += self.create_variant_product_data(self, template)
         pos_categories = request.env['pos.category'].sudo().search([]).mapped(
             lambda category: {
                 "name": category.name,
@@ -174,26 +184,25 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def create_order_data(self, data):
-        channel_order_id = data['channelOrderId']
-        channel_id = data['channel']
-        pos_reference = self.generate_sequence_number(self, channel_order_id, channel_id)
-        pos_config = request.env['pos.config'].sudo().search([('name', '=', 'Restaurant')], limit=1)
-        config_id=pos_config.id
-        pos_session = request.env['pos.session'].sudo().search([
-            ('config_id', '=', config_id),
-            ('state', '=', 'opened')
-        ], limit=1)
+        current_session = request.env['pos.session'].sudo().search([
+            ('state', 'in', ['opened'])], limit=1)
+        print('current session :', current_session.config_id)
+        pos_reference = self.generate_sequence_number(self, data['channelOrderId'], data['channel'])
+        print('pos reference :', pos_reference)
+        pos_config = current_session.config_id
+        print('pos config :', pos_config)
+        ir_sequence_session = pos_config.env['ir.sequence'].with_context(
+            company_id=pos_config.company_id.id).next_by_code(f'pos.order_{pos_config.current_session_id.id}')
+        sequence_number = re.findall(r'\d+', ir_sequence_session)[0]
+        print('sequence number :',sequence_number)
         is_auto_approve = request.env['ir.config_parameter'].sudo().get_param('automatic_approval')
         order_lines = []
-        print('data :', data)
-
         for item in data['items']:
             product = request.env['product.product'].sudo().search([('id', '=', int(item['plu'].split('-')[1]))],
                                                                    limit=1)
             if product:
                 order_lines.append((0, 0, {
                     'full_product_name': product.name,
-                    'is_cooking': True,
                     'product_id': product.product_variant_id.id,
                     'price_unit': item['price'] / 100,
                     'qty': item['quantity'],
@@ -202,54 +211,47 @@ class DeliverectWebhooks(http.Controller):
                     'discount': 0,
                     'tax_ids': [(6, 0, product.taxes_id.ids)]
                 }))
-            if item.get("isCombo"):
-                for subitem in item['subItems']:
-                    product = request.env['product.product'].sudo().search(
-                        [('id', '=', int(subitem['plu'].split('-')[1]))],
-                        limit=1)
-                    order_lines.append((0, 0, {
-                        'full_product_name': product.name,
-                        'is_cooking': True,
-                        'product_id': product.product_variant_id.id,
-                        'price_unit': subitem['price'] / 100,
-                        'qty': subitem['quantity'],
-                        'price_subtotal': subitem['price'] * subitem['quantity'] / 100,
-                        'price_subtotal_incl': subitem['price'] * subitem['quantity'] / 100,
-                        'discount': 0,
-                    }))
-        print('ORDER LINES :',order_lines)
+            # if item.get("isCombo"):
+            #     for subitem in item['subItems']:
+            #         product = request.env['product.product'].sudo().search(
+            #             [('id', '=', int(subitem['plu'].split('-')[1]))],
+            #             limit=1)
+            #         order_lines.append((0, 0, {
+            #             'full_product_name': product.name,
+            #             'is_cooking': True,
+            #             'product_id': product.product_variant_id.id,
+            #             'price_unit': subitem['price'] / 100,
+            #             'qty': subitem['quantity'],
+            #             'price_subtotal': subitem['price'] * subitem['quantity'] / 100,
+            #             'price_subtotal_incl': subitem['price'] * subitem['quantity'] / 100,
+            #             'discount': 0,
+            #         }))
         order_data = {
-                           'online_order_id': data['_id'],
-                           'to_invoice': True,
-                           'amount_paid': data['payment']['amount'] / 100,
-                           'amount_return': 0.0,
-                           'amount_tax': data['taxTotal'] / 100,
-                           'amount_total': data['payment']['amount'] / 100,
-                           'date_order': fields.Datetime.to_string(fields.Datetime.now()),
-                           'fiscal_position_id': False,
-                           'pricelist_id': pos_config.pricelist_id.id,
-                           'lines': order_lines,
-                           'name': f"Online/{data['channelOrderDisplayId']}",
-                           'partner_id': self.create_or_get_partner(data['customer']),
-                           'session_id': pos_config.current_session_id.id,
-                           'sequence_number': 2,
-                           'user_id': request.env.uid,
-                           'pos_reference': pos_reference,
-                           'company_id': request.env.company.id,
-                           'order_type': str(data['orderType']),
-                           'online_order_status': 'approved' if is_auto_approve else 'open',
-                           'is_online_order': True,
-                           'note': data['note'],
-                           'to_invoice': True,
-                           'is_cooking': True,
-                           'floor': 'Online'}
+            'company_id': request.env.company.id,
+            'sequence_number':sequence_number,
+            'partner_id': self.find_partner(data['channel']),
+            'session_id': pos_config.current_session_id.id,
+            'pricelist_id': pos_config.pricelist_id.id,
+            'lines': order_lines,
+            'amount_total': data['payment']['amount'] / 100,
+            'amount_tax': data['taxTotal'] / 100,
+            'amount_paid': data['payment']['amount'] / 100,
+            'amount_return': 0.0,
+            'to_invoice': True,
+            'pos_reference': pos_reference,
+            'online_order_id': data['_id'],
+            'date_order': fields.Datetime.to_string(fields.Datetime.now()),
+            'user_id': request.env.uid,
+            'order_type': str(data['orderType']),
+            'online_order_status': 'approved' if is_auto_approve else 'open',
+            'is_online_order': True,
+            'note': data['note'],
+            'floor': 'Online'
+        }
         return order_data
-
-
 
     @http.route('/deliverect/pos/products', type='http', methods=['GET'], auth="none", csrf=False)
     def sync_products(self):
-        print('inside product sync')
         try:
             product_data = self.generate_data(self)
             return request.make_response(
@@ -269,30 +271,36 @@ class DeliverectWebhooks(http.Controller):
             if data['status'] == 100 and data['_id']:
                 order = request.env['pos.order'].sudo().search([('online_order_id', '=', data['_id'])], limit=1)
                 order.write({
-                    'online_order_status': 'cancelled',
-                    'state': 'cancel',
-                    'order_status': 'cancel',
-                    'declined_time': fields.Datetime.now(),
+                    'declined_time':fields.Datetime.now()
                 })
+                print('order to refund :',order)
+                deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+                print('payment method :',deliverect_payment_method)
+                refund_action = order.refund()
+                refund = request.env['pos.order'].sudo().browse(refund_action['res_id'])
+                print('refund order :',refund)
+                payment_context = {"active_ids": [refund.id], "active_id": refund.id}
+                refund_payment = request.env['pos.make.payment'].sudo().with_context(**payment_context).create({
+                    'amount': refund.amount_total,
+                    'payment_method_id': deliverect_payment_method.id,
+                })
+                refund_payment.with_context(**payment_context).check()
+                order.action_pos_order_invoice()
+                print('order cancelled !!!')
             else:
-                print('***TRYING TO CREATE ORDER***')
                 pos_order_data = self.create_order_data(self, data)
-                print('ORDER DATA :', pos_order_data)
-
+                print('pos order data :', pos_order_data)
+                deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+                print('payment method :', deliverect_payment_method)
                 order = request.env['pos.order'].sudo().create(pos_order_data)
-
+                print('pos order :', order)
                 payment_context = {"active_ids": [order.id], "active_id": order.id}
                 order_payment = request.env['pos.make.payment'].sudo().with_context(**payment_context).create({
                     'amount': order.amount_total,
-                    'payment_method_id': 2
+                    'payment_method_id': deliverect_payment_method.id
                 })
                 order_payment.with_context(**payment_context).check()
-                print('check worked')
-                print('order created :',request.env['pos.order'].sudo().browse(order['id']))
-                channel = "new_pos_order"
-                request.env["bus.bus"]._sendone(channel, "notification", {
-                    "message": "New Order Received"
-                })
+                self.generate_order_notification()
                 return Response(
                     json.dumps({'status': 'success', 'message': 'Order created',
                                 'order_id': order.id}),

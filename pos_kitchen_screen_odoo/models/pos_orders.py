@@ -142,11 +142,13 @@ class PosOrder(models.Model):
 
     def order_progress_cancel(self):
         """Calling function from js to change the order status"""
-        self.order_status = "cancel"
+        self.write({'order_status':'cancel',
+                    'online_order_status':'cancelled',
+                    'declined_time':fields.Datetime.now()})
+
         for line in self.lines:
             if line.order_status != "ready":
                 line.order_status = "cancel"
-        print('current order id :', self)
         self.update_order_status_in_deliverect(110)
 
     def order_progress_change(self):

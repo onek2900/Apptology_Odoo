@@ -48,7 +48,7 @@ export class OnlineOrderScreen extends Component {
             "pos.order",
             "update_order_status",
             [orderId],
-            { status: 'approved' },
+            { status: 'approved'},
         );
         this.env.bus.trigger('online_order_state_update');
         this.fetchOpenOrders();

@@ -69,8 +69,13 @@ class PosOrder(models.Model):
         _logger.info(f"Deliverect Order Status Update : {response.status_code} - {response.text}")
 
     def update_order_status(self, status):
+
         if status == 'approved':
-            self.write({'online_order_status': 'approved'})
+            print('is online order :',self.is_online_order)
+            print('online order status :',self.online_order_status)
+            print('session id :',self.session_id)
+            print('lines :',self.lines)
+            self.write({'online_order_status': 'approved','is_cooking':True})
             self.update_order_status_in_deliverect(20)
             self.update_order_status_in_deliverect(50)
         else:
@@ -92,7 +97,9 @@ class PosOrder(models.Model):
         orders = self.search_read(
             ['|',
                 ('declined_time', '=', False),
-                ('declined_time', '>', expiration_time),('is_online_order', '=', True)
+                ('declined_time', '>', expiration_time),
+                ('is_online_order', '=', True),
+                ('amount_total','>',0),
             ],
             ['id', 'online_order_status', 'pos_reference','order_status', 'amount_total', 'amount_tax', 'date_order', 'partner_id',
              'user_id', 'lines'],order="order_priority, date_order DESC"

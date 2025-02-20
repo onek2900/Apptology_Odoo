@@ -55,6 +55,7 @@ class OrderScreen(http.Controller):
              ("lines.product_id.pos_categ_ids", "in",
               kitchen_screen.pos_categ_ids.ids), ('session_id', '=', pos_session_id.id)], order="date_order")
         print('pos orders :',pos_orders)
+        print('pos_session_id :',pos_session_id)
         approved_deliverect_orders = request.env["pos.order"].sudo().search(["&",
             ("lines.is_cooking", "=", True),
             ("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids),
@@ -69,7 +70,6 @@ class OrderScreen(http.Controller):
 
     @http.route("/apptology_kitchen_screen", auth="public", type="http", website=True)
     def apptology_kitchen_screen(self, shop_id):
-
         query = f"""SELECT id from pos_config where id = {int(shop_id)} limit 1"""
         request.env.cr.execute(query)
         shop = request.env.cr.dictfetchone()

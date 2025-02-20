@@ -14,6 +14,7 @@ class DeliverectChannel(models.Model):
 
     def update_channel(self):
         """Fetch and update Deliverect channels"""
+
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         if not token:
             _logger.error("No authentication token received. Aborting channel update.")

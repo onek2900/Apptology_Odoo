@@ -6,9 +6,10 @@
     'category': 'Point Of Sale',
     'summary': '',
     'description': '',
-    'depends': ['pos_restaurant', 'web', 'bus','pos_kitchen_screen_odoo'],
+    'depends': ['account','pos_restaurant', 'web', 'bus','pos_kitchen_screen_odoo'],
     'data': [
         'security/ir.model.access.csv',
+        'data/pos_payment_method_data.xml',
         'views/res_config_settings_views.xml',
         'views/product_product_views.xml',
         'views/menu_views.xml',
