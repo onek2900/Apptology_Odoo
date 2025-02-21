@@ -12,12 +12,13 @@ patch(Navbar.prototype, {
         this.busService = this.env.services.bus_service;
         this.channel="new_pos_order";
         this.busService.addChannel(this.channel);
-        this.busService.addEventListener('notification', ()=>{
-            console.log('order received !!! ')
-            this.notification.add(_t("New Order Received"), { type: "info",
+        this.busService.addEventListener('notification', ({detail: notifications})=>{
+        notifications = notifications.filter(item => item.payload.channel === this.channel)
+        notifications.forEach(item => {
+            this.notification.add(_t(`New Order Received ${item.payload.pos_ref}`), { type: "info",
                                                      sticky: true});
             this.onlineOrderCount();
-
+            })
         });
         this.orm = useService("orm");
         this.action = useService("action");
@@ -36,7 +37,7 @@ patch(Navbar.prototype, {
         this.startPollingOrderCount();
     },
     async autoApproveOrders(){
-        console.log('TEST :',this)
+        console.log('pos config :',this.pos.config.id)
         await this.orm.call("pos.config", "toggle_approve", [this.pos.config.id]);
         window.location.reload();
     },

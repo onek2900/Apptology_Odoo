@@ -55,7 +55,6 @@ export class OnlineOrderScreen extends Component {
     }
 
     async onDeclineOrder(orderId) {
-        console.log('inside decline order')
         const {confirmed} =  await this.popup.add(ConfirmPopup, {
             title: _t("Confirmation"),
             body: _t(

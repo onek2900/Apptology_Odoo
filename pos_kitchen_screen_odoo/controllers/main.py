@@ -14,12 +14,19 @@ class OrderScreen(http.Controller):
         pos_session_id = request.env["pos.session"].sudo().search([
             ('config_id', '=', kitchen_screen.pos_config_id.id),
             ('state', '=', 'opened')], limit=1)
-
         pos_orders = request.env["pos.order"].sudo().search(
-            ["&", ("lines.is_cooking", "=", True),
+            ["&", ("lines.is_cooking", "=", True),("is_online_order", "=", False),
              ("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids),
              ('session_id', '=', pos_session_id.id)], order="date_order")
-        values = {"orders": pos_orders.sudo().read()}
+        approved_deliverect_orders = request.env["pos.order"].sudo().search(["&",
+            ("lines.is_cooking", "=", True),
+            ("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids),
+            ("session_id", "=", pos_session_id.id),
+            ("is_online_order", "=", True),
+            ("online_order_status", "=", 'approved')
+        ], order="date_order")
+        combined_orders = pos_orders | approved_deliverect_orders
+        values = {"orders": combined_orders.sudo().read()}
         return values
 
     @http.route("/apptology_order_screen", auth="public", type="http", website=True)
@@ -54,8 +61,6 @@ class OrderScreen(http.Controller):
             ["&", ("lines.is_cooking", "=", True),("is_online_order", "=", False),
              ("lines.product_id.pos_categ_ids", "in",
               kitchen_screen.pos_categ_ids.ids), ('session_id', '=', pos_session_id.id)], order="date_order")
-        print('pos orders :',pos_orders)
-        print('pos_session_id :',pos_session_id)
         approved_deliverect_orders = request.env["pos.order"].sudo().search(["&",
             ("lines.is_cooking", "=", True),
             ("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids),
@@ -63,7 +68,6 @@ class OrderScreen(http.Controller):
             ("is_online_order", "=", True),
             ("online_order_status", "=", 'approved')
         ], order="date_order")
-        print('approved orders :',approved_deliverect_orders)
         combined_orders = pos_orders | approved_deliverect_orders
         values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
         return values

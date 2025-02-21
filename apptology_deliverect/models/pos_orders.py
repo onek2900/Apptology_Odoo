@@ -50,31 +50,23 @@ class PosOrder(models.Model):
 
     def update_order_status_in_deliverect(self,status):
         url = f"https://api.staging.deliverect.com/orderStatus/{self.online_order_id}"
-        print('url :', url)
         token = self.env['deliverect.api'].sudo().generate_auth_token()
-        print('token :', token)
         payload = {
             'orderId': self.online_order_id,
             'receiptId': self.pos_reference,
             'status': status,
         }
-        print('payload :', payload)
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
             "authorization": f"Bearer {token}"
         }
         response = requests.post(url, json=payload, headers=headers)
-        print('response :', response)
         _logger.info(f"Deliverect Order Status Update : {response.status_code} - {response.text}")
 
     def update_order_status(self, status):
 
         if status == 'approved':
-            print('is online order :',self.is_online_order)
-            print('online order status :',self.online_order_status)
-            print('session id :',self.session_id)
-            print('lines :',self.lines)
             self.write({'online_order_status': 'approved','is_cooking':True})
             self.update_order_status_in_deliverect(20)
             self.update_order_status_in_deliverect(50)
@@ -87,7 +79,7 @@ class PosOrder(models.Model):
 
     @api.model
     def get_new_orders(self):
-        return self.search_count([('online_order_status', '=', 'open'),('is_online_order', '=', True)])
+        return self.search_count([('online_order_status', '=', 'open'),('is_online_order', '=', True),('amount_total','>',0)])
 
 
     @api.model

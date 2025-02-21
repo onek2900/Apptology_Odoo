@@ -6,8 +6,15 @@
                 <h2 class="section-title">In preparation</h2>
                 <div class="order-grid">
                     <div class="order-item in-progress" t-foreach="orderInProgress" t-as="order" t-key="order_index">
-                        <div class="tracking-number" t-esc="order.tracking_number"/>
-                        <span t-esc="order.note ? order.note : ''"/>
+                        <div class="tracking-number">
+                            <t t-if="order.is_online_order">
+                                O-<t t-esc="order.tracking_number"/>
+                            </t>
+                            <t t-else="">
+                                <t t-esc="order.tracking_number"/>
+                            </t>
+                        </div>
+<!--                        <span t-esc="order.note ? order.note : ''"/>-->
                     </div>
                 </div>
             </div>
@@ -16,8 +23,14 @@
                 <h2 class="section-title">Ready to collect</h2>
                 <div class="order-grid">
                     <div class="order-item ready" t-foreach="orderCompleted" t-as="order" t-key="order_index">
-                        <div class="tracking-number" t-esc="order.tracking_number"/>
-                        <span t-esc="order.note ? order.note : ''"/>
+                       <div class="tracking-number">
+                            <t t-if="order.is_online_order">
+                                O-<t t-esc="order.tracking_number"/>
+                            </t>
+                            <t t-else="">
+                                <t t-esc="order.tracking_number"/>
+                            </t>
+                        </div>
                     </div>
                 </div>
             </div>

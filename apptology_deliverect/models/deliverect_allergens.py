@@ -20,7 +20,6 @@ class DeliverectAllergens(models.Model):
         token = self.env["deliverect.api"].sudo().generate_auth_token()
         headers = {"accept": "application/json",
                    "authorization": f"Bearer {token}"}
-
         try:
             response = requests.get(url, headers=headers)
             response.raise_for_status()
