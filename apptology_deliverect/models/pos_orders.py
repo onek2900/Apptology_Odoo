@@ -78,12 +78,17 @@ class PosOrder(models.Model):
 
 
     @api.model
-    def get_new_orders(self):
-        return self.search_count([('online_order_status', '=', 'open'),('is_online_order', '=', True),('amount_total','>',0)])
+    def get_new_orders(self,config_id):
+        return self.search_count([
+            ('online_order_status', '=', 'open'),
+            ('is_online_order', '=', True),
+            ('amount_total','>',0),
+            ('config_id','=',config_id)])
 
 
     @api.model
-    def get_open_orders(self):
+    def get_open_orders(self,config_id):
+        print('config : ',config_id)
         now=fields.Datetime.now()
         expiration_time=now-timedelta(minutes=1)
         orders = self.search_read(
@@ -92,6 +97,7 @@ class PosOrder(models.Model):
                 ('declined_time', '>', expiration_time),
                 ('is_online_order', '=', True),
                 ('amount_total','>',0),
+                ('config_id', '=', config_id)
             ],
             ['id', 'online_order_status', 'pos_reference','order_status', 'amount_total', 'amount_tax', 'date_order', 'partner_id',
              'user_id', 'lines'],order="order_priority, date_order DESC"

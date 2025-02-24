@@ -10,4 +10,4 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
-    channel_id = fields.Integer()
+    channel_id = fields.Char()

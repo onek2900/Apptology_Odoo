@@ -12,7 +12,8 @@
         'data/pos_payment_method_data.xml',
         'views/res_config_settings_views.xml',
         'views/product_product_views.xml',
-        'views/menu_views.xml',
+        'views/point_of_sale_views.xml',
+        # 'views/menu_views.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [

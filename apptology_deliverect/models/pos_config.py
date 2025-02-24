@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from odoo import models, fields, api
+import logging
+import requests
 
+_logger = logging.getLogger(__name__)
 
 class PosConfig(models.Model):
     _inherit = 'pos.config'
 
     auto_approve = fields.Boolean(string="Auto Approve", help="Automatically approve all orders from Deliverect")
+    client_id = fields.Char(string="Client ID")
+    client_secret = fields.Char(string="Client Secret")
+    account_id = fields.Char(string="Account ID")
+    location_id = fields.Char(string="Location ID")
 
     def toggle_approve(self):
         print('toggle',self)
@@ -24,3 +31,169 @@ class PosConfig(models.Model):
             'payment_method_ids': [fields.Command.link(deliverect_payment_method.id)]
         })
         return configs
+
+    def force_sync_pos(self):
+
+        force_sync = self.action_sync_product()
+        if force_sync:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Success',
+                    'message': f'Force Sync Complete',
+                    'sticky': False,
+                    'type': 'success',
+                }
+            }
+        else:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Failure',
+                    'message': f'Error Encountered while Force Syncing',
+                    'sticky': False,
+                    'type': 'danger',
+                }
+            }
+
+    def update_allergens_and_tags(self):
+        update_allergens_and_channels = self.env['deliverect.channel'].sudo().update_channel()
+        if update_allergens_and_channels:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Success',
+                    'message': f'Allergens and Channels Updated',
+                    'type': 'success',
+                }
+            }
+        else:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Failure',
+                    'message': f'Allergens and Channels Updated',
+                    'type': 'danger',
+                }
+            }
+
+    def create_combo_product_data(self, combo_product):
+        deliverect_products = []
+
+        # Convert main combo product (Type 1)
+        main_product = {
+            "productType": 1,
+            "isCombo": True,
+            "plu": f"P-{combo_product.id}",
+            "price": 0,
+            "name": combo_product.name,
+            "imageUrl": self.image_upload(combo_product.product_tmpl_id.id),
+            "subProducts": []
+        }
+        # Process combo attributes (Type 3 - modifier groups)
+        sum_base_price = sum(combo_product.combo_ids.mapped('base_price'))
+        for combo in combo_product.combo_ids:
+            modifier_group_plu = f"CC-{combo.id}"
+            main_product["subProducts"].append(modifier_group_plu)
+            modifier_group = {
+                "productType": 3,
+                "plu": modifier_group_plu,
+                "name": combo.name,
+                "subProducts": [],
+            }
+            base_price = combo.base_price
+
+            # Process combo lines (Type 2 - modifiers)
+            for line in combo.combo_line_ids:
+                product = line.product_id
+                product_tax = self.env['product.product'].sudo().browse(product.id).taxes_id.amount
+                modifier_plu = f"PM-{product.id}"
+                modifier_group["subProducts"].append(modifier_plu)
+                modifier = {
+                    "productType": 2,
+                    "plu": modifier_plu,
+                    "price": round((((base_price / sum_base_price) * combo_product.lst_price) + line.combo_price),2
+                                   ) * 100,
+                    "name": product.name,
+                    "imageUrl": self.image_upload(product.product_tmpl_id.id),
+                    "deliveryTax": product_tax*1000,
+                    "takeawayTax": product_tax*1000,
+                    "eatInTax": product_tax*1000,
+                }
+                deliverect_products.append(modifier)
+            deliverect_products.append(modifier_group)
+        deliverect_products.insert(0, main_product)
+        return deliverect_products
+
+    def action_sync_product(self):
+        """Sync products and categories with Deliverect API"""
+        try:
+            url = "https://api.staging.deliverect.com/productAndCategories"
+            token = self.env['deliverect.api'].sudo().generate_auth_token()
+            config_parameter = self.env['ir.config_parameter'].sudo()
+            account_id = self.account_id
+            location_id = self.location_id
+            print(account_id, location_id)
+            product_data = self.create_product_data()
+            combo_products = self.env['product.product'].sudo().search([('detailed_type', '=', 'combo')])
+            for combo in combo_products:
+                product_data += self.create_combo_product_data(combo)
+            pos_categories = self.env['pos.category'].sudo().search([]).mapped(
+                lambda category: {
+                    "name": category.name,
+                    "posCategoryId": category.id,
+                })
+            payload = {
+                "priceLevels": [],
+                "categories":pos_categories,
+                "products": product_data,
+                "accountId": account_id,
+                "locationId": location_id
+            }
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "authorization": f"Bearer {token}"
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            _logger.info(f"Product sync response: {response.status_code} - {response.text}")
+            return True
+        except Exception as e:
+            _logger.error(f"Product sync failed: {e}")
+            return False
+
+    def image_upload(self, product_tmpl_id):
+        model = 'product.template'
+        image = 'image_1920'
+        attachment_id = self.env['ir.attachment'].sudo().search(
+            domain=[('res_model', '=', model),
+                    ('res_id', '=', product_tmpl_id),
+                    ('res_field', '=', image)]
+        )
+        product_image_url = False
+        if attachment_id:
+            attachment_id.write({'public': True})
+            base_url = self.env['ir.config_parameter'].sudo().get_param(
+                'web.base.url')
+            product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
+        return product_image_url
+
+    def create_product_data(self):
+        products = self.env['product.product'].sudo().search([('active', '=', True),
+                                                                 ('detailed_type', '!=', 'combo'),
+                                                                 ('attribute_line_ids', '=', False),
+                                                                 ('available_in_pos', '=', True)])
+        return products.mapped(lambda product: {
+            "name": product.name,
+            "plu": f"P-{product.id}",
+            "price": int(product.lst_price * 100),
+            "productType": 1,
+            "deliveryTax": product.taxes_id.amount * 1000,
+            "takeawayTax": product.taxes_id.amount * 1000,
+            "eatInTax": product.taxes_id.amount * 1000,
+            "imageUrl": self.image_upload(product.product_tmpl_id.id),
+        })

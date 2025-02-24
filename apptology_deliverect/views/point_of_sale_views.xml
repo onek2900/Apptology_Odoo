@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="pos_deliverect_menu_item" model="ir.ui.view">
+        <field name="name">pos.config.kanban.view.inherit.deliverect</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_config_kanban"/>
+        <field name="arch" type="xml">
+            <xpath
+                    expr="//div[hasclass('dropdown-pos-config')]/div/div[hasclass('o_kanban_manage_new')]"
+                    position="after">
+                <div class="col-6 o_kanban_card_manage_section o_kanban_manage_view w-100">
+                    <h5 role="menuitem" class="o_kanban_card_manage_title">
+                        <span>Deliverect</span>
+                    </h5>
+                    <div role="menuitem">
+                        <a name="force_sync_pos"
+                           type="object"
+                           style="white-space: nowrap;"
+                        >
+                            Force Sync
+                        </a>
+                    </div>
+                    <div role="menuitem">
+                        <a name="update_allergens_and_tags"
+                           type="object"
+                           style="white-space: nowrap;"
+                        >
+                            Update channels
+                        </a>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

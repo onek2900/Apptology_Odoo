@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import requests
-from odoo import models, fields, api
+from odoo import models, fields, api,_
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -34,10 +34,19 @@ class DeliverectAllergens(models.Model):
                     [("allergen_id", "=", allergen.get("allergenId"))], limit=1
                 )
                 if existing_allergen:
-                    existing_allergen.write(vals)  # Update existing record
+                    existing_allergen.write(vals)
                 else:
-                    self.env["deliverect.allergens"].create(vals)  # Create new record
-
+                    self.env["deliverect.allergens"].create(vals)
             _logger.info("Allergen update successful.")
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'type': 'success',
+                    'message': _('Allergens updated successfully'),
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            }
+
         except requests.exceptions.RequestException as e:
             _logger.error(f"Failed to fetch allergens from Deliverect: {str(e)}")

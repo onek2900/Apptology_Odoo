@@ -18,19 +18,7 @@
                                 <field name="client_secret" class="col-lg-9"
                                        placeholder="Enter your Deliverect Client Secret"/>
                             </div>
-                            <div class="row">
-                                <label for="location_id" class="col-lg-3 o_light_label">Location ID</label>
-                                <field name="location_id" class="col-lg-9" placeholder="Enter your Deliverect Client Secret"/>
-                            </div>
-                            <div class="row">
-                                <label for="account_id" class="col-lg-3 o_light_label">Account ID</label>
-                                <field name="account_id" class="col-lg-9" placeholder="Enter your Deliverect Client Secret"/>
-                            </div>
                         </div>
-                    </setting>
-                    <setting string="Automatic Approval"
-                             help="Automatically approve online orders.">
-                        <field name="automatic_approval" class="w-100"/>
                     </setting>
                 </block>
             </xpath>

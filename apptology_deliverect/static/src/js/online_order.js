@@ -11,6 +11,7 @@ import { _t } from "@web/core/l10n/translation";
 export class OnlineOrderScreen extends Component {
     static template = "point_of_sale.OnlineOrderScreen";
     setup() {
+        this.pos = usePos();
         this.orm = useService("orm");
         this.popup = useService("popup");
         this.state = useState({
@@ -27,7 +28,8 @@ export class OnlineOrderScreen extends Component {
     }
     async fetchOpenOrders(){
         try {
-            const openOrders = await this.orm.call("pos.order", "get_open_orders", []);
+            console.log('this :',this.pos.config.id)
+            const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
             this.state.openOrders=openOrders
         } catch (error) {
             console.error("Error fetching open orders:", error);
@@ -36,7 +38,7 @@ export class OnlineOrderScreen extends Component {
     async startPollingOrders() {
         this.pollingInterval = setInterval(async () => {
             try {
-                const openOrders = await this.orm.call("pos.order", "get_open_orders", []);
+                const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
                 this.state.openOrders = openOrders;
             } catch (error) {
                 console.error("Error fetching open orders:", error);
