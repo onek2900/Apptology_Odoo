@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_lead_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.view.form.inherit.crm.actual.revenue</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('col-auto')]" position="before">
+                <div class="col-auto pb-2 pb-md-0 w-100 w-sm-auto" invisible="type == 'lead'">
+                    <label for="actual_revenue" class="oe_edit_only"/>
+                    <div class="d-flex flex-wrap align-items-baseline">
+                        <field name="company_currency" invisible="1"/>
+                        <field name="actual_revenue" class="o_input_13ch" widget='monetary'
+                               options="{'currency_field': 'company_currency'}"/>
+                        <span class="oe_grey p-2">of</span>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
