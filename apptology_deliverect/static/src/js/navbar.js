@@ -10,12 +10,14 @@ patch(Navbar.prototype, {
     setup() {
         super.setup();
         this.busService = this.env.services.bus_service;
-        this.channel="new_pos_order";
+        console.log('pos_config:',this.pos.config.id)
+        this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService.addChannel(this.channel);
         this.busService.addEventListener('notification', ({detail: notifications})=>{
+        console.log('notification received')
         notifications = notifications.filter(item => item.payload.channel === this.channel)
         notifications.forEach(item => {
-            this.notification.add(_t(`New Order Received ${item.payload.pos_ref}`), { type: "info",
+            this.notification.add(_t("New Order Received"), { type: "info",
                                                      sticky: true});
             this.onlineOrderCount();
             })

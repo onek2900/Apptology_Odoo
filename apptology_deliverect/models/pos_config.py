@@ -3,6 +3,7 @@
 from odoo import models, fields, api
 import logging
 import requests
+import json
 
 _logger = logging.getLogger(__name__)
 
@@ -16,12 +17,10 @@ class PosConfig(models.Model):
     location_id = fields.Char(string="Location ID")
 
     def toggle_approve(self):
-        print('toggle',self)
         if self.auto_approve:
             self.auto_approve = False
         else:
             self.auto_approve = True
-        print(self.auto_approve)
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -33,7 +32,6 @@ class PosConfig(models.Model):
         return configs
 
     def force_sync_pos(self):
-
         force_sync = self.action_sync_product()
         if force_sync:
             return {
@@ -58,28 +56,66 @@ class PosConfig(models.Model):
                 }
             }
 
-    def update_allergens_and_tags(self):
-        update_allergens_and_channels = self.env['deliverect.channel'].sudo().update_channel()
-        if update_allergens_and_channels:
+    def create_customers_channel(self):
+        self.env['deliverect.channel'].sudo().update_channel()
+        token = self.env['deliverect.api'].sudo().generate_auth_token()
+        if not token:
+            _logger.error("No authentication token received. Aborting channel update.")
+            return False
+        location_id = self.location_id
+        embedded_param = '{"channelLinks":1}'
+        url = f'https://api.staging.deliverect.com/locations/{location_id}?embedded={embedded_param}'
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": f"Bearer {token}"
+        }
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            account_data = response.json()
+            channel = [channel["channel"] for channel in account_data.get("channelLinks", [])]
+            channel_records = self.env['deliverect.channel'].sudo().search([('channel_id', 'in', channel)])
+            created_partner_ids = []
+            for channel_record in channel_records:
+                existing_partner = self.env['res.partner'].sudo().search(
+                    [('channel_id', '=', channel_record.channel_id)],
+                    limit=1)
+                if not existing_partner:
+                    new_partner = self.env['res.partner'].sudo().create({
+                        'name': channel_record.name,
+                        'channel_id': channel_record.channel_id,
+                    })
+                    created_partner_ids.append(new_partner.id)
+                    _logger.info(f"Created new partner: {new_partner.name} with Channel ID: {new_partner.channel_id}")
+                else:
+                    _logger.info(
+                        f"Partner already exists for Channel ID {existing_partner.channel_id}: {existing_partner.name}")
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': 'Success',
-                    'message': f'Allergens and Channels Updated',
+                    'message': f"Created Partners "
+                               f"{','.join(map(str, created_partner_ids))}" if created_partner_ids else f"No New "
+                                                                                                        f"partners "
+                                                                                                        f"Found",
                     'type': 'success',
                 }
             }
-        else:
+
+        except requests.exceptions.RequestException as e:
+            _logger.error(f"Failed to create partners for the location: {str(e)}")
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': 'Failure',
-                    'message': f'Allergens and Channels Updated',
+                    'message': "Error Encountered while creating partners",
                     'type': 'danger',
                 }
             }
+
 
     def create_combo_product_data(self, combo_product):
         deliverect_products = []
@@ -134,10 +170,8 @@ class PosConfig(models.Model):
         try:
             url = "https://api.staging.deliverect.com/productAndCategories"
             token = self.env['deliverect.api'].sudo().generate_auth_token()
-            config_parameter = self.env['ir.config_parameter'].sudo()
             account_id = self.account_id
             location_id = self.location_id
-            print(account_id, location_id)
             product_data = self.create_product_data()
             combo_products = self.env['product.product'].sudo().search([('detailed_type', '=', 'combo')])
             for combo in combo_products:
@@ -161,7 +195,10 @@ class PosConfig(models.Model):
             }
             response = requests.post(url, json=payload, headers=headers)
             _logger.info(f"Product sync response: {response.status_code} - {response.text}")
-            return True
+            if response.status_code == 200:
+                return True
+            else:
+                return False
         except Exception as e:
             _logger.error(f"Product sync failed: {e}")
             return False

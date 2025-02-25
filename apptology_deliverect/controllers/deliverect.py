@@ -12,9 +12,7 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def find_partner(channel_id):
-        print(f"Channel ID: {channel_id}")
         partner = request.env['res.partner'].sudo().search([('channel_id', '=', channel_id)])
-        print(partner)
         return partner.id
 
     @staticmethod
@@ -104,11 +102,11 @@ class DeliverectWebhooks(http.Controller):
         })
 
     @staticmethod
-    def generate_order_notification(pos_ref):
-        channel = "new_pos_order"
+    def generate_order_notification(pos_id):
+        print('inside generate order notification',pos_id)
+        channel = f"new_pos_order_{pos_id}"
         request.env["bus.bus"]._sendone(channel, "notification", {
             "channel": channel,
-            "pos_ref": pos_ref
         })
 
     @staticmethod
@@ -136,19 +134,17 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def generate_sequence_number(self, channel_order_id, channel_id):
-        # Format: Order-xxxxx-xxx-xxxx
+
         numeric_part = ''.join(filter(str.isdigit, channel_order_id))
         last_7_digits = numeric_part[-7:].zfill(7)
-        pos_reference = f"Order-{int(channel_id):05d}-{last_7_digits[:3]}-{last_7_digits[3:]}"
+        pos_reference = f"Online-Order {int(channel_id):05d}-{last_7_digits[:3]}-{last_7_digits[3:]}"
         return pos_reference
 
 
     @staticmethod
     def create_order_data(self, data, pos_id):
-        print('inside create order data')
         pos_reference = self.generate_sequence_number(self, data['channelOrderId'], data['channel'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
-        is_auto_approve = pos_config.auto_approve
         ir_sequence_session = request.env['ir.sequence'].sudo().search([
             ('company_id', '=', pos_config.company_id.id),
             ('code','=',f"pos.order_{pos_config.current_session_id.id}")
@@ -185,29 +181,32 @@ class DeliverectWebhooks(http.Controller):
                         'discount': 0,
                         'tax_ids': [(6, 0, product.taxes_id.ids)]
                     }))
-        order_data = {
-            'company_id': pos_config.company_id.id,
-            'config_id': pos_config.id,
-            'sequence_number': sequence_number,
-            'partner_id': self.find_partner(data['channelLink']),
-            'session_id': pos_config.current_session_id.id,
-            'pricelist_id': pos_config.pricelist_id.id,
-            'lines': order_lines,
-            'amount_total': data['payment']['amount'] / 100,
-            'amount_tax': data['taxTotal'] / 100,
-            'amount_paid': data['payment']['amount'] / 100,
-            'amount_return': 0.0,
-            'to_invoice': True,
-            'pos_reference': pos_reference,
-            'online_order_id': data['_id'],
-            'date_order': fields.Datetime.to_string(fields.Datetime.now()),
-            'user_id': pos_config.current_user_id.id,
-            'order_type': str(data['orderType']),
-            'online_order_status': 'approved' if is_auto_approve else 'open',
-            'is_online_order': True,
-            'note': data['note'],
-            'floor': 'Online'
-        }
+        deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+        order_data = {'data':
+                          {'to_invoice': True,
+                           'config_id': pos_config.id,
+                           'company_id': pos_config.company_id.id,
+                           'note': data['note'],
+                           'amount_paid': data['payment']['amount'] / 100,
+                           'amount_return': 0.0,
+                           'amount_tax': data['taxTotal'] / 100,
+                           'amount_total': data['payment']['amount'] / 100,
+                           'fiscal_position_id': False,
+                           'pricelist_id': pos_config.pricelist_id.id,
+                           'lines': order_lines,
+                           'name': pos_reference,
+                           'pos_reference':pos_reference,
+                           'partner_id': self.find_partner(data['channel']),
+                           'date_order': fields.Datetime.to_string(fields.Datetime.now()),
+                           'pos_session_id': pos_config.current_session_id.id,
+                           'sequence_number': sequence_number,
+                           'statement_ids': [[0,
+                                              0,
+                                              {'amount': data['payment']['amount'] / 100,
+                                               'name': fields.Datetime.now(),
+                                               'payment_method_id': deliverect_payment_method.id}]],
+                           'user_id': pos_config.current_user_id.id},
+                      }
         return order_data
 
     @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none", csrf=False)
@@ -247,16 +246,21 @@ class DeliverectWebhooks(http.Controller):
                 refund_payment.with_context(**payment_context).check()
                 order.action_pos_order_invoice()
             else:
+                print('creating order')
                 pos_order_data = self.create_order_data(self, data, pos_id)
-                deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
-                order = request.env['pos.order'].sudo().create(pos_order_data)
-                payment_context = {"active_ids": [order.id], "active_id": order.id}
-                order_payment = request.env['pos.make.payment'].sudo().with_context(**payment_context).create({
-                    'amount': order.amount_total,
-                    'payment_method_id': deliverect_payment_method.id
+                print(pos_order_data)
+                pos_config = request.env['pos.config'].sudo().browse(pos_id)
+                is_auto_approve = pos_config.auto_approve
+                order = request.env['pos.order'].sudo().with_user(pos_order_data['data']['user_id']).create_from_ui([pos_order_data])
+                order = request.env['pos.order'].sudo().browse(order[0]['id'])
+                order.write({
+                    'is_online_order': True,
+                    'online_order_id': data['_id'],
+                    'floor': 'Online',
+                    'online_order_status': 'approved' if is_auto_approve else 'open',
+                    'order_type': str(data['orderType']),
                 })
-                order_payment.with_context(**payment_context).check()
-                self.generate_order_notification(pos_order_data['pos_reference'])
+                self.generate_order_notification(pos_id)
                 return Response(
                     json.dumps({'status': 'success', 'message': 'Order created',
                                 'order_id': order.id}),
@@ -282,8 +286,7 @@ class DeliverectWebhooks(http.Controller):
                 'account_id': data.get('accountId'),
                 'location_id': data.get('locationId'),
             })
-            request.env['deliverect.channel'].sudo().update_channel()
-            # request.env['deliverect.allergens'].sudo().update_allergens()
+            request.env['pos.config'].sudo().browse(pos_id).create_customers_channel()
             return {
                 "ordersWebhookURL": f"{base_url}/deliverect/pos/orders/{pos_id}",
                 "syncProductsURL": f"{base_url}/deliverect/pos/products?locationID={data.get('locationId')}"

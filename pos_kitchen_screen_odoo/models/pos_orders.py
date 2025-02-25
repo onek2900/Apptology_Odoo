@@ -150,6 +150,16 @@ class PosOrder(models.Model):
             if line.order_status != "ready":
                 line.order_status = "cancel"
         self.update_order_status_in_deliverect(110)
+        deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+        refund_action = self.refund()
+        refund = self.env['pos.order'].sudo().browse(refund_action['res_id'])
+        payment_context = {"active_ids": [refund.id], "active_id": refund.id}
+        refund_payment = self.env['pos.make.payment'].sudo().with_context(**payment_context).create({
+            'amount': refund.amount_total,
+            'payment_method_id': deliverect_payment_method.id,
+        })
+        refund_payment.with_context(**payment_context).check()
+        self.action_pos_order_invoice()
 
     def order_progress_change(self):
         """Calling function from js to change the order status"""

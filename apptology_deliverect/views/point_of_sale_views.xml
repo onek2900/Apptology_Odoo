@@ -21,11 +21,11 @@
                         </a>
                     </div>
                     <div role="menuitem">
-                        <a name="update_allergens_and_tags"
+                        <a name="create_customers_channel"
                            type="object"
                            style="white-space: nowrap;"
                         >
-                            Update channels
+                            Create Customers
                         </a>
                     </div>
                 </div>

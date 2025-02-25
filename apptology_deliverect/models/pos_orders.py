@@ -75,7 +75,16 @@ class PosOrder(models.Model):
                         'declined_time': fields.Datetime.now(),
                         'order_status':'cancel'})
             self.update_order_status_in_deliverect(110)
-
+            deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+            refund_action = self.refund()
+            refund = self.env['pos.order'].sudo().browse(refund_action['res_id'])
+            payment_context = {"active_ids": [refund.id], "active_id": refund.id}
+            refund_payment = self.env['pos.make.payment'].sudo().with_context(**payment_context).create({
+                'amount': refund.amount_total,
+                'payment_method_id': deliverect_payment_method.id,
+            })
+            refund_payment.with_context(**payment_context).check()
+            self.action_pos_order_invoice()
 
     @api.model
     def get_new_orders(self,config_id):
@@ -88,7 +97,6 @@ class PosOrder(models.Model):
 
     @api.model
     def get_open_orders(self,config_id):
-        print('config : ',config_id)
         now=fields.Datetime.now()
         expiration_time=now-timedelta(minutes=1)
         orders = self.search_read(
