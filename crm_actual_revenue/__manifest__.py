@@ -3,7 +3,7 @@
 {
     'name': "CRM Actual Revenue",
     'version': '17.0.1.0.0',
-    'depends': ['crm'],
+    'depends': ['crm','sale_management'],
     'author': "",
     'description': """
     CRM Actual Revenue

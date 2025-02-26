@@ -12,9 +12,23 @@
                         <field name="company_currency" invisible="1"/>
                         <field name="actual_revenue" class="o_input_13ch" widget='monetary'
                                options="{'currency_field': 'company_currency'}"/>
-                        <span class="oe_grey p-2">of</span>
+                        <span class="oe_grey p-2" style="margin: 0 10px;">of</span>
                     </div>
                 </div>
+            </xpath>
+            <xpath expr="//group[@name='opportunity_partner']/field[@name='partner_id']" position="before">
+                <field name="billed_amount" />
+            </xpath>
+        </field>
+    </record>
+    <record id="crm_opportunity_report_view_pivot" model="ir.ui.view">
+        <field name="name">crm.opportunity.report.view.pivot.inherit.crm.actual.revenue</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_opportunity_report_view_pivot"/>
+        <field name="arch" type="xml">
+            <xpath expr="//pivot" position="inside">
+                <field name="actual_revenue" type="measure"/>
+                <field name="billed_amount" type="measure"/>
             </xpath>
         </field>
     </record>
