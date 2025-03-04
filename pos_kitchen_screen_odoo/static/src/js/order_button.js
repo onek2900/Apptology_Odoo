@@ -90,7 +90,6 @@ setup() {
                         'floor':currentOrder.pos.currentFloor.name,
                         'config_id':currentOrder.pos.config.id
                     }]
-                    console.log(orders, "1234567890-", this.pos.get_order());
                     await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
                 }
             } finally {

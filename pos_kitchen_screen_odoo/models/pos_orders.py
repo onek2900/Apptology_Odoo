@@ -153,13 +153,13 @@ class PosOrder(models.Model):
         deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
         refund_action = self.refund()
         refund = self.env['pos.order'].sudo().browse(refund_action['res_id'])
-        payment_context = {"active_ids": [refund.id], "active_id": refund.id}
+        payment_context = {"active_ids": refund.ids, "active_id": refund.id}
         refund_payment = self.env['pos.make.payment'].sudo().with_context(**payment_context).create({
             'amount': refund.amount_total,
             'payment_method_id': deliverect_payment_method.id,
         })
         refund_payment.with_context(**payment_context).check()
-        self.action_pos_order_invoice()
+        self.env['pos.order'].sudo().browse(refund.id).action_pos_order_invoice()
 
     def order_progress_change(self):
         """Calling function from js to change the order status"""
@@ -175,7 +175,6 @@ class PosOrder(models.Model):
             self.order_status = "ready"
         else:
             self.order_status = "ready"
-        print('current order id :',self)
         self.update_order_status_in_deliverect(70)
         self.update_order_status_in_deliverect(90)
 

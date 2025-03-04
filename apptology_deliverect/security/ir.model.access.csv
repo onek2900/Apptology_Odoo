@@ -1,3 +1,4 @@
 id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
 access_product_deliverect_channel,access.deliverect.channel,model_deliverect_channel,base.group_user,1,1,1,1
 access_product_deliverect_allergens,access.deliverect.allergens,model_deliverect_allergens,base.group_user,1,1,1,1
+access_deliverect_info_wizard,access.deliverect.info.wizard,model_deliverect_info_wizard,base.group_user,1,1,1,1

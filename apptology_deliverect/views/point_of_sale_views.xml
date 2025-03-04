@@ -28,6 +28,14 @@
                             Create Customers
                         </a>
                     </div>
+                    <div role="menuitem">
+                        <a name="show_deliverect_urls"
+                           type="object"
+                           style="white-space: nowrap;"
+                        >
+                            Deliverect URLs
+                        </a>
+                    </div>
                 </div>
             </xpath>
         </field>

@@ -36,7 +36,6 @@ class KitchenScreen(models.Model):
 
     def render_kitchen_screen(self):
         """Redirect to corresponding kitchen screen for the cook"""
-        print('link :','/apptology_kitchen_screen?shop_id=%s' % self.pos_config_id.id)
         return {
             'type': 'ir.actions.act_url',
             'target': 'new',

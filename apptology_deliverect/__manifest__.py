@@ -10,10 +10,10 @@
     'data': [
         'security/ir.model.access.csv',
         'data/pos_payment_method_data.xml',
+        'wizards/deliverect_info_wizard_views.xml',
         'views/res_config_settings_views.xml',
         'views/product_product_views.xml',
         'views/point_of_sale_views.xml',
-        # 'views/menu_views.xml',
     ],
     'assets': {
         'point_of_sale._assets_pos': [
@@ -24,5 +24,4 @@
     'installable': True,
     'auto_install': False,
     'application': False,
-    'post_init_hook': 'post_init_hook',
 }

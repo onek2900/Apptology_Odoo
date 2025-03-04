@@ -12,6 +12,7 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def find_partner(channel_id):
+        print('finding partner')
         partner = request.env['res.partner'].sudo().search([('channel_id', '=', channel_id)])
         return partner.id
 
@@ -103,7 +104,6 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def generate_order_notification(pos_id):
-        print('inside generate order notification',pos_id)
         channel = f"new_pos_order_{pos_id}"
         request.env["bus.bus"]._sendone(channel, "notification", {
             "channel": channel,
@@ -116,7 +116,6 @@ class DeliverectWebhooks(http.Controller):
         combo_products = request.env['product.product'].sudo().search([('detailed_type', '=', 'combo')])
         for combo in combo_products:
             product_data += self.create_combo_product_data(self, combo)
-        # TODO consider pos_categories
         pos_categories = request.env['pos.category'].sudo().search([]).mapped(
             lambda category: {
                 "name": category.name,
@@ -134,7 +133,6 @@ class DeliverectWebhooks(http.Controller):
 
     @staticmethod
     def generate_sequence_number(self, channel_order_id, channel_id):
-
         numeric_part = ''.join(filter(str.isdigit, channel_order_id))
         last_7_digits = numeric_part[-7:].zfill(7)
         pos_reference = f"Online-Order {int(channel_id):05d}-{last_7_digits[:3]}-{last_7_digits[3:]}"
@@ -145,12 +143,15 @@ class DeliverectWebhooks(http.Controller):
     def create_order_data(self, data, pos_id):
         pos_reference = self.generate_sequence_number(self, data['channelOrderId'], data['channel'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
+        print(pos_config)
         ir_sequence_session = request.env['ir.sequence'].sudo().search([
             ('company_id', '=', pos_config.company_id.id),
             ('code','=',f"pos.order_{pos_config.current_session_id.id}")
         ]).next_by_code(f"pos.order_{pos_config.current_session_id.id}")
+        print(ir_sequence_session)
         sequence_number = re.findall(r'\d+', ir_sequence_session)[0]
         order_lines = []
+        print(1)
         for item in data['items']:
             if item.get("isCombo"):
                 for subitem in item['subItems']:
@@ -181,6 +182,7 @@ class DeliverectWebhooks(http.Controller):
                         'discount': 0,
                         'tax_ids': [(6, 0, product.taxes_id.ids)]
                     }))
+        print(2)
         deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
         order_data = {'data':
                           {'to_invoice': True,
@@ -207,6 +209,7 @@ class DeliverectWebhooks(http.Controller):
                                                'payment_method_id': deliverect_payment_method.id}]],
                            'user_id': pos_config.current_user_id.id},
                       }
+        print(3)
         return order_data
 
     @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none", csrf=False)
@@ -224,8 +227,9 @@ class DeliverectWebhooks(http.Controller):
 
     @http.route('/deliverect/pos/orders/<int:pos_id>', type='http', methods=['POST'], auth='none', csrf=False)
     def receive_pos_order(self, pos_id):
-        print("order received")
         try:
+            print("RECEIVED POS ORDER")
+            pos_config = request.env['pos.config'].sudo().browse(pos_id)
             data = json.loads(request.httprequest.data)
             if data['status'] == 100 and data['_id']:
                 print('cancelling order')
@@ -238,20 +242,20 @@ class DeliverectWebhooks(http.Controller):
                 deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
                 refund_action = order.refund()
                 refund = request.env['pos.order'].sudo().browse(refund_action['res_id'])
-                payment_context = {"active_ids": [refund.id], "active_id": refund.id}
+                payment_context = {"active_ids": refund.ids, "active_id": refund.id}
                 refund_payment = request.env['pos.make.payment'].sudo().with_context(**payment_context).create({
                     'amount': refund.amount_total,
                     'payment_method_id': deliverect_payment_method.id,
                 })
                 refund_payment.with_context(**payment_context).check()
-                order.action_pos_order_invoice()
+                request.env['pos.order'].sudo().browse(refund.id).action_pos_order_invoice()
             else:
                 print('creating order')
+                print(pos_id)
                 pos_order_data = self.create_order_data(self, data, pos_id)
                 print(pos_order_data)
-                pos_config = request.env['pos.config'].sudo().browse(pos_id)
                 is_auto_approve = pos_config.auto_approve
-                order = request.env['pos.order'].sudo().with_user(pos_order_data['data']['user_id']).create_from_ui([pos_order_data])
+                order = request.env['pos.order'].with_user(pos_order_data['data']['user_id']).create_from_ui([pos_order_data])
                 order = request.env['pos.order'].sudo().browse(order[0]['id'])
                 order.write({
                     'is_online_order': True,
@@ -277,6 +281,7 @@ class DeliverectWebhooks(http.Controller):
 
     @http.route('/deliverect/pos/register/<int:pos_id>', type='json', methods=['POST'], auth="none", csrf=False)
     def register_pos(self, pos_id):
+        print("REGISTRATION SUCCESS")
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         config_param = request.env['ir.config_parameter'].sudo()
         base_url = config_param.get_param('web.base.url')

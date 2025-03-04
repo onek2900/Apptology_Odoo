@@ -65,7 +65,6 @@ class PosOrder(models.Model):
         _logger.info(f"Deliverect Order Status Update : {response.status_code} - {response.text}")
 
     def update_order_status(self, status):
-
         if status == 'approved':
             self.write({'online_order_status': 'approved','is_cooking':True})
             self.update_order_status_in_deliverect(20)
@@ -84,7 +83,7 @@ class PosOrder(models.Model):
                 'payment_method_id': deliverect_payment_method.id,
             })
             refund_payment.with_context(**payment_context).check()
-            self.action_pos_order_invoice()
+            self.env['pos.order'].sudo().browse(refund.id).action_pos_order_invoice()
 
     @api.model
     def get_new_orders(self,config_id):

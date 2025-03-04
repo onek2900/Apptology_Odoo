@@ -28,7 +28,6 @@ export class OnlineOrderScreen extends Component {
     }
     async fetchOpenOrders(){
         try {
-            console.log('this :',this.pos.config.id)
             const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
             this.state.openOrders=openOrders
         } catch (error) {

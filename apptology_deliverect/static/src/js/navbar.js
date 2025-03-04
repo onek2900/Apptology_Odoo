@@ -10,11 +10,9 @@ patch(Navbar.prototype, {
     setup() {
         super.setup();
         this.busService = this.env.services.bus_service;
-        console.log('pos_config:',this.pos.config.id)
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService.addChannel(this.channel);
         this.busService.addEventListener('notification', ({detail: notifications})=>{
-        console.log('notification received')
         notifications = notifications.filter(item => item.payload.channel === this.channel)
         notifications.forEach(item => {
             this.notification.add(_t("New Order Received"), { type: "info",
@@ -39,31 +37,8 @@ patch(Navbar.prototype, {
         this.startPollingOrderCount();
     },
     async autoApproveOrders(){
-        console.log('pos config :',this.pos.config.id)
         await this.orm.call("pos.config", "toggle_approve", [this.pos.config.id]);
         window.location.reload();
-    },
-    async openKitchenScreen(){
-        this.action.doAction({
-            type: "ir.actions.act_url",
-            target: 'new',
-            url: `/apptology_kitchen_screen?shop_id=${this.pos.config.id}`,
-        });
-    },
-    async openOrderScreen(){
-        const kitchenScreen = await this.orm.searchRead(
-                "kitchen.screen",
-                [
-                    ["pos_config_id", "=", this.pos.config.id],
-                ],
-                ["id"]
-            );
-        const kitchenScreenId = kitchenScreen[0]?.id
-        this.action.doAction({
-            type: "ir.actions.act_url",
-            target: 'new',
-            url: `/apptology_order_screen?screen_id=${kitchenScreenId}`,
-        });
     },
     async onClickOnlineOrder() {
         await this.pos.showScreen("OnlineOrderScreen");

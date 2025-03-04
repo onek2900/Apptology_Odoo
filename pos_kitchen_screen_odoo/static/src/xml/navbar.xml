@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <xpath expr="//li[hasclass('ticket-button')]" position="after">
+            <t t-if="state.is_config_present">
+                <li t-on-click="openKitchenScreen">
+                    <a class="dropdown-item with-badge py-2">
+                        Open Kitchen Screen
+                    </a>
+                </li>
+                <li t-on-click="openOrderScreen">
+                    <a class="dropdown-item with-badge py-2">
+                        Open Order Screen
+                    </a>
+                </li>
+            </t>
+        </xpath>
+    </t>
+</templates>

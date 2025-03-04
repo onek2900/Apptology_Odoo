@@ -22,16 +22,6 @@
                     </a>
                 </li>
             </t>
-            <li t-on-click="openKitchenScreen">
-                <a class="dropdown-item with-badge py-2">
-                    Open Kitchen Screen
-                </a>
-            </li>
-            <li t-on-click="openOrderScreen">
-                <a class="dropdown-item with-badge py-2">
-                    Open Order Screen
-                </a>
-            </li>
         </xpath>
     </t>
 </templates>

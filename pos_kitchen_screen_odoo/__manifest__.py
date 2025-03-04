@@ -8,9 +8,8 @@
     'description': '',
     'depends': ['pos_restaurant', 'web', 'bus'],
     'data': [
-        "views/order_index.xml",
-        'security/pos_kitchen_screen_groups.xml',
         "security/ir.model.access.csv",
+        "views/order_index.xml",
         'data/kitchen_screen_sequence_data.xml',
         "views/kitchen_screen_views.xml",
         "views/pos_kitchen_screen_odoo_menus.xml",
@@ -21,6 +20,8 @@
             'pos_kitchen_screen_odoo/static/src/js/fields_load.js',
             'pos_kitchen_screen_odoo/static/src/js/order_payment.js',
             'pos_kitchen_screen_odoo/static/src/js/order_button.js',
+            'pos_kitchen_screen_odoo/static/src/js/navbar.js',
+            'pos_kitchen_screen_odoo/static/src/xml/navbar.xml'
         ],
         'web.assets_backend': [
             'pos_kitchen_screen_odoo/static/src/css/kitchen.scss',

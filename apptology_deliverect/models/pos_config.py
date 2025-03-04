@@ -7,6 +7,7 @@ import json
 
 _logger = logging.getLogger(__name__)
 
+
 class PosConfig(models.Model):
     _inherit = 'pos.config'
 
@@ -21,15 +22,6 @@ class PosConfig(models.Model):
             self.auto_approve = False
         else:
             self.auto_approve = True
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        configs = super().create(vals_list)
-        deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
-        configs.write({
-            'payment_method_ids': [fields.Command.link(deliverect_payment_method.id)]
-        })
-        return configs
 
     def force_sync_pos(self):
         force_sync = self.action_sync_product()
@@ -56,7 +48,29 @@ class PosConfig(models.Model):
                 }
             }
 
+    def show_deliverect_urls(self):
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        registration_url = f"{base_url}/deliverect/pos/register/{self.id}"
+        orders_url = f"{base_url}/deliverect/pos/orders/{self.id}"
+        products_url = f"{base_url}/deliverect/pos/products/{self.id}"
+        location_id = self.location_id
+        return {
+            'name': 'Deliverect URLs',
+            'type': 'ir.actions.act_window',
+            'res_model': 'deliverect.info.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_registration_url': registration_url,
+                'default_orders_url': orders_url,
+                'default_products_url': products_url,
+                'default_location_id': location_id
+            },
+            'flags': {'mode': 'readonly'},
+        }
+
     def create_customers_channel(self):
+        print('create customer channel')
         self.env['deliverect.channel'].sudo().update_channel()
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         if not token:
@@ -116,7 +130,6 @@ class PosConfig(models.Model):
                 }
             }
 
-
     def create_combo_product_data(self, combo_product):
         deliverect_products = []
 
@@ -152,13 +165,13 @@ class PosConfig(models.Model):
                 modifier = {
                     "productType": 2,
                     "plu": modifier_plu,
-                    "price": round((((base_price / sum_base_price) * combo_product.lst_price) + line.combo_price),2
+                    "price": round((((base_price / sum_base_price) * combo_product.lst_price) + line.combo_price), 2
                                    ) * 100,
                     "name": product.name,
                     "imageUrl": self.image_upload(product.product_tmpl_id.id),
-                    "deliveryTax": product_tax*1000,
-                    "takeawayTax": product_tax*1000,
-                    "eatInTax": product_tax*1000,
+                    "deliveryTax": product_tax * 1000,
+                    "takeawayTax": product_tax * 1000,
+                    "eatInTax": product_tax * 1000,
                 }
                 deliverect_products.append(modifier)
             deliverect_products.append(modifier_group)
@@ -183,7 +196,7 @@ class PosConfig(models.Model):
                 })
             payload = {
                 "priceLevels": [],
-                "categories":pos_categories,
+                "categories": pos_categories,
                 "products": product_data,
                 "accountId": account_id,
                 "locationId": location_id
@@ -221,9 +234,9 @@ class PosConfig(models.Model):
 
     def create_product_data(self):
         products = self.env['product.product'].sudo().search([('active', '=', True),
-                                                                 ('detailed_type', '!=', 'combo'),
-                                                                 ('attribute_line_ids', '=', False),
-                                                                 ('available_in_pos', '=', True)])
+                                                              ('detailed_type', '!=', 'combo'),
+                                                              ('attribute_line_ids', '=', False),
+                                                              ('available_in_pos', '=', True)])
         return products.mapped(lambda product: {
             "name": product.name,
             "plu": f"P-{product.id}",
