@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta
-from email.policy import default
-import requests
 import logging
+import requests
+from datetime import timedelta
 
 from odoo import api, fields, models
 _logger = logging.getLogger(__name__)
 
 
 class PosOrder(models.Model):
-    """Inheriting the pos order model"""
+    """Inheriting the pos order model to add new fields"""
     _inherit = "pos.order"
 
     order_type = fields.Selection([
@@ -38,6 +37,7 @@ class PosOrder(models.Model):
 
     @api.depends('online_order_status')
     def _compute_order_priority(self):
+        """function to compute the priority of the order based on the status of the online order"""
         for order in self:
             if order.online_order_status == 'open':
                 order.order_priority = 1
@@ -49,6 +49,7 @@ class PosOrder(models.Model):
                 order.order_priority = 4
 
     def update_order_status_in_deliverect(self,status):
+        """function to update the status of the order in deliverect"""
         url = f"https://api.staging.deliverect.com/orderStatus/{self.online_order_id}"
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         payload = {
@@ -65,6 +66,7 @@ class PosOrder(models.Model):
         _logger.info(f"Deliverect Order Status Update : {response.status_code} - {response.text}")
 
     def update_order_status(self, status):
+        """function to update the status of the order"""
         if status == 'approved':
             self.write({'online_order_status': 'approved','is_cooking':True})
             self.update_order_status_in_deliverect(20)
@@ -87,6 +89,7 @@ class PosOrder(models.Model):
 
     @api.model
     def get_new_orders(self,config_id):
+        """function to get the new orders from deliverect"""
         return self.search_count([
             ('online_order_status', '=', 'open'),
             ('is_online_order', '=', True),
@@ -96,6 +99,7 @@ class PosOrder(models.Model):
 
     @api.model
     def get_open_orders(self,config_id):
+        """function to get the open orders from deliverect"""
         now=fields.Datetime.now()
         expiration_time=now-timedelta(minutes=1)
         orders = self.search_read(

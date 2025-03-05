@@ -13,12 +13,12 @@ patch(Navbar.prototype, {
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService.addChannel(this.channel);
         this.busService.addEventListener('notification', ({detail: notifications})=>{
-        notifications = notifications.filter(item => item.payload.channel === this.channel)
-        notifications.forEach(item => {
-            this.notification.add(_t("New Order Received"), { type: "info",
-                                                     sticky: true});
-            this.onlineOrderCount();
-            })
+            notifications = notifications.filter(item => item.payload.channel === this.channel)
+            notifications.forEach(item => {
+                this.notification.add(_t("New Order Received"), { type: "info",
+                                                         sticky: true});
+                this.onlineOrderCount();
+                })
         });
         this.orm = useService("orm");
         this.action = useService("action");

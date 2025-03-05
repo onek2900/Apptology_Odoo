@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-
-from odoo import models, fields, api
 import logging
 import requests
-import json
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
 
 
 class PosConfig(models.Model):
+    """Inherited class to add new fields to pos.config"""
     _inherit = 'pos.config'
 
     auto_approve = fields.Boolean(string="Auto Approve", help="Automatically approve all orders from Deliverect")
@@ -16,14 +15,18 @@ class PosConfig(models.Model):
     client_secret = fields.Char(string="Client Secret")
     account_id = fields.Char(string="Account ID")
     location_id = fields.Char(string="Location ID")
+    status_message = fields.Char(string="Status Message")
+    order_status_message = fields.Char(string="Order Status Message")
 
     def toggle_approve(self):
+        """function to toggle approve button"""
         if self.auto_approve:
             self.auto_approve = False
         else:
             self.auto_approve = True
 
     def force_sync_pos(self):
+        """function to force sync products from Deliverect"""
         force_sync = self.action_sync_product()
         if force_sync:
             return {
@@ -49,11 +52,17 @@ class PosConfig(models.Model):
             }
 
     def show_deliverect_urls(self):
+        """function to show deliverect related data in wizard"""
+        deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         registration_url = f"{base_url}/deliverect/pos/register/{self.id}"
         orders_url = f"{base_url}/deliverect/pos/orders/{self.id}"
         products_url = f"{base_url}/deliverect/pos/products/{self.id}"
-        location_id = self.location_id
+        order_status_message = ""
+        if deliverect_payment_method.id not in self.payment_method_ids.ids:
+            order_status_message += "Unable to Accept Order - Deliverect Payment Method not selected"
+        elif not self.current_session_id:
+            order_status_message += "Unable to Accept Orders - Inactive Session"
         return {
             'name': 'Deliverect URLs',
             'type': 'ir.actions.act_window',
@@ -64,18 +73,29 @@ class PosConfig(models.Model):
                 'default_registration_url': registration_url,
                 'default_orders_url': orders_url,
                 'default_products_url': products_url,
-                'default_location_id': location_id
+                'default_location_id': self.location_id,
+                'default_status_message': self.status_message if self.status_message else "POS Not Registered",
+                'default_order_status_message': order_status_message if order_status_message else "POS Ready To Accept "
+                                                                                                  "Orders"
             },
             'flags': {'mode': 'readonly'},
         }
 
     def create_customers_channel(self):
-        print('create customer channel')
+        """function for creating channel customers"""
         self.env['deliverect.channel'].sudo().update_channel()
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         if not token:
             _logger.error("No authentication token received. Aborting channel update.")
-            return False
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Failure',
+                    'message': "Error Generating Authentication Token",
+                    'type': 'danger',
+                }
+            }
         location_id = self.location_id
         embedded_param = '{"channelLinks":1}'
         url = f'https://api.staging.deliverect.com/locations/{location_id}?embedded={embedded_param}'
@@ -131,9 +151,9 @@ class PosConfig(models.Model):
             }
 
     def create_combo_product_data(self, combo_product):
+        """function to create combo product data for Deliverect"""
         deliverect_products = []
 
-        # Convert main combo product (Type 1)
         main_product = {
             "productType": 1,
             "isCombo": True,
@@ -143,7 +163,6 @@ class PosConfig(models.Model):
             "imageUrl": self.image_upload(combo_product.product_tmpl_id.id),
             "subProducts": []
         }
-        # Process combo attributes (Type 3 - modifier groups)
         sum_base_price = sum(combo_product.combo_ids.mapped('base_price'))
         for combo in combo_product.combo_ids:
             modifier_group_plu = f"CC-{combo.id}"
@@ -156,7 +175,6 @@ class PosConfig(models.Model):
             }
             base_price = combo.base_price
 
-            # Process combo lines (Type 2 - modifiers)
             for line in combo.combo_line_ids:
                 product = line.product_id
                 product_tax = self.env['product.product'].sudo().browse(product.id).taxes_id.amount
@@ -217,6 +235,7 @@ class PosConfig(models.Model):
             return False
 
     def image_upload(self, product_tmpl_id):
+        """function to upload product image to Deliverect"""
         model = 'product.template'
         image = 'image_1920'
         attachment_id = self.env['ir.attachment'].sudo().search(
@@ -233,6 +252,7 @@ class PosConfig(models.Model):
         return product_image_url
 
     def create_product_data(self):
+        """function to create product data for Deliverect"""
         products = self.env['product.product'].sudo().search([('active', '=', True),
                                                               ('detailed_type', '!=', 'combo'),
                                                               ('attribute_line_ids', '=', False),

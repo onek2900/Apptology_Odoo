@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-import json
-
+import logging
 import requests
 from odoo import models, fields, api
-import logging
 
 _logger = logging.getLogger(__name__)
 
 class DeliverectChannel(models.Model):
+    """Class for Deliverect channels"""
     _name = "deliverect.channel"
 
     name = fields.Char(string="Name")
@@ -16,7 +15,6 @@ class DeliverectChannel(models.Model):
 
     def update_channel(self):
         """Fetch and update Deliverect channels"""
-        print('inside update channel')
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         if not token:
             _logger.error("No authentication token received. Aborting channel update.")

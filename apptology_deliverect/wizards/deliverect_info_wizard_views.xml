@@ -15,8 +15,13 @@
                         <field name="products_url"/>
                         <field name="location_id"/>
                     </group>
-                    <div class="alert alert-warning mt-3" role="alert">
-                        <p>Use these URLs to configure your Deliverect integration.</p>
+                    <div class="alert alert-success mb-3"
+                         role="alert">
+                        <p><strong>Registration Status :</strong> <field name="status_message"/></p>
+                    </div>
+                    <div class="alert alert-success mb-3"
+                         role="alert">
+                        <p><strong>Order Status :</strong> <field name="order_status_message"/></p>
                     </div>
                 </sheet>
                 <footer>

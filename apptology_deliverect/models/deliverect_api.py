@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-
+import logging
 import requests
 from odoo import models
-import logging
 
 _logger = logging.getLogger(__name__)
 
 class DeliverectAPI(models.AbstractModel):
+    """Class for Deliverect API Helper"""
     _name = "deliverect.api"
     _description = "Deliverect API Helper"
 
     def generate_auth_token(self):
+        """function for generating Deliverect token"""
         url = "https://api.staging.deliverect.com/oauth/token"
         config_parameter = self.env['ir.config_parameter'].sudo()
         client_id = config_parameter.get_param('client_id')

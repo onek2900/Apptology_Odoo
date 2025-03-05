@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 from odoo import models, fields, api
 
 
 class ResConfigSettings(models.TransientModel):
+    """Inherited ResConfigSettings model to add client_id and client_secret fields."""
     _inherit = 'res.config.settings'
 
     client_id = fields.Char(string="Client ID")

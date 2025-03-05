@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-
-import requests
-from odoo import models, fields, api,_
 import logging
+import requests
+from odoo import fields,models,_
 
 _logger = logging.getLogger(__name__)
 
 
 class DeliverectAllergens(models.Model):
+    """Class for Deliverect Allergens"""
     _name = "deliverect.allergens"
     _description = "Deliverect Allergens"
 
