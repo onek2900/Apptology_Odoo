@@ -150,13 +150,30 @@ class DeliverectWebhooks(http.Controller):
         """function for pos order data from deliverect data"""
         pos_reference = self.generate_sequence_number(self, data['channelOrderId'], data['channel'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
+        print('pos config session:',pos_config.current_session_id)
         if pos_config.current_session_id:
-            ir_sequence_session = request.env['ir.sequence'].sudo().search([
+            sequence_code = f"pos.order_online_{pos_config.current_session_id.id}"
+            print('sequence_code :',sequence_code)
+            online_order_sequence = request.env['ir.sequence'].sudo().search([
                 ('company_id', '=', pos_config.company_id.id),
-                ('code', '=', f"pos.order_{pos_config.current_session_id.id}")
-            ]).next_by_code(f"pos.order_{pos_config.current_session_id.id}")
-
+                ('code', '=', sequence_code)
+            ])
+            print('online_order_sequence :',online_order_sequence)
+            if not online_order_sequence:
+                online_order_sequence = request.env['ir.sequence'].sudo().create({
+                    'name': f"Online-Order {pos_config.current_session_id.id}",
+                    'code': sequence_code,
+                    'company_id': pos_config.company_id.id,
+                    'padding': 4,
+                    'prefix': f"ONLINE/{pos_config.name}/",
+                    'number_next': 1,
+                    'number_increment': 1,
+                })
+                print('no online order sequence found :',online_order_sequence)
+            ir_sequence_session = online_order_sequence.next_by_id()
+            print('ir sequence session :',ir_sequence_session)
             sequence_number = re.findall(r'\d+', ir_sequence_session)[0]
+            print('sequence number :',sequence_number)
             order_lines = []
             for item in data['items']:
                 if item.get("isCombo"):
@@ -282,7 +299,7 @@ class DeliverectWebhooks(http.Controller):
             return Response(
                 json.dumps({
                     'status': 'error',
-                    'message': 'Invalid order data',
+                    'message': f'Message: {e}',
                 }),
                 content_type='application/json',
                 status=400
