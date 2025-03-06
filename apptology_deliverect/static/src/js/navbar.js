@@ -21,7 +21,6 @@ patch(Navbar.prototype, {
                 this.onlineOrderCount();
                 })
         });
-        console.log("Bus service added")
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");

@@ -151,35 +151,34 @@ class DeliverectWebhooks(http.Controller):
         """function for pos order data from deliverect data"""
         pos_reference = self.generate_pos_reference(self, data['channelOrderId'], data['channel'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
-        print('pos config session:',pos_config.current_session_id)
-        _logger.info(f"pos config id:{pos_config.id}")
-        if pos_config.current_session_id:
-            sequence_code = f"pos.order_online_{pos_config.current_session_id.id}"
-            print('sequence_code :',sequence_code)
-            online_order_sequence = request.env['ir.sequence'].sudo().search([
-                ('company_id', '=', pos_config.company_id.id),
-                ('code', '=', sequence_code)
-            ])
-            print('online_order_sequence :',online_order_sequence)
-            if not online_order_sequence:
-                _logger.info(f"ir sequence not found for pos config id creating one")
-                online_order_sequence = request.env['ir.sequence'].sudo().create({
-                    'name': f"Online-Order {pos_config.current_session_id.id}",
-                    'code': sequence_code,
-                    'company_id': pos_config.company_id.id,
-                    'padding': 4,
-                    'prefix': f"ONLINE/{pos_config.name}/",
-                    'number_next': 1,
-                    'number_increment': 1,
-                })
-                print('no online order sequence found :',online_order_sequence)
-            _logger.info(f"ir sequence found code : {online_order_sequence.code}")
-            ir_sequence_session = online_order_sequence.next_by_id()
-            _logger.info(f"ir sequence session id: {ir_sequence_session}")
-            print('ir sequence session :',ir_sequence_session)
-            sequence_number = re.findall(r'\d+', ir_sequence_session)[0]
-            _logger.info(f"ir sequence number :{sequence_number}")
-            print('sequence number :',sequence_number)
+        _logger.info(f"Creating order for POS config {pos_config.id}")
+
+        if not pos_config.current_session_id:
+            _logger.error(f"No active session for POS config {pos_config.id}")
+            return False
+
+        try:
+            # Get current session ID
+            current_session = pos_config.current_session_id
+            # Use the standard POS order sequence for this session
+            sequence_code = f"pos.order_{current_session.id}"
+            _logger.info(f"Using standard POS sequence: {sequence_code}")
+            # Get the next sequence number from the standard POS order sequence
+            # Use sudo() and company-specific search instead of force_company
+            ir_sequence = request.env['ir.sequence'].sudo().search([
+                ('code', '=', sequence_code),
+                ('company_id', '=', pos_config.company_id.id)
+            ], limit=1)
+            if not ir_sequence:
+                _logger.error(f"Standard POS sequence not found: {sequence_code}")
+                return False
+
+            # Get next number in sequence without force_company
+            sequence_str = ir_sequence.sudo().next_by_id()
+            _logger.info(f"Generated sequence: {sequence_str}")
+
+            # Extract sequence number
+            sequence_number = re.findall(r'\d+', sequence_str)[0]
             order_lines = []
             for item in data['items']:
                 if item.get("isCombo"):
@@ -238,7 +237,8 @@ class DeliverectWebhooks(http.Controller):
                                'user_id': pos_config.current_user_id.id},
                           }
             return order_data
-        else:
+        except Exception as e:
+            _logger.error(f"Failed to create order data: {str(e)}")
             return False
 
     @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none", csrf=False)
