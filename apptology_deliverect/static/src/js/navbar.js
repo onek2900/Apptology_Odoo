@@ -13,6 +13,7 @@ patch(Navbar.prototype, {
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService.addChannel(this.channel);
         this.busService.addEventListener('notification', ({detail: notifications})=>{
+            console.log("Notification received", notifications);
             notifications = notifications.filter(item => item.payload.channel === this.channel)
             notifications.forEach(item => {
                 this.notification.add(_t("New Order Received"), { type: "info",
@@ -20,6 +21,7 @@ patch(Navbar.prototype, {
                 this.onlineOrderCount();
                 })
         });
+        console.log("Bus service added")
         this.orm = useService("orm");
         this.action = useService("action");
         this.notification = useService("notification");

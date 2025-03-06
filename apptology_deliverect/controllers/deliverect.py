@@ -109,6 +109,7 @@ class DeliverectWebhooks(http.Controller):
     @staticmethod
     def generate_order_notification(pos_id):
         """function for generating notification for pos order"""
+        _logger.info(f"generating notification in pos id :{pos_id}")
         channel = f"new_pos_order_{pos_id}"
         request.env["bus.bus"]._sendone(channel, "notification", {
             "channel": channel,
@@ -138,7 +139,7 @@ class DeliverectWebhooks(http.Controller):
         }
 
     @staticmethod
-    def generate_sequence_number(self, channel_order_id, channel_id):
+    def generate_pos_reference(self, channel_order_id, channel_id):
         """function for generating sequence number for pos order"""
         numeric_part = ''.join(filter(str.isdigit, channel_order_id))
         last_7_digits = numeric_part[-7:].zfill(7)
@@ -148,9 +149,10 @@ class DeliverectWebhooks(http.Controller):
     @staticmethod
     def create_order_data(self, data, pos_id):
         """function for pos order data from deliverect data"""
-        pos_reference = self.generate_sequence_number(self, data['channelOrderId'], data['channel'])
+        pos_reference = self.generate_pos_reference(self, data['channelOrderId'], data['channel'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         print('pos config session:',pos_config.current_session_id)
+        _logger.info(f"pos config id:{pos_config.id}")
         if pos_config.current_session_id:
             sequence_code = f"pos.order_online_{pos_config.current_session_id.id}"
             print('sequence_code :',sequence_code)
@@ -160,6 +162,7 @@ class DeliverectWebhooks(http.Controller):
             ])
             print('online_order_sequence :',online_order_sequence)
             if not online_order_sequence:
+                _logger.info(f"ir sequence not found for pos config id creating one")
                 online_order_sequence = request.env['ir.sequence'].sudo().create({
                     'name': f"Online-Order {pos_config.current_session_id.id}",
                     'code': sequence_code,
@@ -170,9 +173,12 @@ class DeliverectWebhooks(http.Controller):
                     'number_increment': 1,
                 })
                 print('no online order sequence found :',online_order_sequence)
+            _logger.info(f"ir sequence found code : {online_order_sequence.code}")
             ir_sequence_session = online_order_sequence.next_by_id()
+            _logger.info(f"ir sequence session id: {ir_sequence_session}")
             print('ir sequence session :',ir_sequence_session)
             sequence_number = re.findall(r'\d+', ir_sequence_session)[0]
+            _logger.info(f"ir sequence number :{sequence_number}")
             print('sequence number :',sequence_number)
             order_lines = []
             for item in data['items']:
@@ -287,6 +293,7 @@ class DeliverectWebhooks(http.Controller):
                         'online_order_status': 'approved' if is_auto_approve else 'open',
                         'order_type': str(data['orderType']),
                     })
+                    _logger.info(f"Trying to Generating order notification for pos")
                     self.generate_order_notification(pos_id)
                     return Response(
                         json.dumps({'status': 'success', 'message': 'Order created',
