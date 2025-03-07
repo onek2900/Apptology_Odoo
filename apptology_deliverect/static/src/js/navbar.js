@@ -3,7 +3,7 @@
 import { Navbar } from "@point_of_sale/app/navbar/navbar";
 import { patch } from "@web/core/utils/patch";
 import { useService,useBus } from "@web/core/utils/hooks";
-import { useState,onWillUnmount } from "@odoo/owl";
+import { useState,onWillUnmount,EventBus } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 
 patch(Navbar.prototype, {
@@ -28,26 +28,22 @@ patch(Navbar.prototype, {
         })
         this.initiateServices();
         useBus(this.env.bus, 'online_order_state_update', (ev) =>{
-            this.onlineOrderCount();
+        this.onlineOrderCount();
         });
         onWillUnmount(()=>clearInterval(this.pollingOrderCountInterval));
         },
     initiateServices(){
-//    function to initiate services
         this.onlineOrderCount();
         this.startPollingOrderCount();
     },
     async autoApproveOrders(){
-//    function to auto approve online orders
         await this.orm.call("pos.config", "toggle_approve", [this.pos.config.id]);
         window.location.reload();
     },
     async onClickOnlineOrder() {
-//    function to show online order screen
         await this.pos.showScreen("OnlineOrderScreen");
     },
     async onlineOrderCount() {
-//    function to fetch online order count
         try {
             this.state.onlineOrderCount = await this.pos.get_online_orders();
         } catch (error) {
@@ -55,7 +51,6 @@ patch(Navbar.prototype, {
         }
     },
     async startPollingOrderCount() {
-//    function to start polling online order count every 10 seconds
         this.pollingOrderCountInterval=setInterval(() => {
             this.onlineOrderCount();
         }, 10000);

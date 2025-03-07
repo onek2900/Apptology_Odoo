@@ -117,18 +117,11 @@ class PosOrder(models.Model):
              'partner_id',
              'user_id', 'lines'], order="order_priority, date_order DESC"
         )
-        for order in orders:
-            order['amount_total'] = "{:.2f}".format(order['amount_total'])
-            order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
         all_line_ids = [line_id for order in orders for line_id in order['lines']]
         lines = self.env['pos.order.line'].search_read(
             [('id', 'in', all_line_ids)],
             ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl']
         )
-        for line in lines:
-            line['price_unit'] = "{:.2f}".format(line['price_unit'])
-            line['price_subtotal'] = "{:.2f}".format(line['price_subtotal'])
-            line['price_subtotal_incl'] = "{:.2f}".format(line['price_subtotal_incl'])
         line_mapping = {line['id']: line for line in lines}
         for order in orders:
             order['lines'] = [line_mapping[line_id] for line_id in order['lines'] if line_id in line_mapping]
