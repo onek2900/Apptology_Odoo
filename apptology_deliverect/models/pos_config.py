@@ -59,17 +59,10 @@ class PosConfig(models.Model):
         orders_url = f"{base_url}/deliverect/pos/orders/{self.id}"
         products_url = f"{base_url}/deliverect/pos/products/{self.id}"
         order_status_message = ""
-        sequence_code = f"pos.order_{self.current_session_id.id}"
-        ir_sequence = self.env['ir.sequence'].sudo().search([
-            ('code', '=', sequence_code),
-            ('company_id', '=', self.company_id.id)
-        ], limit=1)
         if deliverect_payment_method.id not in self.payment_method_ids.ids:
             order_status_message += "Unable to Accept Order - Deliverect Payment Method not selected"
         elif not self.current_session_id:
             order_status_message += "Unable to Accept Orders - Inactive Session"
-        elif not ir_sequence:
-            order_status_message += "Unable to Accept Orders - Sequence not found"
         return {
             'name': 'Deliverect URLs',
             'type': 'ir.actions.act_window',

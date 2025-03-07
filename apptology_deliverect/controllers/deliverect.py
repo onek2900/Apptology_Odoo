@@ -161,8 +161,21 @@ class DeliverectWebhooks(http.Controller):
                 ('company_id', '=', pos_config.company_id.id)
             ], limit=1)
             if not ir_sequence:
-                _logger.error(f"Standard POS sequence not found: {sequence_code}")
-                return False
+                sequence_code = f"online_pos.order_{current_session.id}"
+                ir_sequence = request.env['ir.sequence'].sudo().search([
+                    ('code', '=', sequence_code),
+                    ('company_id', '=', pos_config.company_id.id)
+                ], limit=1)
+                if not ir_sequence:
+                    ir_sequence = request.env['ir.sequence'].sudo().create({
+                        'code': sequence_code,
+                        'company_id': pos_config.company_id.id,
+                        'padding': 4,
+                        'prefix': 'Online',
+                        'name': 'Online Sequence',
+                        'number_increment': 1,
+                    })
+                    _logger.error(f"Standard POS sequence not found - created New one: {ir_sequence.code}")
             sequence_str = ir_sequence.sudo().next_by_id()
             sequence_number = re.findall(r'\d+', sequence_str)[0]
             order_lines = []
@@ -183,8 +196,9 @@ class DeliverectWebhooks(http.Controller):
                             'discount': 0,
                         }))
                 else:
-                    product = request.env['product.product'].sudo().search([('id', '=', int(item['plu'].split('-')[1]))],
-                                                                           limit=1)
+                    product = request.env['product.product'].sudo().search(
+                        [('id', '=', int(item['plu'].split('-')[1]))],
+                        limit=1)
                     if product:
                         order_lines.append((0, 0, {
                             'full_product_name': product.name,
