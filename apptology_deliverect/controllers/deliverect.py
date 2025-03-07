@@ -109,7 +109,6 @@ class DeliverectWebhooks(http.Controller):
     @staticmethod
     def generate_order_notification(pos_id):
         """function for generating notification for pos order"""
-        _logger.info(f"generating notification in pos id :{pos_id}")
         channel = f"new_pos_order_{pos_id}"
         request.env["bus.bus"]._sendone(channel, "notification", {
             "channel": channel,
@@ -151,20 +150,12 @@ class DeliverectWebhooks(http.Controller):
         """function for pos order data from deliverect data"""
         pos_reference = self.generate_pos_reference(self, data['channelOrderId'], data['channel'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
-        _logger.info(f"Creating order for POS config {pos_config.id}")
-
         if not pos_config.current_session_id:
             _logger.error(f"No active session for POS config {pos_config.id}")
             return False
-
         try:
-            # Get current session ID
             current_session = pos_config.current_session_id
-            # Use the standard POS order sequence for this session
             sequence_code = f"pos.order_{current_session.id}"
-            _logger.info(f"Using standard POS sequence: {sequence_code}")
-            # Get the next sequence number from the standard POS order sequence
-            # Use sudo() and company-specific search instead of force_company
             ir_sequence = request.env['ir.sequence'].sudo().search([
                 ('code', '=', sequence_code),
                 ('company_id', '=', pos_config.company_id.id)
@@ -172,12 +163,7 @@ class DeliverectWebhooks(http.Controller):
             if not ir_sequence:
                 _logger.error(f"Standard POS sequence not found: {sequence_code}")
                 return False
-
-            # Get next number in sequence without force_company
             sequence_str = ir_sequence.sudo().next_by_id()
-            _logger.info(f"Generated sequence: {sequence_str}")
-
-            # Extract sequence number
             sequence_number = re.findall(r'\d+', sequence_str)[0]
             order_lines = []
             for item in data['items']:
@@ -293,7 +279,6 @@ class DeliverectWebhooks(http.Controller):
                         'online_order_status': 'approved' if is_auto_approve else 'open',
                         'order_type': str(data['orderType']),
                     })
-                    _logger.info(f"Trying to Generating order notification for pos")
                     self.generate_order_notification(pos_id)
                     return Response(
                         json.dumps({'status': 'success', 'message': 'Order created',
@@ -301,6 +286,8 @@ class DeliverectWebhooks(http.Controller):
                         content_type='application/json',
                         status=200
                     )
+                else:
+                    raise Exception("Sequence not found for POS")
         except Exception as e:
             _logger.error(f"Error processing order webhook: {str(e)}")
             return Response(
@@ -311,7 +298,6 @@ class DeliverectWebhooks(http.Controller):
                 content_type='application/json',
                 status=400
             )
-
 
     @http.route('/deliverect/pos/register/<int:pos_id>', type='json', methods=['POST'], auth="none", csrf=False)
     def register_pos(self, pos_id):
