@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import requests
-from odoo import fields,models,_
+from odoo import fields, models, _
 
 _logger = logging.getLogger(__name__)
 
@@ -11,8 +11,8 @@ class DeliverectAllergens(models.Model):
     _name = "deliverect.allergens"
     _description = "Deliverect Allergens"
 
-    name = fields.Char(string="Allergen", required=True)
-    allergen_id = fields.Integer(string="Allergen ID", required=True, unique=True)
+    name = fields.Char(string="Allergen", required=True, help="Name of the allergen")
+    allergen_id = fields.Integer(string="Allergen ID", required=True, unique=True, help="ID of the allergen")
 
     def update_allergens(self):
         """Fetch and update Deliverect allergens"""
@@ -37,16 +37,8 @@ class DeliverectAllergens(models.Model):
                     existing_allergen.write(vals)
                 else:
                     self.env["deliverect.allergens"].create(vals)
-            _logger.info("Allergen update successful.")
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'type': 'success',
-                    'message': _('Allergens updated successfully'),
-                    'next': {'type': 'ir.actions.act_window_close'},
-                }
-            }
-
+            _logger.info("Allergens updated successfully from Deliverect")
+            return True
         except requests.exceptions.RequestException as e:
             _logger.error(f"Failed to fetch allergens from Deliverect: {str(e)}")
+            return False

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="product_product_view_form" model="ir.ui.view">
+    <record id="product_normal_form_view" model="ir.ui.view">
         <field name="name">product.product.view.form.inherit.product_details</field>
         <field name="model">product.product</field>
         <field name="inherit_id" ref="product.product_normal_form_view"/>
@@ -8,16 +8,11 @@
             <xpath expr="//notebook" position="inside">
                 <page string="Deliverect" name="deliverect">
                     <group>
-                        <group string="Product Info">
-                            <field name="product_type"/>
-                            <field name="all_channel_visible"/>
-                            <field name="hide_channel_ids" widget="many2many_tags"/>
-                            <field name="delivery_tax"/>
-                            <field name="takeaway_tax"/>
-                            <field name="eat_in_tax"/>
-                        </group>
                         <group string="Beverage Info">
                             <field name="allergens_and_tag_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Channel Info">
+                            <field name="channel_ids" widget="many2many_tags"/>
                         </group>
                     </group>
                 </page>

@@ -9,8 +9,8 @@ class DeliverectChannel(models.Model):
     """Class for Deliverect channels"""
     _name = "deliverect.channel"
 
-    name = fields.Char(string="Name")
-    channel_id = fields.Integer(string="Channel ID")
+    name = fields.Char(string="Name",help="Name of the Deliverect channel")
+    channel_id = fields.Integer(string="Channel ID",help="ID of the Deliverect channel")
 
 
     def update_channel(self):

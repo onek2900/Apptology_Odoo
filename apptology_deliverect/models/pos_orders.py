@@ -90,34 +90,45 @@ class PosOrder(models.Model):
     @api.model
     def get_new_orders(self,config_id):
         """function to get the new orders from deliverect"""
+        session_id = self.env['pos.config'].browse(config_id).current_session_id.id
         return self.search_count([
             ('online_order_status', '=', 'open'),
             ('is_online_order', '=', True),
             ('amount_total','>',0),
+            ('session_id','=',session_id),
             ('config_id','=',config_id)])
 
-
     @api.model
-    def get_open_orders(self,config_id):
+    def get_open_orders(self, config_id):
         """function to get the open orders from deliverect"""
-        now=fields.Datetime.now()
-        expiration_time=now-timedelta(minutes=1)
+        session_id = self.env['pos.config'].browse(config_id).current_session_id.id
+        now = fields.Datetime.now()
+        expiration_time = now - timedelta(minutes=1)
         orders = self.search_read(
             ['|',
-                ('declined_time', '=', False),
-                ('declined_time', '>', expiration_time),
-                ('is_online_order', '=', True),
-                ('amount_total','>',0),
-                ('config_id', '=', config_id)
-            ],
-            ['id', 'online_order_status', 'pos_reference','order_status', 'amount_total', 'amount_tax', 'date_order', 'partner_id',
-             'user_id', 'lines'],order="order_priority, date_order DESC"
+             ('declined_time', '=', False),
+             ('declined_time', '>', expiration_time),
+             ('is_online_order', '=', True),
+             ('amount_total', '>', 0),
+             ('config_id', '=', config_id),
+             ('session_id', '=', session_id)
+             ],
+            ['id', 'online_order_status', 'pos_reference', 'order_status', 'amount_total', 'amount_tax', 'date_order',
+             'partner_id',
+             'user_id', 'lines'], order="order_priority, date_order DESC"
         )
+        for order in orders:
+            order['amount_total'] = "{:.2f}".format(order['amount_total'])
+            order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
         all_line_ids = [line_id for order in orders for line_id in order['lines']]
         lines = self.env['pos.order.line'].search_read(
             [('id', 'in', all_line_ids)],
             ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl']
         )
+        for line in lines:
+            line['price_unit'] = "{:.2f}".format(line['price_unit'])
+            line['price_subtotal'] = "{:.2f}".format(line['price_subtotal'])
+            line['price_subtotal_incl'] = "{:.2f}".format(line['price_subtotal_incl'])
         line_mapping = {line['id']: line for line in lines}
         for order in orders:
             order['lines'] = [line_mapping[line_id] for line_id in order['lines'] if line_id in line_mapping]

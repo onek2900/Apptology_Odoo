@@ -6,8 +6,8 @@ class ResConfigSettings(models.TransientModel):
     """Inherited ResConfigSettings model to add client_id and client_secret fields."""
     _inherit = 'res.config.settings'
 
-    client_id = fields.Char(string="Client ID")
-    client_secret = fields.Char(string="Client Secret")
+    client_id = fields.Char(string="Client ID",help="Enter your client ID Provided by Deliverect.")
+    client_secret = fields.Char(string="Client Secret",help="Enter your client secret Provided by Deliverect.")
 
     def set_values(self):
         super(ResConfigSettings, self).set_values()

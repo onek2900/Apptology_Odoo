@@ -9,12 +9,10 @@ class ProductProduct(models.Model):
     """Inherit product.product to add custom fields."""
     _inherit = "product.product"
 
-    product_type = fields.Selection(
-        selection=[('1', 'Product'), ('2', 'Modifier'), ('3', 'Modifier Group'), ('4', 'Bundle')],default='1')
-    all_channel_visible = fields.Boolean(string="All Channels Visible",default=True)
-    hide_channel_ids = fields.Many2many('deliverect.channel', string="Hide Channels")
-    delivery_tax = fields.Float(string="Delivery Tax")
-    takeaway_tax = fields.Float(string="Takeaway Tax")
-    eat_in_tax = fields.Float(string="Eat-in Tax")
-    allergens_and_tag_ids = fields.Many2many('deliverect.allergens', string="Allergens and Tags")
+    channel_ids = fields.Many2many('deliverect.channel', string="Deliverect Channels",help="Deliverect Channels "
+                                                                                           "available")
+    delivery_tax = fields.Float(string="Delivery Tax",help="Delivery Tax for the product")
+    takeaway_tax = fields.Float(string="Takeaway Tax",help="Takeaway Tax for the product")
+    eat_in_tax = fields.Float(string="Eat-in Tax",help="Eat-in Tax for the product")
+    allergens_and_tag_ids = fields.Many2many('deliverect.allergens', string="Allergens and Tags",help="Allergens and Tags for the product")
 

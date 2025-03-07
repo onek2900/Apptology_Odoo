@@ -11,12 +11,12 @@ class PosConfig(models.Model):
     _inherit = 'pos.config'
 
     auto_approve = fields.Boolean(string="Auto Approve", help="Automatically approve all orders from Deliverect")
-    client_id = fields.Char(string="Client ID")
-    client_secret = fields.Char(string="Client Secret")
-    account_id = fields.Char(string="Account ID")
-    location_id = fields.Char(string="Location ID")
-    status_message = fields.Char(string="Status Message")
-    order_status_message = fields.Char(string="Order Status Message")
+    client_id = fields.Char(string="Client ID",help="Client ID provided by Deliverect")
+    client_secret = fields.Char(string="Client Secret",help="Client Secret provided by Deliverect")
+    account_id = fields.Char(string="Account ID",help="Account ID provided by Deliverect")
+    location_id = fields.Char(string="Location ID",help='Location ID provided by Deliverect')
+    status_message = fields.Char(string="Registration Status Message",help="Registration Status Message")
+    order_status_message = fields.Char(string="Order Status Message",help="Order Status Message")
 
     def toggle_approve(self):
         """function to toggle approve button"""
@@ -81,6 +81,29 @@ class PosConfig(models.Model):
             'flags': {'mode': 'readonly'},
         }
 
+    def update_allergens(self):
+        """function to update allergens"""
+        allergens_updated = self.env['deliverect.allergens'].sudo().update_allergens()
+        if allergens_updated:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Success',
+                    'message': "Allergens Updated Successfully",
+                    'type': 'success',
+                }
+            }
+        else:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Failure',
+                    'message': "Error Updating Allergens",
+                    'type': 'danger',
+                }
+            }
     def create_customers_channel(self):
         """function for creating channel customers"""
         self.env['deliverect.channel'].sudo().update_channel()
@@ -161,7 +184,9 @@ class PosConfig(models.Model):
             "price": 0,
             "name": combo_product.name,
             "imageUrl": self.image_upload(combo_product.product_tmpl_id.id),
-            "subProducts": []
+            "subProducts": [],
+            "productTags": [allergen.allergen_id for allergen in
+                            combo_product.allergens_and_tag_ids] if combo_product.allergens_and_tag_ids else []
         }
         sum_base_price = sum(combo_product.combo_ids.mapped('base_price'))
         for combo in combo_product.combo_ids:
@@ -266,4 +291,6 @@ class PosConfig(models.Model):
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
             "imageUrl": self.image_upload(product.product_tmpl_id.id),
+            "productTags": [allergen.allergen_id for allergen in
+                            product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
         })
