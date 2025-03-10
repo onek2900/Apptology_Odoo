@@ -21,9 +21,7 @@ patch(Navbar.prototype, {
                 [["pos_config_id", "=", this.pos.config.id]],
                 []
             );
-        console.log('config :',config)
         this.state.is_config_present = config.length>0?true:false;
-        console.log('is_config_present :',this.state.is_config_present)
     },
     async openKitchenScreen() {
         this.action.doAction({

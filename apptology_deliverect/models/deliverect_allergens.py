@@ -41,3 +41,4 @@ class DeliverectAllergens(models.Model):
             return True
         except requests.exceptions.RequestException as e:
             _logger.error(f"Failed to fetch allergens from Deliverect: {str(e)}")
+            return False

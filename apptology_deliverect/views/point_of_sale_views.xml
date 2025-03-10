@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
-    <record id="pos_deliverect_menu_item" model="ir.ui.view">
+    <record id="view_pos_config_kanban" model="ir.ui.view">
         <field name="name">pos.config.kanban.view.inherit.deliverect</field>
         <field name="model">pos.config</field>
         <field name="inherit_id" ref="point_of_sale.view_pos_config_kanban"/>
@@ -29,11 +29,27 @@
                         </a>
                     </div>
                     <div role="menuitem">
+                        <a name="update_allergens"
+                           type="object"
+                           style="white-space: nowrap;"
+                        >
+                            Update Allergens
+                        </a>
+                    </div>
+                    <div role="menuitem">
                         <a name="show_deliverect_urls"
                            type="object"
                            style="white-space: nowrap;"
                         >
                             Deliverect URLs
+                        </a>
+                    </div>
+                    <div role="menuitem">
+                        <a name="clear_products"
+                           type="object"
+                           style="white-space: nowrap;"
+                        >
+                            TEST CLEAR PRODUCTS
                         </a>
                     </div>
                 </div>

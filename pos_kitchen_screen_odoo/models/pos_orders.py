@@ -92,6 +92,7 @@ class PosOrder(models.Model):
             ["&", ("lines.is_cooking", "=", True),
              ("lines.product_id.pos_categ_ids", "in",
               kitchen_screen.pos_categ_ids.ids), ('session_id', '=', pos_session_id.id)], order="date_order")
+        print(pos_orders)
         values = {"orders": pos_orders.read(), "order_lines": pos_orders.lines.read()}
         return values
 
@@ -176,7 +177,6 @@ class PosOrder(models.Model):
         else:
             self.order_status = "ready"
         self.update_order_status_in_deliverect(70)
-        self.update_order_status_in_deliverect(90)
 
 
     def check_order(self, order_name):

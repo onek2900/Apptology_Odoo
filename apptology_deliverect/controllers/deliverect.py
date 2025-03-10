@@ -103,11 +103,14 @@ class DeliverectWebhooks(http.Controller):
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
             "imageUrl": self.image_upload(self, product.product_tmpl_id.id),
+            "productTags": [allergen.allergen_id for allergen in
+                            product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
         })
 
     @staticmethod
     def generate_order_notification(pos_id):
         """function for generating notification for pos order"""
+        _logger.info(f"generating notification in pos id :{pos_id}")
         channel = f"new_pos_order_{pos_id}"
         request.env["bus.bus"]._sendone(channel, "notification", {
             "channel": channel,
@@ -149,6 +152,7 @@ class DeliverectWebhooks(http.Controller):
         """function for pos order data from deliverect data"""
         pos_reference = self.generate_pos_reference(self, data['channelOrderId'], data['channel'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
+        is_auto_approve = pos_config.auto_approve
         if not pos_config.current_session_id:
             _logger.error(f"No active session for POS config {pos_config.id}")
             return False
@@ -165,18 +169,19 @@ class DeliverectWebhooks(http.Controller):
                     ('code', '=', sequence_code),
                     ('company_id', '=', pos_config.company_id.id)
                 ], limit=1)
-                if not ir_sequence:
-                    ir_sequence = request.env['ir.sequence'].sudo().create({
-                        'code': sequence_code,
-                        'company_id': pos_config.company_id.id,
-                        'padding': 4,
-                        'prefix': 'Online',
-                        'name': 'Online Sequence',
-                        'number_increment': 1,
-                    })
-                    _logger.error(f"Standard POS sequence not found - created New one: {ir_sequence.code}")
+            if not ir_sequence:
+                ir_sequence = request.env['ir.sequence'].sudo().create({
+                    'code': sequence_code,
+                    'company_id': pos_config.company_id.id,
+                    'padding': 4,
+                    'prefix': 'Online',
+                    'name': 'Online Sequence',
+                    'number_increment': 1,
+                })
+                _logger.error(f"Standard POS sequence not found - created New one: {ir_sequence.code}")
             sequence_str = ir_sequence.sudo().next_by_id()
             sequence_number = re.findall(r'\d+', sequence_str)[0]
+            order_data = {}
             order_lines = []
             for item in data['items']:
                 if item.get("isCombo"):
@@ -186,7 +191,6 @@ class DeliverectWebhooks(http.Controller):
                             limit=1)
                         order_lines.append((0, 0, {
                             'full_product_name': product.name,
-                            'is_cooking': True,
                             'product_id': product.product_variant_id.id,
                             'price_unit': subitem['price'] / 100,
                             'qty': subitem['quantity'],
@@ -209,32 +213,31 @@ class DeliverectWebhooks(http.Controller):
                             'discount': 0,
                             'tax_ids': [(6, 0, product.taxes_id.ids)]
                         }))
-            deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
-            order_data = {'data':
-                              {'to_invoice': True,
-                               'config_id': pos_config.id,
-                               'company_id': pos_config.company_id.id,
-                               'note': data['note'],
-                               'amount_paid': data['payment']['amount'] / 100,
-                               'amount_return': 0.0,
-                               'amount_tax': data['taxTotal'] / 100,
-                               'amount_total': data['payment']['amount'] / 100,
-                               'fiscal_position_id': False,
-                               'pricelist_id': pos_config.pricelist_id.id,
-                               'lines': order_lines,
-                               'name': pos_reference,
-                               'pos_reference': pos_reference,
-                               'partner_id': self.find_partner(data['channel']),
-                               'date_order': fields.Datetime.to_string(fields.Datetime.now()),
-                               'pos_session_id': pos_config.current_session_id.id,
-                               'sequence_number': sequence_number,
-                               'statement_ids': [[0,
-                                                  0,
-                                                  {'amount': data['payment']['amount'] / 100,
-                                                   'name': fields.Datetime.now(),
-                                                   'payment_method_id': deliverect_payment_method.id}]],
-                               'user_id': pos_config.current_user_id.id},
-                          }
+                    order_data = {
+                        'config_id': pos_config.id,
+                        'company_id': pos_config.company_id.id,
+                        'note': data['note'],
+                        'amount_paid': data['payment']['amount'] / 100,
+                        'amount_return': 0.0,
+                        'amount_tax': data['taxTotal'] / 100,
+                        'amount_total': data['payment']['amount'] / 100,
+                        'fiscal_position_id': False,
+                        'pricelist_id': pos_config.pricelist_id.id,
+                        'lines': order_lines,
+                        'name': pos_reference,
+                        'pos_reference': pos_reference,
+                        'partner_id': self.find_partner(data['channel']),
+                        'date_order': fields.Datetime.to_string(fields.Datetime.now()),
+                        'session_id': pos_config.current_session_id.id,
+                        'sequence_number': sequence_number,
+                        'user_id': pos_config.current_user_id.id,
+                        'is_online_order': True,
+                        'online_order_id': data['_id'],
+                        'floor': 'Online',
+                        'online_order_status': 'approved' if is_auto_approve else 'open',
+                        'order_type': str(data['orderType']),
+                        'online_order_paid': data['orderIsAlreadyPaid']
+                    }
             return order_data
         except Exception as e:
             _logger.error(f"Failed to create order data: {str(e)}")
@@ -259,7 +262,9 @@ class DeliverectWebhooks(http.Controller):
         """webhook for receiving pos orders from deliverect"""
         try:
             pos_config = request.env['pos.config'].sudo().browse(pos_id)
+            deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
             data = json.loads(request.httprequest.data)
+            print(json.dumps(data, indent=4))
             if data['status'] == 100 and data['_id']:
                 order = request.env['pos.order'].sudo().search([('online_order_id', '=', data['_id'])], limit=1)
                 order.write({
@@ -267,7 +272,6 @@ class DeliverectWebhooks(http.Controller):
                     'online_order_status': 'cancelled',
                     'declined_time': fields.Datetime.now()
                 })
-                deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
                 refund_action = order.refund()
                 refund = request.env['pos.order'].sudo().browse(refund_action['res_id'])
                 payment_context = {"active_ids": refund.ids, "active_id": refund.id}
@@ -276,22 +280,21 @@ class DeliverectWebhooks(http.Controller):
                     'payment_method_id': deliverect_payment_method.id,
                 })
                 refund_payment.with_context(**payment_context).check()
-                request.env['pos.order'].with_user(pos_config.current_user_id.id).browse(
-                    refund.id).action_pos_order_invoice()
             else:
                 pos_order_data = self.create_order_data(self, data, pos_id)
                 if pos_order_data:
-                    is_auto_approve = pos_config.auto_approve
-                    order = request.env['pos.order'].with_user(pos_order_data['data']['user_id']).create_from_ui(
-                        [pos_order_data])
-                    order = request.env['pos.order'].sudo().browse(order[0]['id'])
-                    order.write({
-                        'is_online_order': True,
-                        'online_order_id': data['_id'],
-                        'floor': 'Online',
-                        'online_order_status': 'approved' if is_auto_approve else 'open',
-                        'order_type': str(data['orderType']),
-                    })
+                    order = request.env['pos.order'].sudo().create(pos_order_data)
+                    if data['orderIsAlreadyPaid']:
+                        payment_context = {"active_ids": order.ids, "active_id": order.id}
+                        order_payment = request.env['pos.make.payment'].with_user(pos_config.current_user_id.id).sudo(
+                        ).with_context(
+                            **payment_context).create({
+                            'amount': order.amount_total,
+                            'payment_method_id': deliverect_payment_method.id,
+                        })
+                        print('checking order controller')
+                        order_payment.with_context(**payment_context).check()
+                    _logger.info(f"Trying to Generating order notification for pos")
                     self.generate_order_notification(pos_id)
                     return Response(
                         json.dumps({'status': 'success', 'message': 'Order created',

@@ -1,10 +1,9 @@
 /** @odoo-module */
 
 import { usePos } from "@point_of_sale/app/store/pos_hook";
-import { OrderReceipt } from "@point_of_sale/app/screens/receipt_screen/receipt/order_receipt";
 import { registry } from "@web/core/registry";
 import { Component,useState,onWillUnmount } from "@odoo/owl";
-import { useService,useBus } from "@web/core/utils/hooks";
+import { useService } from "@web/core/utils/hooks";
 import { ConfirmPopup } from "@point_of_sale/app/utils/confirm_popup/confirm_popup";
 import { _t } from "@web/core/l10n/translation";
 
@@ -23,28 +22,29 @@ export class OnlineOrderScreen extends Component {
         onWillUnmount(()=>clearInterval(this.pollingInterval))
     }
     async initiateServices(){
+//    function to initiate services
         this.fetchOpenOrders();
         this.startPollingOrders();
     }
     async fetchOpenOrders(){
+//    function to fetch open online orders
         try {
             const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
-            this.state.openOrders=openOrders
+            const unpaidOrders = await this.pos.get_order_list().filter(order => order.name.includes("Online-Order"));
+            this.state.openOrders = openOrders;
+            console.log('openOrders :',openOrders)
+            console.log('unpaidOrders :',unpaidOrders)
+            console.log("Open Orders:", this.state.openOrders)
         } catch (error) {
             console.error("Error fetching open orders:", error);
         }
     }
     async startPollingOrders() {
-        this.pollingInterval = setInterval(async () => {
-            try {
-                const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
-                this.state.openOrders = openOrders;
-            } catch (error) {
-                console.error("Error fetching open orders:", error);
-            }
-        }, 10000);
+//    function to start polling for open orders every 10 seconds
+        this.pollingInterval = setInterval(async () => this.fetchOpenOrders(), 10000);
     }
     async onApproveOrder(orderId) {
+//    function to approve an online order
         await this.orm.call(
             "pos.order",
             "update_order_status",
@@ -56,6 +56,7 @@ export class OnlineOrderScreen extends Component {
     }
 
     async onDeclineOrder(orderId) {
+//    function to decline an online order
         const {confirmed} =  await this.popup.add(ConfirmPopup, {
             title: _t("Confirmation"),
             body: _t(
@@ -74,12 +75,30 @@ export class OnlineOrderScreen extends Component {
             }
     }
     closeOnlineOrderScreen(){
+//    function to close the online order screen
         this.env.services.pos.showScreen("ProductScreen");
     }
     onClickOrder(order){
+//    function to show clicked order details
         this.state.clickedOrder = order
+
     }
-
+async loadOrder(order) {
+    if (order.state=='draft'){
+        await this.pos.load_server_data();
+    }
+    const unpaidOrders = this.pos.get_order_list();
+    const selectedOrder = unpaidOrders.find(orderItem => orderItem.name === order.pos_reference);
+    if (selectedOrder) {
+        this.pos.set_order(selectedOrder);
+    } else {
+        console.warn('Order not found:', order.pos_reference);
+    }
+    this.pos.closeScreen();
 }
-
+    async finalizeOrder(order){
+        console.log('finalizeOrder id:',order.id)
+        await this.orm.call("pos.order", "update_order_status_in_deliverect", [order.id],{status:90});
+    }
+}
 registry.category("pos_screens").add("OnlineOrderScreen", OnlineOrderScreen);

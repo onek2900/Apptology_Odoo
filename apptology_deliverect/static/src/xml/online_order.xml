@@ -10,11 +10,14 @@
                             <div class="col wide p-2">Receipt Number</div>
                             <div class="col p-2">Cashier</div>
                             <div class="col p-2">Customer</div>
-                            <div class="col end p-2">Order Status</div>
+                            <div class="col end p-2">Kitchen Status</div>
+                            <div class="col end p-2">Order Type</div>
+                            <div class="col end p-2">Payment Status</div>
                             <div class="col end p-2">Total</div>
                             <div class="col action-buttons p-2"></div>
                         </div>
                         <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
+                            <t t-log='"my order :",order'/>
                             <div class="order-row" t-att-data-id="order.id" t-on-click="() => this.onClickOrder(order)">
                                 <div class="col wide p-2">
                                     <div><t t-esc="order.date_order"/></div>
@@ -50,6 +53,22 @@
                                     </div>
                                 </div>
                                 <div class="col end p-2">
+                                    <t t-if="order.order_type == '1'">
+                                        <div>Pick Up</div>
+                                    </t>
+                                    <t t-elif="order.order_type == '2'">
+                                        <div>Delivery</div>
+                                    </t>
+                                </div>
+                                <div class="col end p-2">
+                                    <t t-if="order.state=='paid'">
+                                        <div>Paid</div>
+                                    </t>
+                                    <t t-elif="order.state=='draft'">
+                                        <div>Unpaid</div>
+                                    </t>
+                                </div>
+                                <div class="col end p-2">
                                     <div><t t-esc="order.amount_total"/></div>
                                 </div>
                                 <div class="col action-buttons p-2">
@@ -68,6 +87,12 @@
                                     </t>
                                     <t t-elif="order.online_order_status=='rejected'">
                                         <div class="status-badge rejected">Rejected</div>
+                                    </t>
+                                    <t t-elif="order.online_order_status=='pickup'">
+                                        <div class="status-badge rejected">Pick Up</div>
+                                    </t>
+                                    <t t-elif="order.online_order_status=='finalized'">
+                                        <div class="status-badge rejected">Finalized</div>
                                     </t>
                                     <t t-else="">
                                          <div class="status-badge rejected">Cancelled</div>
@@ -89,25 +114,45 @@
                                                 t-esc="order.full_product_name"/></div>
                                         <div class="product-quantity"><t t-esc="order.qty"/>
                                             Units
-                                            x <t t-esc="state.currency_symbol"/>
+                                            x
+                                            <t t-esc="state.currency_symbol"/>
                                             <t t-esc="order.price_unit"/>
                                             /
                                             Units</div>
                                     </div>
-                                        <div class="product-price"><t t-esc="state.currency_symbol"/> <t
-                                                t-esc="order.price_subtotal_incl"/></div>
+                                        <div class="product-price"><t t-esc="state.currency_symbol"/>
+                                            <t t-esc="order.price_subtotal_incl"/></div>
                                     </div>
                                 </t>
                             </div>
                         </t>
                         <div class="totals-section">
                             <div class="total-line d-flex justify-content-end p-3">
-                                <div class="total-text">Total: <t t-esc="state.currency_symbol"/> <t
-                                        t-esc="state.clickedOrder.amount_total">0.00</t></div>
+                                <div class="total-text">Total: <t t-esc="state.currency_symbol"/>
+                                    <t t-esc="state.clickedOrder.amount_total">0.00</t>
+                                </div>
                             </div>
                             <div class="tax-line d-flex justify-content-end px-3 pb-2">
-                                <div class="tax-text">Taxes: <t t-esc="state.currency_symbol"/> <t t-esc="state.clickedOrder.amount_tax">0.00</t></div>
+                                <div class="tax-text">Taxes: <t t-esc="state.currency_symbol"/>
+                                    <t t-esc="state.clickedOrder.amount_tax">0.00</t></div>
                             </div>
+                        </div>
+                        <div class="pads border-top">
+                            <t t-if="state.clickedOrder.state=='draft' and state.clickedOrder.order_status=='ready'">
+                                <button
+                                        class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
+                                        t-on-click.stop="() => this.loadOrder(state.clickedOrder)">
+                                    <span class="fs-1 d-block">Load Order</span>
+                                </button>
+                            </t>
+                            <t
+                                    t-elif="state.clickedOrder.order_status=='ready' and state.online_order_status!='finalized'">
+                                <button
+                                        class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
+                                        t-on-click.stop="() => this.finalizeOrder(state.clickedOrder)">
+                                    <span class="fs-1 d-block">Finalize</span>
+                                </button>
+                            </t>
                         </div>
                     </div>
                 </div>

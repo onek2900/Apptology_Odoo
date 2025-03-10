@@ -11,12 +11,12 @@ class PosConfig(models.Model):
     _inherit = 'pos.config'
 
     auto_approve = fields.Boolean(string="Auto Approve", help="Automatically approve all orders from Deliverect")
-    client_id = fields.Char(string="Client ID")
-    client_secret = fields.Char(string="Client Secret")
-    account_id = fields.Char(string="Account ID")
-    location_id = fields.Char(string="Location ID")
-    status_message = fields.Char(string="Status Message")
-    order_status_message = fields.Char(string="Order Status Message")
+    client_id = fields.Char(string="Client ID", help="Client ID provided by Deliverect")
+    client_secret = fields.Char(string="Client Secret", help="Client Secret provided by Deliverect")
+    account_id = fields.Char(string="Account ID", help="Account ID provided by Deliverect")
+    location_id = fields.Char(string="Location ID", help='Location ID provided by Deliverect')
+    status_message = fields.Char(string="Registration Status Message", help="Registration Status Message")
+    order_status_message = fields.Char(string="Order Status Message", help="Order Status Message")
 
     def toggle_approve(self):
         """function to toggle approve button"""
@@ -80,6 +80,30 @@ class PosConfig(models.Model):
             },
             'flags': {'mode': 'readonly'},
         }
+
+    def update_allergens(self):
+        """function to update allergens"""
+        allergens_updated = self.env['deliverect.allergens'].sudo().update_allergens()
+        if allergens_updated:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Success',
+                    'message': "Allergens Updated Successfully",
+                    'type': 'success',
+                }
+            }
+        else:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Failure',
+                    'message': "Error Updating Allergens",
+                    'type': 'danger',
+                }
+            }
 
     def create_customers_channel(self):
         """function for creating channel customers"""
@@ -150,51 +174,57 @@ class PosConfig(models.Model):
                 }
             }
 
-    def create_combo_product_data(self, combo_product):
+    def create_combo_product_data(self):
         """function to create combo product data for Deliverect"""
-        deliverect_products = []
+        combo_products = self.env['product.product'].sudo().search([('detailed_type', '=', 'combo')], limit=1)
+        combo_products_data = []
+        for combo_product in combo_products:
+            combo_data = []
 
-        main_product = {
-            "productType": 1,
-            "isCombo": True,
-            "plu": f"P-{combo_product.id}",
-            "price": 0,
-            "name": combo_product.name,
-            "imageUrl": self.image_upload(combo_product.product_tmpl_id.id),
-            "subProducts": []
-        }
-        sum_base_price = sum(combo_product.combo_ids.mapped('base_price'))
-        for combo in combo_product.combo_ids:
-            modifier_group_plu = f"CC-{combo.id}"
-            main_product["subProducts"].append(modifier_group_plu)
-            modifier_group = {
-                "productType": 3,
-                "plu": modifier_group_plu,
-                "name": combo.name,
+            main_product = {
+                "productType": 1,
+                "isCombo": True,
+                "plu": f"PROD-{combo_product.id}",
+                "price": combo_product.lst_price * 100,
+                "name": combo_product.name,
+                "imageUrl": self.image_upload(combo_product.product_tmpl_id.id),
                 "subProducts": [],
+                "productTags": [allergen.allergen_id for allergen in
+                                combo_product.allergens_and_tag_ids] if combo_product.allergens_and_tag_ids else []
             }
-            base_price = combo.base_price
-
-            for line in combo.combo_line_ids:
-                product = line.product_id
-                product_tax = self.env['product.product'].sudo().browse(product.id).taxes_id.amount
-                modifier_plu = f"PM-{product.id}"
-                modifier_group["subProducts"].append(modifier_plu)
-                modifier = {
-                    "productType": 2,
-                    "plu": modifier_plu,
-                    "price": round((((base_price / sum_base_price) * combo_product.lst_price) + line.combo_price), 2
-                                   ) * 100,
-                    "name": product.name,
-                    "imageUrl": self.image_upload(product.product_tmpl_id.id),
-                    "deliveryTax": product_tax * 1000,
-                    "takeawayTax": product_tax * 1000,
-                    "eatInTax": product_tax * 1000,
+            sum_base_price = sum(combo_product.combo_ids.mapped('base_price'))
+            for combo in combo_product.combo_ids:
+                modifier_group_plu = f"MOD_GRP-{combo.id}"
+                main_product["subProducts"].append(modifier_group_plu)
+                modifier_group = {
+                    "productType": 3,
+                    "plu": modifier_group_plu,
+                    "name": combo.name,
+                    "subProducts": [],
                 }
-                deliverect_products.append(modifier)
-            deliverect_products.append(modifier_group)
-        deliverect_products.insert(0, main_product)
-        return deliverect_products
+                base_price = combo.base_price
+                for line in combo.combo_line_ids:
+                    product = line.product_id
+                    product_tax = self.env['product.product'].sudo().browse(product.id).taxes_id.amount
+                    modifier_plu = f"MOD-{product.id}"
+                    modifier_group["subProducts"].append(modifier_plu)
+                    modifier = {
+                        "productType": 2,
+                        "plu": modifier_plu,
+                        "price": round((((base_price / sum_base_price) * combo_product.lst_price) + line.combo_price), 2
+                                       ) * 100,
+                        "name": product.name,
+                        "imageUrl": self.image_upload(product.product_tmpl_id.id),
+                        "deliveryTax": product_tax * 1000,
+                        "takeawayTax": product_tax * 1000,
+                        "eatInTax": product_tax * 1000,
+                    }
+                    combo_data.append(modifier)
+                combo_data.append(modifier_group)
+            combo_data.insert(0, main_product)
+            combo_products_data += combo_data
+        print(combo_products_data)
+        return combo_products_data
 
     def action_sync_product(self):
         """Sync products and categories with Deliverect API"""
@@ -203,10 +233,9 @@ class PosConfig(models.Model):
             token = self.env['deliverect.api'].sudo().generate_auth_token()
             account_id = self.account_id
             location_id = self.location_id
-            product_data = self.create_product_data()
-            combo_products = self.env['product.product'].sudo().search([('detailed_type', '=', 'combo')])
-            for combo in combo_products:
-                product_data += self.create_combo_product_data(combo)
+            product_data = []
+            product_data += self.create_product_data()
+            product_data += self.create_combo_product_data()
             pos_categories = self.env['pos.category'].sudo().search([]).mapped(
                 lambda category: {
                     "name": category.name,
@@ -256,15 +285,70 @@ class PosConfig(models.Model):
         products = self.env['product.product'].sudo().search([('active', '=', True),
                                                               ('detailed_type', '!=', 'combo'),
                                                               ('attribute_line_ids', '=', False),
+                                                              ('pos_categ_ids', 'in',
+                                                               self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda product: {
             "name": product.name,
-            "plu": f"P-{product.id}",
+            "plu": f"PRD-{product.id}",
             "price": int(product.lst_price * 100),
             "productType": 1,
             "deliveryTax": product.taxes_id.amount * 1000,
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
             "imageUrl": self.image_upload(product.product_tmpl_id.id),
-            "productTags": [allergen.allergen_id for allergen in product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
+            "productTags": [allergen.allergen_id for allergen in
+                            product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
         })
+
+    def clear_products(self):
+        try:
+            url = "https://api.staging.deliverect.com/productAndCategories"
+            token = self.env['deliverect.api'].sudo().generate_auth_token()
+            account_id = self.account_id
+            location_id = self.location_id
+            payload = {
+                "priceLevels": [],
+                "categories": [],
+                "products": [{
+                    "name": "TEST PRODUCT",
+                    "plu": f"TEST_PLU-1",
+                    "price": 1200,
+                    "productType": 1,
+                    "deliveryTax": 6000,
+                    "takeawayTax": 6000,
+                    "eatInTax": 6000,
+                }],
+                "accountId": account_id,
+                "locationId": location_id
+            }
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "authorization": f"Bearer {token}"
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            _logger.info(f"Products clear response: {response.status_code} - {response.text}")
+            if response.status_code == 200:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Success',
+                        'message': f"Successfully cleared products",
+                        'type': 'success',
+                    }
+                }
+            else:
+                return {
+                    'type': 'ir.actions.client',
+                    'tag': 'display_notification',
+                    'params': {
+                        'title': 'Failure',
+                        'message': f"Failed to clear products",
+                        'type': 'success',
+                    }
+                }
+        except Exception as e:
+            _logger.error(f"Product sync failed: {e}")
+            return False
