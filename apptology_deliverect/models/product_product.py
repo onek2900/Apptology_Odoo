@@ -15,4 +15,5 @@ class ProductProduct(models.Model):
     takeaway_tax = fields.Float(string="Takeaway Tax",help="Takeaway Tax for the product")
     eat_in_tax = fields.Float(string="Eat-in Tax",help="Eat-in Tax for the product")
     allergens_and_tag_ids = fields.Many2many('deliverect.allergens', string="Allergens and Tags",help="Allergens and Tags for the product")
+    product_note = fields.Text(string="Product Note",help="Deliverect Note for the product")
 

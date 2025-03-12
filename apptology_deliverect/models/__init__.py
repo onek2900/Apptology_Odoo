@@ -7,3 +7,4 @@ from . import deliverect_allergens
 from . import pos_orders
 from . import pos_config
 from . import res_partner
+from . import pos_session

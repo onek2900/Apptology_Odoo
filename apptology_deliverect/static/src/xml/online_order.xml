@@ -17,7 +17,6 @@
                             <div class="col action-buttons p-2"></div>
                         </div>
                         <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
-                            <t t-log='"my order :",order'/>
                             <div class="order-row" t-att-data-id="order.id" t-on-click="() => this.onClickOrder(order)">
                                 <div class="col wide p-2">
                                     <div><t t-esc="order.date_order"/></div>
@@ -88,11 +87,8 @@
                                     <t t-elif="order.online_order_status=='rejected'">
                                         <div class="status-badge rejected">Rejected</div>
                                     </t>
-                                    <t t-elif="order.online_order_status=='pickup'">
-                                        <div class="status-badge rejected">Pick Up</div>
-                                    </t>
                                     <t t-elif="order.online_order_status=='finalized'">
-                                        <div class="status-badge rejected">Finalized</div>
+                                        <div class="status-badge approved">Finalized</div>
                                     </t>
                                     <t t-else="">
                                          <div class="status-badge rejected">Cancelled</div>
@@ -146,7 +142,7 @@
                                 </button>
                             </t>
                             <t
-                                    t-elif="state.clickedOrder.order_status=='ready' and state.online_order_status!='finalized'">
+                                    t-elif="state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
                                 <button
                                         class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
                                         t-on-click.stop="() => this.finalizeOrder(state.clickedOrder)">

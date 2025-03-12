@@ -32,9 +32,6 @@ export class OnlineOrderScreen extends Component {
             const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
             const unpaidOrders = await this.pos.get_order_list().filter(order => order.name.includes("Online-Order"));
             this.state.openOrders = openOrders;
-            console.log('openOrders :',openOrders)
-            console.log('unpaidOrders :',unpaidOrders)
-            console.log("Open Orders:", this.state.openOrders)
         } catch (error) {
             console.error("Error fetching open orders:", error);
         }
@@ -83,22 +80,24 @@ export class OnlineOrderScreen extends Component {
         this.state.clickedOrder = order
 
     }
-async loadOrder(order) {
-    if (order.state=='draft'){
-        await this.pos.load_server_data();
+    async loadOrder(order) {
+        if (order.state=='draft'){
+            await this.pos.load_server_data();
+        }
+        console.log("order :",order.id)
+        const unpaidOrders = this.pos.get_order_list();
+        console.log('unpaid orders list :',unpaidOrders)
+        const selectedOrder = unpaidOrders.find(orderItem => orderItem.server_id === order.id);
+        console.log("selectedOrder :",selectedOrder)
+        if (selectedOrder) {
+            this.pos.set_order(selectedOrder);
+        } else {
+            console.warn('Order not found:', order.pos_reference);
+        }
+        this.pos.closeScreen();
     }
-    const unpaidOrders = this.pos.get_order_list();
-    const selectedOrder = unpaidOrders.find(orderItem => orderItem.name === order.pos_reference);
-    if (selectedOrder) {
-        this.pos.set_order(selectedOrder);
-    } else {
-        console.warn('Order not found:', order.pos_reference);
-    }
-    this.pos.closeScreen();
-}
     async finalizeOrder(order){
-        console.log('finalizeOrder id:',order.id)
-        await this.orm.call("pos.order", "update_order_status_in_deliverect", [order.id],{status:90});
+        await this.orm.call("pos.order", "update_order_status", [order.id],{status:'finalized'});
     }
 }
 registry.category("pos_screens").add("OnlineOrderScreen", OnlineOrderScreen);

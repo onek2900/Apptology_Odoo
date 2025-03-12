@@ -140,17 +140,17 @@ class DeliverectWebhooks(http.Controller):
         }
 
     @staticmethod
-    def generate_pos_reference(self, channel_order_id, channel_id):
-        """function for generating sequence number for pos order"""
+    def generate_pos_reference(channel_order_id):
+        """Function for generating a unique POS reference"""
         numeric_part = ''.join(filter(str.isdigit, channel_order_id))
-        last_7_digits = numeric_part[-7:].zfill(7)
-        pos_reference = f"Online-Order {int(channel_id):05d}-{last_7_digits[:3]}-{last_7_digits[3:]}"
+        digits = numeric_part.zfill(12)
+        pos_reference = f"Online-Order {digits[:5]}-{digits[5:8]}-{digits[8:]}"
         return pos_reference
 
     @staticmethod
     def create_order_data(self, data, pos_id):
         """function for pos order data from deliverect data"""
-        pos_reference = self.generate_pos_reference(self, data['channelOrderId'], data['channel'])
+        pos_reference = self.generate_pos_reference(data['channelOrderId'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         is_auto_approve = pos_config.auto_approve
         if not pos_config.current_session_id:
@@ -163,6 +163,7 @@ class DeliverectWebhooks(http.Controller):
                 ('code', '=', sequence_code),
                 ('company_id', '=', pos_config.company_id.id)
             ], limit=1)
+            print(ir_sequence)
             if not ir_sequence:
                 sequence_code = f"online_pos.order_{current_session.id}"
                 ir_sequence = request.env['ir.sequence'].sudo().search([
@@ -200,8 +201,9 @@ class DeliverectWebhooks(http.Controller):
                         }))
                 else:
                     product = request.env['product.product'].sudo().search(
-                        [('id', '=', int(item['plu'].split('-')[1]))],
+                        [('id', '=', int(item['plu'].split('-')[2]))],
                         limit=1)
+                    print('abc :',data['payment']['type'])
                     if product:
                         order_lines.append((0, 0, {
                             'full_product_name': product.name,
@@ -226,6 +228,7 @@ class DeliverectWebhooks(http.Controller):
                         'lines': order_lines,
                         'name': pos_reference,
                         'pos_reference': pos_reference,
+                        'order_payment_type':str(data['payment']['type']),
                         'partner_id': self.find_partner(data['channel']),
                         'date_order': fields.Datetime.to_string(fields.Datetime.now()),
                         'session_id': pos_config.current_session_id.id,
@@ -236,7 +239,7 @@ class DeliverectWebhooks(http.Controller):
                         'floor': 'Online',
                         'online_order_status': 'approved' if is_auto_approve else 'open',
                         'order_type': str(data['orderType']),
-                        'online_order_paid': data['orderIsAlreadyPaid']
+                        'online_order_paid': data['orderIsAlreadyPaid'],
                     }
             return order_data
         except Exception as e:
@@ -282,6 +285,7 @@ class DeliverectWebhooks(http.Controller):
                 refund_payment.with_context(**payment_context).check()
             else:
                 pos_order_data = self.create_order_data(self, data, pos_id)
+                print(pos_order_data)
                 if pos_order_data:
                     order = request.env['pos.order'].sudo().create(pos_order_data)
                     if data['orderIsAlreadyPaid']:
@@ -303,7 +307,7 @@ class DeliverectWebhooks(http.Controller):
                         status=200
                     )
                 else:
-                    raise Exception("Sequence not found for POS")
+                    raise Exception("Error Creating Order Data")
         except Exception as e:
             _logger.error(f"Error processing order webhook: {str(e)}")
             return Response(
@@ -315,7 +319,7 @@ class DeliverectWebhooks(http.Controller):
                 status=400
             )
 
-    @http.route('/deliverect/pos/register/<int:pos_id>', type='json', methods=['POST'], auth="none", csrf=False)
+    @http.route('/deliverect/pos/register/<int:pos_id>', type='http', methods=['POST'], auth="none", csrf=False)
     def register_pos(self, pos_id):
         """webhook for registering pos with deliverect"""
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
@@ -333,14 +337,30 @@ class DeliverectWebhooks(http.Controller):
                 pos_config.write({
                     'status_message': f"{is_channel_present['params']['message']}",
                 })
+                return request.make_response(
+                    json.dumps({'error': is_channel_present['params']['message']}),
+                    headers=[('Content-Type', 'application/json')]
+                )
             else:
                 pos_config.write({
                     'status_message': f"POS Registration Successful"
                 })
-                return {
+                response_data = {
                     "ordersWebhookURL": f"{base_url}/deliverect/pos/orders/{pos_id}",
-                    "syncProductsURL": f"{base_url}/deliverect/pos/products/{pos_id}"
+                    "syncProductsURL": f"{base_url}/deliverect/pos/products/{pos_id}",
+                    "syncTablesURL": "",
+                    "syncFloorsURL": "",
+                    "operationsWebhookURL": "",
+                    "storeStatusWebhookURL": ""
                 }
+                return request.make_response(
+                    json.dumps(response_data),
+                    headers=[('Content-Type', 'application/json')]
+                )
 
         except Exception as e:
             _logger.error(f"Registration error: {str(e)}")
+            return request.make_response(
+                json.dumps({'error': str(e)}),
+                headers=[('Content-Type', 'application/json')]
+            )

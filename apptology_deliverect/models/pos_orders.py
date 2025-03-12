@@ -15,7 +15,19 @@ class PosOrder(models.Model):
     order_type = fields.Selection([
         ('1', 'Pick up'),
         ('2', 'Delivery')
-    ], string='Order Type', default='1')
+    ], string='Order Type')
+    order_payment_type=fields.Selection([
+        ('0', 'Credit Card'),
+        ('1', 'Cash'),
+        ('2', 'On Delivery'),
+        ('3', 'Online'),
+        ('4','Credit Card at door'),
+        ('5', 'Pin at Door'),
+        ('6','Voucher at Door'),
+        ('7','Meal Voucher'),
+        ('8','Bank Contact'),
+        ('9','Other'),
+    ], string='Payment Method')
     online_order_id = fields.Char(string='Online Order ID')
     online_order_paid = fields.Boolean(string='Online Order Paid', default=False)
     online_order_status = fields.Selection([
@@ -73,6 +85,8 @@ class PosOrder(models.Model):
             self.update_order_status_in_deliverect(50)
         elif status == 'finalized':
             self.write({'online_order_status': 'finalized'})
+            self.update_order_status_in_deliverect(90)
+
         else:
             self.write({'online_order_status': 'rejected',
                         'declined_time': fields.Datetime.now(),

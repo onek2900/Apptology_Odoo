@@ -8,8 +8,9 @@
             <xpath expr="//notebook" position="inside">
                 <page string="Deliverect" name="deliverect">
                     <group>
-                        <group string="Beverage Info">
+                        <group string="Product Info">
                             <field name="allergens_and_tag_ids" widget="many2many_tags"/>
+                            <field name="product_note"/>
                         </group>
                         <group string="Channel Info">
                             <field name="channel_ids" widget="many2many_tags"/>

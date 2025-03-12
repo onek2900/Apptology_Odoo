@@ -235,7 +235,7 @@ class PosConfig(models.Model):
             location_id = self.location_id
             product_data = []
             product_data += self.create_product_data()
-            product_data += self.create_combo_product_data()
+            # product_data += self.create_combo_product_data()
             pos_categories = self.env['pos.category'].sudo().search([]).mapped(
                 lambda category: {
                     "name": category.name,
@@ -290,12 +290,13 @@ class PosConfig(models.Model):
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda product: {
             "name": product.name,
-            "plu": f"PRD-{product.id}",
+            "plu": f"PRD-{self.id}-{product.id}",
             "price": int(product.lst_price * 100),
             "productType": 1,
             "deliveryTax": product.taxes_id.amount * 1000,
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
+            "description":product.product_note,
             "imageUrl": self.image_upload(product.product_tmpl_id.id),
             "productTags": [allergen.allergen_id for allergen in
                             product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
