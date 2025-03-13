@@ -81,9 +81,6 @@ export class OnlineOrderScreen extends Component {
 
     }
     async loadOrder(order) {
-        if (order.state=='draft'){
-            await this.pos.load_server_data();
-        }
         console.log("order :",order.id)
         const unpaidOrders = this.pos.get_order_list();
         console.log('unpaid orders list :',unpaidOrders)

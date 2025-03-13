@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import requests
-from odoo import fields, models
+from odoo import fields, models, Command
 
 _logger = logging.getLogger(__name__)
 
@@ -226,43 +226,6 @@ class PosConfig(models.Model):
         print(combo_products_data)
         return combo_products_data
 
-    def action_sync_product(self):
-        """Sync products and categories with Deliverect API"""
-        try:
-            url = "https://api.staging.deliverect.com/productAndCategories"
-            token = self.env['deliverect.api'].sudo().generate_auth_token()
-            account_id = self.account_id
-            location_id = self.location_id
-            product_data = []
-            product_data += self.create_product_data()
-            # product_data += self.create_combo_product_data()
-            pos_categories = self.env['pos.category'].sudo().search([]).mapped(
-                lambda category: {
-                    "name": category.name,
-                    "posCategoryId": category.id,
-                })
-            payload = {
-                "priceLevels": [],
-                "categories": pos_categories,
-                "products": product_data,
-                "accountId": account_id,
-                "locationId": location_id
-            }
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "authorization": f"Bearer {token}"
-            }
-            response = requests.post(url, json=payload, headers=headers)
-            _logger.info(f"Product sync response: {response.status_code} - {response.text}")
-            if response.status_code == 200:
-                return True
-            else:
-                return False
-        except Exception as e:
-            _logger.error(f"Product sync failed: {e}")
-            return False
-
     def image_upload(self, product_tmpl_id):
         """function to upload product image to Deliverect"""
         model = 'product.template'
@@ -280,10 +243,64 @@ class PosConfig(models.Model):
             product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
         return product_image_url
 
+    def create_product_with_modifier(self):
+        """function to create product with modifier for Deliverect"""
+        products = self.env['product.product'].sudo().search([('active', '=', True),
+                                                              ('detailed_type', '!=', 'combo'),
+                                                              ('modifier_group_ids', '!=', False),
+                                                              ('attribute_line_ids', '=', False),
+                                                              ('pos_categ_ids', 'in',
+                                                               self.iface_available_categ_ids.ids),
+                                                              ('available_in_pos', '=', True)])
+
+        return products.mapped(lambda product: {
+            "name": product.name,
+            "plu": f"PRD-{product.id}",
+            "price": int(product.lst_price * 100),
+            "productType": 1,
+            "deliveryTax": product.taxes_id.amount * 1000,
+            "takeawayTax": product.taxes_id.amount * 1000,
+            "eatInTax": product.taxes_id.amount * 1000,
+            "description": product.product_note,
+            "imageUrl": self.image_upload(product.product_tmpl_id.id),
+            "subProducts": [
+               f"MOD_GRP-{group.id}" for group in product.modifier_group_ids
+            ]
+        })
+
+    def create_modifier_and_modifier_group(self):
+        """function to sync modifiers with Deliverect"""
+        modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
+        modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
+
+        modifiers_data = modifiers.mapped(lambda modifier: {
+            "name": modifier.name,
+            "plu": f"MOD-{modifier.id}",
+            "price": int(modifier.lst_price * 100),
+            "productType": 2,
+            "deliveryTax": modifier.taxes_id.amount * 1000,
+            "takeawayTax": modifier.taxes_id.amount * 1000,
+            "eatInTax": modifier.taxes_id.amount * 1000,
+            "description": modifier.product_note,
+            "imageUrl": self.image_upload(modifier.product_tmpl_id.id),
+            "productTags": [allergen.allergen_id for allergen in
+                            modifier.allergens_and_tag_ids] if modifier.allergens_and_tag_ids else []
+        })
+        modifier_group_data = modifier_groups.mapped(lambda group: {
+            "productType": 3,
+            "plu": f"MOD_GRP-{group.id}",
+            "name": group.name,
+            "description": group.description,
+            "subProducts": [f"MOD-{modifier.product_id.id}" for modifier in group.modifier_product_lines_ids],
+        })
+        return modifiers_data + modifier_group_data
+
     def create_product_data(self):
         """function to create product data for Deliverect"""
         products = self.env['product.product'].sudo().search([('active', '=', True),
+                                                              ('is_modifier', '=', False),
                                                               ('detailed_type', '!=', 'combo'),
+                                                              ('modifier_group_ids', '=', False),
                                                               ('attribute_line_ids', '=', False),
                                                               ('pos_categ_ids', 'in',
                                                                self.iface_available_categ_ids.ids),
@@ -296,11 +313,23 @@ class PosConfig(models.Model):
             "deliveryTax": product.taxes_id.amount * 1000,
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
-            "description":product.product_note,
+            "description": product.product_note,
             "imageUrl": self.image_upload(product.product_tmpl_id.id),
             "productTags": [allergen.allergen_id for allergen in
                             product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
         })
+
+    def create_variant_product_data(self):
+        """function to create variant product data for Deliverect"""
+        products = self.env['product.product'].sudo().search([('active', '=', True),
+                                                              ('is_modifier', '=', False),
+                                                              ('detailed_type', '!=', 'combo'),
+                                                              ('modifier_group_ids', '=', False),
+                                                              ('attribute_line_ids', '!=', False),
+                                                              ('pos_categ_ids', 'in',
+                                                               self.iface_available_categ_ids.ids),
+                                                              ('available_in_pos', '=', True)])
+
 
     def clear_products(self):
         try:
@@ -311,15 +340,90 @@ class PosConfig(models.Model):
             payload = {
                 "priceLevels": [],
                 "categories": [],
-                "products": [{
-                    "name": "TEST PRODUCT",
-                    "plu": f"TEST_PLU-1",
-                    "price": 1200,
-                    "productType": 1,
-                    "deliveryTax": 6000,
-                    "takeawayTax": 6000,
-                    "eatInTax": 6000,
-                }],
+                "products": [
+                    {
+                        "productType": 1,
+                        "plu": "STK-01",
+                        "price": 1500,
+                        "name": "Delicious Steak Frites",
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000,
+                        "posCategoryIds": [
+                            "STK"
+                        ],
+
+                        "description": "Delicious Steak Frites",
+                        "subProducts": [
+                            "MOD"
+
+                        ]
+                    },
+
+                    {
+                        "productType": 3,
+                        "plu": "MOD",
+                        "name": "Add a side",
+                        "imageUrl": "",
+                        "description": "Pizza made for cheese fanatics",
+
+                        "subProducts": [
+                            "SI-01",
+                            "SI-02",
+                            "SI-03"
+                        ],
+                        "min": 0,
+                        "max": 0,
+                        "multiMax": 3
+                    },
+
+                    {
+                        "productType": 2,
+                        "plu": "SI-01",
+                        "price": 0,
+                        "name": "Fries",
+                        "posCategoryIds": [
+                            "SD"
+                        ],
+                        "imageUrl": "",
+                        "description": "Fries",
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    },
+                    {
+                        "productType": 2,
+                        "plu": "SI-02",
+                        "price": 200,
+                        "name": "Salad",
+                        "kitchenName": "",
+                        "posCategoryIds": [
+                            "SD"
+                        ],
+                        "imageUrl": "",
+                        "description": "Salad",
+
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    },
+                    {
+                        "productType": 2,
+                        "plu": "SI-03",
+                        "price": 100,
+                        "name": "Mashed Potato",
+                        "kitchenName": "Mash",
+                        "posProductId": "POS-ID-014",
+                        "posCategoryIds": [
+                            "SD"
+                        ],
+                        "imageUrl": "",
+                        "description": "Mashed Potato",
+
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    }],
                 "accountId": account_id,
                 "locationId": location_id
             }
@@ -350,6 +454,46 @@ class PosConfig(models.Model):
                         'type': 'success',
                     }
                 }
+
+        except Exception as e:
+            _logger.error(f"Product sync failed: {e}")
+            return False
+
+    def action_sync_product(self):
+        """Sync products and categories with Deliverect API"""
+        try:
+            url = "https://api.staging.deliverect.com/productAndCategories"
+            token = self.env['deliverect.api'].sudo().generate_auth_token()
+            account_id = self.account_id
+            location_id = self.location_id
+            product_data = []
+            product_data += self.create_product_data()
+            product_data += self.create_modifier_and_modifier_group()
+            product_data += self.create_product_with_modifier()
+            # product_data += self.create_combo_product_data()
+            pos_categories = self.env['pos.category'].sudo().search([]).mapped(
+                lambda category: {
+                    "name": category.name,
+                    "posCategoryId": category.id,
+                })
+            payload = {
+                "priceLevels": [],
+                "categories": pos_categories,
+                "products": product_data,
+                "accountId": account_id,
+                "locationId": location_id
+            }
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "authorization": f"Bearer {token}"
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            _logger.info(f"Product sync response: {response.status_code} - {response.text}")
+            if response.status_code == 200:
+                return True
+            else:
+                return False
         except Exception as e:
             _logger.error(f"Product sync failed: {e}")
             return False

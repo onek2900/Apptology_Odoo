@@ -10,6 +10,7 @@
                     <group>
                         <group string="Product Info">
                             <field name="allergens_and_tag_ids" widget="many2many_tags"/>
+                            <field name="modifier_group_ids" widget="many2many_tags"/>
                             <field name="product_note"/>
                         </group>
                         <group string="Channel Info">
@@ -17,6 +18,9 @@
                         </group>
                     </group>
                 </page>
+            </xpath>
+            <xpath expr="//group/field[@name='detailed_type']" position="before">
+                <field name="is_modifier"/>
             </xpath>
         </field>
     </record>

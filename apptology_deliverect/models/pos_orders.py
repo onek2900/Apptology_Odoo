@@ -150,3 +150,18 @@ class PosOrder(models.Model):
         for order in orders:
             order['lines'] = [line_mapping[line_id] for line_id in order['lines'] if line_id in line_mapping]
         return orders
+
+    @api.model
+    def export_for_ui_table_draft(self, table_ids):
+        orders = self.env['pos.order'].search([
+            '|',
+            '&',
+            ('state', '=', 'draft'),
+            ('table_id', 'in', table_ids),
+            '&',
+            '&',
+            ('is_online_order', '=', True),
+            ('state', '=', 'draft'),
+            ('online_order_status', '=', 'approved')
+        ])
+        return orders.export_for_ui()

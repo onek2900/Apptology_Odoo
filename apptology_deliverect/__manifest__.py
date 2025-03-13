@@ -12,8 +12,10 @@
         'data/pos_payment_method_data.xml',
         'wizards/deliverect_info_wizard_views.xml',
         'views/res_config_settings_views.xml',
+        'views/deliverect_modifier_group_views.xml',
         'views/product_product_views.xml',
         'views/point_of_sale_views.xml',
+        'views/menu_views.xml'
     ],
     'assets': {
         'point_of_sale._assets_pos': [
