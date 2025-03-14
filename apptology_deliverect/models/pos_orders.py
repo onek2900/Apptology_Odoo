@@ -45,6 +45,17 @@ class PosOrder(models.Model):
     )
     is_online_order = fields.Boolean(string='Is Online Order', default=False)
     declined_time = fields.Datetime(string='Cancelled Date Time')
+    channel_discount = fields.Float(string='Channel Discount', default=0.0)
+    channel_service_charge = fields.Float(string='Channel Service Charge', default=0.0)
+    channel_delivery_charge = fields.Float(string='Channel Delivery Charge', default=0.0)
+    channel_tip_amount = fields.Float(string='Channel Tip', default=0.0)
+    channel_total_amount = fields.Float(string='Channel Total Amount', default=0.0)
+    channel_order_reference = fields.Char(string='Channel Display Order ID')
+    channel_product_note = fields.Text(string='Channel Product Note')
+    delivery_note = fields.Text(string='Delivery Note')
+    pickup_time = fields.Datetime(string='Pickup Time')
+    delivery_time = fields.Datetime(string='Delivery Time')
+    channel_name = fields.Char(string='Channel')
 
     @api.depends('online_order_status')
     def _compute_order_priority(self):
@@ -153,15 +164,17 @@ class PosOrder(models.Model):
 
     @api.model
     def export_for_ui_table_draft(self, table_ids):
-        orders = self.env['pos.order'].search([
-            '|',
-            '&',
+        offline_orders = self.env['pos.order'].search([
             ('state', '=', 'draft'),
             ('table_id', 'in', table_ids),
-            '&',
-            '&',
+        ])
+        print(offline_orders)
+        online_orders = self.env['pos.order'].search([
             ('is_online_order', '=', True),
             ('state', '=', 'draft'),
-            ('online_order_status', '=', 'approved')
-        ])
+            ('online_order_status', 'in', ['approved','finalized'])])
+        print(online_orders)
+        print(self.env['pos.order'].search([]))
+        orders = offline_orders | online_orders
+        print(orders)
         return orders.export_for_ui()

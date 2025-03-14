@@ -134,15 +134,8 @@
                             </div>
                         </div>
                         <div class="pads border-top">
-                            <t t-if="state.clickedOrder.state=='draft' and state.clickedOrder.order_status=='ready'">
-                                <button
-                                        class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
-                                        t-on-click.stop="() => this.loadOrder(state.clickedOrder)">
-                                    <span class="fs-1 d-block">Load Order</span>
-                                </button>
-                            </t>
                             <t
-                                    t-elif="state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
+                                    t-if="state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
                                 <button
                                         class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
                                         t-on-click.stop="() => this.finalizeOrder(state.clickedOrder)">

@@ -80,20 +80,8 @@ export class OnlineOrderScreen extends Component {
         this.state.clickedOrder = order
 
     }
-    async loadOrder(order) {
-        console.log("order :",order.id)
-        const unpaidOrders = this.pos.get_order_list();
-        console.log('unpaid orders list :',unpaidOrders)
-        const selectedOrder = unpaidOrders.find(orderItem => orderItem.server_id === order.id);
-        console.log("selectedOrder :",selectedOrder)
-        if (selectedOrder) {
-            this.pos.set_order(selectedOrder);
-        } else {
-            console.warn('Order not found:', order.pos_reference);
-        }
-        this.pos.closeScreen();
-    }
     async finalizeOrder(order){
+//    function to finalize an online order
         await this.orm.call("pos.order", "update_order_status", [order.id],{status:'finalized'});
     }
 }

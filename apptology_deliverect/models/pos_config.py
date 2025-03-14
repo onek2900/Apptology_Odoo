@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 import requests
 from odoo import fields, models, Command
@@ -248,11 +249,10 @@ class PosConfig(models.Model):
         products = self.env['product.product'].sudo().search([('active', '=', True),
                                                               ('detailed_type', '!=', 'combo'),
                                                               ('modifier_group_ids', '!=', False),
-                                                              ('attribute_line_ids', '=', False),
                                                               ('pos_categ_ids', 'in',
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
-
+        print('product with modifier :', products)
         return products.mapped(lambda product: {
             "name": product.name,
             "plu": f"PRD-{product.id}",
@@ -264,14 +264,16 @@ class PosConfig(models.Model):
             "description": product.product_note,
             "imageUrl": self.image_upload(product.product_tmpl_id.id),
             "subProducts": [
-               f"MOD_GRP-{group.id}" for group in product.modifier_group_ids
+                f"MOD_GRP-{group.id}" for group in product.modifier_group_ids
             ]
         })
 
     def create_modifier_and_modifier_group(self):
         """function to sync modifiers with Deliverect"""
         modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
+        print('modifiers :', modifiers)
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
+        print('modifier groups :', modifier_groups)
 
         modifiers_data = modifiers.mapped(lambda modifier: {
             "name": modifier.name,
@@ -301,13 +303,12 @@ class PosConfig(models.Model):
                                                               ('is_modifier', '=', False),
                                                               ('detailed_type', '!=', 'combo'),
                                                               ('modifier_group_ids', '=', False),
-                                                              ('attribute_line_ids', '=', False),
                                                               ('pos_categ_ids', 'in',
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda product: {
             "name": product.name,
-            "plu": f"PRD-{self.id}-{product.id}",
+            "plu": f"PRD-{product.id}",
             "price": int(product.lst_price * 100),
             "productType": 1,
             "deliveryTax": product.taxes_id.amount * 1000,
@@ -321,15 +322,41 @@ class PosConfig(models.Model):
 
     def create_variant_product_data(self):
         """function to create variant product data for Deliverect"""
-        products = self.env['product.product'].sudo().search([('active', '=', True),
-                                                              ('is_modifier', '=', False),
-                                                              ('detailed_type', '!=', 'combo'),
-                                                              ('modifier_group_ids', '=', False),
-                                                              ('attribute_line_ids', '!=', False),
-                                                              ('pos_categ_ids', 'in',
-                                                               self.iface_available_categ_ids.ids),
-                                                              ('available_in_pos', '=', True)])
-
+        main_variant_products = self.env['product.template'].sudo().search([('active', '=', True),
+                                                                            ('detailed_type', '!=', 'combo'),
+                                                                            ('attribute_line_ids', '!=', False),
+                                                                            ('pos_categ_ids', 'in',
+                                                                             self.iface_available_categ_ids.ids),
+                                                                            ('available_in_pos', '=', True)])
+        main_product_data = main_variant_products.mapped(lambda product: {
+            "productType": 1,
+            "plu": f"VAR-{product.id}",
+            "price": int(product.list_price * 100),
+            "name": product.name,
+            "imageUrl": self.image_upload(product.id),
+            "description": "",
+            "isVariant": True,
+            "deliveryTax": product.taxes_id.amount * 1000,
+            "takeawayTax": product.taxes_id.amount * 1000,
+            "eatInTax": product.taxes_id.amount * 1000,
+            "subProducts": [
+                f"VAR_GRP-{product.id}"
+            ]
+        })
+        main_product_group_data = main_variant_products.mapped(lambda product: {
+            "productType": 3,
+            "plu": f"VAR_GRP-{product.id}",
+            "name": product.deliverect_variant_note,
+            "description": product.deliverect_variant_description,
+            "isVariantGroup": True,
+            "subProducts": [f"PRD-{variant.id}" for variant in self.env['product.product'].search([('active', '=',
+                                                                                                    True),
+                                                                                                   (
+                                                                                                       "product_tmpl_id",
+                                                                                                       "=",
+                                                                                                       product.id)])]
+        })
+        return main_product_group_data + main_product_data
 
     def clear_products(self):
         try:
@@ -343,87 +370,75 @@ class PosConfig(models.Model):
                 "products": [
                     {
                         "productType": 1,
-                        "plu": "STK-01",
-                        "price": 1500,
-                        "name": "Delicious Steak Frites",
+                        "plu": "VAR-1",
+                        "price": 800,
+                        "name": "3 Pieces",
+                        "posProductId": "POS-003",
+                        "imageUrl": "",
+                        "description": "",
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    },
+                    {
+                        "productType": 1,
+                        "plu": "VAR-2",
+                        "price": 1100,
+                        "name": "6 Pieces",
+                        "posProductId": "POS-004",
+                        "imageUrl": "",
+                        "description": "",
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    },
+                    {
+                        "productType": 1,
+                        "plu": "VAR-3",
+                        "price": 1350,
+                        "name": "9 Pieces",
+                        "posProductId": "POS-005",
+                        "imageUrl": "",
+                        "description": "",
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    },
+                    {
+                        "productType": 3,
+                        "plu": "MG-VAR-1",
+                        "name": "How many pieces?",
+                        "posProductId": "POS-002",
+                        "description": "",
+                        "isVariantGroup": True,
+                        "subProducts": [
+                            "VAR-1",
+                            "VAR-2",
+                            "VAR-3"
+                        ],
+                        "min": 1,
+                        "max": 1
+                    },
+                    {
+                        "productType": 1,
+                        "plu": "VAR-PROD-1",
+                        "price": 0,
+                        "name": "Chicken Tenders",
+                        "posProductId": "POS-001",
+                        "posCategoryIds": [
+                            "CHK"
+                        ],
+                        "imageUrl": "https://storage.googleapis.com/ikona-bucket-staging/images/5ff6ee089328c8aefeeabe33/chicken-62285f90db5986001ebf58d5.jpg",
+                        "description": "Choose 3, 6 or 9 Pieces of Delicious Fried Chicken",
+                        "isVariant": True,
                         "deliveryTax": 9000,
                         "takeawayTax": 9000,
                         "eatInTax": 9000,
-                        "posCategoryIds": [
-                            "STK"
-                        ],
-
-                        "description": "Delicious Steak Frites",
                         "subProducts": [
-                            "MOD"
-
+                            "MG-VAR-1"
                         ]
-                    },
-
-                    {
-                        "productType": 3,
-                        "plu": "MOD",
-                        "name": "Add a side",
-                        "imageUrl": "",
-                        "description": "Pizza made for cheese fanatics",
-
-                        "subProducts": [
-                            "SI-01",
-                            "SI-02",
-                            "SI-03"
-                        ],
-                        "min": 0,
-                        "max": 0,
-                        "multiMax": 3
-                    },
-
-                    {
-                        "productType": 2,
-                        "plu": "SI-01",
-                        "price": 0,
-                        "name": "Fries",
-                        "posCategoryIds": [
-                            "SD"
-                        ],
-                        "imageUrl": "",
-                        "description": "Fries",
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    },
-                    {
-                        "productType": 2,
-                        "plu": "SI-02",
-                        "price": 200,
-                        "name": "Salad",
-                        "kitchenName": "",
-                        "posCategoryIds": [
-                            "SD"
-                        ],
-                        "imageUrl": "",
-                        "description": "Salad",
-
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    },
-                    {
-                        "productType": 2,
-                        "plu": "SI-03",
-                        "price": 100,
-                        "name": "Mashed Potato",
-                        "kitchenName": "Mash",
-                        "posProductId": "POS-ID-014",
-                        "posCategoryIds": [
-                            "SD"
-                        ],
-                        "imageUrl": "",
-                        "description": "Mashed Potato",
-
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    }],
+                    }
+                ],
                 "accountId": account_id,
                 "locationId": location_id
             }
@@ -459,6 +474,16 @@ class PosConfig(models.Model):
             _logger.error(f"Product sync failed: {e}")
             return False
 
+    def create_deliverect_product_data(self):
+        product_data = []
+        product_data += self.create_product_data()
+        product_data += self.create_modifier_and_modifier_group()
+        product_data += self.create_product_with_modifier()
+        product_data += self.create_variant_product_data()
+        # product_data += self.create_combo_product_data()
+        print(product_data)
+        return product_data
+
     def action_sync_product(self):
         """Sync products and categories with Deliverect API"""
         try:
@@ -466,20 +491,10 @@ class PosConfig(models.Model):
             token = self.env['deliverect.api'].sudo().generate_auth_token()
             account_id = self.account_id
             location_id = self.location_id
-            product_data = []
-            product_data += self.create_product_data()
-            product_data += self.create_modifier_and_modifier_group()
-            product_data += self.create_product_with_modifier()
-            # product_data += self.create_combo_product_data()
-            pos_categories = self.env['pos.category'].sudo().search([]).mapped(
-                lambda category: {
-                    "name": category.name,
-                    "posCategoryId": category.id,
-                })
             payload = {
                 "priceLevels": [],
-                "categories": pos_categories,
-                "products": product_data,
+                "categories": [],
+                "products": self.create_deliverect_product_data(),
                 "accountId": account_id,
                 "locationId": location_id
             }

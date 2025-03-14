@@ -15,6 +15,7 @@
         'views/deliverect_modifier_group_views.xml',
         'views/product_product_views.xml',
         'views/point_of_sale_views.xml',
+        'views/product_template_views.xml',
         'views/menu_views.xml'
     ],
     'assets': {

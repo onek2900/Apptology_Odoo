@@ -9,3 +9,4 @@ from . import pos_config
 from . import res_partner
 from . import pos_session
 from . import deliverect_modifier_group
+from . import product_template

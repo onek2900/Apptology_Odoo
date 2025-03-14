@@ -1,0 +1,147 @@
+/* General Receipt Styling */
+.pos-receipt {
+    font-family: 'Courier New', monospace;
+    width: 300px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    text-align: center;
+}
+
+.pos-receipt-logo {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.pos-receipt-contact {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* Separator styling */
+.receipt-separator {
+    margin: 10px 0;
+    font-size: 12px;
+    letter-spacing: -1px;
+}
+
+/* Receipt Title */
+.receipt-title {
+    font-weight: bold;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+/* Order info */
+.order-info {
+    margin: 10px 0;
+}
+
+.order-number, .order-date {
+    font-size: 14px;
+}
+
+/* Order Details */
+.order-details {
+    text-align: left;
+    margin: 10px 0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
+.detail-label {
+    font-weight: bold;
+    flex: 1;
+}
+
+.detail-value {
+    flex: 2;
+    text-align: right;
+}
+
+/* Order Items */
+.order-items {
+    margin: 10px 0;
+}
+
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.items-table th {
+    text-align: left;
+    font-weight: bold;
+    padding: 5px;
+    border-bottom: 1px dashed #ccc;
+}
+
+.item-description {
+    width: 70%;
+    text-align: left;
+}
+
+.item-quantity {
+    width: 30%;
+    text-align: right;
+}
+
+.item-row td {
+    padding: 5px 0;
+}
+
+/* Cost Summary */
+.cost-summary {
+    text-align: right;
+    margin: 10px 0;
+}
+
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+
+.cost-label {
+    text-align: left;
+    flex: 1;
+}
+
+.cost-value {
+    flex: 1;
+    font-weight: normal;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    font-weight: bold;
+    font-size: 16px;
+    border-top: 1px dashed #ccc;
+    padding-top: 5px;
+}
+
+.total-label {
+    text-align: left;
+    flex: 1;
+}
+
+.total-value {
+    flex: 1;
+}
+
+/* Footer */
+.receipt-footer {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.receipt-footer p {
+    margin: 5px 0;
+}

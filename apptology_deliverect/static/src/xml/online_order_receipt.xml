@@ -2,96 +2,152 @@
 <templates id="template" xml:space="preserve">
     <t t-name="apptology_deliverect.OnlineOrderReceipt">
         <div class="pos-receipt">
+            <!-- Company Logo and Information (unchanged) -->
             <img t-attf-src="/web/image?model=res.company&amp;id={{props.data.headerData.company.id}}&amp;field=logo"
                  alt="Logo" class="pos-receipt-logo"/>
             <br/>
             <div class="pos-receipt-contact">
-            <!-- contact address -->
-            <div t-if="props.data.headerData.company.partner_id?.[1]"
-                 t-esc="props.data.headerData.company.partner_id[1]"/>
-            <t t-if="props.data.headerData.company.phone">
-                <div>Tel:<t t-esc="props.data.headerData.company.phone"/></div>
-            </t>
+                <div t-if="props.data.headerData.company.partner_id?.[1]"
+                     t-esc="props.data.headerData.company.partner_id[1]"/>
+                <t t-if="props.data.headerData.company.phone">
+                    <div>Tel: <t t-esc="props.data.headerData.company.phone"/></div>
+                </t>
                 <t t-if="props.data.headerData.company.vat">
-                <div t-esc="vatText"/>
-            </t>
+                    <div t-esc="vatText"/>
+                </t>
                 <div t-if="props.data.headerData.company.email" t-esc="props.data.headerData.company.email"/>
                 <div t-if="props.data.headerData.company.website" t-esc="props.data.headerData.company.website"/>
-        </div>
-        <br/>
-        <br/>
-            <!-- Order Type -->
-            <t t-log="'ORDER DATA X :',props.data.orderData"/>
-        <div class="pos-receipt-order-type" t-if="props.data.orderData">
-            <div class="pos-receipt-content"><span class="fst-normal fw-bolder me-1">Order type :</span>
-                <t t-if="props.data.orderData.order_type=='1'">
-                    <span>Pickup</span>
-                </t>
-                <t t-elif="props.data.orderData.order_type=='2'">
-                    <span>Delivery</span>
-                </t>
             </div>
-        </div>
-            <!-- Payment Type -->
-        <div class="pos-receipt-payment-type" t-if="props.data.orderData">
-            <div class="pos-receipt-content"><span class="fst-normal fw-bolder me-1">Payment type :</span>
-                <t t-if="props.data.orderData.order_payment_type=='0'">
-                    <span>Credit Card Online</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='1'">
-                    <span>Cash</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='2'">
-                    <span>On Delivery</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='3'">
-                    <span>Online</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='4'">
-                    <span>Credit Card at Door</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='5'">
-                    <span>PIN at Door</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='6'">
-                    <span>Voucher at Door</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='7'">
-                    <span>Meal Voucher</span>
-                </t>
-                <t t-elif="props.data.orderData.order_payment_type=='8'">
-                    <span>Bank Contact</span>
-                </t>
+
+            <!-- Separator -->
+            <div class="receipt-separator">
+                <span>***********************************</span>
             </div>
-        </div>
-            <!-- Customer Note -->
-            <div class="pos-receipt-customer-note" t-if="props.data.orderData">
-            <div class="pos-receipt-content"><span class="fst-normal fw-bolder me-1">Note :</span>
-                <span t-esc="props.data.orderData.note"/></div>
-        </div>
-            <br/>
-            <div class="pos-receipt-orderlines">
-            <t t-foreach="props.data.orderlines" t-as="orderLine" t-key="orderLine.productName">
-                <li class="orderline p-2 lh-sm cursor-pointer">
-                    <div class="d-flex justify-content-between">
-                        <div class="product-name d-inline-block flex-grow-1 fw-bolder pe-1 text-truncate">
-                            <span class="text-wrap" t-esc="orderLine.productName"/>
-                        </div>
-                        <div class="product-price d-inline-block text-end price">
-                            <span class="me-1">x</span>
-                            <span class="qty fst-normal fw-bolder me-1" t-esc="orderLine.qty"/>
-                            <span t-esc="orderLine.unit"/>
-                        </div>
+
+            <!-- Receipt Title -->
+            <div class="receipt-title">
+                <h3>ORDER RECEIPT</h3>
+            </div>
+
+            <!-- Order Number and Date -->
+            <div class="order-info">
+                <div t-esc="props.data.name" class="order-number"/>
+                <div t-esc="props.data.date" class="order-date"/>
+            </div>
+
+            <!-- Separator -->
+            <div class="receipt-separator">
+                <span>***********************************</span>
+            </div>
+            <t t-log="'props :',props.data.orderData"/>
+
+            <!-- Order Type and Payment Method -->
+            <div class="order-details">
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">Order :</div>
+                    <div class="detail-value">
+                        <t t-if="props.data.orderData.order_type=='1'">Pickup</t>
+                        <t t-elif="props.data.orderData.order_type=='2'">Delivery</t>
                     </div>
-                </li>
-            </t>
-        </div>
-            <br/>
-            <div class="pos-receipt-order-data">
-            <p>Powered by Apptology</p>
-                <div t-esc="props.data.name"/>
-                <div id="order-date" t-esc="props.data.date"/>
-        </div>
+                </div>
+
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">Payment :</div>
+                    <div class="detail-value">
+                        <t t-if="props.data.orderData.order_payment_type=='0'">Credit Card Online</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='1'">Cash</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='2'">On Delivery</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='3'">Online</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='4'">Credit Card at Door</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='5'">PIN at Door</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='6'">Voucher at Door</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='7'">Meal Voucher</t>
+                        <t t-elif="props.data.orderData.order_payment_type=='8'">Bank Contact</t>
+                    </div>
+                </div>
+
+                <!-- Customer Note if present -->
+                <div class="detail-row" t-if="props.data.orderData and props.data.orderData.note">
+                    <div class="detail-label">Note:</div>
+                    <div class="detail-value" t-esc="props.data.orderData.note"/>
+                </div>
+            </div>
+
+            <!-- Separator -->
+            <div class="receipt-separator">
+                <span>***********************************</span>
+            </div>
+
+            <!-- Order Items -->
+            <div class="order-items">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th class="item-description">Description</th>
+                            <th class="item-quantity">Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="props.data.orderlines" t-as="orderLine" t-key="orderLine.productName">
+                            <tr class="item-row">
+                                <td class="item-description" t-esc="orderLine.productName"/>
+                                <td class="item-quantity">
+                                    <span t-esc="orderLine.qty"/> <span t-esc="orderLine.unit"/>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Separator -->
+            <div class="receipt-separator">
+                <span>***********************************</span>
+            </div>
+
+            <!-- Cost Summary -->
+            <div class="cost-summary">
+                <!-- Discount -->
+                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_discount">
+                    <div class="cost-label">Discount:</div>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_discount"/>
+                </div>
+
+                <!-- Service Charge -->
+                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_service_charge">
+                    <div class="cost-label">Service Charge:</div>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_service_charge"/>
+                </div>
+
+                <!-- Delivery Charge -->
+                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_delivery_charge">
+                    <div class="cost-label">Delivery Charge:</div>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_delivery_charge"/>
+                </div>
+
+                <!-- Tip -->
+                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_tip_amount">
+                    <div class="cost-label">Tip:</div>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_tip_amount"/>
+                </div>
+
+                <!-- Total Amount - Note: You'll need to calculate this in your backend -->
+                <div class="total-row" t-if="props.data.orderData">
+                    <div class="total-label">Total Amount:</div>
+                    <div class="total-value" t-esc="props.data.orderData.channel_total_amount"/>
+                </div>
+            </div>
+
+            <!-- Separator -->
+            <div class="receipt-separator">
+                <span>***********************************</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="receipt-footer">
+                <p>THANK YOU!</p>
+                <p>Powered by Apptology</p>
+            </div>
         </div>
     </t>
 </templates>

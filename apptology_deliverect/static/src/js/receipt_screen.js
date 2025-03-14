@@ -14,8 +14,9 @@ patch(ReceiptScreen.prototype, {
         this.buttonOnlineOrderPrintReceipt = useRef("online-order-print-receipt-button");
     },
     async printOnlineReceipt() {
-
+        await this.pos.load_server_data();
         console.log("AMR :",this.pos.selectedOrder.server_id)
+        console.log('AMR IDS :',this.pos.pos_orders.map(order => order.id))
         const currentOrder = this.pos.pos_orders.filter(order => order.id === this.pos.selectedOrder.server_id);
         console.log("AMR 2 :",currentOrder)
         this.buttonOnlineOrderPrintReceipt.el.className = "fa fa-fw fa-spin fa-circle-o-notch";
