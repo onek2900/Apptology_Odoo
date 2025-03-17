@@ -4,7 +4,7 @@
         <xpath expr="//div[hasclass('buttons')]" position="after">
             <button class="button print btn btn-lg btn-secondary w-100 py-3"
                     t-on-click="printOnlineReceipt">
-                <i class="fa fa-print ms-2" t-ref="online-order-print-receipt-button"></i>
+                <i class="fa fa-print ms-2" t-ref="online-order-print-receipt-button"/>
                 Print Online Order Receipt
             </button>
         </xpath>

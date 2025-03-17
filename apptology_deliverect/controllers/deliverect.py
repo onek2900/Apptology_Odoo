@@ -4,6 +4,7 @@ import logging
 import re
 from odoo import fields, http, _
 from odoo.http import request, Response
+from datetime import datetime
 
 _logger = logging.getLogger(__name__)
 
@@ -22,14 +23,13 @@ class DeliverectWebhooks(http.Controller):
             })
         return partner.id
 
-
     @staticmethod
-    def generate_order_notification(pos_id):
+    def generate_order_notification(pos_id, order_status):
         """function for generating notification for pos order"""
-        _logger.info(f"generating notification in pos id :{pos_id}")
         channel = f"new_pos_order_{pos_id}"
         request.env["bus.bus"]._sendone(channel, "notification", {
             "channel": channel,
+            "order_status": order_status
         })
 
     @staticmethod
@@ -37,7 +37,6 @@ class DeliverectWebhooks(http.Controller):
         """function for generating data for pos order"""
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         product_data = pos_config.create_deliverect_product_data()
-        print(product_data)
         account_id = pos_config.account_id
         location_id = pos_config.location_id
         return {
@@ -56,16 +55,45 @@ class DeliverectWebhooks(http.Controller):
         pos_reference = f"Online-Order {digits[:5]}-{digits[5:8]}-{digits[8:]}"
         return pos_reference
 
+    def convert_to_readable_time(self, timestamp_str):
+        if not timestamp_str:
+            return ""
+        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+        return dt.strftime("%B %d, %Y %I:%M %p")
+
+    def create_order_line(self, product_id, qty, note):
+        product = request.env['product.product'].sudo().search(
+            [('id', '=', product_id)],
+            limit=1)
+        product_data = product.taxes_id.compute_all(
+            product.lst_price,
+            currency=product.currency_id,
+            quantity=qty,
+            product=product,
+            partner=request.env['res.partner'].sudo()
+        )
+        line_vals = {
+            'full_product_name': product.name,
+            'product_id': product.id,
+            'price_unit': product.lst_price,
+            'qty': qty,
+            'price_subtotal': product_data.get('total_excluded'),
+            'price_subtotal_incl': product_data.get('total_included'),
+            'discount': 0,
+            'note': note,
+            'tax_ids': [(6, 0, product.taxes_id.ids)]
+        }
+        return line_vals
+
     @staticmethod
     def create_order_data(self, data, pos_id):
-        print(json.dumps(data, indent=4))
         """function for pos order data from deliverect data"""
         pos_reference = self.generate_pos_reference(data['channelOrderId'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         is_auto_approve = pos_config.auto_approve
         if not pos_config.current_session_id:
             _logger.error(f"No active session for POS config {pos_config.id}")
-            return False
+            raise Exception('Session not active')
         try:
             current_session = pos_config.current_session_id
             sequence_code = f"pos.order_{current_session.id}"
@@ -74,12 +102,14 @@ class DeliverectWebhooks(http.Controller):
                 ('company_id', '=', pos_config.company_id.id)
             ], limit=1)
             if not ir_sequence:
+                # check for existing online order sequence
                 sequence_code = f"online_pos.order_{current_session.id}"
                 ir_sequence = request.env['ir.sequence'].sudo().search([
                     ('code', '=', sequence_code),
                     ('company_id', '=', pos_config.company_id.id)
                 ], limit=1)
             if not ir_sequence:
+                # create new online order sequence
                 ir_sequence = request.env['ir.sequence'].sudo().create({
                     'code': sequence_code,
                     'company_id': pos_config.company_id.id,
@@ -91,75 +121,65 @@ class DeliverectWebhooks(http.Controller):
                 _logger.error(f"Standard POS sequence not found - created New one: {ir_sequence.code}")
             sequence_str = ir_sequence.sudo().next_by_id()
             sequence_number = re.findall(r'\d+', sequence_str)[0]
-            print(ir_sequence)
-            order_data = {}
             order_lines = []
-            print(data['items'])
-            for item in data['items']:
-                product = request.env['product.product'].sudo().search(
-                    [('id', '=', int(item['plu'].split('-')[1]))],
-                    limit=1)
-                if product:
-                    order_lines.append((0, 0, {
-                        'full_product_name': product.name,
-                        'product_id': product.product_variant_id.id,
-                        'price_unit': item['price'] / 100,
-                        'qty': item['quantity'],
-                        'price_subtotal': item['price'] * item['quantity'] / 100,
-                        'price_subtotal_incl': item['price'] * item['quantity'] / 100,
-                        'discount': 0,
-                        'tax_ids': [(6, 0, product.taxes_id.ids)]
-                    }))
-                for sub_item in item['subItems']:
-                    sub_product = request.env['product.product'].sudo().search(
-                        [('id', '=', int(item['plu'].split('-')[1]))],
-                        limit=1)
-                    order_lines.append((0, 0, {
-                        'full_product_name': product.name,
-                        'product_id': product.product_variant_id.id,
-                        'price_unit': item['price'] / 100,
-                        'qty': item['quantity'],
-                        'price_subtotal': item['price'] * item['quantity'] / 100,
-                        'price_subtotal_incl': item['price'] * item['quantity'] / 100,
-                        'discount': 0,
-                        'tax_ids': [(6, 0, product.taxes_id.ids)]
-                    }))
-                order_data = {
-                    'config_id': pos_config.id,
-                    'company_id': pos_config.company_id.id,
-                    'note': data['note'],
-                    'amount_paid': data['payment']['amount'] / 100,
-                    'amount_return': 0.0,
-                    'amount_tax': data['taxTotal'] / 100,
-                    'amount_total': data['payment']['amount'] / 100,
-                    'fiscal_position_id': False,
-                    'pricelist_id': pos_config.pricelist_id.id,
-                    'lines': order_lines,
-                    'name': pos_reference,
-                    'pos_reference': pos_reference,
-                    'order_payment_type':str(data['payment']['type']),
-                    'partner_id': self.find_partner(data['channel']),
-                    'date_order': fields.Datetime.to_string(fields.Datetime.now()),
-                    'session_id': pos_config.current_session_id.id,
-                    'sequence_number': sequence_number,
-                    'user_id': pos_config.current_user_id.id,
-                    'is_online_order': True,
-                    'online_order_id': data['_id'],
-                    'floor': 'Online',
-                    'online_order_status': 'approved' if is_auto_approve else 'open',
-                    'order_type': str(data['orderType']),
-                    'online_order_paid': data['orderIsAlreadyPaid'],
-                    'channel_discount':data['discountTotal']/100,
-                    'channel_service_charge':data['serviceCharge']/100,
-                    'channel_delivery_charge':data['deliveryCost']/100,
-                    'channel_tip_amount':data['tip']/100,
-                    'channel_total_amount':data['payment']['amount'] / 100,
-                    'delivery_note':data['deliveryNote'],
-                }
+            total_untaxed = 0
+            total_taxed = 0
+            for item in data.get('items'):
+                line_vals = self.create_order_line(int(item.get('plu').split('-')[1]), item.get('quantity'),
+                                                   item.get('remark', ""))
+                total_taxed += line_vals.get('price_subtotal_incl')
+                total_untaxed += line_vals.get('price_subtotal')
+                order_lines.append((0, 0, line_vals))
+                if item.get('subItems'):
+                    for sub_item in item.get('subItems'):
+                        sub_item_line_vals = self.create_order_line(int(sub_item.get('plu').split('-')[1]),
+                                                                    sub_item.get('quantity'),
+                                                                    sub_item.get('remark', ""))
+                        total_taxed += sub_item_line_vals.get('price_subtotal_incl')
+                        total_untaxed += sub_item_line_vals.get('price_subtotal')
+                        order_lines.append((0, 0, sub_item_line_vals))
+            order_data = {
+                'config_id': pos_config.id,
+                'company_id': pos_config.company_id.id,
+                'note': data.get('note', ''),
+                'amount_paid': total_taxed,
+                'amount_return': 0.0,
+                'amount_tax': total_taxed - total_untaxed,
+                'amount_total': total_taxed,
+                'fiscal_position_id': False,
+                'pricelist_id': pos_config.pricelist_id.id,
+                'lines': order_lines,
+                'name': pos_reference,
+                'pos_reference': pos_reference,
+                'order_payment_type': str(data.get('payment').get('type')),
+                'partner_id': self.find_partner(data.get('channel')),
+                'date_order': fields.Datetime.to_string(fields.Datetime.now()),
+                'session_id': pos_config.current_session_id.id,
+                'sequence_number': sequence_number,
+                'user_id': pos_config.current_user_id.id,
+                'is_online_order': True,
+                'online_order_id': data.get('_id'),
+                'floor': 'Online',
+                'online_order_status': 'approved' if is_auto_approve else 'open',
+                'order_type': str(data.get('orderType')),
+                'online_order_paid': data.get('orderIsAlreadyPaid'),
+                'channel_discount': data.get('discountTotal') / 100,
+                'channel_service_charge': data.get('serviceCharge') / 100,
+                'channel_delivery_charge': data.get('deliveryCost') / 100,
+                'channel_tip_amount': data.get('tip') / 100,
+                'channel_total_amount': data.get('payment').get('amount') / 100,
+                'delivery_note': data.get('deliveryAddress', {}).get('extraAddressInfo', ''),
+                'channel_order_reference': data.get('channelOrderDisplayId'),
+                'pickup_time': self.convert_to_readable_time(data.get('pickupTime')),
+                'delivery_time': self.convert_to_readable_time(data.get('deliveryTime')),
+                'channel_name': request.env['deliverect.channel'].sudo().search([('channel_id', '=',
+                                                                                  data.get("channel"))],
+                                                                                limit=1).name
+            }
             return order_data
         except Exception as e:
             _logger.error(f"Failed to create order data: {str(e)}")
-            return False
+            raise Exception(f"Failed to create order data :{str(e)}")
 
     @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none", csrf=False)
     def sync_products(self, pos_id):
@@ -210,20 +230,19 @@ class DeliverectWebhooks(http.Controller):
                             'payment_method_id': deliverect_payment_method.id,
                         })
                         order_payment.with_context(**payment_context).check()
-                    _logger.info(f"Trying to Generating order notification for pos")
-                    self.generate_order_notification(pos_id)
+                    self.generate_order_notification(pos_id, 'success')
                     return Response(
                         json.dumps({'status': 'success', 'message': 'Order created',
                                     'order_id': order.id}),
                         content_type='application/json',
                         status=200
                     )
-
         except Exception as e:
             _logger.error(f"Error processing order webhook: {str(e)}")
+            self.generate_order_notification(pos_id, 'failure')
             return Response(
                 json.dumps({
-                    'status': 'error',
+                    'status': 'Error',
                     'message': f'Message: {e}',
                 }),
                 content_type='application/json',
@@ -242,7 +261,7 @@ class DeliverectWebhooks(http.Controller):
                 'account_id': data.get('accountId'),
                 'location_id': data.get('locationId'),
             })
-            is_channel_present = request.env['pos.config'].sudo().browse(pos_id).create_customers_channel()
+            is_channel_present = pos_config.create_customers_channel()
             request.env['deliverect.allergens'].sudo().update_allergens()
             if is_channel_present['params']['title'] == 'Failure':
                 pos_config.write({

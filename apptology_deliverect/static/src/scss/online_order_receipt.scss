@@ -42,16 +42,25 @@
     font-size: 14px;
 }
 
-/* Order Details */
+/* Order Details - Improved */
 .order-details {
     text-align: left;
     margin: 10px 0;
+    border: 1px dashed #ccc;
+    padding: 8px;
+    background-color: #f9f9f9;
 }
 
 .detail-row {
     display: flex;
     justify-content: space-between;
     margin: 5px 0;
+    border-bottom: 1px dotted #eee;
+    padding-bottom: 3px;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
 }
 
 .detail-label {
@@ -93,6 +102,16 @@
 
 .item-row td {
     padding: 5px 0;
+}
+
+/* Added style for item-remark */
+.item-remark {
+    font-size: 10px;  /* Smaller font compared to the rest */
+    font-style: italic;
+    color: #666;
+    padding-left: 10px;
+    display: block;
+    margin-top: 2px;
 }
 
 /* Cost Summary */

@@ -51,10 +51,9 @@ class PosOrder(models.Model):
     channel_tip_amount = fields.Float(string='Channel Tip', default=0.0)
     channel_total_amount = fields.Float(string='Channel Total Amount', default=0.0)
     channel_order_reference = fields.Char(string='Channel Display Order ID')
-    channel_product_note = fields.Text(string='Channel Product Note')
     delivery_note = fields.Text(string='Delivery Note')
-    pickup_time = fields.Datetime(string='Pickup Time')
-    delivery_time = fields.Datetime(string='Delivery Time')
+    pickup_time = fields.Char(string='Pickup Time')
+    delivery_time = fields.Char(string='Delivery Time')
     channel_name = fields.Char(string='Channel')
 
     @api.depends('online_order_status')
@@ -168,13 +167,15 @@ class PosOrder(models.Model):
             ('state', '=', 'draft'),
             ('table_id', 'in', table_ids),
         ])
-        print(offline_orders)
         online_orders = self.env['pos.order'].search([
             ('is_online_order', '=', True),
             ('state', '=', 'draft'),
             ('online_order_status', 'in', ['approved','finalized'])])
-        print(online_orders)
-        print(self.env['pos.order'].search([]))
         orders = offline_orders | online_orders
-        print(orders)
         return orders.export_for_ui()
+
+    def _export_for_ui(self, order):
+        # EXTENDS 'point_of_sale'
+        vals = super()._export_for_ui(order)
+        vals['pickup_time'] = order.pickup_time
+        return vals

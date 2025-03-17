@@ -14,11 +14,15 @@ patch(ReceiptScreen.prototype, {
         this.buttonOnlineOrderPrintReceipt = useRef("online-order-print-receipt-button");
     },
     async printOnlineReceipt() {
-        await this.pos.load_server_data();
-        console.log("AMR :",this.pos.selectedOrder.server_id)
-        console.log('AMR IDS :',this.pos.pos_orders.map(order => order.id))
         const currentOrder = this.pos.pos_orders.filter(order => order.id === this.pos.selectedOrder.server_id);
-        console.log("AMR 2 :",currentOrder)
+        const orderLines = this.pos.selectedOrder.orderlines.map(order => {
+            return {
+                lineId: order.id,
+                name: order.full_product_name,
+                qty: order.quantity,
+                note: order.note,
+            };
+        });
         this.buttonOnlineOrderPrintReceipt.el.className = "fa fa-fw fa-spin fa-circle-o-notch";
         const isPrinted = await this.printer.print(
             onlineOrderReceipt,
@@ -27,15 +31,12 @@ patch(ReceiptScreen.prototype, {
                     ...this.pos.get_order().export_for_printing(),
                     isBill: this.isBill,
                     orderData: currentOrder[0],
+                    orderLineData: orderLines
                 },
                 formatCurrency: this.env.utils.formatCurrency,
             },
             { webPrintFallback: true }
         );
-        if (isPrinted) {
-            this.currentOrder._printed = true;
-        }
-
         if (this.buttonOnlineOrderPrintReceipt.el) {
             this.buttonOnlineOrderPrintReceipt.el.className = "fa fa-print";
         }

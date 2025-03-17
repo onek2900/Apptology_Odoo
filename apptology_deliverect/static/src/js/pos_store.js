@@ -12,5 +12,5 @@ patch(PosStore.prototype, {
         } catch(error){
             console.error("Error fetching new online orders:",error)
         }
-    },
+    }
 });

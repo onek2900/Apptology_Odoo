@@ -2,6 +2,7 @@
 <templates id="template" xml:space="preserve">
     <t t-name="apptology_deliverect.OnlineOrderReceipt">
         <div class="pos-receipt">
+            <t t-log="'PROPS DATA :',props.data"/>
             <!-- Company Logo and Information (unchanged) -->
             <img t-attf-src="/web/image?model=res.company&amp;id={{props.data.headerData.company.id}}&amp;field=logo"
                  alt="Logo" class="pos-receipt-logo"/>
@@ -39,20 +40,47 @@
             <div class="receipt-separator">
                 <span>***********************************</span>
             </div>
-            <t t-log="'props :',props.data.orderData"/>
-
             <!-- Order Type and Payment Method -->
             <div class="order-details">
                 <div class="detail-row" t-if="props.data.orderData">
-                    <div class="detail-label">Order :</div>
+                    <div class="detail-label">Order:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.channel_order_reference"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">Type:</div>
                     <div class="detail-value">
                         <t t-if="props.data.orderData.order_type=='1'">Pickup</t>
                         <t t-elif="props.data.orderData.order_type=='2'">Delivery</t>
                     </div>
                 </div>
-
                 <div class="detail-row" t-if="props.data.orderData">
-                    <div class="detail-label">Payment :</div>
+                    <div class="detail-label">PickUp Time:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.pickup_time"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">Delivery Time:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.delivery_time"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData and props.data.orderData.delivery_note">
+                    <div class="detail-label">Delivery Note:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.delivery_note"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">Channel:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.channel_name"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">Payment:</div>
                     <div class="detail-value">
                         <t t-if="props.data.orderData.order_payment_type=='0'">Credit Card Online</t>
                         <t t-elif="props.data.orderData.order_payment_type=='1'">Cash</t>
@@ -65,7 +93,6 @@
                         <t t-elif="props.data.orderData.order_payment_type=='8'">Bank Contact</t>
                     </div>
                 </div>
-
                 <!-- Customer Note if present -->
                 <div class="detail-row" t-if="props.data.orderData and props.data.orderData.note">
                     <div class="detail-label">Note:</div>
@@ -87,14 +114,16 @@
                             <th class="item-quantity">Qty</th>
                         </tr>
                     </thead>
+                    <t t-log="props.data"/>
                     <tbody>
-                        <t t-foreach="props.data.orderlines" t-as="orderLine" t-key="orderLine.productName">
+                        <t t-foreach="props.data.orderLineData" t-as="orderLine" t-key="orderLine.lineId">
                             <tr class="item-row">
-                                <td class="item-description" t-esc="orderLine.productName"/>
+                                <td class="item-description" t-esc="orderLine.name"/>
                                 <td class="item-quantity">
-                                    <span t-esc="orderLine.qty"/> <span t-esc="orderLine.unit"/>
+                                    <span t-esc="orderLine.qty"/> Units
                                 </td>
                             </tr>
+                            <tr class="item-remark" t-esc="orderLine.note"/>
                         </t>
                     </tbody>
                 </table>

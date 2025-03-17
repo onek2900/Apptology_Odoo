@@ -8,7 +8,7 @@ patch(Order.prototype, {
         super.setup(...arguments);
     },
     get_screen_data() {
-//    function modified to consider switching from online order screen
+/*    function modified to consider switching from online order screen */
         const screen = this.screen_data["value"];
         // If no screen data is saved
         //   no payment line -> product screen

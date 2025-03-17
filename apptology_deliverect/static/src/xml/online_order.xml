@@ -100,6 +100,7 @@
                 </div>
                 <div class="leftpane d-flex flex-column h-100">
                     <div class="order-details d-flex flex-column h-100">
+                        <t t-log="state.clickedOrder.lines"/>
                         <t t-if="state.clickedOrder.lines">
                             <div class="product-list flex-grow-1">
                                 <t t-foreach="state.clickedOrder.lines" t-as="order"

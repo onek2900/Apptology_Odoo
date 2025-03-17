@@ -224,7 +224,6 @@ class PosConfig(models.Model):
                 combo_data.append(modifier_group)
             combo_data.insert(0, main_product)
             combo_products_data += combo_data
-        print(combo_products_data)
         return combo_products_data
 
     def image_upload(self, product_tmpl_id):
@@ -252,7 +251,6 @@ class PosConfig(models.Model):
                                                               ('pos_categ_ids', 'in',
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
-        print('product with modifier :', products)
         return products.mapped(lambda product: {
             "name": product.name,
             "plu": f"PRD-{product.id}",
@@ -271,9 +269,7 @@ class PosConfig(models.Model):
     def create_modifier_and_modifier_group(self):
         """function to sync modifiers with Deliverect"""
         modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
-        print('modifiers :', modifiers)
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
-        print('modifier groups :', modifier_groups)
 
         modifiers_data = modifiers.mapped(lambda modifier: {
             "name": modifier.name,
@@ -356,7 +352,46 @@ class PosConfig(models.Model):
                                                                                                        "=",
                                                                                                        product.id)])]
         })
-        return main_product_group_data + main_product_data
+        return main_product_data+main_product_group_data
+
+
+    def create_deliverect_product_data(self):
+        product_data = []
+        product_data += self.create_variant_product_data()
+        product_data += self.create_product_data()
+        # product_data += self.create_modifier_and_modifier_group()
+        # product_data += self.create_product_with_modifier()
+        # product_data += self.create_combo_product_data()
+        return product_data
+
+    def action_sync_product(self):
+        """Sync products and categories with Deliverect API"""
+        try:
+            url = "https://api.staging.deliverect.com/productAndCategories"
+            token = self.env['deliverect.api'].sudo().generate_auth_token()
+            account_id = self.account_id
+            location_id = self.location_id
+            payload = {
+                "priceLevels": [],
+                "categories": [],
+                "products": self.create_deliverect_product_data(),
+                "accountId": account_id,
+                "locationId": location_id
+            }
+            headers = {
+                "accept": "application/json",
+                "content-type": "application/json",
+                "authorization": f"Bearer {token}"
+            }
+            response = requests.post(url, json=payload, headers=headers)
+            _logger.info(f"Product sync response: {response.status_code} - {response.text}")
+            if response.status_code == 200:
+                return True
+            else:
+                return False
+        except Exception as e:
+            _logger.error(f"Product sync failed: {e}")
+            return False
 
     def clear_products(self):
         try:
@@ -379,64 +414,6 @@ class PosConfig(models.Model):
                         "deliveryTax": 9000,
                         "takeawayTax": 9000,
                         "eatInTax": 9000
-                    },
-                    {
-                        "productType": 1,
-                        "plu": "VAR-2",
-                        "price": 1100,
-                        "name": "6 Pieces",
-                        "posProductId": "POS-004",
-                        "imageUrl": "",
-                        "description": "",
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    },
-                    {
-                        "productType": 1,
-                        "plu": "VAR-3",
-                        "price": 1350,
-                        "name": "9 Pieces",
-                        "posProductId": "POS-005",
-                        "imageUrl": "",
-                        "description": "",
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    },
-                    {
-                        "productType": 3,
-                        "plu": "MG-VAR-1",
-                        "name": "How many pieces?",
-                        "posProductId": "POS-002",
-                        "description": "",
-                        "isVariantGroup": True,
-                        "subProducts": [
-                            "VAR-1",
-                            "VAR-2",
-                            "VAR-3"
-                        ],
-                        "min": 1,
-                        "max": 1
-                    },
-                    {
-                        "productType": 1,
-                        "plu": "VAR-PROD-1",
-                        "price": 0,
-                        "name": "Chicken Tenders",
-                        "posProductId": "POS-001",
-                        "posCategoryIds": [
-                            "CHK"
-                        ],
-                        "imageUrl": "https://storage.googleapis.com/ikona-bucket-staging/images/5ff6ee089328c8aefeeabe33/chicken-62285f90db5986001ebf58d5.jpg",
-                        "description": "Choose 3, 6 or 9 Pieces of Delicious Fried Chicken",
-                        "isVariant": True,
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000,
-                        "subProducts": [
-                            "MG-VAR-1"
-                        ]
                     }
                 ],
                 "accountId": account_id,
@@ -470,45 +447,6 @@ class PosConfig(models.Model):
                     }
                 }
 
-        except Exception as e:
-            _logger.error(f"Product sync failed: {e}")
-            return False
-
-    def create_deliverect_product_data(self):
-        product_data = []
-        product_data += self.create_product_data()
-        product_data += self.create_modifier_and_modifier_group()
-        product_data += self.create_product_with_modifier()
-        product_data += self.create_variant_product_data()
-        # product_data += self.create_combo_product_data()
-        print(product_data)
-        return product_data
-
-    def action_sync_product(self):
-        """Sync products and categories with Deliverect API"""
-        try:
-            url = "https://api.staging.deliverect.com/productAndCategories"
-            token = self.env['deliverect.api'].sudo().generate_auth_token()
-            account_id = self.account_id
-            location_id = self.location_id
-            payload = {
-                "priceLevels": [],
-                "categories": [],
-                "products": self.create_deliverect_product_data(),
-                "accountId": account_id,
-                "locationId": location_id
-            }
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "authorization": f"Bearer {token}"
-            }
-            response = requests.post(url, json=payload, headers=headers)
-            _logger.info(f"Product sync response: {response.status_code} - {response.text}")
-            if response.status_code == 200:
-                return True
-            else:
-                return False
         except Exception as e:
             _logger.error(f"Product sync failed: {e}")
             return False
