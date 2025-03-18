@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="point_of_sale.ClosePosPopup" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('modal-footer-left')]" position="before">
+            <t t-if="state.unFinalizedOrdersCount">
+                <div class="alert alert-warning w-100 mb-3" role="alert">
+                    <i class="fa fa-exclamation-triangle me-2" role="img" aria-label="Warning"></i>
+                    <strong>Warning:</strong> There are unfinalized online orders. Closing the session now may cause issues with these orders.
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>
+

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
+from email.policy import default
+
 import requests
 from datetime import timedelta
 
@@ -16,17 +18,17 @@ class PosOrder(models.Model):
         ('1', 'Pick up'),
         ('2', 'Delivery')
     ], string='Order Type')
-    order_payment_type=fields.Selection([
+    order_payment_type = fields.Selection([
         ('0', 'Credit Card'),
         ('1', 'Cash'),
         ('2', 'On Delivery'),
         ('3', 'Online'),
-        ('4','Credit Card at door'),
+        ('4', 'Credit Card at door'),
         ('5', 'Pin at Door'),
-        ('6','Voucher at Door'),
-        ('7','Meal Voucher'),
-        ('8','Bank Contact'),
-        ('9','Other'),
+        ('6', 'Voucher at Door'),
+        ('7', 'Meal Voucher'),
+        ('8', 'Bank Contact'),
+        ('9', 'Other'),
     ], string='Payment Method')
     online_order_id = fields.Char(string='Online Order ID')
     online_order_paid = fields.Boolean(string='Online Order Paid', default=False)
@@ -50,6 +52,7 @@ class PosOrder(models.Model):
     channel_delivery_charge = fields.Float(string='Channel Delivery Charge', default=0.0)
     channel_tip_amount = fields.Float(string='Channel Tip', default=0.0)
     channel_total_amount = fields.Float(string='Channel Total Amount', default=0.0)
+    bag_fee = fields.Float(string="Bag Fee", default=0.0)
     channel_order_reference = fields.Char(string='Channel Display Order ID')
     delivery_note = fields.Text(string='Delivery Note')
     pickup_time = fields.Char(string='Pickup Time')
@@ -140,7 +143,7 @@ class PosOrder(models.Model):
              ],
             ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type', 'online_order_paid', 'state',
              'amount_total', 'amount_tax',
-             'date_order',
+             'date_order', 'tracking_number',
              'partner_id',
              'user_id', 'lines'], order="order_priority, date_order DESC"
         )
@@ -170,7 +173,7 @@ class PosOrder(models.Model):
         online_orders = self.env['pos.order'].search([
             ('is_online_order', '=', True),
             ('state', '=', 'draft'),
-            ('online_order_status', 'in', ['approved','finalized'])])
+            ('online_order_status', 'in', ['approved', 'finalized'])])
         orders = offline_orders | online_orders
         return orders.export_for_ui()
 

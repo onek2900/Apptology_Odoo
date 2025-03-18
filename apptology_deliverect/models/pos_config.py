@@ -252,15 +252,15 @@ class PosConfig(models.Model):
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda product: {
-            "name": product.name,
+            "productType": 1,
             "plu": f"PRD-{product.id}",
             "price": int(product.lst_price * 100),
-            "productType": 1,
+            "name": product.name,
+            "imageUrl": self.image_upload(product.product_tmpl_id.id),
+            "description": product.product_note,
             "deliveryTax": product.taxes_id.amount * 1000,
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
-            "description": product.product_note,
-            "imageUrl": self.image_upload(product.product_tmpl_id.id),
             "subProducts": [
                 f"MOD_GRP-{group.id}" for group in product.modifier_group_ids
             ]
@@ -272,15 +272,15 @@ class PosConfig(models.Model):
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
 
         modifiers_data = modifiers.mapped(lambda modifier: {
-            "name": modifier.name,
+            "productType": 1,
             "plu": f"MOD-{modifier.id}",
             "price": int(modifier.lst_price * 100),
-            "productType": 2,
+            "name": modifier.name,
+            "imageUrl": self.image_upload(modifier.product_tmpl_id.id),
+            "description": modifier.product_note,
             "deliveryTax": modifier.taxes_id.amount * 1000,
             "takeawayTax": modifier.taxes_id.amount * 1000,
             "eatInTax": modifier.taxes_id.amount * 1000,
-            "description": modifier.product_note,
-            "imageUrl": self.image_upload(modifier.product_tmpl_id.id),
             "productTags": [allergen.allergen_id for allergen in
                             modifier.allergens_and_tag_ids] if modifier.allergens_and_tag_ids else []
         })
@@ -303,15 +303,15 @@ class PosConfig(models.Model):
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda product: {
-            "name": product.name,
+            "productType": 1,
             "plu": f"PRD-{product.id}",
             "price": int(product.lst_price * 100),
-            "productType": 1,
+            "name": product.name,
+            "imageUrl": self.image_upload(product.product_tmpl_id.id),
+            "description": product.product_note,
             "deliveryTax": product.taxes_id.amount * 1000,
             "takeawayTax": product.taxes_id.amount * 1000,
             "eatInTax": product.taxes_id.amount * 1000,
-            "description": product.product_note,
-            "imageUrl": self.image_upload(product.product_tmpl_id.id),
             "productTags": [allergen.allergen_id for allergen in
                             product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
         })
@@ -326,11 +326,11 @@ class PosConfig(models.Model):
                                                                             ('available_in_pos', '=', True)])
         main_product_data = main_variant_products.mapped(lambda product: {
             "productType": 1,
-            "plu": f"VAR-{product.id}",
+            "plu": f"VAR_PRD-{product.id}",
             "price": int(product.list_price * 100),
             "name": product.name,
             "imageUrl": self.image_upload(product.id),
-            "description": "",
+            "description": product.deliverect_variant_description,
             "isVariant": True,
             "deliveryTax": product.taxes_id.amount * 1000,
             "takeawayTax": product.taxes_id.amount * 1000,
@@ -343,24 +343,25 @@ class PosConfig(models.Model):
             "productType": 3,
             "plu": f"VAR_GRP-{product.id}",
             "name": product.deliverect_variant_note,
-            "description": product.deliverect_variant_description,
             "isVariantGroup": True,
             "subProducts": [f"PRD-{variant.id}" for variant in self.env['product.product'].search([('active', '=',
                                                                                                     True),
                                                                                                    (
                                                                                                        "product_tmpl_id",
                                                                                                        "=",
-                                                                                                       product.id)])]
+                                                                                                       product.id)])],
+            "min": 1,
+            "max": 1
         })
-        return main_product_data+main_product_group_data
 
+        return main_product_data + main_product_group_data
 
     def create_deliverect_product_data(self):
         product_data = []
-        product_data += self.create_variant_product_data()
+        # product_data += self.create_variant_product_data()
         product_data += self.create_product_data()
-        # product_data += self.create_modifier_and_modifier_group()
-        # product_data += self.create_product_with_modifier()
+        product_data += self.create_modifier_and_modifier_group()
+        product_data += self.create_product_with_modifier()
         # product_data += self.create_combo_product_data()
         return product_data
 
@@ -405,10 +406,58 @@ class PosConfig(models.Model):
                 "products": [
                     {
                         "productType": 1,
+                        "plu": "VAR-PROD-1",
+                        "price": 0,
+                        "name": "Chicken Tenders",
+                        "imageUrl": "https://storage.googleapis.com/ikona-bucket-staging/images/5ff6ee089328c8aefeeabe33/chicken-62285f90db5986001ebf58d5.jpg",
+                        "description": "Choose 3, 6 or 9 Pieces of Delicious Fried Chicken",
+                        "isVariant": True,
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000,
+                        "subProducts": [
+                            "MG-VAR-1"
+                        ]
+                    },
+                    {
+                        "productType": 3,
+                        "plu": "MG-VAR-1",
+                        "name": "How many pieces?",
+                        "description": "",
+                        "isVariantGroup": True,
+                        "subProducts": [
+                            "VAR-1",
+                            "VAR-2",
+                            "VAR-3"
+                        ],
+                    },
+                    {
+                        "productType": 1,
                         "plu": "VAR-1",
                         "price": 800,
                         "name": "3 Pieces",
-                        "posProductId": "POS-003",
+                        "imageUrl": "",
+                        "description": "",
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    },
+                    {
+                        "productType": 1,
+                        "plu": "VAR-2",
+                        "price": 1100,
+                        "name": "6 Pieces",
+                        "imageUrl": "",
+                        "description": "",
+                        "deliveryTax": 9000,
+                        "takeawayTax": 9000,
+                        "eatInTax": 9000
+                    },
+                    {
+                        "productType": 1,
+                        "plu": "VAR-3",
+                        "price": 1350,
+                        "name": "9 Pieces",
                         "imageUrl": "",
                         "description": "",
                         "deliveryTax": 9000,

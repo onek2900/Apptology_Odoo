@@ -29,7 +29,6 @@ patch(ReceiptScreen.prototype, {
             {
                 data: {
                     ...this.pos.get_order().export_for_printing(),
-                    isBill: this.isBill,
                     orderData: currentOrder[0],
                     orderLineData: orderLines
                 },

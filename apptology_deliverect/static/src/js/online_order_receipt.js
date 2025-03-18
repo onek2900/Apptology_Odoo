@@ -21,4 +21,7 @@ export class onlineOrderReceipt extends Component {
         data: Object,
         formatCurrency: Function,
     };
+    omit(...args) {
+        return omit(...args);
+    }
 }

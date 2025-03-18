@@ -65,25 +65,28 @@ class DeliverectWebhooks(http.Controller):
         product = request.env['product.product'].sudo().search(
             [('id', '=', product_id)],
             limit=1)
-        product_data = product.taxes_id.compute_all(
-            product.lst_price,
-            currency=product.currency_id,
-            quantity=qty,
-            product=product,
-            partner=request.env['res.partner'].sudo()
-        )
-        line_vals = {
-            'full_product_name': product.name,
-            'product_id': product.id,
-            'price_unit': product.lst_price,
-            'qty': qty,
-            'price_subtotal': product_data.get('total_excluded'),
-            'price_subtotal_incl': product_data.get('total_included'),
-            'discount': 0,
-            'note': note,
-            'tax_ids': [(6, 0, product.taxes_id.ids)]
-        }
-        return line_vals
+        if product:
+            product_data = product.taxes_id.compute_all(
+                product.lst_price,
+                currency=product.currency_id,
+                quantity=qty,
+                product=product,
+                partner=request.env['res.partner'].sudo()
+            )
+            line_vals = {
+                'full_product_name': product.name,
+                'product_id': product.id,
+                'price_unit': product.lst_price,
+                'qty': qty,
+                'price_subtotal': product_data.get('total_excluded'),
+                'price_subtotal_incl': product_data.get('total_included'),
+                'discount': 0,
+                'note': note,
+                'tax_ids': [(6, 0, product.taxes_id.ids)]
+            }
+            return line_vals
+        else:
+            raise Exception("Product Not found")
 
     @staticmethod
     def create_order_data(self, data, pos_id):
@@ -125,19 +128,29 @@ class DeliverectWebhooks(http.Controller):
             total_untaxed = 0
             total_taxed = 0
             for item in data.get('items'):
-                line_vals = self.create_order_line(int(item.get('plu').split('-')[1]), item.get('quantity'),
-                                                   item.get('remark', ""))
-                total_taxed += line_vals.get('price_subtotal_incl')
-                total_untaxed += line_vals.get('price_subtotal')
-                order_lines.append((0, 0, line_vals))
-                if item.get('subItems'):
-                    for sub_item in item.get('subItems'):
-                        sub_item_line_vals = self.create_order_line(int(sub_item.get('plu').split('-')[1]),
-                                                                    sub_item.get('quantity'),
-                                                                    sub_item.get('remark', ""))
-                        total_taxed += sub_item_line_vals.get('price_subtotal_incl')
-                        total_untaxed += sub_item_line_vals.get('price_subtotal')
-                        order_lines.append((0, 0, sub_item_line_vals))
+                if item.get("plu").split('-')[0] =='VAR_PRD':
+                    if item.get('subItems'):
+                        for sub_item in item.get('subItems'):
+                            sub_item_line_vals = self.create_order_line(int(sub_item.get('plu').split('-')[1]),
+                                                                        item.get('quantity'),
+                                                                        item.get('remark', ""))
+                            total_taxed += sub_item_line_vals.get('price_subtotal_incl')
+                            total_untaxed += sub_item_line_vals.get('price_subtotal')
+                            order_lines.append((0, 0, sub_item_line_vals))
+                else:
+                    line_vals = self.create_order_line(int(item.get('plu').split('-')[1]), item.get('quantity'),
+                                                       item.get('remark', ""))
+                    total_taxed += line_vals.get('price_subtotal_incl')
+                    total_untaxed += line_vals.get('price_subtotal')
+                    order_lines.append((0, 0, line_vals))
+                    if item.get('subItems'):
+                        for sub_item in item.get('subItems'):
+                            sub_item_line_vals = self.create_order_line(int(sub_item.get('plu').split('-')[1]),
+                                                                        item.get('quantity'),
+                                                                        sub_item.get('remark', ""))
+                            total_taxed += sub_item_line_vals.get('price_subtotal_incl')
+                            total_untaxed += sub_item_line_vals.get('price_subtotal')
+                            order_lines.append((0, 0, sub_item_line_vals))
             order_data = {
                 'config_id': pos_config.id,
                 'company_id': pos_config.company_id.id,
@@ -168,6 +181,7 @@ class DeliverectWebhooks(http.Controller):
                 'channel_delivery_charge': data.get('deliveryCost') / 100,
                 'channel_tip_amount': data.get('tip') / 100,
                 'channel_total_amount': data.get('payment').get('amount') / 100,
+                'bag_fee':data.get('bagFee')/100,
                 'delivery_note': data.get('deliveryAddress', {}).get('extraAddressInfo', ''),
                 'channel_order_reference': data.get('channelOrderDisplayId'),
                 'pickup_time': self.convert_to_readable_time(data.get('pickupTime')),

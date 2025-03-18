@@ -8,6 +8,7 @@
                         <div class="header-row d-flex text-bg-700 fw-bolder">
                             <div class="col wide p-2">Date</div>
                             <div class="col wide p-2">Receipt Number</div>
+                            <div class="col wide p-2">Tracking Number</div>
                             <div class="col p-2">Cashier</div>
                             <div class="col p-2">Customer</div>
                             <div class="col end p-2">Kitchen Status</div>
@@ -23,6 +24,16 @@
                                 </div>
                                 <div class="col wide p-2">
                                     <div><t t-esc="order.pos_reference"/></div>
+                                </div>
+                                <div class="col wide p-2">
+                                    <div>
+                                        <t t-if="order.online_order_status=='open'">
+                                            N/A
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="order.tracking_number"/>
+                                        </t>
+                                    </div>
                                 </div>
                                 <div class="col p-2">
                                     <div><t t-esc="order.user_id[1]"/> </div>
@@ -99,7 +110,7 @@
                     </div>
                 </div>
                 <div class="leftpane d-flex flex-column h-100">
-                    <div class="order-details d-flex flex-column h-100">
+                    <div class="online-order-details d-flex flex-column h-100">
                         <t t-log="state.clickedOrder.lines"/>
                         <t t-if="state.clickedOrder.lines">
                             <div class="product-list flex-grow-1">
@@ -118,7 +129,7 @@
                                             Units</div>
                                     </div>
                                         <div class="product-price"><t t-esc="state.currency_symbol"/>
-                                            <t t-esc="order.price_subtotal_incl"/></div>
+                                            <t t-esc="order.price_subtotal"/></div>
                                     </div>
                                 </t>
                             </div>

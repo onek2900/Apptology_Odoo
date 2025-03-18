@@ -31,7 +31,7 @@
             </div>
 
             <!-- Order Number and Date -->
-            <div class="order-info">
+            <div class="online-order-info">
                 <div t-esc="props.data.name" class="order-number"/>
                 <div t-esc="props.data.date" class="order-date"/>
             </div>
@@ -41,7 +41,7 @@
                 <span>***********************************</span>
             </div>
             <!-- Order Type and Payment Method -->
-            <div class="order-details">
+            <div class="online-order-receipt-details">
                 <div class="detail-row" t-if="props.data.orderData">
                     <div class="detail-label">Order:</div>
                     <div class="detail-value">
@@ -158,6 +158,12 @@
                 <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_tip_amount">
                     <div class="cost-label">Tip:</div>
                     <div class="cost-value" t-esc="props.data.orderData.channel_tip_amount"/>
+                </div>
+
+                <!-- Bag Fee -->
+                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.bag_fee">
+                    <div class="cost-label">Bag Fee:</div>
+                    <div class="cost-value" t-esc="props.data.orderData.bag_fee"/>
                 </div>
 
                 <!-- Total Amount - Note: You'll need to calculate this in your backend -->

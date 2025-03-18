@@ -18,6 +18,15 @@ export class OnlineOrderScreen extends Component {
             openOrders:[],
             currency_symbol:this.env.services.pos.currency.symbol
         });
+        this.channel=`new_pos_order_${this.pos.config.id}`;
+        this.busService = this.env.services.bus_service;
+        this.busService.addChannel(this.channel);
+        this.busService.addEventListener('notification', ({detail: notifications})=>{
+            notifications = notifications.filter(item => item.payload.channel === this.channel)
+            notifications.forEach(item => {
+                    this.fetchOpenOrders();
+                })
+        });
         this.initiateServices();
         onWillUnmount(()=>clearInterval(this.pollingInterval))
     }
@@ -83,6 +92,8 @@ export class OnlineOrderScreen extends Component {
     async finalizeOrder(order){
 //    function to finalize an online order
         await this.orm.call("pos.order", "update_order_status", [order.id],{status:'finalized'});
+        this.state.clickedOrder = {};
+        this.fetchOpenOrders();
     }
 }
 registry.category("pos_screens").add("OnlineOrderScreen", OnlineOrderScreen);
