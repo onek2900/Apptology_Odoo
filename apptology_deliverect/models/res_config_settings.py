@@ -9,6 +9,7 @@ class ResConfigSettings(models.TransientModel):
     client_id = fields.Char(string="Client ID",help="Enter your client ID Provided by Deliverect.")
     client_secret = fields.Char(string="Client Secret",help="Enter your client secret Provided by Deliverect.")
 
+
     def set_values(self):
         super(ResConfigSettings, self).set_values()
         self.env['ir.config_parameter'].sudo().set_param('client_id', self.client_id or '')

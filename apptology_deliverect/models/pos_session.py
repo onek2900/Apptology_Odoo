@@ -14,5 +14,6 @@ class PosSession(models.Model):
                                             'channel_service_charge','channel_delivery_charge','channel_tip_amount',
                                             'bag_fee',
                                             'channel_total_amount','delivery_note','channel_order_reference',
-                                            'pickup_time','delivery_time','channel_name']
+                                            'pickup_time','delivery_time','channel_name','customer_name',
+                                            'customer_company_name','customer_email','customer_note','channel_tax']
         return result

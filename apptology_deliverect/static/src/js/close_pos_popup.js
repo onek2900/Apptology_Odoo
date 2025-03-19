@@ -18,12 +18,6 @@ patch(ClosePosPopup.prototype, {
                     [["config_id", "=", this.pos.config.id],['session_id','=',this.pos.config.current_session_id[0]],
                     ["is_online_order", "=", true],["online_order_status", "=", "approved"],["order_status", "!=",
                     "cancel"]]);
-        console.log(this.pos.config.current_session_id[0])
-        var records = await this.orm.searchRead(
-                    "pos.order",
-                    [["config_id", "=", this.pos.config.id],['session_id','=',this.pos.config.current_session_id[0]],
-        ["is_online_order", "=", true]],['name','config_id','online_order_status','order_status'])
-        console.log("RECORDS :",records)
     },
         //@override
     async confirm() {

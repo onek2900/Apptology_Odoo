@@ -5,12 +5,32 @@ import re
 from odoo import fields, http, _
 from odoo.http import request, Response
 from datetime import datetime
+import pytz
 
 _logger = logging.getLogger(__name__)
 
 
 class DeliverectWebhooks(http.Controller):
     """Controller for handling Deliverect webhooks and API integration."""
+
+    def _convert_utc_to_user_tz(self, utc_time_str):
+        """Convert UTC time string (ISO 8601) to Odoo user's timezone"""
+        if not utc_time_str:
+            return False
+
+        try:
+            # Convert ISO 8601 string to datetime object
+            utc_time = datetime.fromisoformat(utc_time_str.replace("Z", "+00:00"))
+            # Get user's timezone (fallback to UTC if not set)
+            user_tz = request.env.user.tz or "UTC"
+            local_tz = pytz.timezone(user_tz)
+
+            # Convert UTC to local time
+            local_time = utc_time.astimezone(local_tz)
+            return fields.Datetime.to_string(local_time)  # Convert datetime to Odoo format
+        except ValueError as e:
+            _logger.error(f"Time conversion error: {e}")
+            return False  # Return False if the format is incorrect
 
     @staticmethod
     def find_partner(channel_id):
@@ -128,7 +148,7 @@ class DeliverectWebhooks(http.Controller):
             total_untaxed = 0
             total_taxed = 0
             for item in data.get('items'):
-                if item.get("plu").split('-')[0] =='VAR_PRD':
+                if item.get("plu").split('-')[0] == 'VAR_PRD':
                     if item.get('subItems'):
                         for sub_item in item.get('subItems'):
                             sub_item_line_vals = self.create_order_line(int(sub_item.get('plu').split('-')[1]),
@@ -181,25 +201,32 @@ class DeliverectWebhooks(http.Controller):
                 'channel_delivery_charge': data.get('deliveryCost') / 100,
                 'channel_tip_amount': data.get('tip') / 100,
                 'channel_total_amount': data.get('payment').get('amount') / 100,
-                'bag_fee':data.get('bagFee')/100,
+                'bag_fee': data.get('bagFee') / 100,
                 'delivery_note': data.get('deliveryAddress', {}).get('extraAddressInfo', ''),
                 'channel_order_reference': data.get('channelOrderDisplayId'),
-                'pickup_time': self.convert_to_readable_time(data.get('pickupTime')),
-                'delivery_time': self.convert_to_readable_time(data.get('deliveryTime')),
+                'pickup_time':self._convert_utc_to_user_tz(data.get('pickupTime')),
+                'delivery_time': self._convert_utc_to_user_tz(data.get('deliveryTime')),
                 'channel_name': request.env['deliverect.channel'].sudo().search([('channel_id', '=',
                                                                                   data.get("channel"))],
-                                                                                limit=1).name
+                                                                                limit=1).name,
+                'customer_name': data.get('customer', {}).get('name'),
+                'customer_company_name': data.get('customer', {}).get('companyName'),
+                'customer_email': data.get('customer', {}).get('email'),
+                'customer_note': data.get('customer', {}).get('note'),
+                'channel_tax':data.get('taxTotal')/100,
             }
             return order_data
         except Exception as e:
             _logger.error(f"Failed to create order data: {str(e)}")
             raise Exception(f"Failed to create order data :{str(e)}")
 
-    @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none", csrf=False)
+    @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none",
+                csrf=False)
     def sync_products(self, pos_id):
         """webhook for syncing products with deliverect"""
+        pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
         try:
-            product_data = self.generate_data(self, pos_id)
+            product_data = self.generate_data(self, pos_configuration.id)
             return request.make_response(
                 json.dumps(product_data),
                 headers={'Content-Type': 'application/json'},
@@ -209,11 +236,12 @@ class DeliverectWebhooks(http.Controller):
             _logger.error(f"product sync error: {str(e)}")
             return request.make_response('', status=500)
 
-    @http.route('/deliverect/pos/orders/<int:pos_id>', type='http', methods=['POST'], auth='none', csrf=False)
+    @http.route('/deliverect/pos/orders/<int:pos_id>', type='http', methods=['POST'], auth='none',
+                csrf=False)
     def receive_pos_order(self, pos_id):
         """webhook for receiving pos orders from deliverect"""
+        pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
         try:
-            pos_config = request.env['pos.config'].sudo().browse(pos_id)
             deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
             data = json.loads(request.httprequest.data)
             if data['status'] == 100 and data['_id']:
@@ -232,19 +260,20 @@ class DeliverectWebhooks(http.Controller):
                 })
                 refund_payment.with_context(**payment_context).check()
             else:
-                pos_order_data = self.create_order_data(self, data, pos_id)
+                pos_order_data = self.create_order_data(self, data, pos_configuration.id)
                 if pos_order_data:
                     order = request.env['pos.order'].sudo().create(pos_order_data)
                     if data['orderIsAlreadyPaid']:
                         payment_context = {"active_ids": order.ids, "active_id": order.id}
-                        order_payment = request.env['pos.make.payment'].with_user(pos_config.current_user_id.id).sudo(
+                        order_payment = request.env['pos.make.payment'].with_user(
+                            pos_configuration.current_user_id.id).sudo(
                         ).with_context(
                             **payment_context).create({
                             'amount': order.amount_total,
                             'payment_method_id': deliverect_payment_method.id,
                         })
                         order_payment.with_context(**payment_context).check()
-                    self.generate_order_notification(pos_id, 'success')
+                    self.generate_order_notification(pos_configuration.id, 'success')
                     return Response(
                         json.dumps({'status': 'success', 'message': 'Order created',
                                     'order_id': order.id}),
@@ -253,7 +282,7 @@ class DeliverectWebhooks(http.Controller):
                     )
         except Exception as e:
             _logger.error(f"Error processing order webhook: {str(e)}")
-            self.generate_order_notification(pos_id, 'failure')
+            self.generate_order_notification(pos_configuration.id, 'failure')
             return Response(
                 json.dumps({
                     'status': 'Error',
@@ -263,22 +292,24 @@ class DeliverectWebhooks(http.Controller):
                 status=400
             )
 
-    @http.route('/deliverect/pos/register/<int:pos_id>', type='http', methods=['POST'], auth="none", csrf=False)
-    def register_pos(self, pos_id):
+    @http.route('/deliverect/pos/register', type='http', methods=['POST'], auth="none", csrf=False)
+    def register_pos(self):
         """webhook for registering pos with deliverect"""
-        pos_config = request.env['pos.config'].sudo().browse(pos_id)
+
         config_param = request.env['ir.config_parameter'].sudo()
         base_url = config_param.get_param('web.base.url')
         try:
             data = json.loads(request.httprequest.data)
-            pos_config.write({
+            pos_id = int(data.get('externalLocationId'))
+            pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
+            pos_configuration.write({
                 'account_id': data.get('accountId'),
                 'location_id': data.get('locationId'),
             })
-            is_channel_present = pos_config.create_customers_channel()
+            is_channel_present = pos_configuration.create_customers_channel()
             request.env['deliverect.allergens'].sudo().update_allergens()
             if is_channel_present['params']['title'] == 'Failure':
-                pos_config.write({
+                pos_configuration.write({
                     'status_message': f"{is_channel_present['params']['message']}",
                 })
                 return request.make_response(
@@ -286,7 +317,7 @@ class DeliverectWebhooks(http.Controller):
                     headers=[('Content-Type', 'application/json')]
                 )
             else:
-                pos_config.write({
+                pos_configuration.write({
                     'status_message': f"POS Registration Successful"
                 })
                 response_data = {

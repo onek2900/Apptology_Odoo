@@ -82,7 +82,25 @@
                 <div class="detail-row" t-if="props.data.orderData">
                     <div class="detail-label">Customer:</div>
                     <div class="detail-value">
-                        <t>Deliverect</t>
+                        <t t-esc="props.data.orderData.customer_name"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">C.Company:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.customer_company_name"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">C.Email:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.customer_email"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">C.Note:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.customer_note"/>
                     </div>
                 </div>
                 <div class="detail-row" t-if="props.data.orderData">
@@ -126,7 +144,8 @@
                             <tr class="item-row">
                                 <td class="item-description" t-esc="orderLine.name"/>
                                 <td class="item-quantity">
-                                    <span t-esc="orderLine.qty"/> Units
+                                    <span t-esc="orderLine.qty"/>
+                                    Units
                                 </td>
                             </tr>
                             <tr class="item-remark" t-esc="orderLine.note"/>
@@ -142,6 +161,12 @@
 
             <!-- Cost Summary -->
             <div class="cost-summary">
+                <!-- Channel Taxes -->
+                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_tax">
+                    <div class="cost-label">Taxes:</div>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_tax"/>
+                </div>
+
                 <!-- Discount -->
                 <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_discount">
                     <div class="cost-label">Discount:</div>

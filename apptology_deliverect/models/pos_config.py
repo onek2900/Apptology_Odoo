@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 import requests
-from odoo import fields, models, Command
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -16,6 +15,7 @@ class PosConfig(models.Model):
     client_secret = fields.Char(string="Client Secret", help="Client Secret provided by Deliverect")
     account_id = fields.Char(string="Account ID", help="Account ID provided by Deliverect")
     location_id = fields.Char(string="Location ID", help='Location ID provided by Deliverect')
+    internal_pos_id = fields.Char(string="POS ID",help='POS ID provided to Deliverect')
     status_message = fields.Char(string="Registration Status Message", help="Registration Status Message")
     order_status_message = fields.Char(string="Order Status Message", help="Order Status Message")
 
@@ -56,7 +56,7 @@ class PosConfig(models.Model):
         """function to show deliverect related data in wizard"""
         deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        registration_url = f"{base_url}/deliverect/pos/register/{self.id}"
+        registration_url = f"{base_url}/deliverect/pos/register"
         orders_url = f"{base_url}/deliverect/pos/orders/{self.id}"
         products_url = f"{base_url}/deliverect/pos/products/{self.id}"
         order_status_message = ""
@@ -75,6 +75,7 @@ class PosConfig(models.Model):
                 'default_orders_url': orders_url,
                 'default_products_url': products_url,
                 'default_location_id': self.location_id,
+                'default_internal_pos_id': self.id,
                 'default_status_message': self.status_message if self.status_message else "POS Not Registered",
                 'default_order_status_message': order_status_message if order_status_message else "POS Ready To Accept "
                                                                                                   "Orders"
@@ -318,12 +319,36 @@ class PosConfig(models.Model):
 
     def create_variant_product_data(self):
         """function to create variant product data for Deliverect"""
+
+        variant_products = self.env['product.product'].sudo().search([
+            ('active', '=', True),
+            ('detailed_type', '!=', 'combo'),
+            ('pos_categ_ids', 'in',
+             self.iface_available_categ_ids.ids),
+            ('available_in_pos', '=', True),
+            ('product_template_variant_value_ids','!=',False)
+        ]).filtered(lambda variant : len(variant.product_template_variant_value_ids)==1)
+        variant_product_data = variant_products.mapped(lambda product: {
+            "productType": 1,
+            "plu": f"VAR-{product.id}",
+            "price": int(product.lst_price * 100),
+            "name": f"{product.name} ({product.product_template_variant_value_ids.name})",
+            "imageUrl": self.image_upload(product.product_tmpl_id.id),
+            "description": product.product_note,
+            "deliveryTax": product.taxes_id.amount * 1000,
+            "takeawayTax": product.taxes_id.amount * 1000,
+            "eatInTax": product.taxes_id.amount * 1000,
+            "productTags": [allergen.allergen_id for allergen in
+                            product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
+        })
         main_variant_products = self.env['product.template'].sudo().search([('active', '=', True),
                                                                             ('detailed_type', '!=', 'combo'),
                                                                             ('attribute_line_ids', '!=', False),
                                                                             ('pos_categ_ids', 'in',
                                                                              self.iface_available_categ_ids.ids),
-                                                                            ('available_in_pos', '=', True)])
+                                                                            ('available_in_pos', '=',
+                                                                             True)]).filtered(lambda x : len(
+            x.attribute_line_ids)==1)
         main_product_data = main_variant_products.mapped(lambda product: {
             "productType": 1,
             "plu": f"VAR_PRD-{product.id}",
@@ -344,7 +369,7 @@ class PosConfig(models.Model):
             "plu": f"VAR_GRP-{product.id}",
             "name": product.deliverect_variant_note,
             "isVariantGroup": True,
-            "subProducts": [f"PRD-{variant.id}" for variant in self.env['product.product'].search([('active', '=',
+            "subProducts": [f"VAR-{variant.id}" for variant in self.env['product.product'].search([('active', '=',
                                                                                                     True),
                                                                                                    (
                                                                                                        "product_tmpl_id",
@@ -354,7 +379,7 @@ class PosConfig(models.Model):
             "max": 1
         })
 
-        return main_product_data + main_product_group_data
+        return variant_product_data + main_product_data + main_product_group_data
 
     def create_deliverect_product_data(self):
         product_data = []
@@ -406,64 +431,15 @@ class PosConfig(models.Model):
                 "products": [
                     {
                         "productType": 1,
-                        "plu": "VAR-PROD-1",
-                        "price": 0,
-                        "name": "Chicken Tenders",
-                        "imageUrl": "https://storage.googleapis.com/ikona-bucket-staging/images/5ff6ee089328c8aefeeabe33/chicken-62285f90db5986001ebf58d5.jpg",
-                        "description": "Choose 3, 6 or 9 Pieces of Delicious Fried Chicken",
-                        "isVariant": True,
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000,
-                        "subProducts": [
-                            "MG-VAR-1"
-                        ]
-                    },
-                    {
-                        "productType": 3,
-                        "plu": "MG-VAR-1",
-                        "name": "How many pieces?",
-                        "description": "",
-                        "isVariantGroup": True,
-                        "subProducts": [
-                            "VAR-1",
-                            "VAR-2",
-                            "VAR-3"
-                        ],
-                    },
-                    {
-                        "productType": 1,
-                        "plu": "VAR-1",
-                        "price": 800,
-                        "name": "3 Pieces",
-                        "imageUrl": "",
-                        "description": "",
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    },
-                    {
-                        "productType": 1,
-                        "plu": "VAR-2",
+                        "plu": "NO_USE-2",
                         "price": 1100,
-                        "name": "6 Pieces",
+                        "name": "NO USE",
                         "imageUrl": "",
                         "description": "",
                         "deliveryTax": 9000,
                         "takeawayTax": 9000,
                         "eatInTax": 9000
                     },
-                    {
-                        "productType": 1,
-                        "plu": "VAR-3",
-                        "price": 1350,
-                        "name": "9 Pieces",
-                        "imageUrl": "",
-                        "description": "",
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    }
                 ],
                 "accountId": account_id,
                 "locationId": location_id

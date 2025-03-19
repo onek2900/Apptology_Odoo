@@ -14,6 +14,7 @@
                         <field name="orders_url"/>
                         <field name="products_url"/>
                         <field name="location_id"/>
+                        <field name="internal_pos_id"/>
                     </group>
                     <div class="alert alert-success mb-3"
                          role="alert">
