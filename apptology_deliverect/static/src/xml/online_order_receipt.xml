@@ -80,6 +80,12 @@
                     </div>
                 </div>
                 <div class="detail-row" t-if="props.data.orderData">
+                    <div class="detail-label">Customer:</div>
+                    <div class="detail-value">
+                        <t>Deliverect</t>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData">
                     <div class="detail-label">Payment:</div>
                     <div class="detail-value">
                         <t t-if="props.data.orderData.order_payment_type=='0'">Credit Card Online</t>

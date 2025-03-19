@@ -272,7 +272,7 @@ class PosConfig(models.Model):
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
 
         modifiers_data = modifiers.mapped(lambda modifier: {
-            "productType": 1,
+            "productType": 2,
             "plu": f"MOD-{modifier.id}",
             "price": int(modifier.lst_price * 100),
             "name": modifier.name,

@@ -5,7 +5,8 @@
             <t t-if="state.unFinalizedOrdersCount">
                 <div class="alert alert-warning w-100 mb-3" role="alert">
                     <i class="fa fa-exclamation-triangle me-2" role="img" aria-label="Warning"></i>
-                    <strong>Warning:</strong> There are unfinalized online orders. Closing the session now may cause issues with these orders.
+                    <strong>Warning:</strong> There are unfinalized online orders. It is recommended to finalize
+                    these orders before closing the session.
                 </div>
             </t>
         </xpath>
