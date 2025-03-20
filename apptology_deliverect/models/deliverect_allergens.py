@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import requests
-from odoo import fields, models, _
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -11,11 +11,11 @@ class DeliverectAllergens(models.Model):
     _name = "deliverect.allergens"
     _description = "Deliverect Allergens"
 
-    name = fields.Char(string="Allergen", required=True, help="Name of the allergen")
-    allergen_id = fields.Integer(string="Allergen ID", required=True, unique=True, help="ID of the allergen")
+    name = fields.Char(string="Allergen",help="Name of the allergen")
+    allergen_id = fields.Integer(string="Allergen ID",help="ID of the allergen")
 
     def update_allergens(self):
-        """Fetch and update Deliverect allergens"""
+        """fetch allergens from Deliverect and store in Odoo"""
         url = "https://api.staging.deliverect.com/allAllergens"
         token = self.env["deliverect.api"].sudo().generate_auth_token()
         headers = {"accept": "application/json",

@@ -16,7 +16,8 @@ export class OnlineOrderScreen extends Component {
         this.state = useState({
             clickedOrder:{},
             openOrders:[],
-            currency_symbol:this.env.services.pos.currency.symbol
+            currency_symbol:this.env.services.pos.currency.symbol,
+            isAutoApprove:this.pos.config.auto_approve
         });
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService = this.env.services.bus_service;
@@ -94,6 +95,15 @@ export class OnlineOrderScreen extends Component {
         await this.orm.call("pos.order", "update_order_status", [order.id],{status:'finalized'});
         this.state.clickedOrder = {};
         this.fetchOpenOrders();
+    }
+    async onDoubleClick(order){
+        const searchDetails = {
+            fieldName: "RECEIPT_NUMBER",
+            searchTerm: order.pos_reference,
+        };
+        this.pos.showScreen("TicketScreen", {
+            ui: { filter: "SYNCED", searchDetails },
+        });
     }
 }
 registry.category("pos_screens").add("OnlineOrderScreen", OnlineOrderScreen);

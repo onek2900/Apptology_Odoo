@@ -1,23 +1,20 @@
 # -*- coding: utf-8 -*-
 import logging
-from email.policy import default
-
 import requests
 from datetime import timedelta
-
 from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
 
 class PosOrder(models.Model):
-    """Inheriting the pos order model to add new fields"""
+    """Inherit class to add new fields and functions"""
     _inherit = "pos.order"
 
     order_type = fields.Selection([
         ('1', 'Pick up'),
         ('2', 'Delivery')
-    ], string='Order Type')
+    ], string='Order Type', help='Type of deliverect order')
     order_payment_type = fields.Selection([
         ('0', 'Credit Card'),
         ('1', 'Cash'),
@@ -29,9 +26,9 @@ class PosOrder(models.Model):
         ('7', 'Meal Voucher'),
         ('8', 'Bank Contact'),
         ('9', 'Other'),
-    ], string='Payment Method')
-    online_order_id = fields.Char(string='Online Order ID')
-    online_order_paid = fields.Boolean(string='Online Order Paid', default=False)
+    ], string='Payment Method', help='type of payment method used for deliverect order')
+    online_order_id = fields.Char(string='Online Order ID', help='online order id provided by deliverect')
+    online_order_paid = fields.Boolean(string='Online Order Paid', default=False, help='is online order paid or not ?')
     online_order_status = fields.Selection([
         ('open', 'Open'),
         ('approved', 'Approved'),
@@ -39,43 +36,44 @@ class PosOrder(models.Model):
         ('cancelled', 'Cancelled'),
         ('finalized', 'Finalized'),
         ('expired', 'Expired'),
-    ])
+    ], help='current status of online order in pos')
     order_priority = fields.Integer(
         string="Priority",
         compute="_compute_order_priority",
-        store=True
+        store=True, help='order priority for online template'
     )
-    is_online_order = fields.Boolean(string='Is Online Order', default=False)
-    declined_time = fields.Datetime(string='Cancelled Date Time')
-    channel_discount = fields.Float(string='Channel Discount')
-    channel_service_charge = fields.Float(string='Channel Service Charge')
-    channel_delivery_charge = fields.Float(string='Channel Delivery Charge')
-    channel_tip_amount = fields.Float(string='Channel Tip')
-    channel_total_amount = fields.Float(string='Channel Total Amount')
-    channel_tax = fields.Float(string='Channel Tax')
-    bag_fee = fields.Float(string="Bag Fee")
-    channel_order_reference = fields.Char(string='Channel Display Order ID')
-    delivery_note = fields.Text(string='Delivery Note')
-    pickup_time = fields.Datetime(string='Pickup Time')
-    delivery_time = fields.Datetime(string='Delivery Time')
-    channel_name = fields.Char(string='Channel')
-    customer_name = fields.Char(string='Customer Name')
-    customer_company_name = fields.Char(string='Customer Company Name')
-    customer_email = fields.Char(string='Customer Email')
-    customer_note = fields.Char(string='Customer Note')
+    is_online_order = fields.Boolean(string='Is Online Order', default=False,help='is online order or not ?')
+    declined_time = fields.Datetime(string='Cancelled Date Time',help='time at which the order is declined from')
+    channel_discount = fields.Float(string='Channel Discount',help='discount provided by the channel')
+    channel_service_charge = fields.Float(string='Channel Service Charge',help='service charge for the channel')
+    channel_delivery_charge = fields.Float(string='Channel Delivery Charge',help='delivery charge for the '
+                                                                                 'channel')
+    channel_tip_amount = fields.Float(string='Channel Tip',help='tips linked to the channel')
+    channel_total_amount = fields.Float(string='Channel Total Amount',help='total order amount including channel '
+                                                                           'charges')
+    channel_tax = fields.Float(string='Channel Tax',help='channel specific tax amounts')
+    bag_fee = fields.Float(string="Bag Fee",help='bag fee charged for the order')
+    channel_order_reference = fields.Char(string='Channel Display Order ID',help='order reference provided by '
+                                                                                 'deliverect')
+    delivery_note = fields.Text(string='Delivery Note',help='delivery note for the order')
+    pickup_time = fields.Datetime(string='Pickup Time',help='pick up time for the order')
+    delivery_time = fields.Datetime(string='Delivery Time',help='delivery time for the order')
+    channel_name = fields.Char(string='Channel',help='channel from which the order is received')
+    customer_name = fields.Char(string='Customer Name',help='customer name for the order')
+    customer_company_name = fields.Char(string='Customer Company Name',help='customer company name')
+    customer_email = fields.Char(string='Customer Email',help='customer email')
+    customer_note = fields.Char(string='Customer Note',help='customer note provided for the order')
 
     @api.depends('online_order_status')
     def _compute_order_priority(self):
-        """function to compute the priority of the order based on the status of the online order"""
+        """Compute order priority for showing online orders in the template based on online order status"""
+        priority_mapping = {
+            'open': 1,
+            'approved': 2,
+            'rejected': 3
+        }
         for order in self:
-            if order.online_order_status == 'open':
-                order.order_priority = 1
-            elif order.online_order_status == 'approved':
-                order.order_priority = 2
-            elif order.online_order_status == 'rejected':
-                order.order_priority = 3
-            else:
-                order.order_priority = 4
+            order.order_priority = priority_mapping.get(order.online_order_status, 4)
 
     def update_order_status_in_deliverect(self, status):
         """function to update the status of the order in deliverect"""
@@ -104,7 +102,6 @@ class PosOrder(models.Model):
         elif status == 'finalized':
             self.write({'online_order_status': 'finalized'})
             self.update_order_status_in_deliverect(90)
-
         else:
             self.write({'online_order_status': 'rejected',
                         'declined_time': fields.Datetime.now(),
@@ -122,7 +119,7 @@ class PosOrder(models.Model):
 
     @api.model
     def get_new_orders(self, config_id):
-        """function to get the new orders from deliverect"""
+        """function to return the count of open online orders"""
         session_id = self.env['pos.config'].browse(config_id).current_session_id.id
         return self.search_count([
             ('online_order_status', '=', 'open'),
@@ -133,7 +130,7 @@ class PosOrder(models.Model):
 
     @api.model
     def get_open_orders(self, config_id):
-        """function to get the open orders from deliverect"""
+        """function to get the open orders in pos"""
         session_id = self.env['pos.config'].browse(config_id).current_session_id.id
         now = fields.Datetime.now()
         expiration_time = now - timedelta(minutes=1)
@@ -171,6 +168,7 @@ class PosOrder(models.Model):
 
     @api.model
     def export_for_ui_table_draft(self, table_ids):
+        """override method to include online orders"""
         offline_orders = self.env['pos.order'].search([
             ('state', '=', 'draft'),
             ('table_id', 'in', table_ids),
@@ -181,9 +179,3 @@ class PosOrder(models.Model):
             ('online_order_status', 'in', ['approved', 'finalized'])])
         orders = offline_orders | online_orders
         return orders.export_for_ui()
-
-    def _export_for_ui(self, order):
-        # EXTENDS 'point_of_sale'
-        vals = super()._export_for_ui(order)
-        vals['pickup_time'] = order.pickup_time
-        return vals

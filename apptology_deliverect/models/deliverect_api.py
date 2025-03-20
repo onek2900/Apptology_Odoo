@@ -11,7 +11,7 @@ class DeliverectAPI(models.AbstractModel):
     _description = "Deliverect API Helper"
 
     def generate_auth_token(self):
-        """function for generating Deliverect token"""
+        """Function for generating Deliverect authentication token"""
         url = "https://api.staging.deliverect.com/oauth/token"
         config_parameter = self.env['ir.config_parameter'].sudo()
         client_id = config_parameter.get_param('client_id')

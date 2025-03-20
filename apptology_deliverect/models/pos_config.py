@@ -7,58 +7,38 @@ _logger = logging.getLogger(__name__)
 
 
 class PosConfig(models.Model):
-    """Inherited class to add new fields to pos.config"""
+    """Inherit class to add new fields and function"""
     _inherit = 'pos.config'
 
     auto_approve = fields.Boolean(string="Auto Approve", help="Automatically approve all orders from Deliverect")
-    client_id = fields.Char(string="Client ID", help="Client ID provided by Deliverect")
-    client_secret = fields.Char(string="Client Secret", help="Client Secret provided by Deliverect")
     account_id = fields.Char(string="Account ID", help="Account ID provided by Deliverect")
     location_id = fields.Char(string="Location ID", help='Location ID provided by Deliverect')
-    internal_pos_id = fields.Char(string="POS ID",help='POS ID provided to Deliverect')
+    internal_pos_id = fields.Char(string="POS ID", help='POS ID provided to Deliverect')
     status_message = fields.Char(string="Registration Status Message", help="Registration Status Message")
     order_status_message = fields.Char(string="Order Status Message", help="Order Status Message")
 
     def toggle_approve(self):
-        """function to toggle approve button"""
-        if self.auto_approve:
-            self.auto_approve = False
-        else:
-            self.auto_approve = True
+        """Toggle the approval button."""
+        self.auto_approve = not self.auto_approve
 
     def force_sync_pos(self):
-        """function to force sync products from Deliverect"""
-        force_sync = self.action_sync_product()
-        if force_sync:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Success',
-                    'message': f'Force Sync Complete',
-                    'sticky': False,
-                    'type': 'success',
-                }
+        """Force sync products from POS to Deliverect."""
+        success = self.action_sync_product()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success' if success else 'Failure',
+                'message': 'Force Sync Complete' if success else 'Error Encountered while Force Syncing',
+                'sticky': False,
+                'type': 'success' if success else 'danger',
             }
-        else:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Failure',
-                    'message': f'Error Encountered while Force Syncing',
-                    'sticky': False,
-                    'type': 'danger',
-                }
-            }
+        }
 
     def show_deliverect_urls(self):
-        """function to show deliverect related data in wizard"""
+        """Show deliverect urls in a wizard"""
         deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
-        registration_url = f"{base_url}/deliverect/pos/register"
-        orders_url = f"{base_url}/deliverect/pos/orders/{self.id}"
-        products_url = f"{base_url}/deliverect/pos/products/{self.id}"
         order_status_message = ""
         if deliverect_payment_method.id not in self.payment_method_ids.ids:
             order_status_message += "Unable to Accept Order - Deliverect Payment Method not selected"
@@ -71,9 +51,9 @@ class PosConfig(models.Model):
             'view_mode': 'form',
             'target': 'new',
             'context': {
-                'default_registration_url': registration_url,
-                'default_orders_url': orders_url,
-                'default_products_url': products_url,
+                'default_registration_url': f"{base_url}/deliverect/pos/register",
+                'default_orders_url': f"{base_url}/deliverect/pos/orders/{self.id}",
+                'default_products_url': f"{base_url}/deliverect/pos/products/{self.id}",
                 'default_location_id': self.location_id,
                 'default_internal_pos_id': self.id,
                 'default_status_message': self.status_message if self.status_message else "POS Not Registered",
@@ -84,31 +64,20 @@ class PosConfig(models.Model):
         }
 
     def update_allergens(self):
-        """function to update allergens"""
-        allergens_updated = self.env['deliverect.allergens'].sudo().update_allergens()
-        if allergens_updated:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Success',
-                    'message': "Allergens Updated Successfully",
-                    'type': 'success',
-                }
+        """Update allergens from Deliverect."""
+        success = self.env['deliverect.allergens'].sudo().update_allergens()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Success' if success else 'Failure',
+                'message': "Allergens Updated Successfully" if success else "Error Updating Allergens",
+                'type': 'success' if success else 'danger',
             }
-        else:
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Failure',
-                    'message': "Error Updating Allergens",
-                    'type': 'danger',
-                }
-            }
+        }
 
     def create_customers_channel(self):
-        """function for creating channel customers"""
+        """Function for creating channel customers"""
         self.env['deliverect.channel'].sudo().update_channel()
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         if not token:
@@ -176,65 +145,12 @@ class PosConfig(models.Model):
                 }
             }
 
-    def create_combo_product_data(self):
-        """function to create combo product data for Deliverect"""
-        combo_products = self.env['product.product'].sudo().search([('detailed_type', '=', 'combo')], limit=1)
-        combo_products_data = []
-        for combo_product in combo_products:
-            combo_data = []
-
-            main_product = {
-                "productType": 1,
-                "isCombo": True,
-                "plu": f"PROD-{combo_product.id}",
-                "price": combo_product.lst_price * 100,
-                "name": combo_product.name,
-                "imageUrl": self.image_upload(combo_product.product_tmpl_id.id),
-                "subProducts": [],
-                "productTags": [allergen.allergen_id for allergen in
-                                combo_product.allergens_and_tag_ids] if combo_product.allergens_and_tag_ids else []
-            }
-            sum_base_price = sum(combo_product.combo_ids.mapped('base_price'))
-            for combo in combo_product.combo_ids:
-                modifier_group_plu = f"MOD_GRP-{combo.id}"
-                main_product["subProducts"].append(modifier_group_plu)
-                modifier_group = {
-                    "productType": 3,
-                    "plu": modifier_group_plu,
-                    "name": combo.name,
-                    "subProducts": [],
-                }
-                base_price = combo.base_price
-                for line in combo.combo_line_ids:
-                    product = line.product_id
-                    product_tax = self.env['product.product'].sudo().browse(product.id).taxes_id.amount
-                    modifier_plu = f"MOD-{product.id}"
-                    modifier_group["subProducts"].append(modifier_plu)
-                    modifier = {
-                        "productType": 2,
-                        "plu": modifier_plu,
-                        "price": round((((base_price / sum_base_price) * combo_product.lst_price) + line.combo_price), 2
-                                       ) * 100,
-                        "name": product.name,
-                        "imageUrl": self.image_upload(product.product_tmpl_id.id),
-                        "deliveryTax": product_tax * 1000,
-                        "takeawayTax": product_tax * 1000,
-                        "eatInTax": product_tax * 1000,
-                    }
-                    combo_data.append(modifier)
-                combo_data.append(modifier_group)
-            combo_data.insert(0, main_product)
-            combo_products_data += combo_data
-        return combo_products_data
-
     def image_upload(self, product_tmpl_id):
-        """function to upload product image to Deliverect"""
-        model = 'product.template'
-        image = 'image_1920'
+        """Function to upload product image to deliverect."""
         attachment_id = self.env['ir.attachment'].sudo().search(
-            domain=[('res_model', '=', model),
+            domain=[('res_model', '=', 'product.template'),
                     ('res_id', '=', product_tmpl_id),
-                    ('res_field', '=', image)]
+                    ('res_field', '=', 'image_1920')]
         )
         product_image_url = False
         if attachment_id:
@@ -244,46 +160,45 @@ class PosConfig(models.Model):
             product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
         return product_image_url
 
+    def create_product_json(self, product_type, plu, product_price, product_name, product_tmpl_id, product_note,
+                            product_tax):
+        """Generate product JSON data for Deliverect."""
+        return {
+            "productType": product_type,
+            "plu": plu,
+            "price": product_price * 100,
+            "name": product_name,
+            "imageUrl": self.image_upload(product_tmpl_id),
+            "description": product_note or "",
+            "deliveryTax": product_tax * 1000,
+            "takeawayTax": product_tax * 1000,
+            "eatInTax": product_tax * 1000,
+        }
+
     def create_product_with_modifier(self):
-        """function to create product with modifier for Deliverect"""
+        """create product with modifier in deliverect"""
         products = self.env['product.product'].sudo().search([('active', '=', True),
                                                               ('detailed_type', '!=', 'combo'),
                                                               ('modifier_group_ids', '!=', False),
                                                               ('pos_categ_ids', 'in',
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
-        return products.mapped(lambda product: {
-            "productType": 1,
-            "plu": f"PRD-{product.id}",
-            "price": int(product.lst_price * 100),
-            "name": product.name,
-            "imageUrl": self.image_upload(product.product_tmpl_id.id),
-            "description": product.product_note,
-            "deliveryTax": product.taxes_id.amount * 1000,
-            "takeawayTax": product.taxes_id.amount * 1000,
-            "eatInTax": product.taxes_id.amount * 1000,
-            "subProducts": [
-                f"MOD_GRP-{group.id}" for group in product.modifier_group_ids
-            ]
+        return products.mapped(lambda prod: {
+            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+                                       prod.product_note, prod.taxes_id.amount),
+            "subProducts": [f"MOD_GRP-{group.id}" for group in prod.modifier_group_ids]
         })
 
     def create_modifier_and_modifier_group(self):
-        """function to sync modifiers with Deliverect"""
+        """create modifier and modifier group in deliverect"""
         modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
 
-        modifiers_data = modifiers.mapped(lambda modifier: {
-            "productType": 2,
-            "plu": f"MOD-{modifier.id}",
-            "price": int(modifier.lst_price * 100),
-            "name": modifier.name,
-            "imageUrl": self.image_upload(modifier.product_tmpl_id.id),
-            "description": modifier.product_note,
-            "deliveryTax": modifier.taxes_id.amount * 1000,
-            "takeawayTax": modifier.taxes_id.amount * 1000,
-            "eatInTax": modifier.taxes_id.amount * 1000,
+        modifiers_data = modifiers.mapped(lambda prod: {
+            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+                                       prod.product_note, prod.taxes_id.amount),
             "productTags": [allergen.allergen_id for allergen in
-                            modifier.allergens_and_tag_ids] if modifier.allergens_and_tag_ids else []
+                            prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })
         modifier_group_data = modifier_groups.mapped(lambda group: {
             "productType": 3,
@@ -295,7 +210,7 @@ class PosConfig(models.Model):
         return modifiers_data + modifier_group_data
 
     def create_product_data(self):
-        """function to create product data for Deliverect"""
+        """create normal products in deliverect"""
         products = self.env['product.product'].sudo().search([('active', '=', True),
                                                               ('is_modifier', '=', False),
                                                               ('detailed_type', '!=', 'combo'),
@@ -303,95 +218,23 @@ class PosConfig(models.Model):
                                                               ('pos_categ_ids', 'in',
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
-        return products.mapped(lambda product: {
-            "productType": 1,
-            "plu": f"PRD-{product.id}",
-            "price": int(product.lst_price * 100),
-            "name": product.name,
-            "imageUrl": self.image_upload(product.product_tmpl_id.id),
-            "description": product.product_note,
-            "deliveryTax": product.taxes_id.amount * 1000,
-            "takeawayTax": product.taxes_id.amount * 1000,
-            "eatInTax": product.taxes_id.amount * 1000,
+        return products.mapped(lambda prod: {
+            **self.create_product_json(1,f"PRD-{prod.id}",prod.lst_price, prod.name, prod.product_tmpl_id.id,
+                                       prod.product_note, prod.taxes_id.amount),
             "productTags": [allergen.allergen_id for allergen in
-                            product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
+                            prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })
-
-    def create_variant_product_data(self):
-        """function to create variant product data for Deliverect"""
-
-        variant_products = self.env['product.product'].sudo().search([
-            ('active', '=', True),
-            ('detailed_type', '!=', 'combo'),
-            ('pos_categ_ids', 'in',
-             self.iface_available_categ_ids.ids),
-            ('available_in_pos', '=', True),
-            ('product_template_variant_value_ids','!=',False)
-        ]).filtered(lambda variant : len(variant.product_template_variant_value_ids)==1)
-        variant_product_data = variant_products.mapped(lambda product: {
-            "productType": 1,
-            "plu": f"VAR-{product.id}",
-            "price": int(product.lst_price * 100),
-            "name": f"{product.name} ({product.product_template_variant_value_ids.name})",
-            "imageUrl": self.image_upload(product.product_tmpl_id.id),
-            "description": product.product_note,
-            "deliveryTax": product.taxes_id.amount * 1000,
-            "takeawayTax": product.taxes_id.amount * 1000,
-            "eatInTax": product.taxes_id.amount * 1000,
-            "productTags": [allergen.allergen_id for allergen in
-                            product.allergens_and_tag_ids] if product.allergens_and_tag_ids else []
-        })
-        main_variant_products = self.env['product.template'].sudo().search([('active', '=', True),
-                                                                            ('detailed_type', '!=', 'combo'),
-                                                                            ('attribute_line_ids', '!=', False),
-                                                                            ('pos_categ_ids', 'in',
-                                                                             self.iface_available_categ_ids.ids),
-                                                                            ('available_in_pos', '=',
-                                                                             True)]).filtered(lambda x : len(
-            x.attribute_line_ids)==1)
-        main_product_data = main_variant_products.mapped(lambda product: {
-            "productType": 1,
-            "plu": f"VAR_PRD-{product.id}",
-            "price": int(product.list_price * 100),
-            "name": product.name,
-            "imageUrl": self.image_upload(product.id),
-            "description": product.deliverect_variant_description,
-            "isVariant": True,
-            "deliveryTax": product.taxes_id.amount * 1000,
-            "takeawayTax": product.taxes_id.amount * 1000,
-            "eatInTax": product.taxes_id.amount * 1000,
-            "subProducts": [
-                f"VAR_GRP-{product.id}"
-            ]
-        })
-        main_product_group_data = main_variant_products.mapped(lambda product: {
-            "productType": 3,
-            "plu": f"VAR_GRP-{product.id}",
-            "name": product.deliverect_variant_note,
-            "isVariantGroup": True,
-            "subProducts": [f"VAR-{variant.id}" for variant in self.env['product.product'].search([('active', '=',
-                                                                                                    True),
-                                                                                                   (
-                                                                                                       "product_tmpl_id",
-                                                                                                       "=",
-                                                                                                       product.id)])],
-            "min": 1,
-            "max": 1
-        })
-
-        return variant_product_data + main_product_data + main_product_group_data
 
     def create_deliverect_product_data(self):
+        """function to create product data for deliverect"""
         product_data = []
-        # product_data += self.create_variant_product_data()
         product_data += self.create_product_data()
         product_data += self.create_modifier_and_modifier_group()
         product_data += self.create_product_with_modifier()
-        # product_data += self.create_combo_product_data()
         return product_data
 
     def action_sync_product(self):
-        """Sync products and categories with Deliverect API"""
+        """function to sync products with deliverect"""
         try:
             url = "https://api.staging.deliverect.com/productAndCategories"
             token = self.env['deliverect.api'].sudo().generate_auth_token()

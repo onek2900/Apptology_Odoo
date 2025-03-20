@@ -15,10 +15,12 @@
                             <div class="col end p-2">Order Type</div>
                             <div class="col end p-2">Payment Status</div>
                             <div class="col end p-2">Total</div>
-                            <div class="col action-buttons p-2"></div>
+                            <div class="col action-buttons p-2"/>
                         </div>
                         <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
-                            <div class="order-row" t-att-data-id="order.id" t-on-click="() => this.onClickOrder(order)">
+                            <div class="order-row" t-att-data-id="order.id"
+                                 t-on-click="() => this.onClickOrder(order)"
+                                 t-on-dblclick="() => this.onDoubleClick(order)">
                                 <div class="col wide p-2">
                                     <div><t t-esc="order.date_order"/></div>
                                 </div>
@@ -83,14 +85,19 @@
                                 </div>
                                 <div class="col action-buttons p-2">
                                     <t t-if="order.online_order_status=='open'">
-                                        <button class="btn-action approve" t-att-data-id="order.id"
-                                                t-on-click.stop="() => this.onApproveOrder(order.id)">
-                                            <i class="fa fa-check" aria-hidden="true"/>
-                                        </button>
-                                        <button class="btn-action decline" t-att-data-id="order.id"
-                                                t-on-click.stop="() => this.onDeclineOrder(order.id)">
-                                            <i class="fa fa-times" aria-hidden="true"/>
-                                        </button>
+                                        <t t-if="state.isAutoApprove">
+                                            <div class="status-badge approved">Approved</div>
+                                        </t>
+                                        <t t-else="">
+                                            <button class="btn-action approve" t-att-data-id="order.id"
+                                                    t-on-click.stop="() => this.onApproveOrder(order.id)">
+                                                <i class="fa fa-check" aria-hidden="true"/>
+                                            </button>
+                                            <button class="btn-action decline" t-att-data-id="order.id"
+                                                    t-on-click.stop="() => this.onDeclineOrder(order.id)">
+                                                <i class="fa fa-times" aria-hidden="true"/>
+                                            </button>
+                                        </t>
                                     </t>
                                     <t t-elif="order.online_order_status=='approved'">
                                         <div class="status-badge approved">Approved</div>

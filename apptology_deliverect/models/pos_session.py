@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-
 from odoo import models
 
 
 class PosSession(models.Model):
-    """Inheriting the pos session"""
+    """Inherit to load new fields to pos"""
     _inherit = 'pos.session'
 
     def _loader_params_pos_order(self):

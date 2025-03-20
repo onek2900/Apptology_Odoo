@@ -2,7 +2,7 @@
 import json
 import logging
 import re
-from odoo import fields, http, _
+from odoo import fields, http
 from odoo.http import request, Response
 from datetime import datetime
 import pytz
@@ -11,26 +11,32 @@ _logger = logging.getLogger(__name__)
 
 
 class DeliverectWebhooks(http.Controller):
-    """Controller for handling Deliverect webhooks and API integration."""
+    """Controller for handling Deliverect webhooks"""
 
     def _convert_utc_to_user_tz(self,timezone, utc_time_str):
-        """Convert UTC time string (ISO 8601) to Odoo user's timezone"""
+        """Convert an ISO 8601 UTC time string to the specified timezone.
+
+        :param str timezone: The target timezone (e.g., 'Europe/Brussels').
+        :param str utc_time_str: The UTC time in ISO 8601 format.
+        :return: The converted datetime in the specified timezone or False if input is invalid.
+        """
         if not utc_time_str:
             return False
-
         try:
             utc_time = datetime.fromisoformat(utc_time_str.replace("Z", "+00:00"))
-            user_tz = timezone or "UTC"
-            local_tz = pytz.timezone(user_tz)
+            local_tz = pytz.timezone(timezone or "UTC")
             local_time = utc_time.astimezone(local_tz)
             return fields.Datetime.to_string(local_time)
         except ValueError as e:
             _logger.error(f"Time conversion error: {e}")
             return False
 
-    @staticmethod
-    def find_partner(channel_id):
-        """function for finding partner from channel id"""
+    def find_partner(self,channel_id):
+        """Find or create a partner based on the given channel ID.
+
+        :param int channel_id: The channel ID to search for the partner.
+        :return: The ID of the found or newly created partner.
+        """
         partner = request.env['res.partner'].sudo().search([('channel_id', '=', channel_id)])
         if not partner:
             partner = request.env['res.partner'].sudo().create({
@@ -39,18 +45,23 @@ class DeliverectWebhooks(http.Controller):
             })
         return partner.id
 
-    @staticmethod
-    def generate_order_notification(pos_id, order_status):
-        """function for generating notification for pos order"""
+    def generate_order_notification(self,pos_id, order_status):
+        """Generate a notification for new online orders.
+
+        :param int pos_id: The POS order ID.
+        :param str order_status: The status of the order "success" or "failure".
+        """
         channel = f"new_pos_order_{pos_id}"
         request.env["bus.bus"]._sendone(channel, "notification", {
             "channel": channel,
             "order_status": order_status
         })
 
-    @staticmethod
     def generate_data(self, pos_id):
-        """function for generating data for pos order"""
+        """Generate data for the POS order.
+
+        :param int pos_id: The POS configuration ID.
+        """
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         product_data = pos_config.create_deliverect_product_data()
         account_id = pos_config.account_id
@@ -63,21 +74,24 @@ class DeliverectWebhooks(http.Controller):
             "locationId": location_id
         }
 
-    @staticmethod
-    def generate_pos_reference(channel_order_id):
-        """Function for generating a unique POS reference"""
+    def generate_pos_reference(self,channel_order_id):
+        """Generate a unique POS reference from the channel order ID for online orders.
+
+        :param str channel_order_id: The order ID from the channel.
+        """
         numeric_part = ''.join(filter(str.isdigit, channel_order_id))
         digits = numeric_part.zfill(12)
         pos_reference = f"Online-Order {digits[:5]}-{digits[5:8]}-{digits[8:]}"
         return pos_reference
 
-    def convert_to_readable_time(self, timestamp_str):
-        if not timestamp_str:
-            return ""
-        dt = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
-        return dt.strftime("%B %d, %Y %I:%M %p")
 
     def create_order_line(self, product_id, qty, note):
+        """Create an order line for a given product.
+
+        :param int product_id: The ID of the product.
+        :param float qty: The quantity of the product.
+        :param str note: Additional note for the product passed by the customer.
+        """
         product = request.env['product.product'].sudo().search(
             [('id', '=', product_id)],
             limit=1)
@@ -104,9 +118,13 @@ class DeliverectWebhooks(http.Controller):
         else:
             raise Exception("Product Not found")
 
-    @staticmethod
     def create_order_data(self, data, pos_id):
-        """function for pos order data from deliverect data"""
+        """
+        Generate POS order data from Deliverect order details.
+
+        :param dict data: data received from the webhook containing order details.
+        :param int pos_id: The POS configuration ID.
+        """
         pos_reference = self.generate_pos_reference(data['channelOrderId'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         is_auto_approve = pos_config.auto_approve
@@ -188,7 +206,6 @@ class DeliverectWebhooks(http.Controller):
                 'user_id': pos_config.current_user_id.id,
                 'is_online_order': True,
                 'online_order_id': data.get('_id'),
-                'floor': 'Online',
                 'online_order_status': 'approved' if is_auto_approve else 'open',
                 'order_type': str(data.get('orderType')),
                 'online_order_paid': data.get('orderIsAlreadyPaid'),
@@ -219,10 +236,14 @@ class DeliverectWebhooks(http.Controller):
     @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none",
                 csrf=False)
     def sync_products(self, pos_id):
-        """webhook for syncing products with deliverect"""
+        """
+        Webhook for syncing products with Deliverect.
+
+        :param int pos_id: The POS ID passed by Deliverect.
+        """
         pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
         try:
-            product_data = self.generate_data(self, pos_configuration.id)
+            product_data = self.generate_data(pos_configuration.id)
             return request.make_response(
                 json.dumps(product_data),
                 headers={'Content-Type': 'application/json'},
@@ -235,7 +256,11 @@ class DeliverectWebhooks(http.Controller):
     @http.route('/deliverect/pos/orders/<int:pos_id>', type='http', methods=['POST'], auth='none',
                 csrf=False)
     def receive_pos_order(self, pos_id):
-        """webhook for receiving pos orders from deliverect"""
+        """
+        Webhook for receiving pos orders from Deliverect.
+
+        :param int pos_id: The POS ID passed by Deliverect.
+        """
         pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
         try:
             deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
@@ -256,7 +281,7 @@ class DeliverectWebhooks(http.Controller):
                 })
                 refund_payment.with_context(**payment_context).check()
             else:
-                pos_order_data = self.create_order_data(self, data, pos_configuration.id)
+                pos_order_data = self.create_order_data(data, pos_configuration.id)
                 if pos_order_data:
                     order = request.env['pos.order'].sudo().create(pos_order_data)
                     if data['orderIsAlreadyPaid']:
@@ -290,8 +315,9 @@ class DeliverectWebhooks(http.Controller):
 
     @http.route('/deliverect/pos/register', type='http', methods=['POST'], auth="none", csrf=False)
     def register_pos(self):
-        """webhook for registering pos with deliverect"""
-
+        """
+        Webhook for registering POS with Deliverect.
+        """
         config_param = request.env['ir.config_parameter'].sudo()
         base_url = config_param.get_param('web.base.url')
         try:
