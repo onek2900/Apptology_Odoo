@@ -13,24 +13,20 @@ _logger = logging.getLogger(__name__)
 class DeliverectWebhooks(http.Controller):
     """Controller for handling Deliverect webhooks and API integration."""
 
-    def _convert_utc_to_user_tz(self, utc_time_str):
+    def _convert_utc_to_user_tz(self,timezone, utc_time_str):
         """Convert UTC time string (ISO 8601) to Odoo user's timezone"""
         if not utc_time_str:
             return False
 
         try:
-            # Convert ISO 8601 string to datetime object
             utc_time = datetime.fromisoformat(utc_time_str.replace("Z", "+00:00"))
-            # Get user's timezone (fallback to UTC if not set)
-            user_tz = request.env.user.tz or "UTC"
+            user_tz = timezone or "UTC"
             local_tz = pytz.timezone(user_tz)
-
-            # Convert UTC to local time
             local_time = utc_time.astimezone(local_tz)
-            return fields.Datetime.to_string(local_time)  # Convert datetime to Odoo format
+            return fields.Datetime.to_string(local_time)
         except ValueError as e:
             _logger.error(f"Time conversion error: {e}")
-            return False  # Return False if the format is incorrect
+            return False
 
     @staticmethod
     def find_partner(channel_id):
@@ -204,8 +200,8 @@ class DeliverectWebhooks(http.Controller):
                 'bag_fee': data.get('bagFee') / 100,
                 'delivery_note': data.get('deliveryAddress', {}).get('extraAddressInfo', ''),
                 'channel_order_reference': data.get('channelOrderDisplayId'),
-                'pickup_time':self._convert_utc_to_user_tz(data.get('pickupTime')),
-                'delivery_time': self._convert_utc_to_user_tz(data.get('deliveryTime')),
+                'pickup_time':self._convert_utc_to_user_tz(pos_config.current_user_id.tz,data.get('pickupTime')),
+                'delivery_time': self._convert_utc_to_user_tz(pos_config.current_user_id.tz,data.get('deliveryTime')),
                 'channel_name': request.env['deliverect.channel'].sudo().search([('channel_id', '=',
                                                                                   data.get("channel"))],
                                                                                 limit=1).name,

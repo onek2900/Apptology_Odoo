@@ -42,68 +42,68 @@
             </div>
             <!-- Order Type and Payment Method -->
             <div class="online-order-receipt-details">
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.channel_order_reference">
                     <div class="detail-label">Order:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.channel_order_reference"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.order_type">
                     <div class="detail-label">Type:</div>
                     <div class="detail-value">
                         <t t-if="props.data.orderData.order_type=='1'">Pickup</t>
                         <t t-elif="props.data.orderData.order_type=='2'">Delivery</t>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.pickup_time">
                     <div class="detail-label">PickUp Time:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.pickup_time"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.delivery_time">
                     <div class="detail-label">Delivery Time:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.delivery_time"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData and props.data.orderData.delivery_note">
+                <div class="detail-row" t-if="props.data.orderData.delivery_note">
                     <div class="detail-label">Delivery Note:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.delivery_note"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.channel_name">
                     <div class="detail-label">Channel:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.channel_name"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.customer_name">
                     <div class="detail-label">Customer:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.customer_name"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.customer_company_name">
                     <div class="detail-label">C.Company:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.customer_company_name"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.customer_email">
                     <div class="detail-label">C.Email:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.customer_email"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.customer_note">
                     <div class="detail-label">C.Note:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.customer_note"/>
                     </div>
                 </div>
-                <div class="detail-row" t-if="props.data.orderData">
+                <div class="detail-row" t-if="props.data.orderData.order_payment_type">
                     <div class="detail-label">Payment:</div>
                     <div class="detail-value">
                         <t t-if="props.data.orderData.order_payment_type=='0'">Credit Card Online</t>
@@ -118,7 +118,7 @@
                     </div>
                 </div>
                 <!-- Customer Note if present -->
-                <div class="detail-row" t-if="props.data.orderData and props.data.orderData.note">
+                <div class="detail-row" t-if="props.data.orderData.note">
                     <div class="detail-label">Note:</div>
                     <div class="detail-value" t-esc="props.data.orderData.note"/>
                 </div>
@@ -162,43 +162,43 @@
             <!-- Cost Summary -->
             <div class="cost-summary">
                 <!-- Channel Taxes -->
-                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_tax">
+                <div class="cost-row" t-if="props.data.orderData.channel_tax">
                     <div class="cost-label">Taxes:</div>
                     <div class="cost-value" t-esc="props.data.orderData.channel_tax"/>
                 </div>
 
                 <!-- Discount -->
-                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_discount">
+                <div class="cost-row" t-if="props.data.orderData.channel_discount">
                     <div class="cost-label">Discount:</div>
                     <div class="cost-value" t-esc="props.data.orderData.channel_discount"/>
                 </div>
 
                 <!-- Service Charge -->
-                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_service_charge">
+                <div class="cost-row" t-if="props.data.orderData.channel_service_charge">
                     <div class="cost-label">Service Charge:</div>
                     <div class="cost-value" t-esc="props.data.orderData.channel_service_charge"/>
                 </div>
 
                 <!-- Delivery Charge -->
-                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_delivery_charge">
+                <div class="cost-row" t-if="props.data.orderData.channel_delivery_charge">
                     <div class="cost-label">Delivery Charge:</div>
                     <div class="cost-value" t-esc="props.data.orderData.channel_delivery_charge"/>
                 </div>
 
                 <!-- Tip -->
-                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.channel_tip_amount">
+                <div class="cost-row" t-if="props.data.orderData.channel_tip_amount">
                     <div class="cost-label">Tip:</div>
                     <div class="cost-value" t-esc="props.data.orderData.channel_tip_amount"/>
                 </div>
 
                 <!-- Bag Fee -->
-                <div class="cost-row" t-if="props.data.orderData and props.data.orderData.bag_fee">
+                <div class="cost-row" t-if="props.data.orderData.bag_fee">
                     <div class="cost-label">Bag Fee:</div>
                     <div class="cost-value" t-esc="props.data.orderData.bag_fee"/>
                 </div>
 
                 <!-- Total Amount - Note: You'll need to calculate this in your backend -->
-                <div class="total-row" t-if="props.data.orderData">
+                <div class="total-row" t-if="props.data.orderData.channel_total_amount">
                     <div class="total-label">Total Amount:</div>
                     <div class="total-value" t-esc="props.data.orderData.channel_total_amount"/>
                 </div>

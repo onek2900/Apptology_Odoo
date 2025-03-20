@@ -6,6 +6,7 @@
     margin: 0 auto;
     padding: 10px;
     text-align: center;
+    box-sizing: border-box;
 }
 
 .pos-receipt-logo {
@@ -17,6 +18,9 @@
 .pos-receipt-contact {
     font-size: 14px;
     margin-bottom: 10px;
+    /* Handle overflow for contact information */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Separator styling */
@@ -40,15 +44,19 @@
 
 .order-number, .order-date {
     font-size: 14px;
+    /* Handle overflow for order numbers and dates */
+    word-break: break-all;
 }
 
-/* Order Details - Improved */
+/* Order Details - Improved with overflow handling */
 .online-order-receipt-details {
     text-align: left;
     margin: 10px 0;
     border: 1px dashed #ccc;
     padding: 8px;
     background-color: #f9f9f9;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .detail-row {
@@ -57,6 +65,8 @@
     margin: 5px 0;
     border-bottom: 1px dotted #eee;
     padding-bottom: 3px;
+    /* Ensure rows don't break the layout */
+    flex-wrap: wrap;
 }
 
 .detail-row:last-child {
@@ -65,22 +75,44 @@
 
 .detail-label {
     font-weight: bold;
-    flex: 1;
+    flex: 0 0 30%;
+    /* Label stays at fixed width */
+    min-width: 80px;
 }
 
 .detail-value {
-    flex: 2;
+    flex: 1;
     text-align: right;
+    /* Handle overflow for values like email */
+    word-break: break-word;
+    max-width: 70%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* For very long values that need to wrap to next line */
+@media (max-width: 300px) {
+    .detail-row {
+        flex-direction: column;
+    }
+
+    .detail-value {
+        text-align: left;
+        max-width: 100%;
+        padding-left: 10px;
+    }
 }
 
 /* Order Items */
 .order-items {
     margin: 10px 0;
+    width: 100%;
 }
 
 .items-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed; /* Fixed table layout to control column widths */
 }
 
 .items-table th {
@@ -93,6 +125,9 @@
 .item-description {
     width: 70%;
     text-align: left;
+    /* Handle overflow for item descriptions */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .item-quantity {
@@ -102,22 +137,27 @@
 
 .item-row td {
     padding: 5px 0;
+    vertical-align: top; /* Align content to top for multiline descriptions */
 }
 
-/* Added style for item-remark */
+/* Added style for item-remark with overflow handling */
 .item-remark {
-    font-size: 10px;  /* Smaller font compared to the rest */
+    font-size: 10px;
     font-style: italic;
     color: #666;
     padding-left: 10px;
     display: block;
     margin-top: 2px;
+    /* Handle overflow for remarks */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Cost Summary */
 .cost-summary {
     text-align: right;
     margin: 10px 0;
+    width: 100%;
 }
 
 .cost-row {
@@ -134,6 +174,9 @@
 .cost-value {
     flex: 1;
     font-weight: normal;
+    /* Handle overflow for cost values */
+    word-break: break-word;
+    max-width: 50%;
 }
 
 .total-row {
@@ -153,6 +196,8 @@
 
 .total-value {
     flex: 1;
+    /* Handle overflow for total values */
+    word-break: break-word;
 }
 
 /* Footer */
