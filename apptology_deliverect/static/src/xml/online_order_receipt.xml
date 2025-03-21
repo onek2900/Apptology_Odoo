@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="apptology_deliverect.OnlineOrderReceipt">
+        <t t-log="props.data.orderData"/>
         <div class="pos-receipt">
             <t t-log="'PROPS DATA :',props.data"/>
             <!-- Company Logo and Information -->
@@ -89,6 +90,12 @@
                     <div class="detail-label">C.Company:</div>
                     <div class="detail-value">
                         <t t-esc="props.data.orderData.customer_company_name"/>
+                    </div>
+                </div>
+                <div class="detail-row" t-if="props.data.orderData.customer_phone">
+                    <div class="detail-label">C.Phone:</div>
+                    <div class="detail-value">
+                        <t t-esc="props.data.orderData.customer_phone"/>
                     </div>
                 </div>
                 <div class="detail-row" t-if="props.data.orderData.customer_email">

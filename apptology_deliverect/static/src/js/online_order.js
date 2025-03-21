@@ -102,6 +102,8 @@ export class OnlineOrderScreen extends Component {
             searchTerm: order.pos_reference,
         };
         const ticketFilter = order.online_order_paid?"SYNCED":"ACTIVE_ORDERS"
+        console.log(this.pos)
+        await this.pos._syncTableOrdersFromServer();
         this.pos.showScreen("TicketScreen", {
             ui: { filter: ticketFilter, searchDetails },
         });

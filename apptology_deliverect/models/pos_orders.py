@@ -63,6 +63,7 @@ class PosOrder(models.Model):
     customer_company_name = fields.Char(string='Customer Company Name',help='customer company name')
     customer_email = fields.Char(string='Customer Email',help='customer email')
     customer_note = fields.Char(string='Customer Note',help='customer note provided for the order')
+    customer_phone = fields.Char(string='Customer Phone',help='customer phone number')
 
     @api.depends('online_order_status')
     def _compute_order_priority(self):

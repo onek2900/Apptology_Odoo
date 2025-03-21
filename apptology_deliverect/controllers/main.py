@@ -228,6 +228,7 @@ class DeliverectWebhooks(http.Controller):
                 'customer_company_name': data.get('customer', {}).get('companyName'),
                 'customer_email': data.get('customer', {}).get('email'),
                 'customer_note': data.get('customer', {}).get('note'),
+                'customer_phone':data.get('customer',{}).get('phoneNumber'),
                 'channel_tax':data.get('taxTotal')/100,
             }
             return order_data
