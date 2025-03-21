@@ -3,7 +3,7 @@
     <t t-name="apptology_deliverect.OnlineOrderReceipt">
         <div class="pos-receipt">
             <t t-log="'PROPS DATA :',props.data"/>
-            <!-- Company Logo and Information (unchanged) -->
+            <!-- Company Logo and Information -->
             <img t-attf-src="/web/image?model=res.company&amp;id={{props.data.headerData.company.id}}&amp;field=logo"
                  alt="Logo" class="pos-receipt-logo"/>
             <br/>
@@ -197,7 +197,7 @@
                     <div class="cost-value" t-esc="props.data.orderData.bag_fee"/>
                 </div>
 
-                <!-- Total Amount - Note: You'll need to calculate this in your backend -->
+                <!-- Total Amount -->
                 <div class="total-row" t-if="props.data.orderData.channel_total_amount">
                     <div class="total-label">Total Amount:</div>
                     <div class="total-value" t-esc="props.data.orderData.channel_total_amount"/>

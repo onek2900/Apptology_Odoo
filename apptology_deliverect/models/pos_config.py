@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import logging
 import requests
 from odoo import fields, models
@@ -103,6 +104,8 @@ class PosConfig(models.Model):
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             account_data = response.json()
+            print('*****************ChannelLINKS**************************')
+            print(json.dumps(account_data,indent=4))
             channel = [channel["channel"] for channel in account_data.get("channelLinks", [])]
             channel_records = self.env['deliverect.channel'].sudo().search([('channel_id', 'in', channel)])
             created_partner_ids = []
@@ -185,7 +188,7 @@ class PosConfig(models.Model):
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda prod: {
             **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id.amount),
+                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0),
             "subProducts": [f"MOD_GRP-{group.id}" for group in prod.modifier_group_ids]
         })
 
@@ -196,7 +199,7 @@ class PosConfig(models.Model):
 
         modifiers_data = modifiers.mapped(lambda prod: {
             **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id.amount),
+                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })
@@ -220,7 +223,7 @@ class PosConfig(models.Model):
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda prod: {
             **self.create_product_json(1,f"PRD-{prod.id}",prod.lst_price, prod.name, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id.amount),
+                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })

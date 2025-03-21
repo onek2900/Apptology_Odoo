@@ -37,12 +37,14 @@ class DeliverectWebhooks(http.Controller):
         :param int channel_id: The channel ID to search for the partner.
         :return: The ID of the found or newly created partner.
         """
-        partner = request.env['res.partner'].sudo().search([('channel_id', '=', channel_id)])
+        partner = request.env['res.partner'].sudo().search([('active','=',True),
+                                                            ('channel_id', '=', channel_id)],
+                                                           limit=1)
         if not partner:
-            partner = request.env['res.partner'].sudo().create({
-                'name': f"DELIVERECT",
-                'channel_id': channel_id,
-            })
+            request.env['deliverect.channel'].sudo().update_channel()
+            partner = request.env['res.partner'].sudo().search([('channel_id', '=', channel_id)], limit=1) or \
+                      request.env['res.partner'].sudo().create({'name': "DELIVERECT", 'channel_id': channel_id})
+
         return partner.id
 
     def generate_order_notification(self,pos_id, order_status):
@@ -125,6 +127,7 @@ class DeliverectWebhooks(http.Controller):
         :param dict data: data received from the webhook containing order details.
         :param int pos_id: The POS configuration ID.
         """
+        print(json.dumps(data,indent=4))
         pos_reference = self.generate_pos_reference(data['channelOrderId'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         is_auto_approve = pos_config.auto_approve
