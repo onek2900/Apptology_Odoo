@@ -97,15 +97,18 @@ export class OnlineOrderScreen extends Component {
         this.fetchOpenOrders();
     }
     async onDoubleClick(order){
-        const searchDetails = {
-            fieldName: "RECEIPT_NUMBER",
-            searchTerm: order.pos_reference,
-        };
-        const ticketFilter = order.state=='paid'?"SYNCED":"ACTIVE_ORDERS"
-        await this.pos._syncTableOrdersFromServer();
-        this.pos.showScreen("TicketScreen", {
-            ui: { filter: ticketFilter, searchDetails },
-        });
+//    function to redirect to ticket screen on double click
+        if (order.online_order_status && ['approved', 'finalized'].includes(order.online_order_status)){
+            const searchDetails = {
+                fieldName: "RECEIPT_NUMBER",
+                searchTerm: order.pos_reference,
+            };
+            const ticketFilter = order.state=='paid'?"SYNCED":"ACTIVE_ORDERS"
+            await this.pos._syncTableOrdersFromServer();
+            this.pos.showScreen("TicketScreen", {
+                ui: { filter: ticketFilter, searchDetails },
+            });
+        }
     }
 }
 registry.category("pos_screens").add("OnlineOrderScreen", OnlineOrderScreen);
