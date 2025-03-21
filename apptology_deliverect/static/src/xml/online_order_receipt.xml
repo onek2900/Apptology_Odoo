@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="apptology_deliverect.OnlineOrderReceipt">
+        <t t-log="props.data"/>
         <div class="pos-receipt">
             <!-- Company Logo and Information -->
             <img t-attf-src="/web/image?model=res.company&amp;id={{props.data.headerData.company.id}}&amp;field=logo"
@@ -166,45 +167,45 @@
             <!-- Cost Summary -->
             <div class="cost-summary">
                 <!-- Channel Taxes -->
-                <div class="cost-row" t-if="props.data.orderData.channel_tax">
+                <div class="cost-row">
                     <div class="cost-label">Taxes:</div>
-                    <div class="cost-value" t-esc="props.data.orderData.channel_tax"/>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_tax || '0.00'"/>
                 </div>
 
                 <!-- Discount -->
-                <div class="cost-row" t-if="props.data.orderData.channel_discount">
+                <div class="cost-row">
                     <div class="cost-label">Discount:</div>
-                    <div class="cost-value" t-esc="props.data.orderData.channel_discount"/>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_discount || '0.00'"/>
                 </div>
 
                 <!-- Service Charge -->
-                <div class="cost-row" t-if="props.data.orderData.channel_service_charge">
+                <div class="cost-row">
                     <div class="cost-label">Service Charge:</div>
-                    <div class="cost-value" t-esc="props.data.orderData.channel_service_charge"/>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_service_charge || '0.00'"/>
                 </div>
 
                 <!-- Delivery Charge -->
-                <div class="cost-row" t-if="props.data.orderData.channel_delivery_charge">
+                <div class="cost-row">
                     <div class="cost-label">Delivery Charge:</div>
-                    <div class="cost-value" t-esc="props.data.orderData.channel_delivery_charge"/>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_delivery_charge || '0.00'"/>
                 </div>
 
                 <!-- Tip -->
-                <div class="cost-row" t-if="props.data.orderData.channel_tip_amount">
+                <div class="cost-row">
                     <div class="cost-label">Tip:</div>
-                    <div class="cost-value" t-esc="props.data.orderData.channel_tip_amount"/>
+                    <div class="cost-value" t-esc="props.data.orderData.channel_tip_amount || '0.00'"/>
                 </div>
 
                 <!-- Bag Fee -->
-                <div class="cost-row" t-if="props.data.orderData.bag_fee">
+                <div class="cost-row">
                     <div class="cost-label">Bag Fee:</div>
-                    <div class="cost-value" t-esc="props.data.orderData.bag_fee"/>
+                    <div class="cost-value" t-esc="props.data.orderData.bag_fee || '0.00'"/>
                 </div>
 
                 <!-- Total Amount -->
-                <div class="total-row" t-if="props.data.orderData.channel_total_amount">
+                <div class="total-row">
                     <div class="total-label">Total Amount:</div>
-                    <div class="total-value" t-esc="props.data.orderData.channel_total_amount"/>
+                    <div class="total-value" t-esc="props.data.orderData.channel_total_amount || '0.00'"/>
                 </div>
             </div>
 
