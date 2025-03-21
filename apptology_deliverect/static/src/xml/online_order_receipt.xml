@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="apptology_deliverect.OnlineOrderReceipt">
-        <t t-log="props.data.orderData"/>
         <div class="pos-receipt">
-            <t t-log="'PROPS DATA :',props.data"/>
             <!-- Company Logo and Information -->
             <img t-attf-src="/web/image?model=res.company&amp;id={{props.data.headerData.company.id}}&amp;field=logo"
                  alt="Logo" class="pos-receipt-logo"/>
@@ -145,7 +143,6 @@
                             <th class="item-quantity">Qty</th>
                         </tr>
                     </thead>
-                    <t t-log="props.data"/>
                     <tbody>
                         <t t-foreach="props.data.orderLineData" t-as="orderLine" t-key="orderLine.lineId">
                             <tr class="item-row">
