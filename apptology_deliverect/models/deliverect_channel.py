@@ -30,8 +30,6 @@ class DeliverectChannel(models.Model):
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             channels = response.json()
-            print('***************CHANNELS***************************')
-            print(json.dumps(channels,indent=4))
             for channel in channels:
                 vals = {"name": channel.get("name")}
                 self.env["deliverect.channel"].update_or_create_channel(channel.get("channelId"), vals)

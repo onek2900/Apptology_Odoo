@@ -104,8 +104,6 @@ class PosConfig(models.Model):
             response = requests.get(url, headers=headers)
             response.raise_for_status()
             account_data = response.json()
-            print('*****************ChannelLINKS**************************')
-            print(json.dumps(account_data,indent=4))
             channel = [channel["channel"] for channel in account_data.get("channelLinks", [])]
             channel_records = self.env['deliverect.channel'].sudo().search([('channel_id', 'in', channel)])
             created_partner_ids = []

@@ -101,8 +101,9 @@ export class OnlineOrderScreen extends Component {
             fieldName: "RECEIPT_NUMBER",
             searchTerm: order.pos_reference,
         };
+        const ticketFilter = order.online_order_paid?"SYNCED":"ACTIVE_ORDERS"
         this.pos.showScreen("TicketScreen", {
-            ui: { filter: "SYNCED", searchDetails },
+            ui: { filter: ticketFilter, searchDetails },
         });
     }
 }

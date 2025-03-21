@@ -127,7 +127,6 @@ class DeliverectWebhooks(http.Controller):
         :param dict data: data received from the webhook containing order details.
         :param int pos_id: The POS configuration ID.
         """
-        print(json.dumps(data,indent=4))
         pos_reference = self.generate_pos_reference(data['channelOrderId'])
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         is_auto_approve = pos_config.auto_approve
