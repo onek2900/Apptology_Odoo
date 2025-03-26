@@ -1,0 +1,13 @@
+/* Load the custom font for the new Riyal symbol */
+@font-face {
+  font-family: 'SaudiRiyal';
+  src: url('/custom_currency_riyal/static/src/fonts/saudi_riyal.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+/* Apply the font to currency fields */
+.currency-symbol {
+  font-family: 'SaudiRiyal', sans-serif;
+  font-size: 18px;
+}

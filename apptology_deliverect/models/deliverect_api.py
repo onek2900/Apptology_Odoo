@@ -12,13 +12,13 @@ class DeliverectAPI(models.AbstractModel):
 
     def generate_auth_token(self):
         """Function for generating Deliverect authentication token"""
-        url = "https://api.staging.deliverect.com/oauth/token"
+        url = "https://api.deliverect.com/oauth/token"
         config_parameter = self.env['ir.config_parameter'].sudo()
         client_id = config_parameter.get_param('client_id')
         client_secret = config_parameter.get_param('client_secret')
 
         payload = {
-            "audience": "https://api.staging.deliverect.com",
+            "audience": "https://api.deliverect.com",
             "grant_type": "client_credentials",
             "client_id": client_id,
             "client_secret": client_secret
