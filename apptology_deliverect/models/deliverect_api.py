@@ -16,7 +16,6 @@ class DeliverectAPI(models.AbstractModel):
         config_parameter = self.env['ir.config_parameter'].sudo()
         client_id = config_parameter.get_param('client_id')
         client_secret = config_parameter.get_param('client_secret')
-
         payload = {
             "audience": "https://api.deliverect.com",
             "grant_type": "client_credentials",

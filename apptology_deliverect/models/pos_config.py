@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 import requests
 from odoo import fields, models
@@ -162,7 +161,7 @@ class PosConfig(models.Model):
         return product_image_url
 
     def create_product_json(self, product_type, plu, product_price, product_name, product_tmpl_id, product_note,
-                            product_tax):
+                            product_tax, product_category_ids):
         """Generate product JSON data for Deliverect."""
         return {
             "productType": product_type,
@@ -174,6 +173,7 @@ class PosConfig(models.Model):
             "deliveryTax": product_tax * 1000,
             "takeawayTax": product_tax * 1000,
             "eatInTax": product_tax * 1000,
+            "posCategoryIds": product_category_ids
         }
 
     def create_product_with_modifier(self):
@@ -186,7 +186,8 @@ class PosConfig(models.Model):
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda prod: {
             **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0),
+                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
+                                       prod.pos_categ_ids.ids ),
             "subProducts": [f"MOD_GRP-{group.id}" for group in prod.modifier_group_ids]
         })
 
@@ -194,10 +195,9 @@ class PosConfig(models.Model):
         """create modifier and modifier group in deliverect"""
         modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
-
         modifiers_data = modifiers.mapped(lambda prod: {
             **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0),
+                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })
@@ -210,6 +210,13 @@ class PosConfig(models.Model):
         })
         return modifiers_data + modifier_group_data
 
+    def create_product_category_data(self):
+        """create product category data for deliverect"""
+        return [
+            {'name': product_category['name'], 'posCategoryId': product_category['id']}
+            for product_category in self.env['pos.category'].search_read([], ['id', 'name'])
+        ]
+
     def create_product_data(self):
         """create normal products in deliverect"""
         products = self.env['product.product'].sudo().search([('active', '=', True),
@@ -220,8 +227,9 @@ class PosConfig(models.Model):
                                                                self.iface_available_categ_ids.ids),
                                                               ('available_in_pos', '=', True)])
         return products.mapped(lambda prod: {
-            **self.create_product_json(1,f"PRD-{prod.id}",prod.lst_price, prod.name, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0),
+            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+                                       prod.product_note, prod.taxes_id[0].amount if
+                                       prod.taxes_id else 0.0,prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })
@@ -243,7 +251,7 @@ class PosConfig(models.Model):
             location_id = self.location_id
             payload = {
                 "priceLevels": [],
-                "categories": [],
+                "categories": self.create_product_category_data(),
                 "products": self.create_deliverect_product_data(),
                 "accountId": account_id,
                 "locationId": location_id
@@ -259,63 +267,6 @@ class PosConfig(models.Model):
                 return True
             else:
                 return False
-        except Exception as e:
-            _logger.error(f"Product sync failed: {e}")
-            return False
-
-    def clear_products(self):
-        try:
-            url = "https://api.deliverect.com/productAndCategories"
-            token = self.env['deliverect.api'].sudo().generate_auth_token()
-            account_id = self.account_id
-            location_id = self.location_id
-            payload = {
-                "priceLevels": [],
-                "categories": [],
-                "products": [
-                    {
-                        "productType": 1,
-                        "plu": "NO_USE-2",
-                        "price": 1100,
-                        "name": "NO USE",
-                        "imageUrl": "",
-                        "description": "",
-                        "deliveryTax": 9000,
-                        "takeawayTax": 9000,
-                        "eatInTax": 9000
-                    },
-                ],
-                "accountId": account_id,
-                "locationId": location_id
-            }
-            headers = {
-                "accept": "application/json",
-                "content-type": "application/json",
-                "authorization": f"Bearer {token}"
-            }
-            response = requests.post(url, json=payload, headers=headers)
-            _logger.info(f"Products clear response: {response.status_code} - {response.text}")
-            if response.status_code == 200:
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'title': 'Success',
-                        'message': f"Successfully cleared products",
-                        'type': 'success',
-                    }
-                }
-            else:
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'title': 'Failure',
-                        'message': f"Failed to clear products",
-                        'type': 'success',
-                    }
-                }
-
         except Exception as e:
             _logger.error(f"Product sync failed: {e}")
             return False

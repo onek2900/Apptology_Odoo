@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 class DeliverectWebhooks(http.Controller):
     """Controller for handling Deliverect webhooks"""
 
-    def _convert_utc_to_user_tz(self,timezone, utc_time_str):
+    def _convert_utc_to_user_tz(self, timezone, utc_time_str):
         """Convert an ISO 8601 UTC time string to the specified timezone.
 
         :param str timezone: The target timezone (e.g., 'Europe/Brussels').
@@ -31,13 +31,13 @@ class DeliverectWebhooks(http.Controller):
             _logger.error(f"Time conversion error: {e}")
             return False
 
-    def find_partner(self,channel_id):
+    def find_partner(self, channel_id):
         """Find or create a partner based on the given channel ID.
 
         :param int channel_id: The channel ID to search for the partner.
         :return: The ID of the found or newly created partner.
         """
-        partner = request.env['res.partner'].sudo().search([('active','=',True),
+        partner = request.env['res.partner'].sudo().search([('active', '=', True),
                                                             ('channel_id', '=', channel_id)],
                                                            limit=1)
         if not partner:
@@ -47,7 +47,7 @@ class DeliverectWebhooks(http.Controller):
 
         return partner.id
 
-    def generate_order_notification(self,pos_id, order_status):
+    def generate_order_notification(self, pos_id, order_status):
         """Generate a notification for new online orders.
 
         :param int pos_id: The POS order ID.
@@ -66,17 +66,18 @@ class DeliverectWebhooks(http.Controller):
         """
         pos_config = request.env['pos.config'].sudo().browse(pos_id)
         product_data = pos_config.create_deliverect_product_data()
+        category_data = pos_config.create_product_category_data()
         account_id = pos_config.account_id
         location_id = pos_config.location_id
         return {
             "priceLevels": [],
-            'categories': [],
+            'categories': category_data,
             'products': product_data,
             "accountId": account_id,
             "locationId": location_id
         }
 
-    def generate_pos_reference(self,channel_order_id):
+    def generate_pos_reference(self, channel_order_id):
         """Generate a unique POS reference from the channel order ID for online orders.
 
         :param str channel_order_id: The order ID from the channel.
@@ -85,7 +86,6 @@ class DeliverectWebhooks(http.Controller):
         digits = numeric_part.zfill(12)
         pos_reference = f"Online-Order {digits[:5]}-{digits[5:8]}-{digits[8:]}"
         return pos_reference
-
 
     def create_order_line(self, product_id, qty, note):
         """Create an order line for a given product.
@@ -219,8 +219,8 @@ class DeliverectWebhooks(http.Controller):
                 'bag_fee': data.get('bagFee') / 100,
                 'delivery_note': data.get('deliveryAddress', {}).get('extraAddressInfo', ''),
                 'channel_order_reference': data.get('channelOrderDisplayId'),
-                'pickup_time':self._convert_utc_to_user_tz(pos_config.current_user_id.tz,data.get('pickupTime')),
-                'delivery_time': self._convert_utc_to_user_tz(pos_config.current_user_id.tz,data.get('deliveryTime')),
+                'pickup_time': self._convert_utc_to_user_tz(pos_config.current_user_id.tz, data.get('pickupTime')),
+                'delivery_time': self._convert_utc_to_user_tz(pos_config.current_user_id.tz, data.get('deliveryTime')),
                 'channel_name': request.env['deliverect.channel'].sudo().search([('channel_id', '=',
                                                                                   data.get("channel"))],
                                                                                 limit=1).name,
@@ -228,8 +228,8 @@ class DeliverectWebhooks(http.Controller):
                 'customer_company_name': data.get('customer', {}).get('companyName'),
                 'customer_email': data.get('customer', {}).get('email'),
                 'customer_note': data.get('customer', {}).get('note'),
-                'customer_phone':data.get('customer',{}).get('phoneNumber'),
-                'channel_tax':data.get('taxTotal')/100,
+                'customer_phone': data.get('customer', {}).get('phoneNumber'),
+                'channel_tax': data.get('taxTotal') / 100,
             }
             return order_data
         except Exception as e:

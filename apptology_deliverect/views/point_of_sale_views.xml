@@ -44,14 +44,6 @@
                             Deliverect URLs
                         </a>
                     </div>
-                    <div role="menuitem">
-                        <a name="clear_products"
-                           type="object"
-                           style="white-space: nowrap;"
-                        >
-                            TEST CLEAR PRODUCTS
-                        </a>
-                    </div>
                 </div>
             </xpath>
         </field>
