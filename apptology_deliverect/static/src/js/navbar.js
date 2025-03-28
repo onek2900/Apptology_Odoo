@@ -33,32 +33,42 @@ patch(Navbar.prototype, {
         });
         onWillUnmount(()=>clearInterval(this.pollingOrderCountInterval));
     },
+    /**
+     * Fetches the online order count and starts polling.
+     */
     initiateServices(){
-//    function to initiate services
         this.onlineOrderCount();
         this.startPollingOrderCount();
     },
+    /**
+     * Automatically approves online orders.
+     */
     async autoApproveOrders(){
-//    function to auto approve online orders
         await this.orm.call("pos.config", "toggle_approve", [this.pos.config.id]);
         window.location.reload();
     },
+    /**
+     * Displays the online order screen.
+     */
     async onClickOnlineOrder() {
-//    function to show online order screen
         await this.pos.showScreen("OnlineOrderScreen");
     },
+    /**
+     * Fetches the count of online orders.
+     */
     async onlineOrderCount() {
-//    function to fetch online order count
         try {
             this.state.onlineOrderCount = await this.pos.get_online_orders();
         } catch (error) {
             console.error("Error fetching online order count:", error);
         }
     },
+    /**
+     * Starts polling for online order count every 30 seconds.
+     */
     async startPollingOrderCount() {
-//    function to start polling online order count every 10 seconds
         this.pollingOrderCountInterval=setInterval(() => {
             this.onlineOrderCount();
-        }, 10000);
+        }, 30000);
     },
 });

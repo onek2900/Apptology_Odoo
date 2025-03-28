@@ -236,7 +236,7 @@ class DeliverectWebhooks(http.Controller):
             _logger.error(f"Failed to create order data: {str(e)}")
             raise Exception(f"Failed to create order data :{str(e)}")
 
-    @http.route('/deliverect/pos/products/<int:pos_id>', type='http', methods=['GET'], auth="none",
+    @http.route('/deliverect/pos/products/<string:pos_id>', type='http', methods=['GET'], auth="none",
                 csrf=False)
     def sync_products(self, pos_id):
         """
@@ -244,7 +244,7 @@ class DeliverectWebhooks(http.Controller):
 
         :param int pos_id: The POS ID passed by Deliverect.
         """
-        pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
+        pos_configuration = request.env['pos.config'].sudo().search([('pos_id', '=', pos_id)],limit=1)
         try:
             product_data = self.generate_data(pos_configuration.id)
             return request.make_response(
@@ -256,7 +256,7 @@ class DeliverectWebhooks(http.Controller):
             _logger.error(f"product sync error: {str(e)}")
             return request.make_response('', status=500)
 
-    @http.route('/deliverect/pos/orders/<int:pos_id>', type='http', methods=['POST'], auth='none',
+    @http.route('/deliverect/pos/orders/<string:pos_id>', type='http', methods=['POST'], auth='none',
                 csrf=False)
     def receive_pos_order(self, pos_id):
         """
@@ -264,7 +264,7 @@ class DeliverectWebhooks(http.Controller):
 
         :param int pos_id: The POS ID passed by Deliverect.
         """
-        pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
+        pos_configuration = request.env['pos.config'].sudo().search([('pos_id', '=', pos_id)],limit=1)
         try:
             deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
             data = json.loads(request.httprequest.data)
@@ -285,7 +285,7 @@ class DeliverectWebhooks(http.Controller):
                 refund_payment.with_context(**payment_context).check()
             else:
                 pos_order_data = self.create_order_data(data, pos_configuration.id)
-                if pos_order_data:
+                if pos_order_data and deliverect_payment_method.id in pos_configuration.payment_method_ids.ids:
                     order = request.env['pos.order'].sudo().create(pos_order_data)
                     if data['orderIsAlreadyPaid']:
                         payment_context = {"active_ids": order.ids, "active_id": order.id}
@@ -304,6 +304,8 @@ class DeliverectWebhooks(http.Controller):
                         content_type='application/json',
                         status=200
                     )
+                else:
+                    raise Exception('Deliverect Payment Method not Selected')
         except Exception as e:
             _logger.error(f"Error processing order webhook: {str(e)}")
             self.generate_order_notification(pos_configuration.id, 'failure')
@@ -321,12 +323,11 @@ class DeliverectWebhooks(http.Controller):
         """
         Webhook for registering POS with Deliverect.
         """
-        config_param = request.env['ir.config_parameter'].sudo()
-        base_url = config_param.get_param('web.base.url')
+        base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
         try:
             data = json.loads(request.httprequest.data)
-            pos_id = int(data.get('externalLocationId'))
-            pos_configuration = request.env['pos.config'].sudo().browse(pos_id)
+            pos_id = data.get('externalLocationId')
+            pos_configuration = request.env['pos.config'].sudo().search([('pos_id','=',pos_id)],limit=1)
             pos_configuration.write({
                 'account_id': data.get('accountId'),
                 'location_id': data.get('locationId'),

@@ -11,6 +11,9 @@ ReprintReceiptScreen.components ={
 onlineOrderReceipt
 }
 patch(ReprintReceiptScreen.prototype, {
+    /**
+     * Print online order from receipt from ReprintReceiptScreen.
+     */
     tryOnlineOrderReprint() {
         const currentOrder = this.pos.pos_orders.filter(order => order.id === this.props.order.server_id);
         const orderLines = this.props.order.orderlines.map(order => {

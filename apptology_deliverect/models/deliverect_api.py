@@ -5,6 +5,9 @@ from odoo import models
 
 _logger = logging.getLogger(__name__)
 
+CLIENT_ID  = "nfFvT81dgv0EEVXc"
+CLIENT_SECRET = "Q4wx5sqiElVgP4IIPcEUY5zJAljXi9Sy"
+
 class DeliverectAPI(models.AbstractModel):
     """Class for Deliverect API Helper"""
     _name = "deliverect.api"
@@ -13,14 +16,11 @@ class DeliverectAPI(models.AbstractModel):
     def generate_auth_token(self):
         """Function for generating Deliverect authentication token"""
         url = "https://api.deliverect.com/oauth/token"
-        config_parameter = self.env['ir.config_parameter'].sudo()
-        client_id = config_parameter.get_param('client_id')
-        client_secret = config_parameter.get_param('client_secret')
         payload = {
             "audience": "https://api.deliverect.com",
             "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_secret": client_secret
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET
         }
         headers = {
             "accept": "application/json",

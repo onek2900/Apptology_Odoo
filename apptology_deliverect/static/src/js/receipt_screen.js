@@ -13,6 +13,9 @@ patch(ReceiptScreen.prototype, {
         super.setup();
         this.buttonOnlineOrderPrintReceipt = useRef("online-order-print-receipt-button");
     },
+    /**
+     * Print online order from receipt screen.
+     */
     async printOnlineReceipt() {
         const currentOrder = this.pos.pos_orders.filter(order => order.id === this.pos.selectedOrder.server_id);
         const orderLines = this.pos.selectedOrder.orderlines.map(order => {

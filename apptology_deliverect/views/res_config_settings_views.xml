@@ -10,13 +10,13 @@
                     <setting>
                         <div class="content-group">
                             <div class="row">
-                                <label for="client_id" class="col-lg-3 o_light_label">Client ID</label>
-                                <field name="client_id" class="col-lg-9" placeholder="Enter your Deliverect Client ID"/>
+                                <label for="pos_account_id" class="col-lg-3 o_light_label">Account ID</label>
+                                <field name="pos_account_id" class="col-lg-9"/>
                             </div>
                             <div class="row">
-                                <label for="client_secret" class="col-lg-3 o_light_label">Client Secret</label>
-                                <field name="client_secret" class="col-lg-9"
-                                       placeholder="Enter your Deliverect Client Secret"/>
+                                <label for="pos_pos_id" class="col-lg-3 o_light_label">POS ID</label>
+                                <field name="pos_pos_id" class="col-lg-9"
+                                       placeholder="Your POS ID for registration" readonly="pos_has_active_session"/>
                             </div>
                         </div>
                     </setting>

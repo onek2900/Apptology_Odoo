@@ -13,14 +13,20 @@ patch(ClosePosPopup.prototype, {
         this.isOrderFinalized();
     },
     async isOrderFinalized() {
+    /**
+     * Checks for UnFinalized online orders before closing session.
+     */
         this.state.unFinalizedOrdersCount = await this.orm.searchCount(
                     "pos.order",
                     [["config_id", "=", this.pos.config.id],['session_id','=',this.pos.config.current_session_id[0]],
                     ["is_online_order", "=", true],["online_order_status", "=", "approved"],["order_status", "!=",
                     "cancel"]]);
     },
-        //@override
+    //@override
     async confirm() {
+    /**
+     * Confirm Close session with UnFinalized Online orders.
+     */
         if (this.state.unFinalizedOrdersCount){
             const { confirmed } = await this.popup.add(ConfirmPopup, {
                     title: _t("Warning"),

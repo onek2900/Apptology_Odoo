@@ -31,13 +31,17 @@ export class OnlineOrderScreen extends Component {
         this.initiateServices();
         onWillUnmount(()=>clearInterval(this.pollingInterval))
     }
+    /**
+     * Initiates services by fetching open orders and starting polling.
+     */
     async initiateServices(){
-//    function to initiate services
         this.fetchOpenOrders();
         this.startPollingOrders();
     }
+    /**
+     * Fetches open online orders.
+     */
     async fetchOpenOrders(){
-//    function to fetch open online orders
         try {
             const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
             const unpaidOrders = await this.pos.get_order_list().filter(order => order.name.includes("Online-Order"));
@@ -46,12 +50,18 @@ export class OnlineOrderScreen extends Component {
             console.error("Error fetching open orders:", error);
         }
     }
+    /**
+     * Starts polling for open orders every 30 seconds.
+     */
     async startPollingOrders() {
-//    function to start polling for open orders every 10 seconds
-        this.pollingInterval = setInterval(async () => this.fetchOpenOrders(), 10000);
+        this.pollingInterval = setInterval(async () => this.fetchOpenOrders(), 30000);
     }
+    /**
+     * Approves an online order.
+     *
+     * @param {number} orderId - The ID of the order to approve.
+     */
     async onApproveOrder(orderId) {
-//    function to approve an online order
         await this.orm.call(
             "pos.order",
             "update_order_status",
@@ -61,9 +71,12 @@ export class OnlineOrderScreen extends Component {
         this.env.bus.trigger('online_order_state_update');
         this.fetchOpenOrders();
     }
-
+    /**
+     * Declines an online order after confirmation.
+     *
+     * @param {number} orderId - The ID of the order to decline.
+     */
     async onDeclineOrder(orderId) {
-//    function to decline an online order
         const {confirmed} =  await this.popup.add(ConfirmPopup, {
             title: _t("Confirmation"),
             body: _t(
@@ -81,23 +94,36 @@ export class OnlineOrderScreen extends Component {
                 this.fetchOpenOrders();
             }
     }
+    /**
+     * Closes the online order screen and navigates to the product screen.
+     */
     closeOnlineOrderScreen(){
-//    function to close the online order screen
         this.env.services.pos.showScreen("ProductScreen");
     }
+    /**
+     * Updates the clicked order state to show its details.
+     *
+     * @param {Object} order - The order object that was clicked.
+     */
     onClickOrder(order){
-//    function to show clicked order details
         this.state.clickedOrder = order
-
     }
+    /**
+     * Finalizes an online order.
+     *
+     * @param {Object} order - The order object to finalize.
+     */
     async finalizeOrder(order){
-//    function to finalize an online order
         await this.orm.call("pos.order", "update_order_status", [order.id],{status:'finalized'});
         this.state.clickedOrder = {};
         this.fetchOpenOrders();
     }
+    /**
+     * Redirects to the ticket screen when an order is double-clicked.
+     *
+     * @param {Object} order - The order object that was double-clicked.
+     */
     async onDoubleClick(order){
-//    function to redirect to ticket screen on double click
         if (order.online_order_status && ['approved', 'finalized'].includes(order.online_order_status)){
             const searchDetails = {
                 fieldName: "RECEIPT_NUMBER",

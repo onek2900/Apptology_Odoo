@@ -4,6 +4,9 @@ import { TicketScreen } from "@point_of_sale/app/screens/ticket_screen/ticket_sc
 import { patch } from "@web/core/utils/patch";
 
 patch(TicketScreen.prototype, {
+    /**
+     * Load server data before loading online-orders to product screen
+     */
     async _setOrder(order) {
         if (order.name.includes("Online-Order")) {
             await this.pos.load_server_data();

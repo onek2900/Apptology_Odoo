@@ -8,6 +8,9 @@ patch(ReprintReceiptButton.prototype, {
         super.setup(...arguments);
         this.reloadData();
     },
+    /**
+     * Reload Server Data to load online orders
+     */
     async reloadData(){
         await this.pos.load_server_data();
     }

@@ -12,6 +12,7 @@ class PosConfig(models.Model):
 
     auto_approve = fields.Boolean(string="Auto Approve", help="Automatically approve all orders from Deliverect")
     account_id = fields.Char(string="Account ID", help="Account ID provided by Deliverect")
+    pos_id = fields.Char(string="POS ID",help="POS ID Provided to deliverect for registration")
     location_id = fields.Char(string="Location ID", help='Location ID provided by Deliverect')
     internal_pos_id = fields.Char(string="POS ID", help='POS ID provided to Deliverect')
     status_message = fields.Char(string="Registration Status Message", help="Registration Status Message")
@@ -52,10 +53,10 @@ class PosConfig(models.Model):
             'target': 'new',
             'context': {
                 'default_registration_url': f"{base_url}/deliverect/pos/register",
-                'default_orders_url': f"{base_url}/deliverect/pos/orders/{self.id}",
-                'default_products_url': f"{base_url}/deliverect/pos/products/{self.id}",
+                'default_orders_url': f"{base_url}/deliverect/pos/orders/{self.pos_id}",
+                'default_products_url': f"{base_url}/deliverect/pos/products/{self.pos_id}",
                 'default_location_id': self.location_id,
-                'default_internal_pos_id': self.id,
+                'default_internal_pos_id': self.pos_id,
                 'default_status_message': self.status_message if self.status_message else "POS Not Registered",
                 'default_order_status_message': order_status_message if order_status_message else "POS Ready To Accept "
                                                                                                   "Orders"
