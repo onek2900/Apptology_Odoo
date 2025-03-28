@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_main_server_data" model="ir.actions.act_window">
+        <field name="name">Main Server Data</field>
+        <field name="res_model">main.server.data</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <record id="main_server_data_view_tree" model="ir.ui.view">
+        <field name="name">main.server.data.view.tree</field>
+        <field name="model">main.server.data</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom">
+                <field name="registration_url"/>
+                <field name="pos_id"/>
+                <field name="account_id" readonly="1"/>
+                <field name="order_sync_url" readonly="1"/>
+                <field name="product_sync_url" readonly="1"/>
+                <field name="customer_pos_status" readonly="1"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <menuitem id="apptology_main_server" name="Apptology Main Server"/>
+    <menuitem id="main_server_data_menu" name="Main Server Data" parent="apptology_main_server"
+              action="action_main_server_data"/>
+</odoo>
