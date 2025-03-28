@@ -6,7 +6,7 @@ class ResConfigSettings(models.TransientModel):
     """Inherited ResConfigSettings model to add account_id and pos_id fields."""
     _inherit = 'res.config.settings'
 
-    pos_account_id = fields.Char(string="Account ID",related='pos_config_id.account_id')
+    pos_account_id = fields.Char(string="Account ID",related='pos_config_id.account_id',readonly=False)
     pos_pos_id = fields.Char(string="POS ID",related='pos_config_id.pos_id', readonly=False)
 
     def set_values(self):

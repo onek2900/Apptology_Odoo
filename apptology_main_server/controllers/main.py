@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-
 import requests
-
 from odoo import http
 from odoo.http import request
 
@@ -15,7 +13,6 @@ class MainServerWebhooks(http.Controller):
 
     @http.route('/main_server/deliverect/pos/register', type='http', methods=['POST'], auth="none", csrf=False)
     def register_pos(self):
-        print('register pos')
         """
         Webhook for registering POS with Deliverect.
         """
@@ -23,10 +20,10 @@ class MainServerWebhooks(http.Controller):
             data = json.loads(request.httprequest.data)
             pos_id = data.get('externalLocationId')
             main_server_record = request.env['main.server.data'].sudo().search([('pos_id', '=', pos_id)])
-            print(main_server_record)
             if main_server_record:
                 main_server_record.write({
                     'account_id': data.get('accountId'),
+                    'location_id':data.get('locationId')
                 })
                 try:
                     external_response = requests.post(

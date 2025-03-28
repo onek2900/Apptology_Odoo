@@ -318,18 +318,14 @@ class DeliverectWebhooks(http.Controller):
                 status=400
             )
 
-    @http.route('/deliverect/pos/register', type='http', methods=['POST'], auth="none", csrf=False)
+    @http.route('/deliverect/pos/register', type='json', methods=['POST'], auth="none", csrf=False)
     def register_pos(self):
-        """
-        Webhook for registering POS with Deliverect.
-        """
-        base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
         try:
+            _logger.info(f"Received Registration Data")
             data = json.loads(request.httprequest.data)
             pos_id = data.get('externalLocationId')
             pos_configuration = request.env['pos.config'].sudo().search([('pos_id','=',pos_id)],limit=1)
             pos_configuration.write({
-                'account_id': data.get('accountId'),
                 'location_id': data.get('locationId'),
             })
             is_channel_present = pos_configuration.create_customers_channel()
@@ -338,30 +334,23 @@ class DeliverectWebhooks(http.Controller):
                 pos_configuration.write({
                     'status_message': f"{is_channel_present['params']['message']}",
                 })
-                return request.make_response(
-                    json.dumps({'error': is_channel_present['params']['message']}),
-                    headers=[('Content-Type', 'application/json')]
-                )
+                return {
+                    "status": "fail",
+                    "message": is_channel_present['params']['message'],
+                }
             else:
                 pos_configuration.write({
                     'status_message': f"POS Registration Successful"
                 })
-                response_data = {
-                    "ordersWebhookURL": f"{base_url}/deliverect/pos/orders/{pos_id}",
-                    "syncProductsURL": f"{base_url}/deliverect/pos/products/{pos_id}",
-                    "syncTablesURL": "",
-                    "syncFloorsURL": "",
-                    "operationsWebhookURL": "",
-                    "storeStatusWebhookURL": ""
+                return {
+                    "status": "success",
+                    "message": "Webhook received successfully",
+                    "received_data": data
                 }
-                return request.make_response(
-                    json.dumps(response_data),
-                    headers=[('Content-Type', 'application/json')]
-                )
 
         except Exception as e:
-            _logger.error(f"Registration error: {str(e)}")
-            return request.make_response(
-                json.dumps({'error': str(e)}),
-                headers=[('Content-Type', 'application/json')]
-            )
+            _logger.error(f"Error processing webhook: {str(e)}")
+            return {
+                "status": "error",
+                "message": str(e)
+            }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="main_server_info_wizard_view_form" model="ir.ui.view">
+        <field name="name">main.server.info.wizard.form</field>
+        <field name="model">main.server.info.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Deliverect URLs">
+                <sheet>
+                    <div class="alert alert-info mb-3" role="alert">
+                        <p>Registration URL for POS Integration:</p>
+                    </div>
+                    <group>
+                        <field name="registration_url" readonly="1"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Close" class="btn-primary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_registration_url" model="ir.actions.act_window">
+        <field name="name">Registration url wizard</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">main.server.info.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="main_server_info_wizard_view_form"/>
+        <field name="target">new</field>
+    </record>
+</odoo>
