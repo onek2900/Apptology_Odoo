@@ -7,6 +7,7 @@
     "description": """""",
     'depends': [
         "apptology_pos_debranding",
+        "apptology_pos_theme",
         "apptology_pos_kitchen_printing",
         "pos_nearpay_config",
     ],
