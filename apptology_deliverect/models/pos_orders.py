@@ -78,7 +78,7 @@ class PosOrder(models.Model):
 
     def update_order_status_in_deliverect(self, status):
         """function to update the status of the order in deliverect"""
-        url = f"https://api.deliverect.com/orderStatus/{self.online_order_id}"
+        url = f"https://api.staging.deliverect.com/orderStatus/{self.online_order_id}"
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         payload = {
             'orderId': self.online_order_id,
@@ -108,7 +108,10 @@ class PosOrder(models.Model):
                         'declined_time': fields.Datetime.now(),
                         'order_status': 'cancel'})
             self.update_order_status_in_deliverect(110)
-            deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+            deliverect_payment_method = self.env['pos.payment.method'].sudo().search([('company_id', '=',
+                                                                                  self.company_id.id),
+                                                                               ('is_deliverect_payment_method', '=',
+                                                                                True)],limit=1)
             refund_action = self.refund()
             refund = self.env['pos.order'].sudo().browse(refund_action['res_id'])
             payment_context = {"active_ids": [refund.id], "active_id": refund.id}
