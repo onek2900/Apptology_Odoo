@@ -96,7 +96,7 @@ class PosConfig(models.Model):
             }
         location_id = self.location_id
         embedded_param = '{"channelLinks":1}'
-        url = f'https://api..deliverect.com/locations/{location_id}?embedded={embedded_param}'
+        url = f'https://api.deliverect.com/locations/{location_id}?embedded={embedded_param}'
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
@@ -163,7 +163,7 @@ class PosConfig(models.Model):
             product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
         return product_image_url
 
-    def create_product_json(self, product_type, plu, product_price, product_name, product_tmpl_id, product_note,
+    def create_product_json(self, product_type, plu, product_price, product_name, product_arabicname, product_tmpl_id, product_note,
                             product_tax, product_category_ids):
         """Generate product JSON data for Deliverect."""
         return {
@@ -171,6 +171,9 @@ class PosConfig(models.Model):
             "plu": plu,
             "price": product_price * 100,
             "name": product_name,
+            "nameTranslations": {
+                "ar": product_arabicname
+            },
             "imageUrl": self.image_upload(product_tmpl_id),
             "description": product_note or "",
             "deliveryTax": product_tax * 1000,
@@ -190,7 +193,7 @@ class PosConfig(models.Model):
                            self.iface_available_categ_ids.ids))
         products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
-            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
             "subProducts": [f"MOD_GRP-{group.id}" for group in prod.modifier_group_ids]
@@ -201,7 +204,7 @@ class PosConfig(models.Model):
         modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
         modifiers_data = modifiers.mapped(lambda prod: {
-            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
@@ -235,7 +238,7 @@ class PosConfig(models.Model):
                            self.iface_available_categ_ids.ids))
         products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
-            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name,prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.taxes_id[0].amount if
                                        prod.taxes_id else 0.0, prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
@@ -253,7 +256,7 @@ class PosConfig(models.Model):
     def action_sync_product(self):
         """function to sync products with deliverect"""
         try:
-            url = "https://api..deliverect.com/productAndCategories"
+            url = "https://api.deliverect.com/productAndCategories"
             token = self.env['deliverect.api'].sudo().generate_auth_token()
             account_id = self.account_id
             location_id = self.location_id

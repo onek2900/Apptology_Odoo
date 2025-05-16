@@ -11,7 +11,8 @@
                         <group string="Product Info">
                             <field name="allergens_and_tag_ids" widget="many2many_tags"/>
                             <field name="modifier_group_ids" widget="many2many_tags"/>
-                            <field name="product_note"/>
+                            <field name="product_arabic"/>
+                            <field name="product_arabicname"/>
                         </group>
                         <group string="Channel Info">
                             <field name="channel_ids" widget="many2many_tags"/>

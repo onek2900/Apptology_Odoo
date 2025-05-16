@@ -16,7 +16,7 @@ class DeliverectAllergens(models.Model):
 
     def update_allergens(self):
         """fetch allergens from Deliverect and store in Odoo"""
-        url = "https://api..deliverect.com/allAllergens"
+        url = "https://api.deliverect.com/allAllergens"
         token = self.env["deliverect.api"].sudo().generate_auth_token()
         headers = {"accept": "application/json",
                    "authorization": f"Bearer {token}"}

@@ -15,9 +15,9 @@ class DeliverectAPI(models.AbstractModel):
 
     def generate_auth_token(self):
         """Function for generating Deliverect authentication token"""
-        url = "https://api..deliverect.com/oauth/token"
+        url = "https://api.deliverect.com/oauth/token"
         payload = {
-            "audience": "https://api..deliverect.com",
+            "audience": "https://api.deliverect.com",
             "grant_type": "client_credentials",
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET
