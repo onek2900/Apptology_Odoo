@@ -78,7 +78,7 @@ class PosOrder(models.Model):
 
     def update_order_status_in_deliverect(self, status):
         """function to update the status of the order in deliverect"""
-        url = f"https://api.staging.deliverect.com/orderStatus/{self.online_order_id}"
+        url = f"https://api..deliverect.com/orderStatus/{self.online_order_id}"
         token = self.env['deliverect.api'].sudo().generate_auth_token()
         payload = {
             'orderId': self.online_order_id,

@@ -20,7 +20,7 @@ class DeliverectChannel(models.Model):
             _logger.error("No authentication token received. Aborting channel update.")
             return
 
-        url = "https://api.staging.deliverect.com/allChannels"
+        url = "https://api..deliverect.com/allChannels"
         headers = {
             "accept": "application/json",
             "authorization": f"Bearer {token}"

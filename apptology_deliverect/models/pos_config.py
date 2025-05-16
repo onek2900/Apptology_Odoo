@@ -96,7 +96,7 @@ class PosConfig(models.Model):
             }
         location_id = self.location_id
         embedded_param = '{"channelLinks":1}'
-        url = f'https://api.staging.deliverect.com/locations/{location_id}?embedded={embedded_param}'
+        url = f'https://api..deliverect.com/locations/{location_id}?embedded={embedded_param}'
         headers = {
             "accept": "application/json",
             "content-type": "application/json",
@@ -253,7 +253,7 @@ class PosConfig(models.Model):
     def action_sync_product(self):
         """function to sync products with deliverect"""
         try:
-            url = "https://api.staging.deliverect.com/productAndCategories"
+            url = "https://api..deliverect.com/productAndCategories"
             token = self.env['deliverect.api'].sudo().generate_auth_token()
             account_id = self.account_id
             location_id = self.location_id
