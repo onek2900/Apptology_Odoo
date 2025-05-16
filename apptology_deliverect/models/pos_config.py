@@ -172,7 +172,7 @@ class PosConfig(models.Model):
             "price": product_price * 100,
             "name": product_name,
             "nameTranslations": {
-                "ar": product_arabicname
+                "ar": product_arabicname or ""
             },
             "imageUrl": self.image_upload(product_tmpl_id),
             "description": product_note or "",
@@ -204,7 +204,7 @@ class PosConfig(models.Model):
         modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
         modifiers_data = modifiers.mapped(lambda prod: {
-            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name.product_arabicname, prod.product_tmpl_id.id,
+            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
@@ -238,7 +238,7 @@ class PosConfig(models.Model):
                            self.iface_available_categ_ids.ids))
         products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
-            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name,prod.product_arabicname, prod.product_tmpl_id.id,
+            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.taxes_id[0].amount if
                                        prod.taxes_id else 0.0, prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
