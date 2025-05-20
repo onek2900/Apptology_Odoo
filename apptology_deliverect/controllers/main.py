@@ -229,7 +229,7 @@ class DeliverectWebhooks(http.Controller):
                 'customer_email': data.get('customer', {}).get('email'),
                 'customer_note': data.get('customer', {}).get('note'),
                 'customer_phone': data.get('customer', {}).get('phoneNumber'),
-                'channel_tax': data.get('taxTotal') / 100,
+                'channel_tax': (data.get('taxTotal') or 0) / 100,
             }
             return order_data
         except Exception as e:
