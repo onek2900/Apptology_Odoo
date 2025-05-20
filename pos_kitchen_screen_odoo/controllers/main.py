@@ -56,7 +56,6 @@ class OrderScreen(http.Controller):
 
         pos_session_id = request.env["pos.session"].sudo().search([('config_id', '=', shop_id), ('state', '=', 'opened')],
                                                         limit=1)
-
         pos_orders = request.env["pos.order"].sudo().search(
             ["&", ("lines.is_cooking", "=", True),("is_online_order", "=", False),
              ("lines.product_id.pos_categ_ids", "in",
@@ -69,6 +68,12 @@ class OrderScreen(http.Controller):
             ("online_order_status", "=", 'approved')
         ], order="date_order")
         combined_orders = pos_orders | approved_deliverect_orders
+        if not kitchen_screen.pos_categ_ids:
+            pos_orders_no_category = request.env["pos.order"].sudo().search([
+                "&", ("lines.is_cooking", "=", True),("is_online_order", "=", True),("session_id", "=", pos_session_id.id),
+                ("lines.product_id.pos_categ_ids", "=", False)
+            ], order="date_order")
+            combined_orders = pos_orders | approved_deliverect_orders | pos_orders_no_category
         values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
         return values
 
