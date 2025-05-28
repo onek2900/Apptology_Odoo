@@ -15,6 +15,7 @@ patch(Navbar.prototype, {
         this.busService.addEventListener('notification', ({detail: notifications})=>{
             notifications = notifications.filter(item => item.payload.channel === this.channel)
             notifications.forEach(item => {
+            this.playNotificationSound();
                 var notificationMessage=item.payload.order_status=='success'?"New Online Order Received":"Failed to receive online order"
                 this.notification.add(_t(notificationMessage), { type: "info",
                                                          sticky: true});
@@ -33,6 +34,15 @@ patch(Navbar.prototype, {
         });
         onWillUnmount(()=>clearInterval(this.pollingOrderCountInterval));
     },
+        /**
+     *  notification sound
+     */
+    playNotificationSound() {
+    const audio = new Audio('/apptology_deliverect/static/src/sounds/notification.mp3');
+    audio.play().catch((e) => {
+        console.warn("Unable to play sound:", e);
+    });
+},
     /**
      * Fetches the online order count and starts polling.
      */
