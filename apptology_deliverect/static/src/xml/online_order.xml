@@ -5,137 +5,109 @@
             <div class="screen-full-width d-flex w-100 h-100">
                 <div class="rightpane pane-border d-flex flex-column flex-grow-1 w-100 h-100 h-lg-100 bg-300 overflow-y-auto">
                     <div class="orders overflow-y-auto flex-grow-1">
-                        <div class="header-row d-flex text-bg-700 fw-bolder">
-                            <div class="col wide p-2">Date</div>
-                            <div class="col wide p-2">Receipt Number</div>
-                            <div class="col wide p-2">Tracking Number</div>
-                            <div class="col p-2">Cashier</div>
-                            <div class="col p-2">Customer</div>
-                            <div class="col end p-2">Kitchen Status</div>
-                            <div class="col end p-2">Order Type</div>
-                            <div class="col end p-2">Payment Status</div>
-                            <div class="col end p-2">Total</div>
-                            <div class="col action-buttons p-2"/>
-                        </div>
-                        <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
-                            <div class="order-row" t-att-data-id="order.id"
-                                 t-on-click="() => this.onClickOrder(order)"
-                                 t-on-dblclick="() => this.onDoubleClick(order)">
-                                <div class="col wide p-2">
-                                    <div><t t-esc="order.date_order"/></div>
-                                </div>
-                                <div class="col wide p-2">
-                                    <div><t t-esc="order.pos_reference"/></div>
-                                </div>
-                                <div class="col wide p-2">
-                                    <div>
-                                        <t t-if="order.online_order_status=='open'">
-                                            N/A
-                                        </t>
-                                        <t t-else="">
-                                            <t t-esc="order.tracking_number"/>
-                                        </t>
-                                    </div>
-                                </div>
-                                <div class="col p-2">
-                                    <div><t t-esc="order.user_id[1]"/> </div>
-                                </div>
-                                <div class="col p-2">
-                                    <div><t t-esc="order.partner_id[1]"/></div>
-                                </div>
-                                <div class="col end p-2">
-                                    <div class="status-pill" t-att-class="{
-                                        'status-draft': order.order_status == 'draft' and order.online_order_status == 'open',
-                                        'status-waiting': order.order_status == 'draft' and order.online_order_status == 'approved',
-                                        'status-ready': order.order_status == 'ready',
-                                        'status-cancel': order.order_status == 'cancel'
-                                    }">
-                                        <t t-if="order.order_status == 'draft' and order.online_order_status == 'open'">
-                                            Open
-                                        </t>
-                                        <t t-elif="order.order_status == 'draft' and order.online_order_status == 'approved'">
-                                            Cooking
-                                        </t>
-                                        <t t-elif="order.order_status=='ready'">
-                                            Ready
-                                        </t>
-                                        <t t-elif="order.order_status=='cancel'">
-                                            Cancel
-                                        </t>
-                                    </div>
-                                </div>
-                                <div class="col end p-2">
-                                    <t t-if="order.order_type == '1'">
-                                        <div>Pick Up</div>
-                                    </t>
-                                    <t t-elif="order.order_type == '2'">
-                                        <div>Delivery</div>
-                                    </t>
-                                </div>
-                                <div class="col end p-2">
-                                    <t t-if="order.state=='paid'">
-                                        <div>Paid</div>
-                                    </t>
-                                    <t t-elif="order.state=='draft'">
-                                        <div>Unpaid</div>
-                                    </t>
-                                </div>
-                                <div class="col end p-2">
-                                    <div><t t-esc="order.amount_total"/></div>
-                                </div>
-                                <div class="col action-buttons p-2">
-                                    <t t-if="order.online_order_status=='open'">
-                                        <t t-if="state.isAutoApprove">
-                                            <div class="status-badge approved">Approved</div>
-                                        </t>
-                                        <t t-else="">
-                                            <button class="btn-action approve" t-att-data-id="order.id"
-                                                    t-on-click.stop="() => this.onApproveOrder(order.id)">
-                                                <i class="fa fa-check" aria-hidden="true"/>
-                                            </button>
-                                            <button class="btn-action decline" t-att-data-id="order.id"
-                                                    t-on-click.stop="() => this.onDeclineOrder(order.id)">
-                                                <i class="fa fa-times" aria-hidden="true"/>
-                                            </button>
-                                        </t>
-                                    </t>
-                                    <t t-elif="order.online_order_status=='approved'">
-                                        <div class="status-badge approved">Approved</div>
-                                    </t>
-                                    <t t-elif="order.online_order_status=='rejected'">
-                                        <div class="status-badge rejected">Rejected</div>
-                                    </t>
-                                    <t t-elif="order.online_order_status=='finalized'">
-                                        <div class="status-badge approved">Finalized</div>
-                                    </t>
-                                    <t t-else="">
-                                         <div class="status-badge rejected">Cancelled</div>
-                                    </t>
-                                </div>
-                            </div>
-                        </t>
+                        <table class="table w-100">
+                            <thead>
+                                <tr class="d-flex text-bg-700 fw-bolder">
+                                    <th class="col">Time</th>
+                                    <th class="col">Channel Order ID</th>
+                                    <th class="col p-2">Customer</th>
+                                    <th class="col">Kitchen Status</th>
+                                    <th class="col">Order Type</th>
+                                    <th class="col">Payment Status</th>
+                                    <th class="col">Total</th>
+                                    <th class="col action-buttons"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
+                                    <tr class="order-row" t-att-data-id="order.id"
+                                        t-on-click="() => this.onClickOrder(order)"
+                                        t-on-dblclick="() => this.onDoubleClick(order)">
+                                        <td class="col">
+  <t t-esc="formatTime(order.date_order).time"/><br/>
+  (<t t-esc="formatTime(order.date_order).date"/>)
+</td>
+                                        <td class="col">
+                                            <t t-esc="order.channel_order_reference"/>
+                                        </td>
+                                        <td class="col"><t t-esc="order.partner_id[1]"/></td>
+                                        <td class="col end">
+                                            <div class="status-pill" t-att-class="{
+                                                'status-draft': order.order_status == 'draft' and order.online_order_status == 'open',
+                                                'status-waiting': order.order_status == 'draft' and order.online_order_status == 'approved',
+                                                'status-ready': order.order_status == 'ready',
+                                                'status-cancel': order.order_status == 'cancel'
+                                            }">
+                                                <t t-if="order.order_status == 'draft' and order.online_order_status == 'open'">Open</t>
+                                                <t t-elif="order.order_status == 'draft' and order.online_order_status == 'approved'">Cooking</t>
+                                                <t t-elif="order.order_status=='ready'">Ready</t>
+                                                <t t-elif="order.order_status=='cancel'">Cancel</t>
+                                            </div>
+                                        </td>
+                                        <td class="col end">
+                                            <t t-if="order.order_type == '1'"><div>Pick Up</div></t>
+                                            <t t-elif="order.order_type == '2'"><div>Delivery</div></t>
+                                        </td>
+                                        <td class="col end">
+                                            <t t-if="order.state=='paid'"><div>Paid</div></t>
+                                            <t t-elif="order.state=='draft'"><div>Unpaid</div></t>
+                                        </td>
+                                        <td class="col end p-2"><t t-esc="order.amount_total"/></td>
+                                        <td class="col action-buttons p-2">
+                                            <t t-if="order.online_order_status=='open'">
+                                                <t t-if="state.isAutoApprove">
+                                                    <div class="status-badge approved">Approved</div>
+                                                </t>
+                                                <t t-else="">
+                                                    <button class="btn-action approve" t-att-data-id="order.id"
+                                                            t-on-click.stop="() => this.onApproveOrder(order.id)">
+                                                        <i class="fa fa-check" aria-hidden="true"/>
+                                                    </button>
+                                                    <button class="btn-action decline" t-att-data-id="order.id"
+                                                            t-on-click.stop="() => this.onDeclineOrder(order.id)">
+                                                        <i class="fa fa-times" aria-hidden="true"/>
+                                                    </button>
+                                                </t>
+                                            </t>
+                                            <t t-elif="order.online_order_status=='approved'">
+                                                <div class="status-badge approved">Approved</div>
+                                            </t>
+                                            <t t-elif="order.online_order_status=='rejected'">
+                                                <div class="status-badge rejected">Rejected</div>
+                                            </t>
+                                            <t t-elif="order.online_order_status=='finalized'">
+                                                <div class="status-badge approved">Finalized</div>
+                                            </t>
+                                            <t t-else="">
+                                                <div class="status-badge rejected">Cancelled</div>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 <div class="leftpane d-flex flex-column h-100">
                     <div class="online-order-details d-flex flex-column h-100">
                         <t t-if="state.clickedOrder.lines">
                             <div class="product-list flex-grow-1">
-                                <t t-foreach="state.clickedOrder.lines" t-as="order"
-                                   t-key="order.id">
+                                <t t-foreach="state.clickedOrder.lines" t-as="order" t-key="order.id">
                                     <div class="product-header d-flex justify-content-between align-items-start p-3">
-                                    <div class="product-info">
-                                        <div class="product-name"><t
-                                                t-esc="order.full_product_name"/></div>
-                                        <div class="product-quantity"><t t-esc="order.qty"/>
-                                            Units
-                                            x
+                                        <div class="product-info">
+                                            <div class="product-name"><t t-esc="order.full_product_name"/></div>
+                                            <div class="product-quantity">
+                                                <t t-esc="order.qty"/>
+                                                Units x
+                                                <t t-esc="state.currency_symbol"/>
+                                                <t t-esc="order.price_unit"/>
+                                                / Units
+                                            </div>
+                                        </div>
+                                        <div class="product-price">
                                             <t t-esc="state.currency_symbol"/>
-                                            <t t-esc="order.price_unit"/>
-                                            /
-                                            Units</div>
-                                    </div>
-                                        <div class="product-price"><t t-esc="state.currency_symbol"/>
-                                            <t t-esc="order.price_subtotal"/></div>
+                                            <t t-esc="order.price_subtotal"/>
+                                        </div>
                                     </div>
                                 </t>
                             </div>
@@ -152,13 +124,18 @@
                             </div>
                         </div>
                         <div class="pads border-top">
-                            <t
-                                    t-if="state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
+                            <t t-if="state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
                                 <button
                                         class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
                                         t-on-click.stop="() => this.finalizeOrder(state.clickedOrder)">
                                     <span class="fs-1 d-block">Finalize</span>
                                 </button>
+                            </t>
+                            <t t-if="state.clickedOrder.order_status=='draft' and state.clickedOrder.online_order_status=='approved'">
+                                 <button class="button ready load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
+            t-on-click="() => this.done_order(state.clickedOrder)">
+        <i class="fa fa-check me-2"/> Ready
+    </button>
                             </t>
                         </div>
                     </div>

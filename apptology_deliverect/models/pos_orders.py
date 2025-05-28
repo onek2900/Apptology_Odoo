@@ -148,7 +148,7 @@ class PosOrder(models.Model):
              ('session_id', '=', session_id)
              ],
             ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type', 'online_order_paid', 'state',
-             'amount_total', 'amount_tax',
+             'amount_total', 'amount_tax','channel_order_reference',
              'date_order', 'tracking_number',
              'partner_id',
              'user_id', 'lines'], order="order_priority, date_order DESC"

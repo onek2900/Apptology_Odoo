@@ -1,3 +1,24 @@
+@media screen and (max-width: 640px) {
+    .orders {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .order-row {
+        min-width: 800px; /* Adjust this based on your content's full width */
+        width: max-content;
+        display: flex;
+        flex-wrap: nowrap;
+    }
+    .order-row > div {
+        white-space: nowrap;
+        padding: 6px;
+        font-size: 13px;
+    }
+
+    .screen-full-width {
+        flex-direction: column;
+    }
+}
 .online-order-screen {
     .leftpane {
         width: 380px;
@@ -54,16 +75,7 @@
 
     .rightpane {
         .orders {
-            .header-row {
-                background: var(--gray-700);
-                color: white;
-                font-weight: 500;
-            }
-
             .order-row {
-                display: flex;
-                align-items: center;
-                border-bottom: 1px solid var(--gray-200);
                 cursor: pointer;
 
                 &:hover {
@@ -125,6 +137,7 @@
                             border-radius: 20px;
                             font-size: 13px;
                             font-weight: 500;
+                            height: fit-content;
                             text-align: center;
                             color: white;
                             min-width: 90px;

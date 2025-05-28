@@ -12,6 +12,7 @@ export class OnlineOrderScreen extends Component {
     setup() {
         this.pos = usePos();
         this.orm = useService("orm");
+        this.rpc = useService("rpc");
         this.popup = useService("popup");
         this.state = useState({
             clickedOrder:{},
@@ -38,6 +39,18 @@ export class OnlineOrderScreen extends Component {
         this.fetchOpenOrders();
         this.startPollingOrders();
     }
+    /**
+     * To get time only from datetime
+     */
+    formatTime(dateStr) {
+    const date = new Date(dateStr);
+    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit',second: '2-digit'  });
+    const formattedDate = date.toLocaleDateString('en-CA'); // YYYY-MM-DD
+    return {
+        time: time,
+        date: formattedDate,
+    };
+}
     /**
      * Fetches open online orders.
      */
@@ -93,6 +106,18 @@ export class OnlineOrderScreen extends Component {
                 this.env.bus.trigger('online_order_state_update');
                 this.fetchOpenOrders();
             }
+    }
+    /**
+    * Ready function to make the order stage ready
+    */
+    async done_order(order){
+    await this.rpc("/pos/kitchen/order_status", {
+                method: 'order_progress_change',
+                order_id: Number(order.id),
+            });
+            if (order) {
+                order.order_status = 'ready';
+                }
     }
     /**
      * Closes the online order screen and navigates to the product screen.
