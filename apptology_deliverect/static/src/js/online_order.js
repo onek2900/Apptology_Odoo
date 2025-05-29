@@ -6,6 +6,7 @@ import { Component,useState,onWillUnmount } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
 import { ConfirmPopup } from "@point_of_sale/app/utils/confirm_popup/confirm_popup";
 import { _t } from "@web/core/l10n/translation";
+import { onlineOrderReceipt } from "./online_order_receipt";
 
 export class OnlineOrderScreen extends Component {
     static template = "point_of_sale.OnlineOrderScreen";
@@ -14,6 +15,7 @@ export class OnlineOrderScreen extends Component {
         this.orm = useService("orm");
         this.rpc = useService("rpc");
         this.popup = useService("popup");
+        this.printer = useService("printer");
         this.state = useState({
             clickedOrder:{},
             openOrders:[],
@@ -52,6 +54,46 @@ export class OnlineOrderScreen extends Component {
     };
 }
     /**
+     * Auto receipt printing
+     */
+   async printReceipt(order) {
+        try {
+        const [exportedOrder] = await this.orm.call("pos.order", "export_order_for_ui", [order]);
+        if (!exportedOrder) {
+            console.error("No order data returned from backend.");
+            return;
+        }
+        const currentOrder = this.pos.pos_orders.find(o => o.id === order);
+        const orderLines = [];
+        exportedOrder.lines.forEach(lineArr => {
+        const line = lineArr[2];
+    if (line && line.id) {
+        orderLines.push({
+            lineId: line.id,
+            name: line.full_product_name,
+            qty: line.qty,
+            note: line.note,
+        });
+    }
+});
+        this.printer.print(
+            onlineOrderReceipt,
+            {
+                data: {
+                    ...exportedOrder,
+                    orderData: currentOrder || exportedOrder,
+                    orderLineData: orderLines,
+                    headerData: {company:this.pos.company}
+                },
+                formatCurrency: this.env.utils.formatCurrency,
+            },
+            { webPrintFallback: true }
+        );
+    } catch (error) {
+        console.error("Failed to print online order receipt:", error);
+    }
+}
+    /**
      * Fetches open online orders.
      */
     async fetchOpenOrders(){
@@ -75,6 +117,7 @@ export class OnlineOrderScreen extends Component {
      * @param {number} orderId - The ID of the order to approve.
      */
     async onApproveOrder(orderId) {
+       this.printReceipt(orderId)
         await this.orm.call(
             "pos.order",
             "update_order_status",
