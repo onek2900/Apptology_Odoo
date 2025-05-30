@@ -229,7 +229,7 @@ class DeliverectWebhooks(http.Controller):
                 'customer_email': data.get('customer', {}).get('email'),
                 'customer_note': data.get('customer', {}).get('note'),
                 'customer_phone': data.get('customer', {}).get('phoneNumber'),
-                'channel_tax': data.get('taxTotal') / 100,
+                'channel_tax': (data.get('taxTotal') or 0) / 100,
             }
             return order_data
         except Exception as e:
@@ -266,7 +266,10 @@ class DeliverectWebhooks(http.Controller):
         """
         pos_configuration = request.env['pos.config'].sudo().search([('pos_id', '=', pos_id)],limit=1)
         try:
-            deliverect_payment_method = request.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+            deliverect_payment_method = request.env['pos.payment.method'].sudo().search([('company_id', '=',
+                                                                                   pos_configuration.company_id.id),
+                                                                               ('is_deliverect_payment_method', '=',
+                                                                                True)],limit=1)
             data = json.loads(request.httprequest.data)
             if data['status'] == 100 and data['_id']:
                 order = request.env['pos.order'].sudo().search([('online_order_id', '=', data['_id'])], limit=1)

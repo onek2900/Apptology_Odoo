@@ -151,7 +151,8 @@ class PosOrder(models.Model):
             if line.order_status != "ready":
                 line.order_status = "cancel"
         self.update_order_status_in_deliverect(110)
-        deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+        deliverect_payment_method = self.env['pos.payment.method'].search([('company_id', '=', self.company_id.id),
+                                                                           ('is_deliverect_payment_method', '=', True)])
         refund_action = self.refund()
         refund = self.env['pos.order'].sudo().browse(refund_action['res_id'])
         payment_context = {"active_ids": refund.ids, "active_id": refund.id}

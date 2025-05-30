@@ -16,6 +16,7 @@ class MainServerWebhooks(http.Controller):
         """
         Webhook for registering POS with Deliverect.
         """
+        print('inside main server')
         try:
             data = json.loads(request.httprequest.data)
             pos_id = data.get('externalLocationId')

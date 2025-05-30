@@ -7,6 +7,7 @@ from . import deliverect_allergens
 from . import pos_orders
 from . import pos_config
 from . import res_partner
+from . import pos_payment_method
 from . import pos_session
 from . import deliverect_modifier_group
 from . import deliverect_modifier_product_lines

@@ -12,7 +12,7 @@ class PosConfig(models.Model):
 
     auto_approve = fields.Boolean(string="Auto Approve", help="Automatically approve all orders from Deliverect")
     account_id = fields.Char(string="Account ID", help="Account ID provided by Deliverect")
-    pos_id = fields.Char(string="POS ID",help="POS ID Provided to deliverect for registration")
+    pos_id = fields.Char(string="POS ID", help="POS ID Provided to deliverect for registration")
     location_id = fields.Char(string="Location ID", help='Location ID provided by Deliverect')
     internal_pos_id = fields.Char(string="POS ID", help='POS ID provided to Deliverect')
     status_message = fields.Char(string="Registration Status Message", help="Registration Status Message")
@@ -38,7 +38,9 @@ class PosConfig(models.Model):
 
     def show_deliverect_urls(self):
         """Show deliverect urls in a wizard"""
-        deliverect_payment_method = self.env.ref("apptology_deliverect.pos_payment_method_deliverect")
+        deliverect_payment_method = self.env['pos.payment.method'].search([('company_id', '=', self.company_id.id),
+                                                                           ('is_deliverect_payment_method', '=',
+                                                                            True)],limit=1)
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         order_status_message = ""
         if deliverect_payment_method.id not in self.payment_method_ids.ids:
@@ -161,7 +163,7 @@ class PosConfig(models.Model):
             product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
         return product_image_url
 
-    def create_product_json(self, product_type, plu, product_price, product_name, product_tmpl_id, product_note,
+    def create_product_json(self, product_type, plu, product_price, product_name, product_arabicname, product_tmpl_id, product_note,
                             product_tax, product_category_ids):
         """Generate product JSON data for Deliverect."""
         return {
@@ -169,6 +171,9 @@ class PosConfig(models.Model):
             "plu": plu,
             "price": product_price * 100,
             "name": product_name,
+            "nameTranslations": {
+                "ar": product_arabicname or ""
+            },
             "imageUrl": self.image_upload(product_tmpl_id),
             "description": product_note or "",
             "deliveryTax": product_tax * 1000,
@@ -179,16 +184,18 @@ class PosConfig(models.Model):
 
     def create_product_with_modifier(self):
         """create product with modifier in deliverect"""
-        products = self.env['product.product'].sudo().search([('active', '=', True),
-                                                              ('detailed_type', '!=', 'combo'),
-                                                              ('modifier_group_ids', '!=', False),
-                                                              ('pos_categ_ids', 'in',
-                                                               self.iface_available_categ_ids.ids),
-                                                              ('available_in_pos', '=', True)])
+        domain = [('active', '=', True),
+                  ('detailed_type', '!=', 'combo'),
+                  ('modifier_group_ids', '!=', False),
+                  ('available_in_pos', '=', True)]
+        if self.iface_available_categ_ids:
+            domain.append(('pos_categ_ids', 'in',
+                           self.iface_available_categ_ids.ids))
+        products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
-            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
-                                       prod.pos_categ_ids.ids ),
+                                       prod.pos_categ_ids.ids),
             "subProducts": [f"MOD_GRP-{group.id}" for group in prod.modifier_group_ids]
         })
 
@@ -197,8 +204,9 @@ class PosConfig(models.Model):
         modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
         modifiers_data = modifiers.mapped(lambda prod: {
-            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,prod.pos_categ_ids.ids),
+            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
+                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
+                                       prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })
@@ -220,17 +228,19 @@ class PosConfig(models.Model):
 
     def create_product_data(self):
         """create normal products in deliverect"""
-        products = self.env['product.product'].sudo().search([('active', '=', True),
-                                                              ('is_modifier', '=', False),
-                                                              ('detailed_type', '!=', 'combo'),
-                                                              ('modifier_group_ids', '=', False),
-                                                              ('pos_categ_ids', 'in',
-                                                               self.iface_available_categ_ids.ids),
-                                                              ('available_in_pos', '=', True)])
+        domain = [('active', '=', True),
+                  ('is_modifier', '=', False),
+                  ('detailed_type', '!=', 'combo'),
+                  ('modifier_group_ids', '=', False),
+                  ('available_in_pos', '=', True)]
+        if self.iface_available_categ_ids:
+            domain.append(('pos_categ_ids', 'in',
+                           self.iface_available_categ_ids.ids))
+        products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
-            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_tmpl_id.id,
+            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.taxes_id[0].amount if
-                                       prod.taxes_id else 0.0,prod.pos_categ_ids.ids),
+                                       prod.taxes_id else 0.0, prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
         })
