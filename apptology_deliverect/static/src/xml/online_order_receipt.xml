@@ -33,7 +33,12 @@
             <!-- Order Number and Date -->
             <div class="online-order-info">
                 <div t-esc="props.data.name" class="order-number"/>
-                <div t-esc="props.data.date" class="order-date"/>
+                <t t-if="props.data.date">
+                    <div t-esc="props.data.date" class="order-date"/>
+                </t>
+                <t t-else="">
+                    <div t-esc="props.data.date_order" class="order-date"/>
+                </t>
             </div>
 
             <!-- Separator -->

@@ -76,6 +76,17 @@ class PosOrder(models.Model):
         for order in self:
             order.order_priority = priority_mapping.get(order.online_order_status, 4)
 
+    @api.model
+    def export_order_for_ui(self, order_id):
+        """to get order data for printing receipt from online order screen"""
+        order = self.env['pos.order'].browse(order_id)
+        session = order.session_id
+        order_ui = order._export_for_ui(order)
+        order_ui['pos_session'] = {'id': session.id ,'name':session.name}
+        order_ui['sequence_number'] = order.pos_reference
+        order_ui['uid'] = order.id
+        return [order_ui]
+
     def update_order_status_in_deliverect(self, status):
         """function to update the status of the order in deliverect"""
         url = f"https://api.deliverect.com/orderStatus/{self.online_order_id}"
@@ -148,7 +159,7 @@ class PosOrder(models.Model):
              ('session_id', '=', session_id)
              ],
             ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type', 'online_order_paid', 'state',
-             'amount_total', 'amount_tax',
+             'amount_total', 'amount_tax','channel_order_reference',
              'date_order', 'tracking_number',
              'partner_id',
              'user_id', 'lines'], order="order_priority, date_order DESC"

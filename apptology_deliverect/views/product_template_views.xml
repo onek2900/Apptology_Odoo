@@ -11,7 +11,7 @@
                         <group string="Product Info">
                             <field name="deliverect_variant_description"/>
                             <field name="allergens_and_tag_ids" widget="many2many_tags"/>
-                            <field name="deliverect_variant_namearabic"/>
+<!--                            <field name="deliverect_variant_namearabic"/>-->
                         </group>
                     </group>
                 </page>
