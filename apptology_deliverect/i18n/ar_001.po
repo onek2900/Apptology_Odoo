@@ -1,0 +1,61 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#   * apptology_deliverect
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-03 00:00+0000\n"
+"PO-Revision-Date: 2025-06-03 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+#. module: apptology_deliverect
+#. odoo-javascript
+#: code:/apptology_deliverect/static/src/xml/navbar.xml:0
+#, python-format
+msgid "Online Orders"
+msgstr "الطلبات عبر الإنترنت"
+
+#. module: apptology_deliverect
+#. odoo-javascript
+#: code:/apptology_deliverect/static/src/xml/navbar.xml:0
+#, python-format
+msgid "Auto Approve"
+msgstr "الموافقة التلقائية"
+
+#. module: apptology_deliverect
+#. odoo-javascript
+#: code:/apptology_deliverect/static/src/xml/online_order.xml:0
+#, python-format
+msgid "Channel Order ID"
+msgstr "معرف طلب القناة"
+
+#. module: apptology_deliverect
+#. odoo-javascript
+#: code:/apptology_deliverect/static/src/xml/online_order.xml:0
+#, python-format
+msgid "Kitchen Status"
+msgstr "حالة المطبخ"
+
+#. module: apptology_deliverect
+#. odoo-javascript
+#: code:/apptology_deliverect/static/src/xml/online_order.xml:0
+#, python-format
+msgid "Order Type"
+msgstr "نوع الطلب"
+
+#. module: apptology_deliverect
+#. odoo-javascript
+#: code:/apptology_deliverect/static/src/xml/online_order.xml:0
+#, python-format
+msgid "Payment Status"
+msgstr "حالة الدفع"
+
+

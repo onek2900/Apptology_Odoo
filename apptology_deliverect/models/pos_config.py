@@ -166,10 +166,13 @@ class PosConfig(models.Model):
     def create_product_json(self, product_type, plu, product_price, product_name, product_arabicname, product_tmpl_id, product_note,
                             product_tax, product_category_ids):
         """Generate product JSON data for Deliverect."""
+        product = self.env['product.product'].search([('product_tmpl_id', '=', product_tmpl_id)])
+        arabicname = ""
+        description_arabic =""
         if not product_arabicname:
             lang_code = self.env['res.lang'].search([('code', 'like', 'ar%')], limit=1).code or 'ar'
-            product = self.env['product.product'].search([('product_tmpl_id','=',product_tmpl_id)])
             arabicname = product.with_context(lang=lang_code).name
+        if product.product_note_arabic:
             description_arabic = product.product_note_arabic or product.with_context(lang=lang_code).product_note
         return {
             "productType": product_type,
@@ -183,7 +186,7 @@ class PosConfig(models.Model):
             "imageUrl": self.image_upload(product_tmpl_id),
             "description": product_note or "",
             "descriptionTranslations": {
-                "ar": description_arabic,
+                "ar": product.product_note_arabic or description_arabic  ,
                 "en": product_note},
             "deliveryTax": product_tax * 1000,
             "takeawayTax": product_tax * 1000,
