@@ -1,0 +1,34 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+#   * pos_kitchen_screen_odoo
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 17.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-03 00:00+0000\n"
+"PO-Revision-Date: 2025-06-03 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+
+#. module: pos_kitchen_screen_odoo
+#. odoo-javascript
+#: code:/pos_kitchen_screen_odoo/static/src/xml/navbar.xml:0
+#, python-format
+msgid "Open Kitchen Screen"
+msgstr "افتح شاشة المطبخ"
+
+#. module: pos_kitchen_screen_odoo
+#. odoo-javascript
+#: code:/pos_kitchen_screen_odoo/static/src/xml/navbar.xml:0
+#, python-format
+msgid "Open Order Screen"
+msgstr "فتح شاشة الطلب"
+
+
+

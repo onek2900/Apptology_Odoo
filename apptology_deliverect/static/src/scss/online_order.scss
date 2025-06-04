@@ -1,24 +1,3 @@
-@media screen and (max-width: 640px) {
-    .orders {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .order-row {
-        min-width: 800px; /* Adjust this based on your content's full width */
-        width: max-content;
-        display: flex;
-        flex-wrap: nowrap;
-    }
-    .order-row > div {
-        white-space: nowrap;
-        padding: 6px;
-        font-size: 13px;
-    }
-
-    .screen-full-width {
-        flex-direction: column;
-    }
-}
 .online-order-screen {
     .leftpane {
         width: 380px;

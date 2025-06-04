@@ -5,9 +5,9 @@
             <div class="screen-full-width d-flex w-100 h-100">
                 <div class="rightpane pane-border d-flex flex-column flex-grow-1 w-100 h-100 h-lg-100 bg-300 overflow-y-auto">
                     <div class="orders overflow-y-auto flex-grow-1">
-                        <table class="table w-100">
+                        <table class="table order_head w-100">
                             <thead>
-                                <tr class="d-flex text-bg-700 fw-bolder">
+                                <tr class="d-flex order text-bg-700 fw-bolder">
                                     <th class="col">Time</th>
                                     <th class="col">Channel Order ID</th>
                                     <th class="col p-2">Customer</th>
@@ -18,7 +18,7 @@
                                     <th class="col action-buttons"></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody style="display: block;">
                                 <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
                                     <tr class="order-row" t-att-data-id="order.id"
                                         t-on-click="() => this.onClickOrder(order)"
