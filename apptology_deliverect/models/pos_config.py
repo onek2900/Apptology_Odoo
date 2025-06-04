@@ -163,7 +163,7 @@ class PosConfig(models.Model):
             product_image_url = f"{base_url}{attachment_id.image_src}.jpg"
         return product_image_url
 
-    def create_product_json(self, product_type, plu, product_price, product_name, product_arabicname, product_tmpl_id, product_note,
+    def create_product_json(self, product_type, plu, product_price, product_name, product_arabicname, product_tmpl_id, product_note, description_arabic,
                             product_tax, product_category_ids):
         """Generate product JSON data for Deliverect."""
         product = self.env['product.product'].search([('product_tmpl_id', '=', product_tmpl_id)])
@@ -206,7 +206,7 @@ class PosConfig(models.Model):
         products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
             **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
+                                       prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
             "subProducts": [f"MOD_GRP-{group.id}" for group in prod.modifier_group_ids]
         })
@@ -217,7 +217,7 @@ class PosConfig(models.Model):
         modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
         modifiers_data = modifiers.mapped(lambda prod: {
             **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
+                                       prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
@@ -251,7 +251,7 @@ class PosConfig(models.Model):
         products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
             **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
-                                       prod.product_note, prod.taxes_id[0].amount if
+                                       prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if
                                        prod.taxes_id else 0.0, prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
                             prod.allergens_and_tag_ids] if prod.allergens_and_tag_ids else []
