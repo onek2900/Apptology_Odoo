@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bi_product_generate_barcode_manually,bi.product.generate.barcode.manually,model_bi_product_generate_barcode_manually,base.group_user,1,1,1,1
+access_bi_product_generate_barcode,bi.product.generate.barcode,model_bi_product_generate_barcode,base.group_user,1,1,1,1

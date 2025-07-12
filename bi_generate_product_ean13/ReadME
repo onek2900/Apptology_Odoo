@@ -1,0 +1,7 @@
+Date: 26/02/2024
+Version: 17.0.0.1
+    -Resoved the error of Python-library(odoo-sh Error).
+    -Resoved the error default_get method in product.product(odoo-sh Error).
+
+
+17.0.0.2 ==> Update dependency module lib version.
