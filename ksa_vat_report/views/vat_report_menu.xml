@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <data>
+        <record id="paperformat_ksa_vat_report_print_with_headerss" model="report.paperformat">
+            <field name="name">KSA VAT Report Print</field>
+            <field name="default" eval="True"/>
+            <field name="format">A4</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">10</field>
+            <field name="margin_bottom">28</field>
+            <field name="margin_left">3</field>
+            <field name="margin_right">3</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">15</field>
+            <field name="dpi">90</field>
+        </record>
+
+
+        <record id="ksa_vat_report_print_menu" model="ir.actions.report">
+            <field name="name">KSA VAT REPORT</field>
+            <field name="model">account.move</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">ksa_vat_report.ksa_vat_report_template</field>
+            <field name="report_file">ksa_vat_report.ksa_vat_report_template</field>
+            <field name="paperformat_id" ref="paperformat_ksa_vat_report_print_with_headerss"/>
+            <field name="print_report_name">(('Vat report '+ object.name or 'Print').replace('/','')+'.pdf')</field>
+            <field name="binding_model_id" ref="account.model_account_move"/>
+            <field name="binding_type">report</field>
+        </record>
+
+
+    </data>
+</odoo>

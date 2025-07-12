@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+
+
+        <record model="ir.ui.view" id="vat_report_form">
+            <field name="name">ksa.vat.report.form</field>
+            <field name="model">ksa.vat.report</field>
+            <field name="arch" type="xml">
+                <form string="KSA VAT Report" version="7.0">
+                    <sheet>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group col="2">
+
+                        </group>
+
+                    </sheet>
+                    <footer>
+                        <span groups="base.group_user">
+                            <button name="vat_report_print" type="object"
+                                    string="Print" class="oe_highlight"/>
+                            <button string="Cancel" special="cancel"/>
+                        </span>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="act_open_vat_report_view">
+            <field name="name">KSA VAT REPORT</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">ksa.vat.report</field>
+            <field name="binding_view_types">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+        </record>
+
+
+    <menuitem id="vat_report_sub_menu" name="VAT Report" parent="account.menu_finance_reports" action="act_open_vat_report_view" sequence="25"/>
+
+    </data>
+</odoo>

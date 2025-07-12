@@ -1,0 +1,30 @@
+// ------------------------------------------------------------------
+// ElMessiri
+// ------------------------------------------------------------------
+$elmessiri-font-path: '../fonts/EL_Messiri';
+
+@mixin elmessiri-font($type, $weight, $style) {
+    @font-face {
+        font-family: 'ElMessiri';
+        src: url('#{$elmessiri-font-path}/ElMessiri-#{$type}.ttf') format('truetype');
+        font-weight: $weight;
+        font-style: $style;
+    }
+
+    @font-face {
+        font-family: 'elmessiri-#{$type}';
+        src: url('#{$elmessiri-font-path}/ElMessiri-#{$type}.ttf') format('truetype');
+    }
+}
+
+@mixin elmessiri-font-pair($type, $weight) {
+    @include elmessiri-font('#{$type}', $weight, normal);
+    @include elmessiri-font('#{$type}Italic', $weight, italic);
+}
+
+
+
+@include elmessiri-font-pair('Medium', 300);
+@include elmessiri-font-pair('Regular', 400);
+@include elmessiri-font-pair('Bold', 700);
+@include elmessiri-font-pair('SemiBold', 800);

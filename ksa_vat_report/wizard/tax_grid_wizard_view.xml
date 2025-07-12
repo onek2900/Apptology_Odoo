@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+
+        <record model="ir.ui.view" id="update_tax_grid_form">
+            <field name="name">update.tax.grid.form</field>
+            <field name="model">update.tax.grid</field>
+            <field name="arch" type="xml">
+                <form string="Update Tax Grid" version="7.0">
+                    <sheet>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="company_id"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <span groups="base.group_user">
+                            <button name="update_tax_grid" type="object"
+                                    string="Update" class="oe_highlight"/>
+                            <button string="Cancel" special="cancel"/>
+                        </span>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_update_tax_grid">
+            <field name="name">Update Tax Grid</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">update.tax.grid</field>
+            <field name="binding_view_types">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="domain">[]</field>
+            <field name="context">{}</field>
+        </record>
+
+    <menuitem id="update_tax_grid_sub_menu" name="Update Tax Grid" parent="account.menu_finance_reports" action="action_update_tax_grid" sequence="30"/>
+
+    </data>
+</odoo>

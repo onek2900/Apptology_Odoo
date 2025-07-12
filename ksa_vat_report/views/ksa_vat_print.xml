@@ -1,0 +1,855 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+    <data>
+        <template id="ksa_vat_report_template_document">
+
+            <style type="text/css">
+                .Row {
+                display: table;
+                width: 100%; /*Optional*/
+                }
+
+
+                @font-face {
+                font-family: 'Verdana';
+                src: local('Verdana'), local('Verdana'),
+                url(/ksa_vat_report/static/src/fonts/verdana.ttf') format('ttf');
+                }
+
+                .arabic-font {
+                font-family: arial;
+                }
+
+                .en-font {
+                font-family: Verdana;
+                }
+                .arabic_calibri{
+                font-family: calibri;
+                }
+                th, td {
+                padding: 3px;
+                }
+                tr{
+                page-break-inside: avoid;
+                }
+            </style>   <!-- closed template style-->
+
+
+            <!--_______________ open header_________________________________-->
+            <div>
+
+                <style type="text/css">
+                    .Row {
+                    display: table;
+                    width: 100%; /*Optional*/
+                    }
+
+
+                    @font-face {
+                    font-family: 'Verdana';
+                    src: local('Verdana'), local('Verdana'),
+                    url(/ksa_vat_report/static/src/fonts/verdana.ttf') format('ttf');
+                    }
+
+                    .arabic-font {
+                    font-family: arial;
+                    }
+
+                    .en-font {
+                    font-family: Verdana;
+                    }
+                    .arabic_calibri{
+                    font-family: calibri;
+                    }
+                    th, td {
+                    padding: 3px;
+                    }
+                    tr{
+                    page-break-inside: avoid;
+                    }
+                </style>   <!-- closed header style-->
+                <div style="float:left;width:100%;">
+                    <table cellspacing="0" cellpadding="0" width="70%" style="float:left;line-height: 1;">
+                        <tr>
+                            <td colspan="3">
+                                <span class="arabic_calibri"
+                                      style="font-size: 20px; font-weight:bold;text-align: left; ">
+                                    <t t-esc="env.company.name"/>
+                                </span>
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td width="51%">
+                                <span class="arabic_calibri" style="font-weight:bold;text-align: left; ">
+                                    VAT Identification Number
+                                </span>
+                            </td>
+                            <td width="2%">:</td>
+                            <td width="47%">
+                                <span class="arabic_calibri" style="font-weight:bold;text-align: left; ">
+                                    <t t-esc="env.company.vat"/>
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+                <br/>
+                <br/>
+                <div style="float:left;width:100%;">
+                    <table cellspacing="0" cellpadding="0" width="50%" style="float:left;line-height: 1;">
+                        <tr>
+                            <td width="100%" colspan="3">
+                                <span class="arabic_calibri"
+                                      style="font-weight:bold;text-align: left;font-size: 23px;color:#5F9EA0; ">VAT
+                                    Return Form
+                                </span>
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td width="35%">
+                                <span class="arabic_calibri"
+                                      style="font-weight:bold;text-align: left; ">Report Period
+                                </span>
+                            </td>
+                            <td width="2%">:</td>
+                            <td width="63%">
+                                <span class="arabic_calibri" style="font-weight:bold;text-align: left;">
+                                    <t t-esc="datetime.datetime.strptime(str(data['date_from']), '%Y-%m-%d').strftime('%d.%m.%Y')"/>
+                                </span>
+                                -
+                                <span class="arabic_calibri" style="font-weight:bold;text-align: left;">
+                                    <t t-esc="datetime.datetime.strptime(str(data['date_to']), '%Y-%m-%d').strftime('%d.%m.%Y')"/>
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <br/>
+            </div>
+            <!--____________________ closed header____________________________-->
+
+
+            <!--            <t t-call="web.external_layout">-->
+            <t t-set="o" t-value="o.with_context(lang=lang)"/>
+            <div class="page">
+                <style type="text/css">
+                    .Row {
+                    display: table;
+                    width: 100%; /*Optional*/
+                    }
+                    table{
+                    border: none;
+                    }
+
+                    @font-face {
+                    font-family: 'Verdana';
+                    src: local('Verdana'), local('Verdana'),
+                    url(/ksa_vat_report/static/src/fonts/verdana.ttf') format('ttf');
+                    }
+
+                    .arabic-font {
+                    font-family: arial;
+                    }
+
+                    .en-font {
+                    font-family: Verdana;
+                    }
+                    .arabic_calibri{
+                    font-family: calibri;
+                    }
+                    th, td {
+                    padding: 3px;
+                    }
+                    td{
+                    page-break-inside: avoid;
+                    }
+                    .row_height{
+                    height:10px;
+                    }
+                    .rotate {
+                    text-align: center;
+                    white-space: nowrap;
+                    vertical-align: middle;
+                    width: 1.5em;
+                    color: white;
+                    }
+                    .rotate div {
+                    -moz-transform: rotate(-90.0deg); /* FF3.5+ */
+                    -o-transform: rotate(-90.0deg); /* Opera 10.5 */
+                    -webkit-transform: rotate(-90.0deg); /* Saf3.1+, Chrome */
+                    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083); /* IE6,IE7 */
+                    -ms-filter: "progid:DXImageTransform.Microsoft.BasicImage(rotation=0.083)"; /* IE8 */
+                    margin-left: -10em;
+                    margin-right: -10em;
+                    }
+
+                </style>
+                <div width="100%">
+                    <table cellspacing="0" cellpadding="0" width="43%" style="float:left;">
+                        <colgroup>
+                            <col width="8%"/>
+                            <col width="1%"/>
+                            <col width="89%"/>
+
+                        </colgroup>
+                        <tr>
+
+                            <td colspan="3"></td>
+
+                        </tr>
+                    </table>
+                    <table cellspacing="0" cellpadding="0" width="57%" style="float:right;">
+                        <colgroup>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                        </colgroup>
+
+                        <tr>
+                            <td></td>
+                            <td style="color:#616D7E;align:center;">Amount (SAR)</td>
+                            <td></td>
+                            <td style="color:#616D7E;align:center;">Adjustment (SAR)</td>
+                            <td></td>
+                            <td style="color:#616D7E;align:center;">VAT Amount(SAR)</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div width="100%">
+                    <table cellspacing="0" cellpadding="0" width="43%" style="float:left;">
+                        <colgroup>
+                            <col width="8%" style="background-color: #033E3E;"/>
+                            <col width="1%" style="background-color:#E6E6FA;"/>
+                            <col width="89%" style="background-color:#E6E6FA;"/>
+
+                        </colgroup>
+                        <tr>
+                            <td rowspan="26" class="rotate">
+                                <div>VAT on Sales</div>
+                            </td>
+                            <td colspan="2"></td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #033E3E;background-color:#E6E6FA;"></td>
+                            <td style="color: #033E3E;background-color:#E6E6FA;">1- Standard rated sales</td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #033E3E;background-color:#E6E6FA;"></td>
+                            <td style="color: #033E3E;background-color:#E6E6FA;">2- Private Healthcare/ Private
+                                Education Sales to citizens
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #033E3E;background-color:#E6E6FA;"></td>
+                            <td style="color: #033E3E;background-color:#E6E6FA;">3- Zero rated domestic sales</td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #033E3E;background-color:#E6E6FA;"></td>
+                            <td style="color: #033E3E;background-color:#E6E6FA;">4- Exports</td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #033E3E;background-color:#E6E6FA;"></td>
+                            <td style="color: #033E3E;background-color:#E6E6FA;">5- Exempt sales</td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td style="color: #033E3E;background-color:#E6E6FA;"></td>
+                            <td style="color: #033E3E;background-color:#E6E6FA;">6- Total sales</td>
+
+                        </tr>
+
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#E6E6FA;"></td>
+                        </tr>
+
+                    </table>
+                    <table cellspacing="0" cellpadding="0" width="57%" style="float:right;">
+                        <colgroup>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                        </colgroup>
+
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr>
+                            <td></td>
+
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_line.get('standard_rate_invoice_amount'))"/>
+                            </td>
+
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_credit_note_line.get('standard_rate_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_vat_line.get('standard_rate_vat_amount'))"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">0.00</td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">0.00</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_zero_rated_line.get('zero_rate_invoice_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_zero_rated_credit_note_line.get('zero_rate_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_export_sale_line.get('export_rate_invoice_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_export_sale_credit_note_line.get('export_rate_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_exempt_sale_line.get('exempt_rate_invoice_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_exempt_sale_credit_note_line.get('exempt_rate_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr>
+
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(total_sale)"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(total_credit)"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(total_vat)"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+
+                    </table>
+
+                </div>
+
+                <div class="row" style="height:25px;width:100%;"></div>
+                <br/>
+
+                <div width="100%">
+                    <table cellspacing="0" cellpadding="0" width="43%" style="float:left;">
+                        <colgroup>
+                            <col width="8%" style="background-color:#C7A317;"/>
+                            <col width="1%" style="background-color:#F5F5DC;"/>
+                            <col width="89%" style="background-color:#F5F5DC;"/>
+
+                        </colgroup>
+                        <tr style="height:20px;line-height:20px;">
+                            <td rowspan="30" class='rotate'>
+                                <div>VAT on Purchases</div>
+                            </td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">7- Standard rated domestic purchases
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">8- Imports subject to VAT paid at
+                                custom
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">9- Imports subject to VAT accounted for
+                                through reverse charge mechanism
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">10- Zero rated purchases</td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">11- Exempt purchases</td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">12- Total purchases</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">13- Total VAT due for current period
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">14- Corrections from previous
+                                period(between SAR <span>&#177;</span>5,000)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">15- VAT credit carried forward from
+                                previous period(s)
+                            </td>
+                        </tr>
+                         <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+
+                        <tr>
+                            <td colspan="2" style="color: #033E3E;background-color:#F5F5DC;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td style="color: #033E3E;background-color:#F5F5DC;"></td>
+                            <td style="color: #033E3E;background-color:#F5F5DC;">16- Net VAT due(or claim)</td>
+                        </tr>
+
+
+                    </table>
+                    <table cellspacing="0" cellpadding="0" width="57%" style="float:right;">
+                        <colgroup>
+
+                            <col width="3%"/>
+                            <col width="30%"/>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                            <col width="3%"/>
+                            <col width="30%"/>
+                        </colgroup>
+                        <tr style="height:20px;line-height:20px;">
+
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_standard_purchases_report_line.get('standard_rate_purchase_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_standard_purchases_report_credit_note_line.get('standard_rate_purchase_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_standard_purchases_report_vat_line.get('standard_rate_purchase_vat_amount'))"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_import_purchases_report_line.get('import_purchase_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_import_purchases_report_credit_note_line.get('import_purchase_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_import_purchases_report_vat_line.get('import_purchase_vat_amount'))"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_import_purchases_reverse_report_line.get('import_purchase_reverse_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_import_purchases_reverse_report_credit_note_line.get('import_purchase_reverse_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_import_purchases_reverse_report_vat_line.get('import_purchase_reverse_vat_amount'))"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                         <tr >
+                            <td colspan="6" style="height:20px;line-height:20px;"></td>
+                        </tr>
+
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_purchase_report_zero_rated_line.get('zero_rate_purchase_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_purchases_report_zero_rated_credit_note_line.get('zero_rate_purchase_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_exempt_purchase_line.get('exempt_rate_purchase_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(get_report_exempt_purchase_credit_note_line.get('exempt_rate_purchase_credit_amount'))"/>
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(total_purchase)"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(total_purchase_credit)"/>
+                            </td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(total_purchase_vat)"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(total_vat_due_for_current_period)"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="border:1px solid #616D7E;border-radius: 5px;text-align:right;">0.00</td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                        <tr >
+                            <td colspan="6" style="height:20px;line-height:20px;"></td>
+                        </tr>
+                        <tr style="height:20px;">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(previous_period_vat)"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                         <tr >
+                            <td colspan="6" style="height:20px;line-height:20px;"></td>
+                        </tr>
+
+                        <tr style="height:20px;line-height:20px;">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="border-radius: 5px;border: 1px solid #C7A317;background-color:#C7A317;text-align:right;">
+                                <t t-esc="'{0:,.2f}'.format(net_vat_due)"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"></td>
+                        </tr>
+                         <tr>
+                            <td colspan="6"></td>
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+<!--            <div class="footer" style=" padding-top: 10px; margin-top: 10px; box-sizing: border-box;">-->
+<!--                &lt;!&ndash;                 ______________open Footer________________________&ndash;&gt;-->
+<!--                <style type="text/css">-->
+<!--                    .Row {-->
+<!--                    display: table;-->
+<!--                    width: 100%; /*Optional*/-->
+<!--                    }-->
+<!--                    @font-face {-->
+<!--                    font-family: 'Verdana';-->
+<!--                    src: local('Verdana'), local('Verdana'),-->
+<!--                    url(/ksa_vat_report/static/src/fonts/verdana.ttf') format('ttf');-->
+<!--                    }-->
+
+<!--                    .arabic-font {-->
+<!--                    font-family: arial;-->
+<!--                    }-->
+
+<!--                    .en-font {-->
+<!--                    font-family: Verdana;-->
+<!--                    }-->
+<!--                    .arabic_calibri{-->
+<!--                    font-family: calibri;-->
+<!--                    }-->
+<!--                    th, td {-->
+<!--                    padding: 3px;-->
+<!--                    }-->
+<!--                    tr{-->
+<!--                    page-break-inside: avoid;-->
+<!--                    }-->
+<!--                </style>-->
+
+<!--                <div class="last-page">-->
+
+<!--                </div>-->
+
+<!--            </div>-->
+
+            <!--            </t>-->
+        </template>
+
+
+        <template id="ksa_vat_report_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-call="ksa_vat_report.ksa_vat_report_template_document" t-lang="lang"/>
+                </t>
+            </t>
+        </template>
+
+    </data>
+</odoo>
+

@@ -1,0 +1,158 @@
+<odoo>
+    <data>
+
+<!--        1.Standard rated sales-->
+        <record id="standard_rated_sales_distribution_invoice_base_tag" model="account.account.tag">
+            <field name="name">Standard Rated Sales + </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="standard_rated_sales_distribution_credit_note_base_tag" model="account.account.tag">
+            <field name="name">Standard Rated Sales - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="standard_rated_sales_distribution_invoice_base_tax_tag" model="account.account.tag">
+            <field name="name">Standard Rated Sales VAT +  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+         <record id="standard_rated_sales_distribution_credit_note_base_tax_tag" model="account.account.tag">
+            <field name="name">Standard Rated Sales VAT - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+<!--         2. Zero Rated Domestic Sales -->
+         <record id="zero_rated_distribution_invoice_base_tag" model="account.account.tag">
+            <field name="name"> Zero Rated Sales +</field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="zero_rated_distribution_credit_note_base_tag" model="account.account.tag">
+            <field name="name"> Zero Rated Sales -</field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+<!--        3. exports Sales  -->
+         <record id="exports_sales_distribution_invoice_base_tag" model="account.account.tag">
+            <field name="name">Export Sales +  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+         <record id="exports_sales_distribution_credit_note_base_tag" model="account.account.tag">
+            <field name="name">Export Sales - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+<!--        4. Exempt Sales   -->
+         <record id="exempt_sales_distribution_invoice_base_tag" model="account.account.tag">
+            <field name="name">Exempt Sales + </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="exempt_sales_distribution_credit_note_base_tag" model="account.account.tag">
+            <field name="name">Exempt Sales - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+        <!--       5.Standard rated domestic purchases-->
+        <record id="standard_rated_domestic_purchases_base_tag" model="account.account.tag">
+            <field name="name">Standard Rated Domestic Purchase +</field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="standard_rated_domestic_purchases_debit_base_tag" model="account.account.tag">
+            <field name="name">Standard Rated Domestic Purchase - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="standard_rated_domestic_purchases_vat_base_tag" model="account.account.tag">
+            <field name="name">Standard Rated Domestic Purchase VAT +  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="standard_rated_domestic_purchases_debit_vat_base_tag" model="account.account.tag">
+            <field name="name">Standard Rated Domestic Purchase VAT -  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+          <!--       6.Import VAT Purchases-->
+        <record id="import_purchases_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase +</field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="import_purchases_credit_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="import_domestic_purchases_vat_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase VAT +  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="import_domestic_purchases_credit_vat_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase VAT -  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+        <!--      7.Import VAT Purchases Reverses-->
+        <record id="import_purchases_reverses_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase Reverses +</field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="import_purchases_credit_reverses_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase Reverse - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="import_domestic_purchases_vat_reverses_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase VAT Reverses +  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="import_domestic_purchases_credit_vat_reverses_base_tag" model="account.account.tag">
+            <field name="name">Import Domestic Purchase VAT Reverses -  </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+
+<!--         8. Zero Rated Domestic Purchases -->
+         <record id="zero_rated_distribution_purchases_base_tag" model="account.account.tag">
+            <field name="name"> Zero Rated Purchases +</field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="zero_rated_distribution_debit_note_base_tag" model="account.account.tag">
+            <field name="name"> Zero Rated Purchases -</field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+
+
+        <!--        9. Exempt Purchases   -->
+         <record id="exempt_purchases_distribution_invoice_base_tag" model="account.account.tag">
+            <field name="name">Exempt Purchases + </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+        <record id="exempt_purchases_distribution_debit_note_base_tag" model="account.account.tag">
+            <field name="name">Exempt Purchases - </field>
+            <field name="applicability">taxes</field>
+            <field name="country_id" ref="base.sa"/>
+        </record>
+
+
+
+    </data>
+</odoo>

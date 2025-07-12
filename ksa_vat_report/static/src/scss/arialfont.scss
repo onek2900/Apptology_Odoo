@@ -1,0 +1,28 @@
+// ------------------------------------------------------------------
+// Arial
+// ------------------------------------------------------------------
+$arial-font-path: '../fonts/Arial';
+
+@mixin arial-font($type, $weight, $style) {
+    @font-face {
+        font-family: 'Arial';
+        src: url('#{$arial-font-path}/Arial-#{$type}.ttf') format('truetype');
+        font-weight: $weight;
+        font-style: $style;
+    }
+
+    @font-face {
+        font-family: 'arial-#{$type}';
+        src: url('#{$arial-font-path}/Arial-#{$type}.ttf') format('truetype');
+    }
+}
+
+@mixin arial-font-pair($type, $weight) {
+    @include arial-font('#{$type}', $weight, normal);
+    @include arial-font('#{$type}Italic', $weight, italic);
+}
+
+
+
+@include arial-font-pair('Regular', 400);
+
