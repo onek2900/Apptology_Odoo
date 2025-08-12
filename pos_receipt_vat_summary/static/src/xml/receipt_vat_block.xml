@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+  <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+
+    <!-- Remove built-in tax table (optional, keep if you want it gone) -->
+    <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' pos-receipt-taxes ')]" position="replace">
+      <t/>
+    </xpath>
+
+    <!-- Put VAT just AFTER the TOTAL row(s) -->
+    <xpath expr="//span[@t-esc='props.formatCurrency(props.data.amount_total)']/.." position="after">
+
+      <!-- compute display-only 15% from subtotal -->
+      <t t-set="excl"
+         t-value="(props.data.total_without_tax !== undefined &amp;&amp; props.data.total_without_tax !== null)
+                  ? props.data.total_without_tax
+                  : (props.data.amount_total - (props.data.amount_tax || 0))"/>
+      <t t-set="vat15" t-value="excl * 0.15"/>
+
+      <!-- Non-GCC: use EXACTLY the same class as TOTAL -->
+      <div t-if="!props.data.is_gcc_country"
+           class="pos-receipt-amount" style="margin-top:0; white-space:nowrap;">
+        VAT (15%): / ض.ق.م (15%)
+        <span t-esc="props.formatCurrency(vat15)" class="pos-receipt-right-align"/>
+      </div>
+
+      <!-- GCC: same classes as bilingual TOTAL, so padding matches 1:1 -->
+      <div t-if="props.data.is_gcc_country"
+           class="pos-receipt-amount pos-receipt-amount-arabic"
+           t-translation="off"
+           style="margin-top:0; white-space:nowrap;">
+        VAT (15%): / ض.ق.م (15%)
+        <span t-esc="props.formatCurrency(vat15)" class="pos-receipt-right-align"/>
+      </div>
+    </xpath>
+
+  </t>
+</templates>

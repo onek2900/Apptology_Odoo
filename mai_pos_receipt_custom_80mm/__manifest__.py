@@ -19,7 +19,7 @@
     'assets': {
         'point_of_sale._assets_pos': [
             '/mai_pos_receipt_custom_80mm/static/src/css/custom.css'
-
+            '/mai_pos_receipt_custom_80mm/static/src/xml/pos_receipt.xml'
         ],
     },
     'images': ['static/description/main_screenshot.gif'],
