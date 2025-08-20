@@ -6,7 +6,7 @@ from odoo import models
 _logger = logging.getLogger(__name__)
 
 CLIENT_ID  = "dyUyKLDyI1KE9n5m"
-CLIENT_SECRET = "4mSUZx6PkV9HsScrqqafTEaZkKUjtyzf"
+CLIENT_SECRET = "Rm8xdcweGwgpkfNFghlOwa9wZSaKjc6f"
 
 class DeliverectAPI(models.AbstractModel):
     """Class for Deliverect API Helper"""
