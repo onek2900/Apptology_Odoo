@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+sh_pos_all_in_one_retail.access_sh_payment_report,access_sh_payment_report,sh_pos_all_in_one_retail.model_sh_payment_report,base.group_user,1,1,1,1
+sh_pos_all_in_one_retail.access_sh_pos_payment_report_wizard,access_sh_pos_payment_report_wizard,sh_pos_all_in_one_retail.model_sh_pos_payment_report_wizard,base.group_user,1,1,1,1

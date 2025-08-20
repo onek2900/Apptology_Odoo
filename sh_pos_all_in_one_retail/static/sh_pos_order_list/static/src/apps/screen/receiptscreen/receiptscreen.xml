@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="ShReceiptScreen">
+        <div class="receipt-screen screen h-100 bg-100">
+            <div class="screen-content d-flex flex-column h-100">
+                <div class="top-content d-flex align-items-center p-2 border-bottom text-center">
+                    <button class="button next highlight btn btn-lg btn-outline-primary" t-on-click="confirm">
+                        <i class="fa fa-angle-double-left ms-2"></i>
+                        <span>Ok</span>
+                    </button>
+                </div>
+                <div class="centered-content mx-auto mt-3 border-start border-end text-center overflow-x-hidden overflow-y-auto">
+                    <div class="button print btn btn-lg btn-primary" t-on-click="printReceipt">
+                        <i class="fa fa-print" t-ref="order-print-receipt-button"></i>
+                        <span> </span>
+                        <span>Print</span>
+                    </div>
+                    <div class="pos-receipt-container text-center">
+                        <div class="d-inline-block m-3 p-3 border rounded bg-view text-start overflow-hidden">
+                            <OrderReceipt data="order_data" receipt_type="receipt_type" formatCurrency="env.utils.formatCurrency" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

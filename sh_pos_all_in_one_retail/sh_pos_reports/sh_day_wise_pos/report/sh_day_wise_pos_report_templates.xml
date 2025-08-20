@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="rpt_pos_order_day_wise">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure" />
+                        <div class="col-sm-12" align="center">
+                            <table width="100%">
+                                <h3><span>POS Order - Product Sold Day Wise </span></h3>
+                                <tr>
+                                    <td width="25%" align="center" style="font-family: 'Helvetica'; font-size: 18px;">
+                                        <b>Start Date : </b>
+                                        <span t-field="doc.start_date"></span>
+                                    </td>
+                                    <td width="25%" align="center" style="font-family: 'Helvetica'; font-size: 18px;">
+                                        <b>End Date : </b>
+                                        <span t-field="doc.end_date"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table style="margin-top: 10px;">
+                                <tr>
+                                    <td align="center" width="20%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Product Name</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Monday</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Tuesday</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Wednesday</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Thursday</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Friday</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Saturday</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Sunday</b>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 18px; border: 1px solid black;">
+                                        <b>Total</b>
+                                    </td>
+                                </tr>
+                                <tr t-foreach="doc.get_product()" t-as="t">
+                                    <td align="left" width="20%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; padding-left: 4px;">
+                                        <span t-esc="list(t.get('product').values())[0]"></span>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <span t-esc="t.get('monday') or 0"></span>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <span t-esc="t.get('tuesday') or 0"></span>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <span t-esc="t.get('wednesday') or 0"></span>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <span t-esc="t.get('thursday') or 0"></span>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <span t-esc="t.get('friday') or 0"></span>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <span t-esc="t.get('saturday') or 0"></span>
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <span t-esc="t.get('sunday') or 0"></span>
+                                    </td>
+
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black;">
+                                        <t t-set="reg" t-value="0" />
+                                        <span t-if="t.get('monday')">
+                                            <t t-set="reg" t-value="reg+t.get('monday')" />
+                                        </span>
+                                        <span t-if="t.get('tuesday')">
+                                            <t t-set="reg" t-value="reg+t.get('tuesday')" />
+                                        </span>
+                                        <span t-if="t.get('wednesday')">
+                                            <t t-set="reg" t-value="reg+t.get('wednesday')" />
+                                        </span>
+                                        <span t-if="t.get('thursday')">
+                                            <t t-set="reg" t-value="reg+t.get('thursday')" />
+                                        </span>
+                                        <span t-if="t.get('friday')">
+                                            <t t-set="reg" t-value="reg+t.get('friday')" />
+                                        </span>
+                                        <span t-if="t.get('saturday')">
+                                            <t t-set="reg" t-value="reg+t.get('saturday')" />
+                                        </span>
+                                        <span t-if="t.get('sunday')">
+                                            <t t-set="reg" t-value="reg+t.get('sunday')" />
+                                        </span>
+                                        <span t-esc="reg" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="center" width="20%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        Total
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('monday')"><t t-set="reg" t-value="reg+i.get('monday')" /></span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('tuesday')"><t t-set="reg" t-value="reg+i.get('tuesday')" /></span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('wednesday')"><t t-set="reg" t-value="reg+i.get('wednesday')" /></span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('thursday')"><t t-set="reg" t-value="reg+i.get('thursday')" /></span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('friday')"><t t-set="reg" t-value="reg+i.get('friday')" /></span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('saturday')"><t t-set="reg" t-value="reg+i.get('saturday')" /></span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('sunday')"><t t-set="reg" t-value="reg+i.get('sunday')" /></span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                    <td align="center" width="10%" style="font-family: 'Helvetica'; font-size: 16px; border: 1px solid black; font-weight: bold;">
+                                        <t t-set="reg" t-value="0" />
+
+                                        <t t-foreach="doc.get_product()" t-as="i">
+                                            <span t-if="i.get('monday')">
+                                                <t t-set="reg" t-value="reg+i.get('monday')" />
+                                            </span>
+                                            <span t-if="i.get('tuesday')">
+                                                <t t-set="reg" t-value="reg+i.get('tuesday')" />
+                                            </span>
+                                            <span t-if="i.get('wednesday')">
+                                                <t t-set="reg" t-value="reg+i.get('wednesday')" />
+                                            </span>
+                                            <span t-if="i.get('thursday')">
+                                                <t t-set="reg" t-value="reg+i.get('thursday')" />
+                                            </span>
+                                            <span t-if="i.get('friday')">
+                                                <t t-set="reg" t-value="reg+i.get('friday')" />
+                                            </span>
+                                            <span t-if="i.get('saturday')">
+                                                <t t-set="reg" t-value="reg+i.get('saturday')" />
+                                            </span>
+                                            <span t-if="i.get('sunday')">
+                                                <t t-set="reg" t-value="reg+i.get('sunday')" />
+                                            </span>
+                                        </t>
+                                        <span t-esc="reg" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_pos_order_day_wise_report" model="ir.actions.report">
+        <field name="name">Day Wise POS Order</field>
+        <field name="model">pos.order.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.rpt_pos_order_day_wise</field>
+        <field name="report_file">sh_pos_all_in_one_retail.rpt_pos_order_day_wise</field>
+    </record>
+</odoo>

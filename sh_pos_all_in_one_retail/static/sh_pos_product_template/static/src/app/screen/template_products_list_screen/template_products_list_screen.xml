@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_all_in_one_retail.TemplateProductsListScreenWidget" >
+     <div class="partnerlist-screen screen h-100 d-flex flex-column bg-100">
+            <div class="top-content d-flex align-items-center p-2 border-bottom text-center">
+                <div class="button back btn btn-lg btn-secondary mx-2" t-on-click="back">
+                    <i t-if="env.isMobile" class="fa fa-undo"/>
+                    <t t-else=""> Discard</t>
+                </div>
+                <div class="button highlight btn btn-lg btn-primary mx-2" t-on-click="LoadTemplate">
+                        <t t-if="!env.isMobile"> <span> Load Product Template</span> <i class="fa fa-angle-double-right" /> </t>
+                        <t t-else="">
+                            <i class="fa fa-angle-double-right" />
+                        </t>
+                    </div>
+                <div class="top-right-buttons d-flex gap-2 w-100 justify-content-end">
+                    <div t-if="state.detailIsShown and state.editModeProps.partner.id" class="button more-info">
+                        <a t-on-click="goToOrders" class="btn btn-lg btn-outline-secondary" target="_blank"> Orders </a>
+                    </div>
+                    <div t-if="state.detailIsShown &amp;&amp; state.editModeProps.partner.id" class="button more-info">
+                        <a t-att-href="partnerLink" class="btn btn-lg btn-outline-secondary" target="_blank"> More info</a>
+                    </div>
+                    <div class="search-bar-container sb-partner d-flex align-items-center w-100 w-lg-50 h-100 h-100" t-if="!state.detailIsShown">
+                        <div class="input-group h-100">
+                            <div class="pos-search-bar form-control d-flex align-items-center bg-view">
+                                <i  class="oi oi-search me-2"></i>
+                                <input placeholder="Search Template" type="text" class="sh_searchbox_temp_screen flex-grow-1 w-auto h-100 border-0 p-2 me-4" size="1" t-on-keyup="updateTemplateList" />
+                                <span class="search-clear-template"></span>
+                                    <i class="fa fa-times position-absolute end-0 me-2 pe-1 cursor-pointer"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <section class="overflow-auto">
+                    <table class="partner-list table table-striped w-100">
+                        <thead>
+                           <tr>
+                                <th>Product Template Name</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="partner-list-contents">
+                             <t t-foreach="templatelistcontents" t-as="template" t-key="template.id">
+                                                <t t-esc="console.log('state', state)"/>
+                                                <TemplateProductsLine template="template" selectedTemplate="state.selectedTemplate" t-on-click="() => this.clickLine(template)" />
+                                            </t>
+                        </tbody>
+                    </table>
+            </section>
+        </div>
+        <!-- <div class="templateproductlist-screen screen">
+            <div class="screen-content">
+                <section class="top-content justify-content-around d-flex align-items-center p-2 border-bottom text-center">
+                    <div class="button  back btn btn-lg btn-secondary" t-on-click="back">
+                        <t t-if="!env.isMobile">Discard</t>
+                        <t t-else="">
+                            <i class="fa fa-undo"></i>
+                        </t>
+                    </div>
+                    <div class="button highlight btn btn-lg btn-primary mx-2" t-on-click="LoadTemplate">
+                        <t t-if="!env.isMobile"> <span> Load Product Template</span> <i class="fa fa-angle-double-right" /> </t>
+                        <t t-else="">
+                            <i class="fa fa-angle-double-right" />
+                        </t>
+                    </div>
+                    <div class="top-right-buttons d-flex gap-2 justify-content-end sh_searchbox_client_top_part searchbox-client top-content-center">
+                        <div class="search-bar-container sb-partner d-flex align-items-center w-100 w-lg-50 h-100 h-100">
+                            <div class="input-group h-100">
+                                <div class="pos-search-bar form-control d-flex align-items-center bg-view">
+                                <i  class="oi oi-search me-2"></i>
+                                <input placeholder="Search Template" type="text" class="sh_searchbox_temp_screen flex-grow-1 w-auto h-100 border-0 p-2 me-4" size="1" t-on-keyup="updateTemplateList" />
+                                <span class="search-clear-template"></span>
+                                    <i class="fa fa-times position-absolute end-0 me-2 pe-1 cursor-pointer"></i>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
+                </section>
+                <section class="full-content">
+                    <div class="window">
+                        <section class="subwindow">
+                            <div class="subwindow-container">
+                                <div class="subwindow-container-fix touch-scrollable scrollable-y order-list-scroll sh_template_screen">
+                                    <table class="template-list">
+                                        <thead>
+                                            <tr>
+                                                <th>Product Template Name</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="template-list-contents">
+                                            <t t-foreach="templatelistcontents" t-as="template" t-key="template.id">
+                                                <t t-esc="console.log('state', state)"/>
+                                                <TemplateProductsLine template="template" selectedTemplate="state.selectedTemplate" t-on-click="() => this.clickLine(template)" />
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </div> -->
+    </t>
+
+</templates>

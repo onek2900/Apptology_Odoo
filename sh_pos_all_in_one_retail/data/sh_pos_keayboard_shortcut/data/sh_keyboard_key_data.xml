@@ -1,0 +1,639 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_keyboard_key_A" model="sh.keyboard.key">
+        <field name="name">A</field>
+    </record>
+    <record id="sh_keyboard_key_B" model="sh.keyboard.key">
+        <field name="name">B</field>
+    </record>
+    <record id="sh_keyboard_key_C" model="sh.keyboard.key">
+        <field name="name">C</field>
+    </record>
+    <record id="sh_keyboard_key_D" model="sh.keyboard.key">
+        <field name="name">D</field>
+    </record>
+    <record id="sh_keyboard_key_E" model="sh.keyboard.key">
+        <field name="name">E</field>
+    </record>
+    <record id="sh_keyboard_key_F" model="sh.keyboard.key">
+        <field name="name">F</field>
+    </record>
+    <record id="sh_keyboard_key_G" model="sh.keyboard.key">
+        <field name="name">G</field>
+    </record>
+    <record id="sh_keyboard_key_H" model="sh.keyboard.key">
+        <field name="name">H</field>
+    </record>
+    <record id="sh_keyboard_key_I" model="sh.keyboard.key">
+        <field name="name">I</field>
+    </record>
+    <record id="sh_keyboard_key_J" model="sh.keyboard.key">
+        <field name="name">J</field>
+    </record>
+    <record id="sh_keyboard_key_K" model="sh.keyboard.key">
+        <field name="name">K</field>
+    </record>
+    <record id="sh_keyboard_key_L" model="sh.keyboard.key">
+        <field name="name">L</field>
+    </record>
+    <record id="sh_keyboard_key_M" model="sh.keyboard.key">
+        <field name="name">M</field>
+    </record>
+    <record id="sh_keyboard_key_N" model="sh.keyboard.key">
+        <field name="name">N</field>
+    </record>
+    <record id="sh_keyboard_key_O" model="sh.keyboard.key">
+        <field name="name">O</field>
+    </record>
+    <record id="sh_keyboard_key_P" model="sh.keyboard.key">
+        <field name="name">P</field>
+    </record>
+    <record id="sh_keyboard_key_Q" model="sh.keyboard.key">
+        <field name="name">Q</field>
+    </record>
+    <record id="sh_keyboard_key_R" model="sh.keyboard.key">
+        <field name="name">R</field>
+    </record>
+    <record id="sh_keyboard_key_S" model="sh.keyboard.key">
+        <field name="name">S</field>
+    </record>
+    <record id="sh_keyboard_key_T" model="sh.keyboard.key">
+        <field name="name">T</field>
+    </record>
+    <record id="sh_keyboard_key_U" model="sh.keyboard.key">
+        <field name="name">U</field>
+    </record>
+    <record id="sh_keyboard_key_V" model="sh.keyboard.key">
+        <field name="name">V</field>
+    </record>
+    <record id="sh_keyboard_key_W" model="sh.keyboard.key">
+        <field name="name">W</field>
+    </record>
+    <record id="sh_keyboard_key_X" model="sh.keyboard.key">
+        <field name="name">X</field>
+    </record>
+    <record id="sh_keyboard_key_Y" model="sh.keyboard.key">
+        <field name="name">Y</field>
+    </record>
+    <record id="sh_keyboard_key_Z" model="sh.keyboard.key">
+        <field name="name">Z</field>
+    </record>
+
+    <record id="sh_keyboard_key_a" model="sh.keyboard.key">
+        <field name="name">a</field>
+    </record>
+    <record id="sh_keyboard_key_b" model="sh.keyboard.key">
+        <field name="name">b</field>
+    </record>
+    <record id="sh_keyboard_key_c" model="sh.keyboard.key">
+        <field name="name">c</field>
+    </record>
+    <record id="sh_keyboard_key_d" model="sh.keyboard.key">
+        <field name="name">d</field>
+    </record>
+    <record id="sh_keyboard_key_e" model="sh.keyboard.key">
+        <field name="name">e</field>
+    </record>
+    <record id="sh_keyboard_key_f" model="sh.keyboard.key">
+        <field name="name">f</field>
+    </record>
+    <record id="sh_keyboard_key_g" model="sh.keyboard.key">
+        <field name="name">g</field>
+    </record>
+    <record id="sh_keyboard_key_h" model="sh.keyboard.key">
+        <field name="name">h</field>
+    </record>
+    <record id="sh_keyboard_key_i" model="sh.keyboard.key">
+        <field name="name">i</field>
+    </record>
+    <record id="sh_keyboard_key_j" model="sh.keyboard.key">
+        <field name="name">j</field>
+    </record>
+    <record id="sh_keyboard_key_k" model="sh.keyboard.key">
+        <field name="name">k</field>
+    </record>
+    <record id="sh_keyboard_key_l" model="sh.keyboard.key">
+        <field name="name">l</field>
+    </record>
+    <record id="sh_keyboard_key_m" model="sh.keyboard.key">
+        <field name="name">m</field>
+    </record>
+    <record id="sh_keyboard_key_n" model="sh.keyboard.key">
+        <field name="name">n</field>
+    </record>
+    <record id="sh_keyboard_key_o" model="sh.keyboard.key">
+        <field name="name">o</field>
+    </record>
+    <record id="sh_keyboard_key_p" model="sh.keyboard.key">
+        <field name="name">p</field>
+    </record>
+    <record id="sh_keyboard_key_q" model="sh.keyboard.key">
+        <field name="name">q</field>
+    </record>
+    <record id="sh_keyboard_key_r" model="sh.keyboard.key">
+        <field name="name">r</field>
+    </record>
+    <record id="sh_keyboard_key_s" model="sh.keyboard.key">
+        <field name="name">s</field>
+    </record>
+    <record id="sh_keyboard_key_t" model="sh.keyboard.key">
+        <field name="name">t</field>
+    </record>
+    <record id="sh_keyboard_key_u" model="sh.keyboard.key">
+        <field name="name">u</field>
+    </record>
+    <record id="sh_keyboard_key_v" model="sh.keyboard.key">
+        <field name="name">v</field>
+    </record>
+    <record id="sh_keyboard_key_w" model="sh.keyboard.key">
+        <field name="name">w</field>
+    </record>
+    <record id="sh_keyboard_key_x" model="sh.keyboard.key">
+        <field name="name">x</field>
+    </record>
+    <record id="sh_keyboard_key_y" model="sh.keyboard.key">
+        <field name="name">y</field>
+    </record>
+    <record id="sh_keyboard_key_z" model="sh.keyboard.key">
+        <field name="name">z</field>
+    </record>
+
+    <record id="sh_keyboard_key_0" model="sh.keyboard.key">
+        <field name="name">0</field>
+    </record>
+    <record id="sh_keyboard_key_1" model="sh.keyboard.key">
+        <field name="name">1</field>
+    </record>
+    <record id="sh_keyboard_key_2" model="sh.keyboard.key">
+        <field name="name">2</field>
+    </record>
+    <record id="sh_keyboard_key_3" model="sh.keyboard.key">
+        <field name="name">3</field>
+    </record>
+    <record id="sh_keyboard_key_4" model="sh.keyboard.key">
+        <field name="name">4</field>
+    </record>
+    <record id="sh_keyboard_key_5" model="sh.keyboard.key">
+        <field name="name">5</field>
+    </record>
+    <record id="sh_keyboard_key_6" model="sh.keyboard.key">
+        <field name="name">6</field>
+    </record>
+    <record id="sh_keyboard_key_7" model="sh.keyboard.key">
+        <field name="name">7</field>
+    </record>
+    <record id="sh_keyboard_key_8" model="sh.keyboard.key">
+        <field name="name">8</field>
+    </record>
+    <record id="sh_keyboard_key_9" model="sh.keyboard.key">
+        <field name="name">9</field>
+    </record>
+
+    <record id="sh_keyboard_key_F1" model="sh.keyboard.key">
+        <field name="name">F1</field>
+    </record>
+    <record id="sh_keyboard_key_F2" model="sh.keyboard.key">
+        <field name="name">F2</field>
+    </record>
+    <record id="sh_keyboard_key_F3" model="sh.keyboard.key">
+        <field name="name">F3</field>
+    </record>
+    <record id="sh_keyboard_key_F4" model="sh.keyboard.key">
+        <field name="name">F4</field>
+    </record>
+    <record id="sh_keyboard_key_F5" model="sh.keyboard.key">
+        <field name="name">F5</field>
+    </record>
+    <record id="sh_keyboard_key_F6" model="sh.keyboard.key">
+        <field name="name">F6</field>
+    </record>
+    <record id="sh_keyboard_key_F7" model="sh.keyboard.key">
+        <field name="name">F7</field>
+    </record>
+    <record id="sh_keyboard_key_F8" model="sh.keyboard.key">
+        <field name="name">F8</field>
+    </record>
+    <record id="sh_keyboard_key_F9" model="sh.keyboard.key">
+        <field name="name">F9</field>
+    </record>
+    <record id="sh_keyboard_key_F10" model="sh.keyboard.key">
+        <field name="name">F10</field>
+    </record>
+    <record id="sh_keyboard_key_F11" model="sh.keyboard.key">
+        <field name="name">F11</field>
+    </record>
+    <record id="sh_keyboard_key_F12" model="sh.keyboard.key">
+        <field name="name">F12</field>
+    </record>
+
+    <record id="sh_keyboard_key_arrow_up" model="sh.keyboard.key">
+        <field name="name">ArrowUp</field>
+    </record>
+    <record id="sh_keyboard_key_arrow_down" model="sh.keyboard.key">
+        <field name="name">ArrowDown</field>
+    </record>
+    <record id="sh_keyboard_key_arrow_left" model="sh.keyboard.key">
+        <field name="name">ArrowLeft</field>
+    </record>
+    <record id="sh_keyboard_key_arrow_right" model="sh.keyboard.key">
+        <field name="name">ArrowRight</field>
+    </record>
+
+    <record id="sh_keyboard_key_escape" model="sh.keyboard.key">
+        <field name="name">Escape</field>
+    </record>
+
+    <record id="sh_keyboard_key_back_space" model="sh.keyboard.key">
+        <field name="name">Backspace</field>
+    </record>
+
+    <record id="sh_keyboard_key_Insert" model="sh.keyboard.key">
+        <field name="name">Insert</field>
+    </record>
+
+    <record id="sh_keyboard_key_delete" model="sh.keyboard.key">
+        <field name="name">Delete</field>
+    </record>
+
+    <record id="sh_keyboard_key_page_up" model="sh.keyboard.key">
+        <field name="name">PageUp</field>
+    </record>
+
+    <record id="sh_keyboard_key_page_down" model="sh.keyboard.key">
+        <field name="name">PageDown</field>
+    </record>
+
+    <record id="sh_keyboard_key_end" model="sh.keyboard.key">
+        <field name="name">End</field>
+    </record>
+
+    <record id="sh_keyboard_key_tab" model="sh.keyboard.key">
+        <field name="name">Tab</field>
+    </record>
+
+    <record id="sh_keyboard_key_control" model="sh.keyboard.key">
+        <field name="name">Control</field>
+    </record>
+
+    <record id="sh_keyboard_key_shift" model="sh.keyboard.key">
+        <field name="name">Shift</field>
+    </record>
+
+    <record id="sh_keyboard_key_alt" model="sh.keyboard.key">
+        <field name="name">Alt</field>
+    </record>
+
+    <record id="sh_keyboard_key_/" model="sh.keyboard.key">
+        <field name="name">/</field>
+    </record>
+    <record id="sh_keyboard_key_*" model="sh.keyboard.key">
+        <field name="name">*</field>
+    </record>
+    <record id="sh_keyboard_key_-" model="sh.keyboard.key">
+        <field name="name">-</field>
+    </record>
+    <record id="sh_keyboard_key_+" model="sh.keyboard.key">
+        <field name="name">+</field>
+    </record>
+    <record id="sh_keyboard_key_Enter" model="sh.keyboard.key">
+        <field name="name">Enter</field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_1" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_shift"></field>
+    </record>
+    <record id="sh_keyboard_key_temp_2" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_P"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_1" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">go_payment_screen</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_1')),(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_2'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_3" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_control"></field>
+    </record>
+    <record id="sh_keyboard_key_temp_4" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_c"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_2" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">go_customer_Screen</field>
+        <field name="sh_shortcut_screen_type">all</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_3')),(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_4'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_5" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_shift"></field>
+    </record>
+    <record id="sh_keyboard_key_temp_6" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_G"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_3" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">go_order_Screen</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_5')),(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_6'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_7" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_v"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_4" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">validate_order</field>
+        <field name="sh_shortcut_screen_type">payment_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_7'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_8" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_n"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_5" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">next_order</field>
+        <field name="sh_shortcut_screen_type">receipt_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_8'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_9" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_escape"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_6" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">go_to_previous_screen</field>
+        <field name="sh_shortcut_screen_type">all</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_9'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_10" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_q"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_7" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_quantity_mode</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_10'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_11" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_d"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_8" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_discount_mode</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_11'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_12" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_p"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_9" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_price_mode</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_12'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_13" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_f"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_10" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">search_product</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_13'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_14" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_f"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_12" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">search_order</field>
+        <field name="sh_shortcut_screen_type">order_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_14'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_15" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_Insert"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_13" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">add_new_order</field>
+        <field name="sh_shortcut_screen_type">all</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_15'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_16" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_control"></field>
+    </record>
+    <record id="sh_keyboard_key_temp_17" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_delete"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_14" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">destroy_current_order</field>
+        <field name="sh_shortcut_screen_type">all</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_16')),(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_17'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_18" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_Q"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_15" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">delete_orderline</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_18'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_19" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_up"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_16" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_up_orderline</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_19'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_20" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_down"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_17" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_down_orderline</field>
+        <field name="sh_shortcut_screen_type">product_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_20'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_21" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_f"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_18" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">search_customer</field>
+        <field name="sh_shortcut_screen_type">customer_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_21'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_22" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_up"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_19" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_up_customer</field>
+        <field name="sh_shortcut_screen_type">customer_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_22'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_23" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_down"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_20" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_down_customer</field>
+        <field name="sh_shortcut_screen_type">customer_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_23'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_24" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_Enter"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_22" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">set_customer</field>
+        <field name="sh_shortcut_screen_type">customer_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_24'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_25" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_e"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_23" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">edit_customer</field>
+        <field name="sh_shortcut_screen_type">customer_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_25'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_26" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_s"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_24" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">save_customer</field>
+        <field name="sh_shortcut_screen_type">customer_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_26'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_27" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_+"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_25" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">create_customer</field>
+        <field name="sh_shortcut_screen_type">customer_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_27'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_28" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_shift"></field>
+    </record>
+    <record id="sh_keyboard_key_temp_29" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_delete"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_26" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">delete_payment_line</field>
+        <field name="sh_shortcut_screen_type">payment_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_28')),(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_29'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_30" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_up"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_27" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_up_payment_line</field>
+        <field name="sh_shortcut_screen_type">payment_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_30'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_31" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_down"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_28" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_down_payment_line</field>
+        <field name="sh_shortcut_screen_type">payment_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_31'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_32" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_F10"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_29" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">+10</field>
+        <field name="sh_shortcut_screen_type">payment_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_32'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_33" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_F2"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_30" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">+20</field>
+        <field name="sh_shortcut_screen_type">payment_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_33'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_34" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_F5"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_31" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">+50</field>
+        <field name="sh_shortcut_screen_type">payment_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_34'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_35" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_up"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_32" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_up_order</field>
+        <field name="sh_shortcut_screen_type">order_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_35'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_36" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_arrow_down"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_33" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_down_order</field>
+        <field name="sh_shortcut_screen_type">order_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_36'))])]"></field>
+    </record>
+
+    <record id="sh_keyboard_key_temp_37" model="sh.keyboard.key.temp">
+        <field name="sh_key_ids" ref="sh_keyboard_key_Enter"></field>
+    </record>
+    <record id="sh_pos_keyboard_shortcut_34" model="sh.pos.keyboard.shortcut">
+        <field name="sh_shortcut_screen">select_order</field>
+        <field name="sh_shortcut_screen_type">order_screen</field>
+        <field name="config_id" ref="point_of_sale.pos_config_main" />
+        <field name="sh_key_ids" eval="[(6,0,[(ref('sh_pos_all_in_one_retail.sh_keyboard_key_temp_37'))])]"></field>
+    </record>
+
+    <!-- <function model="pos.config" name="sh_add_default_data">
+    </function> -->
+</odoo>

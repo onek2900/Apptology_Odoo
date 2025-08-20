@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id='sh_pos_z_report_pos_config_views' model='ir.ui.view'>
+        <field name='name'>sh.pos.z.report.pos.config</field>
+        <field name='model'>pos.config</field>
+        <field name='inherit_id' ref='point_of_sale.pos_config_view_form' />
+        <field type='xml' name='arch'>
+            <xpath expr="//sheet" position="inside">
+                <h2>POS Z Report</h2>
+                <div class="row mt16 o_settings_container" >
+                    <div class="col-xs-6 col-md-6 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="sh_enable_z_report"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="sh_enable_z_report" />
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-6 o_setting_box" invisible="not sh_enable_z_report">
+                        <div class="o_setting_left_pane">
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="sh_allow_z_report_type" />
+                            <field name="sh_allow_z_report_type"/>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-6 o_setting_box" invisible="not sh_enable_z_report">
+                        <div class="o_setting_left_pane">
+                            <field name="sh_allow_posted_session_report"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="sh_allow_posted_session_report" />
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-6 o_setting_box" invisible="not sh_enable_z_report">
+                        <div class="o_setting_left_pane">
+                            <field name="sh_display_category_wise_detail"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="sh_display_category_wise_detail" />
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-6 o_setting_box" invisible="not sh_enable_z_report">
+                        <div class="o_setting_left_pane">
+                            <field name="sh_display_product_wise_detail"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="sh_display_product_wise_detail" />
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-6 o_setting_box" invisible="not sh_enable_z_report">
+                        <div class="o_setting_left_pane">
+                            <field name="sh_display_customer_wise_detail"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="sh_display_customer_wise_detail" />
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-md-6 o_setting_box" invisible="not sh_enable_z_report">
+                        <div class="o_setting_left_pane">
+                            <field name="sh_display_payment_detail"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="sh_display_payment_detail" />
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="sh_pos_z_report_res_config_settings" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.sh_pos_z_report</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="pos_interface_section" position="after">
+                <block title="POS Z Report">
+                    <setting>
+                        <field name="pos_sh_enable_z_report"/>
+                    </setting>
+                    <setting invisible="not pos_sh_enable_z_report">
+                        <field name="pos_sh_allow_z_report_type"/>
+                    </setting>
+                    <setting invisible="not pos_sh_enable_z_report">
+                        <field name="pos_sh_allow_posted_session_report"/>
+                    </setting>
+                    <setting invisible="not pos_sh_enable_z_report">
+                        <field name="pos_sh_display_category_wise_detail"/>
+                    </setting>
+                    <setting invisible="not pos_sh_enable_z_report">
+                        <field name="pos_sh_display_product_wise_detail"/>
+                    </setting>
+                    <setting invisible="not pos_sh_enable_z_report">
+                        <field name="pos_sh_display_customer_wise_detail"/>
+                    </setting>
+                    <setting invisible="not pos_sh_enable_z_report">
+                        <field name="pos_sh_display_payment_detail"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

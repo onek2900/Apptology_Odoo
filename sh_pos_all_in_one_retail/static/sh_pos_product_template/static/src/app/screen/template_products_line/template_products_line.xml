@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_all_in_one_retail.TemplateProductsLine">
+        <tr t-attf-class="template-line {{highlight}}" t-att-data-id="props.template.id" t-on-click="() => props.template">
+            <td>
+                <t t-esc="props.template.name" />
+            </td>
+            <td>
+                <t t-esc="env.utils.formatCurrency(props.template.amount_total)" />
+            </td>
+        </tr>
+    </t>
+</templates>

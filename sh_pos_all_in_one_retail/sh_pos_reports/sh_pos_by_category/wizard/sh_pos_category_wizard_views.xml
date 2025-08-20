@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_pos_by_category_wizard" model="ir.ui.view">
+        <field name="name">sh.pos.category.wizard</field>
+        <field name="model">sh.pos.category.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Point of Sale By Product Category">
+                <group>
+                    <group>
+                        <field name="sh_start_date" />
+                        <field name="sh_category_ids" widget="many2many_tags"
+                            options="{'no_create': True}" />
+                        <field name="sh_session_id"
+                            options="{'no_create': True}" />
+                    </group>
+                    <group>
+                        <field name="sh_end_date" />
+                        <field name="company_ids" widget="many2many_tags"
+                            options="{'no_create': True}" groups="base.group_multi_company" />
+                    </group>
+                </group>
+                <footer>
+                    <button name="display_report" string="View" class="oe_highlight" type="object" />
+                    <button name="print_report" string="Print" class="oe_highlight" type="object"
+                        icon="fa-print" />
+                    <button name="print_xls_report" string="Print In XLS" class="oe_highlight"
+                        type="object" icon="fa-file-excel-o" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pos_by_category" model="ir.actions.act_window">
+        <field name="name">Point of Sale By Product Category</field>
+        <field name="res_model">sh.pos.category.wizard</field>
+        <field name="view_id" ref="sh_pos_by_category_wizard" />
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_pos_by_category" name="Point of Sale By Product Category"
+        parent="point_of_sale.menu_point_rep" action="action_pos_by_category"
+        groups="sh_pos_all_in_one_retail.sh_group_pos_by_category" />
+
+</odoo>

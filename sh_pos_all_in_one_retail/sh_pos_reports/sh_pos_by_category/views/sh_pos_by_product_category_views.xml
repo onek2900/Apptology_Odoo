@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sh_pos_by_category_view_tree" model="ir.ui.view">
+        <field name="name">sh.pos.by.category.view.tree</field>
+        <field name="model">sh.pos.by.category</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="name" />
+                <field name="date" optional="show" />
+                <field name="sh_category_id" optional="show" />
+                <field name="currency_id" column_invisible='True' />
+                <field name="sh_product_id" optional="show" />
+                <field name="qty" optional="show" sum="Total Quantity" />
+                <field name="discount" optional="show" sum="Total Discount" />
+                <field name="price" optional="show" sum="Total Price" />
+                <field name="sh_product_uom_id" optional="show" />
+                <field name="tax" optional="show" sum="Total Tax" />
+                <field name="subtotal" optional="show" sum="Total Subtotal" />
+                <field name="total" optional="show" sum="Total" decoration-bf="1" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_pos_by_category_view_search" model="ir.ui.view">
+        <field name="name">sh.pos.by.category.view.search</field>
+        <field name="model">sh.pos.by.category</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="date" />
+                <field name="sh_category_id" />
+                <field name="sh_product_id" />
+                <field name="qty" />
+                <field name="discount" />
+                <field name="price" />
+                <field name="sh_product_uom_id" />
+                <field name="tax" />
+                <field name="subtotal" />
+                <field name="total" />
+                <filter string="Category" name="group_category" domain="[]"
+                    context="{'group_by': 'sh_category_id'}" />
+                <filter string="Date" name="group_date" domain="[]"
+                    context="{'group_by': 'date'}" />
+                <filter string="Product" name="group_product" domain="[]"
+                    context="{'group_by': 'sh_product_id'}" />
+                <filter string="UOM" name="group_uom" domain="[]"
+                    context="{'group_by': 'sh_product_uom_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_pos_by_category_view_action" model="ir.actions.act_window">
+        <field name="name">Point Of Sale category</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.pos.by.category</field>
+        <field name="context">{'search_default_group_category': 1}</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

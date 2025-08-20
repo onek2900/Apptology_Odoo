@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="sh_pos_order_wizard_view" model="ir.ui.view">
+        <field name="name">pos.order.report</field>
+        <field name="model">pos.order.report</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="start_date" />
+                            <field name="company_ids" options="{'no_create': True}" widget="many2many_tags" groups="base.group_multi_company" />
+                        </group>
+                        <group>
+                            <field name="end_date" />
+                            <field name="config_ids" widget="many2many_tags" options="{'no_create':True}"  groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="View" name="display_report_data" type="object" class="btn-primary" />
+                        <button string="Report" name="generate_report_data" type="object" default_focus="1" class="btn-primary" />
+                        <button name="print_pos_order_day_wise" string="Print Xls" type="object" class="oe_highlight" />
+                        <button string="Cancel" class="btn-default" special="cancel" />
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pos_order_day_wise" model="ir.actions.act_window">
+        <field name="name">Day Wise POS Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pos.order.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="pos_order_day_wise_report" name="Day Wise POS Report"
+        parent="point_of_sale.menu_point_rep" action="action_pos_order_day_wise"
+        groups="sh_pos_all_in_one_retail.sh_group_day_wise_report" sequence="100" />
+</odoo>

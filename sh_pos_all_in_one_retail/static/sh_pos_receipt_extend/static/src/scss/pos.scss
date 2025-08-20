@@ -1,0 +1,402 @@
+.sh_receipt_footer {
+    text-align: center !important;
+    font-size: 75% !important;
+    margin-top: 10px;
+}
+
+.pos-receipt.a3_size_receipt {
+    height: auto !important;
+    width: 295mm !important;
+}
+
+.pos-receipt.a4_size_receipt {
+    height: auto !important;
+    width: 208mm !important;
+}
+
+.pos-receipt.a5_size_receipt {
+    height: auto !important;
+    width: 146mm !important;
+}
+
+@media print {
+    .pos-receipt.a3_size_receipt,.pos-receipt.a4_size_receipt,.pos-receipt.a5_size_receipt{border: 0 !important;}
+    .pos-receipt.a3_size_receipt {
+        height: auto !important;
+        width: 295mm !important;
+        border : 0 solid black !important;
+    }
+    .pos .pos-receipt-container > div.pos-receipt.a5_size_receipt,.pos .pos-receipt-container > div.pos-receipt.a4_size_receipt,.pos .pos-receipt-container > div.pos-receipt.a3_size_receipt{
+        padding: 4mm !important;
+    }
+
+    .pos-receipt.a4_size_receipt {
+        height: auto !important;
+        width: 208mm !important;
+    }
+    
+    .pos-receipt.a5_size_receipt {
+        height: auto !important;
+        width: 146mm !important;
+    }
+    
+    @page { 
+        margin: 4mm !important;
+    }
+}
+
+/* 7-4-23 */
+
+.pos-receipt.a3_size_receipt {
+	.sh_a3_receipt_customer_detail_row {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 5mm;
+		.sh_a3_receipt_customer_detail_box {
+			font-size: 4mm !important;
+			width: 85mm;
+			width: 85mm;
+			>div {
+				padding-bottom: 0.7mm;
+			}
+		}
+		.sh_a3_receipt_bacode_qr {
+			font-size: 4mm !important;
+			img {
+				width: 85mm;
+			}
+		}
+		.sh_a3_receipt_company_contact_address {
+			font-size: 4mm !important;
+			text-align: right !important;
+			width: 85mm;
+			>div {
+				padding-bottom: 0.7mm;
+			}
+		}
+	}
+	.sh_a3_receipt_cashier_box {
+		display: flex;
+		justify-content: space-between;
+		margin: 5mm 0;
+	}
+	.sh_a3_receipt_logo_row {
+		display: flex;
+		justify-content: space-between;
+		.sh_a3_receipt_logo_box {
+			.pos-receipt-logo {
+				margin: unset !important;
+			}
+			width: 85mm;
+		}
+	}
+	.sh_a3_receipt_details_box {
+		font-size: 4mm !important;
+		text-align: right !important;
+		width: 85mm;
+		>div {
+			padding-bottom: 0.7mm;
+		}
+	}
+	.sh_a3_receipt_table {
+		width: 100%;
+		.sh_a3_receipt_table_thead {
+			th {
+				border-width: 0.51mm;
+				border-style: solid;
+				border-color: #000;
+				text-align: center;
+				font-size: 4mm;
+				padding: 4mm;
+			}
+			text-align: center;
+			.sh_a3_receipt_table_thead_no {
+				width: 15mm;
+			}
+			.sh_a3_receipt_table_thead_des {
+				width: 100mm;
+				text-align: left !important;
+			}
+			.sh_a3_receipt_table_thead_qty {
+				width: 20mm;
+			}
+			.sh_a3_receipt_table_thead_price {
+				width: 35mm;
+			}
+			.sh_a3_receipt_table_thead_total_price {
+				width: 35mm;
+			}
+		}
+		.sh_a3_receipt_table_tbody {
+			.sh_a3_receipt_table_tbody_tr {
+				.sh_a3_receipt_table_tbody_td {
+					border-width: 0.51mm;
+					border-style: solid;
+					border-color: #000;
+					font-size: 4mm;
+					padding: 4mm;
+					word-break: break-word;
+					text-align: center;
+					.sh_a3_receipt_align_ecnter {
+						float: unset !important;
+					}
+				}
+				.sh_a3_receipt_table_tbody_td_left {
+					text-align: left !important;
+				}
+				.sh_a3_receipt_table_tbody_td_bold {
+					font-weight: bold;
+				}
+			}
+		}
+	}
+	table {
+		border-width: 0.51mm;
+		border-style: solid;
+		border-color: #000;
+	}
+}
+.pos-receipt.a4_size_receipt {
+	.sh_a4_receipt_customer_detail_row {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 5mm;
+		.sh_a4_receipt_customer_detail_box {
+			font-size: 4mm !important;
+			width: 85mm;
+			width: 85mm;
+			>div {
+				padding-bottom: 0.7mm;
+			}
+		}
+		.sh_a4_receipt_bacode_qr {
+			font-size: 4mm !important;
+			img {
+				width: 85mm;
+			}
+		}
+		.sh_a4_receipt_company_contact_address {
+			font-size: 4mm !important;
+			text-align: right !important;
+			width: 85mm;
+			>div {
+				padding-bottom: 0.7mm;
+			}
+		}
+	}
+	.sh_a4_receipt_cashier_box {
+		display: flex;
+		justify-content: space-between;
+		margin: 5mm 0;
+	}
+	.sh_a4_receipt_logo_row {
+		display: flex;
+		justify-content: space-between;
+		.sh_a4_receipt_logo_box {
+			.pos-receipt-logo {
+				margin: unset !important;
+			}
+			width: 85mm;
+		}
+	}
+	.sh_a4_receipt_details_box {
+		font-size: 4mm !important;
+		text-align: right !important;
+		width: 85mm;
+		>div {
+			padding-bottom: 0.7mm;
+		}
+	}
+	.sh_a4_receipt_table {
+		width: 100%;
+		.sh_a4_receipt_table_thead {
+			th {
+				border-width: 0.51mm;
+				border-style: solid;
+				border-color: #000;
+				text-align: center;
+				font-size: 4mm;
+				padding: 4mm;
+			}
+			text-align: center;
+			.sh_a4_receipt_table_thead_no {
+				width: 15mm;
+			}
+			.sh_a4_receipt_table_thead_des {
+				width: 100mm;
+				text-align: left !important;
+			}
+			.sh_a4_receipt_table_thead_qty {
+				width: 20mm;
+			}
+			.sh_a4_receipt_table_thead_price {
+				width: 35mm;
+			}
+			.sh_a4_receipt_table_thead_total_price {
+				width: 35mm;
+			}
+		}
+		.sh_a4_receipt_table_tbody {
+			.sh_a4_receipt_table_tbody_tr {
+				.sh_a4_receipt_table_tbody_td {
+					border-width: 0.51mm;
+					border-style: solid;
+					border-color: #000;
+					font-size: 4mm;
+					padding: 4mm;
+					word-break: break-word;
+					text-align: center;
+				}
+				.sh_a4_receipt_table_tbody_td_left {
+					text-align: left !important;
+				}
+				.sh_a4_receipt_table_tbody_td_bold {
+					font-weight: bold;
+				}
+			}
+		}
+	}
+	table {
+		border-width: 0.51mm;
+		border-style: solid;
+		border-color: #000;
+	}
+	.sh_a3_receipt_table {
+		.sh_a4_receipt_table_tbody {
+			.sh_a4_receipt_table_tbody_tr {
+				.sh_a4_receipt_table_tbody_td {
+					.sh_a4_receipt_align_ecnter {
+						float: unset !important;
+					}
+				}
+			}
+		}
+	}
+}
+
+ /* A5  */
+
+ 
+ .pos-receipt.a5_size_receipt {
+	 .sh_a5_receipt_customer_detail_row {
+		 display: flex;
+		 justify-content: space-between;
+		 margin-top: 5mm;
+		 .sh_a5_receipt_customer_detail_box {
+			 width: 55mm;
+			 width: 55mm;
+			 font-size: 3mm;
+			 >div {
+				 padding-bottom: 0.7mm;
+			 }
+		 }
+		 .sh_a5_receipt_company_contact_address {
+			 width: 55mm;
+			 font-size: 3mm;
+			 text-align: right !important;
+			 >div {
+				 padding-bottom: 0.7mm;
+			 }
+		 }
+		 .sh_a5_receipt_bacode_qr {
+			 img {
+				 width: 55mm;
+			 }
+			 font-size: 3mm;
+		 }
+	 }
+	 .sh_a5_receipt_cashier_box {
+		 display: flex;
+		 justify-content: space-between;
+		 margin: 5mm 0;
+	 }
+	 .sh_a5_receipt_logo_row {
+		 display: flex;
+		 justify-content: space-between;
+		 .sh_a5_receipt_logo_box {
+			 .pos-receipt-logo {
+				 margin: unset !important;
+			 }
+			 width: 55mm;
+		 }
+	 }
+	 .sh_a5_receipt_details_box {
+		 width: 55mm;
+		 font-size: 3mm;
+		 text-align: right !important;
+		 >div {
+			 padding-bottom: 0.7mm;
+		 }
+	 }
+	 .sh_a5_receipt_table {
+		 width: 100%;
+		 .sh_a5_receipt_table_thead {
+			 th {
+				 border-width: 0.51mm;
+				 border-style: solid;
+				 border-color: #000;
+				 text-align: center;
+				 font-size: 3mm;
+				 padding: 4mm;
+			 }
+			 text-align: center;
+			 .sh_a5_receipt_table_thead_no {
+				 width: 15mm;
+			 }
+			 .sh_a5_receipt_table_thead_des {
+				 width: 100mm;
+				 text-align: left !important;
+			 }
+			 .sh_a5_receipt_table_thead_qty {
+				 width: 20mm;
+			 }
+			 .sh_a5_receipt_table_thead_price {
+				 width: 35mm;
+			 }
+			 .sh_a5_receipt_table_thead_total_price {
+				 width: 35mm;
+			 }
+		 }
+		 .sh_a5_receipt_table_tbody {
+			 .sh_a5_receipt_table_tbody_tr {
+				 .sh_a5_receipt_table_tbody_td {
+					 border-width: 0.51mm;
+					 border-style: solid;
+					 border-color: #000;
+					 font-size: 3mm;
+					 padding: 4mm;
+					 word-break: break-word;
+					 text-align: center;
+					 .sh_a5_receipt_align_ecnter {
+						 float: unset !important;
+					 }
+				 }
+				 .sh_a5_receipt_table_tbody_td_left {
+					 text-align: left;
+				 }
+				 .sh_a5_receipt_table_tbody_td_bold {
+					 font-weight: bold;
+				 }
+			 }
+		 }
+	 }
+	 table {
+		 border-width: 0.51mm;
+		 border-style: solid;
+		 border-color: #000;
+	 }
+ }
+ .sh_buttons_group {
+	@include media-breakpoint-down(lg) {
+		flex-direction: column !important;
+		gap: 10px !important;
+	}
+	 .button {
+		 width: 33.333%;
+		 border-color:#c7ccd2;
+		 @include media-breakpoint-down(lg) {
+			width: 100% !important;
+		}
+	 }
+ }
+ 

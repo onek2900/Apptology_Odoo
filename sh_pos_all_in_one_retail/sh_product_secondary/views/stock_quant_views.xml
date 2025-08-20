@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_stock_quant_tree_view" model="ir.ui.view">
+        <field name="name">sh.stock.quant.inventory.tree.editable</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable" />
+        <field name="arch" type="xml">
+            <xpath expr="//tree//field[@name='product_uom_id']" position="after">
+                <field name="sh_secondary_unit_qty" groups="sh_pos_all_in_one_retail.group_secondary_unit_product"/>
+                <field name="sh_secondary_unit" groups="sh_pos_all_in_one_retail.group_secondary_unit_product"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

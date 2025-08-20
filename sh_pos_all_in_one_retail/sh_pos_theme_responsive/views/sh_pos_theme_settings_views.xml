@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<record id="view_pos_theme_form" model="ir.ui.view">
+		<field name="name">sh.pos.theme.settings.form</field>
+		<field name="model">sh.pos.theme.settings</field>
+		<field name="arch" type="xml">
+			<form string="Point of Sale Theme Settings" create="false" delete="false">
+				<sheet>
+					<group>
+						<group>
+							<field name="theme_style" />
+						</group>
+						<group string="Cart Style">
+							<field name="sh_cart_position" />
+							<field name="sh_image_display_in_cart" />
+							<field name="display_cart_order_item_count" />
+						</group>
+						<group string="Colors" name="group_colors" priority="1">
+							<field name="primary_color" widget="color" />
+							<field name="secondary_color" widget="color" />
+							<field name="gradient_color" widget="color"  invisible="(theme_style != 'style_4')" />
+						</group>
+						<group string="Action Button Style">
+							<label for="sh_action_button_position" />
+							<div>
+								<field name="sh_action_button_position" />
+							</div>
+						</group>
+						<group string="Product List Style" name="group_product_list" priority="3">
+							<label for="product_style" />
+							<div>
+								<field name="product_style"   />
+							</div>
+							<label for="sh_display_product_image_name" />
+							<div>
+								<field name="sh_display_product_image_name" />
+							</div>
+							<label for="product_background_color" invisible="(sh_display_product_image_name == 'image_name') or (sh_display_product_image_name == 'image')" />
+							<div invisible="(sh_display_product_image_name == 'image_name') or (sh_display_product_image_name == 'image')">
+								<field name="product_background_color" invisible="(sh_display_product_image_name == 'image_name') or (sh_display_product_image_name == 'image')" widget="color"/>
+							</div>
+								
+							<label for="display_product_cart_qty" />
+							<div>
+								<field name="display_product_cart_qty" />
+							</div>
+						</group>
+						<group string="Button" name="group_button" priority="2">
+							<label for="button_style" />
+							<div>
+								<field name="button_style" style="width: 70% !important;" />
+							</div>
+						</group>
+						<group string="Body" name="group_body" priority="4">
+							<field name="body_background_type" widget="radio"/>
+							<field name="body_background_color" widget="color" invisible="(body_background_type != 'bg_color')" required="(body_background_type == 'bg_color')"/>
+							<field name="body_background_image" widget="image" class="oe_avatar" options="{'preview_image': 'body_background_image', 'size': [90, 90]}"  invisible="(body_background_type != 'bg_img')" required="(body_background_type == 'bg_img')"/>
+							<field name="body_font_family" />
+							<field name="body_google_font_family" required="(body_font_family == 'custom_google_font')" invisible="(body_font_family != 'custom_google_font')" />
+							<field name="is_used_google_font" invisible="1" />
+						</group>
+						<group string="List View Table" name="group_list_view_table" priority="5">
+							<field name="sh_header_sticky" />
+							<field name="sh_list_view_border" />
+							<field name="sh_list_row_hover" />
+							<field name="sh_hover_background_color" widget="color" invisible="(sh_list_row_hover == False)"/>
+							<field name="sh_even_row_color" widget="color" />
+							<field name="sh_odd_row_color" widget="color" />
+						</group>
+						<group string="Form Element" name="group_form_eleemnt" priority="6">
+							<field name="form_element_style" />
+						</group>
+						<group string="Logo">
+							<field name="theme_logo" widget="image" class="oe_avatar" nolabel="0" />
+						</group>
+					</group>
+					<group string="Configuration for Mobile View">
+						<group>
+							<label for="sh_mobile_start_screen" />
+							<div>
+								<field name="sh_mobile_start_screen" style="width: 70% !important;" />
+							</div>
+						</group>
+					</group>
+					<group string="Product View Configuration">
+						<group>
+							<field name="sh_pos_switch_view" />
+						</group>
+						<group>
+							<field name="sh_default_view" widget="radio" invisible="(sh_pos_switch_view == False)"/>
+						</group>
+						<div class="row mt16" invisible="(sh_default_view == 'grid_view') or (sh_pos_switch_view == False)">
+							<div class="col-12 col-lg-12 o_setting_box">
+								<div style="font-weight: 600;">
+									Tick which detail want to display in List View
+								</div>
+								<div>
+									<field name="sh_display_product_name" style="width: 10%;" />
+									<label for="sh_display_product_name" style="font-weight: normal;" />
+								</div>
+								<div>
+									<field name="sh_display_product_price" style="width: 10%;" />
+									<label for="sh_display_product_price" style="font-weight: normal;" />
+								</div>
+								<div>
+									<field name="sh_display_product_code" style="width: 10%;" />
+									<label for="sh_display_product_code" style="font-weight: normal;" />
+								</div>
+								<div>
+									<field name="sh_display_product_type" style="width: 10%;" />
+									<label for="sh_display_product_type" style="font-weight: normal;" />
+								</div>
+								<div>
+									<field name="sh_display_product_onhand" style="width: 10%;" />
+									<label for="sh_display_product_onhand" style="font-weight: normal;" />
+								</div>
+								<div>
+									<field name="sh_display_product_uom" style="width: 10%;" />
+									<label for="sh_display_product_uom" style="font-weight: normal;" />
+								</div>
+								<div>
+									<field name="sh_display_product_image" style="width: 10%;" />
+									<label for="sh_display_product_image" style="font-weight: normal;" />
+								</div>
+								<div class=" o_setting_box">
+									<div style="margin-left: 25px; border-left: 1px solid #dddddd;padding-left: 10px;">
+										<field name="sh_product_image_size" invisible="(sh_display_product_image == False)" widget="radio" style='width: 100%' />
+									</div>
+								</div>
+							</div>
+						</div>
+						
+					</group>
+				</sheet>
+			</form>
+		</field>
+	</record>
+	<record id="sh_pos_theme_settings_action" model="ir.actions.act_window">
+		<field name="name">Point Of Sale Theme Settings</field>
+		<field name="res_model">sh.pos.theme.settings</field>
+		<field name="view_mode">form</field>
+		<field name="type">ir.actions.act_window</field>
+		<field name="res_id">1</field>
+	</record>
+	<menuitem id="sh_pos_theme_settings_menu" name="POS Theme Settings" action="sh_pos_theme_settings_action" parent="point_of_sale.menu_point_config_product" sequence="1" />
+</odoo>

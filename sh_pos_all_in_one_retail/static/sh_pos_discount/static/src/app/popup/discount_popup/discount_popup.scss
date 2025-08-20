@@ -1,0 +1,107 @@
+body.pos {
+	.pos-content {
+		.receipt-screen.screen {
+			.screen-content {
+				.pos-receipt-container {
+					.pos-receipt {
+						.discount_receipt {
+							margin-left: 33px;
+							color: #797a7c;
+							font-size: 14px;
+						}
+					}
+				}
+			}
+		}
+		.order-container {
+			.orderline {
+                .d-flex{
+                    align-items: center;
+                }
+				.sh_disc_orderline_icon {
+					.discount_icon {
+						width: 18px;
+						height: 18px;
+						margin-right: 5px;
+					}
+				}
+			}
+		}
+	}
+	.sh_discount_popup {
+		.discount_table {
+			th {
+				padding: 10px !important;
+			}
+			td {
+				padding: 10px !important;
+			}
+			thead {
+				background: $sh_pos_primary_color;
+				color: #fff;
+				font-size: 16px;
+				text-transform: capitalize;
+				font-weight: 600;
+			}
+			.discount_row {
+				cursor: pointer;
+				&:nth-child(even) {
+					background: $sh_even_row_color;
+				}
+				&:nth-child(odd) {
+					background: $sh_odd_row_color;
+				}
+				td {
+					font-size: 16px;
+					color: #4A4F59;
+					font-weight: normal;
+					text-transform: capitalize;
+				}
+				@if $sh_list_row_hover =="True" {
+					&:hover{
+						background: $sh_hover_background_color !important;
+					}
+				}
+				// &:hover {
+				// 	background: $o-brand-primary;
+				// 	color: #fff;
+				// 	td {
+				// 		color: #fff;
+				// 	}
+				// }
+			}
+			.discount_row.highlight {
+				background: $o-brand-primary;
+				color: #fff;
+				td {
+					color: #fff;
+				}
+			}
+		}
+		.sh_discount_main_table {
+			height: 274px;
+			max-height: 285px !important;
+			overflow: auto !important;
+			&::-webkit-scrollbar {
+				width: 0px;
+			}
+            th, 
+            td{
+                @include media-breakpoint-down(lg) {
+                    white-space: nowrap;
+                }
+            }
+		}
+	}
+	.orderline {
+		.sh_pos_discount_orderline {
+			.info {
+				margin-left: 10px;
+				font-weight: bold;
+				color: #797a7c;
+				font-size: 15px;
+				display: inline-block !important;
+			}
+		}
+	}
+}

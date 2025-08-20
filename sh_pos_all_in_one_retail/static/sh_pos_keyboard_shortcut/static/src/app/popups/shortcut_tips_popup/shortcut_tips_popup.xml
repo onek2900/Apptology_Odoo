@@ -1,0 +1,764 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_all_in_one_retail.ShortcutTipsPopup">
+        <div class="popup popup-text popup-med product-configurator-popup sh_shortcut_modal_dialog">
+            <div class=" sh_payment_popup">
+                <div class="modal-header drag-handle">            
+                    <h4 class="modal-title"> Shortcut Tips</h4>
+                </div>    
+                <div class="main-body body touch-scrollable scrollable-y main_div_sh_payment">
+                    <t t-if="pos and pos.db and pos.db.key_screen_by_grp">
+                        <t t-foreach="pos.db.key_screen_by_grp" t-as="each_screen" t-key="each_screen">
+                            <t t-if="each_screen == 'product_screen'">
+                                <div class="sh_shortcut_table_header">Product Screen Shortcut</div>
+                                <table class="sh_shortcut_table table">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="pos.db.key_screen_by_grp[each_screen]" t-as="each_related_screen" t-key="each_related_screen">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="pos.db.key_screen_by_id[each_related_screen]" />
+                                                </td>
+                                                <td>
+                                                    <t t-if="each_related_screen == 'go_payment_screen'">
+                                                        Go to Payment Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_order_Screen'">
+                                                        Go to Order Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_order'">
+                                                        Search Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_order'">
+                                                        Select Up Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_order'">
+                                                        Select Down Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_order'">
+                                                        Select Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'set_customer'">
+                                                        Set Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'edit_customer'">
+                                                        Edit Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_customer'">
+                                                        Select Up Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_customer'">
+                                                        Select Down Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_customer_Screen'">
+                                                        Go to Customer Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'validate_order'">
+                                                        Validate Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'next_order'">
+                                                        Create New Order After Receipt Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_to_previous_screen'">
+                                                        Go to Previous Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_quantity_mode'">
+                                                        Select Quantity Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_discount_mode'">
+                                                        Select Discount Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_price_mode'">
+                                                        Select Price Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_product'">
+                                                        Search Product
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'add_new_order'">
+                                                        Add New Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'destroy_current_order'">
+                                                        Destroy Current Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_orderline'">
+                                                        Delete selected OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_payment_line'">
+                                                        Delete selected PayamentLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_orderline'">
+                                                        Select Up OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_orderline'">
+                                                        Select Down OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_customer'">
+                                                        Search Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'save_customer'">
+                                                        Save Customer Detail
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'create_customer'">
+                                                        Create New Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_payment_line'">
+                                                        Select Up Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_payment_line'">
+                                                        Select Down Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+10'">
+                                                        +10
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+20'">
+                                                        +20
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+50'">
+                                                        +50
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <t t-elif="each_screen == 'order_screen'">
+                                <div class="sh_shortcut_table_header">Order Screen Shortcut</div>
+                                <table class="sh_shortcut_table table">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="pos.db.key_screen_by_grp[each_screen]" t-as="each_related_screen" t-key="each_related_screen">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="pos.db.key_screen_by_id[each_related_screen]" />
+                                                </td>
+                                                <td>
+                                                    <t t-if="each_related_screen == 'go_payment_screen'">
+                                                        Go to Payment Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_order_Screen'">
+                                                        Go to Order Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_order'">
+                                                        Search Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_order'">
+                                                        Select Up Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_order'">
+                                                        Select Down Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_order'">
+                                                        Select Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'set_customer'">
+                                                        Set Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'edit_customer'">
+                                                        Edit Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_customer'">
+                                                        Select Up Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_customer'">
+                                                        Select Down Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_customer_Screen'">
+                                                        Go to Customer Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'validate_order'">
+                                                        Validate Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'next_order'">
+                                                        Create New Order After Receipt Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_to_previous_screen'">
+                                                        Go to Previous Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_quantity_mode'">
+                                                        Select Quantity Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_discount_mode'">
+                                                        Select Discount Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_price_mode'">
+                                                        Select Price Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_product'">
+                                                        Search Product
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'add_new_order'">
+                                                        Add New Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'destroy_current_order'">
+                                                        Destroy Current Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_orderline'">
+                                                        Delete selected OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_payment_line'">
+                                                        Delete selected PayamentLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_orderline'">
+                                                        Select Up OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_orderline'">
+                                                        Select Down OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_customer'">
+                                                        Search Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'save_customer'">
+                                                        Save Customer Detail
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'create_customer'">
+                                                        Create New Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_payment_line'">
+                                                        Select Up Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_payment_line'">
+                                                        Select Down Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+10'">
+                                                        +10
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+20'">
+                                                        +20
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+50'">
+                                                        +50
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <t t-if="each_screen == 'customer_screen'">
+                                <div class="sh_shortcut_table_header">Customer Screen Shortcut</div>
+        
+                                <table class="sh_shortcut_table table">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="pos.db.key_screen_by_grp[each_screen]" t-as="each_related_screen" t-key="each_related_screen">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="pos.db.key_screen_by_id[each_related_screen]" />
+                                                </td>
+                                                <td>
+                                                    <t t-if="each_related_screen == 'go_payment_screen'">
+                                                        Go to Payment Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_order_Screen'">
+                                                        Go to Order Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_order'">
+                                                        Search Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_order'">
+                                                        Select Up Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_order'">
+                                                        Select Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_order'">
+                                                        Select Down Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'set_customer'">
+                                                        Set Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'edit_customer'">
+                                                        Edit Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_customer'">
+                                                        Select Down Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_customer_Screen'">
+                                                        Go to Customer Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'validate_order'">
+                                                        Validate Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'next_order'">
+                                                        Create New Order After Receipt Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_to_previous_screen'">
+                                                        Go to Previous Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_quantity_mode'">
+                                                        Select Quantity Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_discount_mode'">
+                                                        Select Discount Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_price_mode'">
+                                                        Select Price Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_product'">
+                                                        Search Product
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'add_new_order'">
+                                                        Add New Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'destroy_current_order'">
+                                                        Destroy Current Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_orderline'">
+                                                        Delete selected OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_payment_line'">
+                                                        Delete selected PayamentLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_orderline'">
+                                                        Select Up OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_orderline'">
+                                                        Select Down OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_customer'">
+                                                        Search Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'save_customer'">
+                                                        Save Customer Detail
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'create_customer'">
+                                                        Create New Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_payment_line'">
+                                                        Select Up Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_payment_line'">
+                                                        Select Down Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_customer'">
+                                                        Select Up Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+10'">
+                                                        +10
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+20'">
+                                                        +20
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+50'">
+                                                        +50
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <t t-if="each_screen == 'payment_screen'">
+                                <div class="sh_shortcut_table_header">Payment Screen Shortcut</div>
+        
+                                <table class="sh_shortcut_table table">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="pos.db.key_screen_by_grp[each_screen]" t-as="each_related_screen" t-key="each_related_screen">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="pos.db.key_screen_by_id[each_related_screen]" />
+                                                </td>
+                                                <td>
+                                                    <t t-if="each_related_screen == 'go_payment_screen'">
+                                                        Go to Payment Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_order_Screen'">
+                                                        Go to Order Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_order'">
+                                                        Search Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_order'">
+                                                        Select Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_order'">
+                                                        Select Down Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_order'">
+                                                        Select Up Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'set_customer'">
+                                                        Set Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'edit_customer'">
+                                                        Edit Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_customer'">
+                                                        Select Down Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_customer'">
+                                                        Select Up Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_customer_Screen'">
+                                                        Go to Customer Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'validate_order'">
+                                                        Validate Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'next_order'">
+                                                        Create New Order After Receipt Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_to_previous_screen'">
+                                                        Go to Previous Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_quantity_mode'">
+                                                        Select Quantity Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_discount_mode'">
+                                                        Select Discount Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_price_mode'">
+                                                        Select Price Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_product'">
+                                                        Search Product
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'add_new_order'">
+                                                        Add New Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'destroy_current_order'">
+                                                        Destroy Current Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_orderline'">
+                                                        Delete selected OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_payment_line'">
+                                                        Delete selected PayamentLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_orderline'">
+                                                        Select Up OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_orderline'">
+                                                        Select Down OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_customer'">
+                                                        Search Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'save_customer'">
+                                                        Save Customer Detail
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'create_customer'">
+                                                        Create New Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_payment_line'">
+                                                        Select Up Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_payment_line'">
+                                                        Select Down Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+10'">
+                                                        +10
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+20'">
+                                                        +20
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+50'">
+                                                        +50
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <t t-if="each_screen == 'receipt_screen'">
+                                <div class="sh_shortcut_table_header">Receipt Screen Shortcut</div>
+        
+                                <table class="sh_shortcut_table table">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="pos.db.key_screen_by_grp[each_screen]" t-as="each_related_screen" t-key="each_related_screen">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="pos.db.key_screen_by_id[each_related_screen]" />
+                                                </td>
+                                                <td>
+                                                    <t t-if="each_related_screen == 'go_payment_screen'">
+                                                        Go to Payment Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_order_Screen'">
+                                                        Go to Order Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_order'">
+                                                        Search Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_order'">
+                                                        Select Down Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_order'">
+                                                        Select Up Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_order'">
+                                                        Select Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_customer'">
+                                                        Select Down Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_customer'">
+                                                        Select Up Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_customer_Screen'">
+                                                        Go to Customer Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'validate_order'">
+                                                        Validate Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'next_order'">
+                                                        Create New Order After Receipt Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_to_previous_screen'">
+                                                        Go to Previous Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_quantity_mode'">
+                                                        Select Quantity Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_discount_mode'">
+                                                        Select Discount Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_price_mode'">
+                                                        Select Price Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_product'">
+                                                        Search Product
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'add_new_order'">
+                                                        Add New Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'destroy_current_order'">
+                                                        Destroy Current Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_orderline'">
+                                                        Delete selected OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_payment_line'">
+                                                        Delete selected PayamentLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_orderline'">
+                                                        Select Up OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_orderline'">
+                                                        Select Down OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_customer'">
+                                                        Search Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'save_customer'">
+                                                        Save Customer Detail
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'create_customer'">
+                                                        Create New Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_payment_line'">
+                                                        Select Up Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_payment_line'">
+                                                        Select Down Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+10'">
+                                                        +10
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+20'">
+                                                        +20
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+50'">
+                                                        +50
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'set_customer'">
+                                                        Set Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'edit_customer'">
+                                                        Edit Customer
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <t t-if="each_screen == 'all'">
+                                <div class="sh_shortcut_table_header">Common Shortcut</div>
+        
+                                <table class="sh_shortcut_table table">
+                                    <thead>
+                                        <tr>
+                                            <th>Key</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="pos.db.key_screen_by_grp[each_screen]" t-as="each_related_screen" t-key="each_related_screen">
+                                            <tr>
+                                                <td>
+                                                    <t t-esc="pos.db.key_screen_by_id[each_related_screen]" />
+                                                </td>
+                                                <td>
+                                                    <t t-if="each_related_screen == 'go_payment_screen'">
+                                                        Go to Payment Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_order_Screen'">
+                                                        Go to Order Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_order'">
+                                                        Search Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_order'">
+                                                        Select Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_order'">
+                                                        Select Down Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_order'">
+                                                        Select Up Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_customer'">
+                                                        Select Down Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_customer'">
+                                                        Select Up Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_customer_Screen'">
+                                                        Go to Customer Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'validate_order'">
+                                                        Validate Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'next_order'">
+                                                        Create New Order After Receipt Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'go_to_previous_screen'">
+                                                        Go to Previous Screen
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_quantity_mode'">
+                                                        Select Quantity Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_discount_mode'">
+                                                        Select Discount Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_price_mode'">
+                                                        Select Price Mode
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_product'">
+                                                        Search Product
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'add_new_order'">
+                                                        Add New Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'destroy_current_order'">
+                                                        Destroy Current Order
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_orderline'">
+                                                        Delete selected OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'delete_payment_line'">
+                                                        Delete selected PayamentLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_orderline'">
+                                                        Select Up OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_orderline'">
+                                                        Select Down OrderLine
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'search_customer'">
+                                                        Search Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'save_customer'">
+                                                        Save Customer Detail
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'create_customer'">
+                                                        Create New Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_up_payment_line'">
+                                                        Select Up Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'select_down_payment_line'">
+                                                        Select Down Payment Line
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+10'">
+                                                        +10
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+20'">
+                                                        +20
+                                                    </t>
+                                                    <t t-elif="each_related_screen == '+50'">
+                                                        +50
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'set_customer'">
+                                                        Set Customer
+                                                    </t>
+                                                    <t t-elif="each_related_screen == 'edit_customer'">
+                                                        Edit Customer
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </t>
+                    </t>
+        
+                    <t t-if="Object.keys(pos.db.key_payment_screen_by_grp).length > 0 and pos.db.key_payment_screen_by_grp">
+                        <div class="sh_shortcut_table_header">
+                            Payment Method Shortcut
+                        </div>
+                        <table class="sh_shortcut_table table">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="pos.db.key_payment_screen_by_grp['payment_screen']" t-as="each_related_screen" t-key="each_related_screen">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="pos.db.key_screen_by_id[each_related_screen]" />
+                                        </td>
+                                        <td>
+                                            <t t-if="each_related_screen and each_related_screen[1]">
+                                                <t t-esc="each_related_screen[1]" />
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                    
+                </div>
+                <footer class="footer footer-flex modal-footer sh_footer">
+                    <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                        Close
+                    </div>
+                </footer>
+             </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_order_label.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//li[hasclass('orderline')]" position="attributes">
+            <attribute name="t-if">!line.is_sh_order_label_demo_product</attribute>
+        </xpath>
+        <xpath expr="//t[@t-set='line']" position="after">
+            <t t-if="line.is_sh_order_label_demo_product and (line.display_label_in_receipt or line.display_label_in_line)">
+                <li t-att-data-label_id="line.add_section" class="orderline label_item bg-white">
+                    <h6 class="line_label">
+                        <t t-if='line and line.add_section'>
+                            <b>
+                                <t t-esc="line.add_section" />
+                            </b>
+                        </t>
+                        <t t-else=''></t>
+                    </h6>
+                    <span t-if="!line.display_label_in_receipt" t-on-click='() => this.remove_label(line.add_section)' class="remove_label">
+                        <i class="fa fa-fw fa-trash-o" />
+                    </span>
+                </li>
+            </t>
+        </xpath>
+    </t>
+</templates>

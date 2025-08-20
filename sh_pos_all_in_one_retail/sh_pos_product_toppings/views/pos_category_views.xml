@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_pos_product_toppings_category_inherit" model="ir.ui.view">
+        <field name="name">sh.product.toppings.category.form.view.inherit</field>
+        <field name="model">pos.category</field>
+        <field name="inherit_id" ref="point_of_sale.product_pos_category_form_view"></field>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet//group//group" position="inside">
+                <field name="sh_product_topping_ids" widget="many2many_tags"></field>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+    

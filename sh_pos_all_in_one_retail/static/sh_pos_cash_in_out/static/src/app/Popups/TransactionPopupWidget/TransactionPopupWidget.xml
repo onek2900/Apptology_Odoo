@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_cash_in_out.TransactionPopupWidget">
+        <div role="dialog" class=" sh_cash_in_out_option_modal_dialog">
+            <div class="popup popup-textinput popup-text popup-lg sh_payment_popup">
+                <div class="modal-header">
+                    <h4 class="modal-title">
+                        Payments
+                    </h4>
+                </div>
+                <div class="modal-body touch-scrollable scrollable-y main_div_sh_payment">
+                    <div class="main_div_sh_payment_table">
+                        <t t-if="pos.db.all_payment and pos.db.all_payment.length > 0">
+                            <table class="sh_payment_table table">
+                                <thead>
+                                    <th style="width: 26%;">Order</th>
+                                    <th style="width: 28%;">Payment Method</th>
+                                    <th style="width: 24%;">Amount</th>
+                                    <th style="width: 22%;">Date</th>
+                                </thead>
+                                <tbody>
+                                        <tr t-foreach="pos.db.all_payment" t-as="each_payment" t-key="each_payment.id">
+                                            <td>
+                                                <t t-if="each_payment.pos_order_id and each_payment.pos_order_id[1]">
+                                                    <t t-esc="each_payment.pos_order_id[1]" />
+                                                </t>
+                                                <t t-else="">
+                                                    -
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-if="each_payment.payment_method_id and each_payment.payment_method_id[1]">
+                                                    <t t-esc="each_payment.payment_method_id[1]" />
+                                                </t>
+                                                <t t-else="">
+                                                    -
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-if="each_payment.amount">
+                                                    <t t-esc="env.utils.formatCurrency(each_payment.amount)" />
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-esc="env.utils.formatCurrency(0.00)" />
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-if="each_payment.payment_date and each_payment.payment_date.split(' ') and each_payment.payment_date.split(' ')[0]">
+                                                    <t t-esc="each_payment.payment_date.split(' ')[0]" />
+                                                </t>
+                                                <t t-else="">
+                                                    -
+                                                </t>
+                                            </td>
+                                        </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                    <div class="main_div_sh_payment_footer">
+                       <div class="sh_starting_cash_div">
+                            <label class="starting_cash_lbl sh_lbl">Starting Cash :</label>
+                            <span class="starting_cash_value sh_value">
+                                <t t-if="pos.pos_session.cash_register_balance_start">
+                                    <t t-esc="env.utils.formatCurrency(pos.pos_session.cash_register_balance_start)" />
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="env.utils.formatCurrency(0.00)" />
+                                </t>
+                            </span>
+                        </div>
+                           <div class="sh_transaction_cash_div">
+                            <label class="transaction_cash_lbl sh_lbl">Transactions :</label>
+                            <span class="transaction_cash_value sh_value">
+                                <t t-if="pos.pos_session.cash_register_total_entry_encoding">
+                                    <t t-esc="env.utils.formatCurrency(pos.pos_session.cash_register_total_entry_encoding - pos.pos_session.cash_register_balance_start)" />
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="env.utils.formatCurrency(0.00)" />
+                                </t>
+                            </span>
+                        </div>
+                        <div class="sh_expected_cash_div">
+                            <label class="expected_cash_lbl sh_lbl">Expected in Cash :</label>
+                            <span class="expected_cash_value sh_value" >
+                                <t t-if="pos.pos_session.cash_register_balance_start and pos.pos_session.cash_register_total_entry_encoding">
+                                    <t t-esc="env.utils.formatCurrency(pos.pos_session.cash_register_total_entry_encoding)" />
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="env.utils.formatCurrency(0.00)" />
+                                </t>
+                            </span>
+                        </div>
+                        <div class="sh_actual_cash_div">
+                            <label class="actual_cash_lbl sh_lbl">Actual in Cash :</label>
+                            <span class="actual_cash_value sh_value">
+                                <t t-if="pos.pos_session.cash_register_balance_end_real">
+                                    <t t-esc="env.utils.formatCurrency(pos.pos_session.cash_register_balance_end_real)" />
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="env.utils.formatCurrency(0.00)" />
+                                </t>
+                            </span>
+                        </div>   
+                    </div>
+                </div>
+                <footer class="footer footer-flex modal-footer">
+                    <button class="button cancel btn btn-lg btn-secondary " t-on-click="cancel">
+                        Close
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </t>
+
+</templates>

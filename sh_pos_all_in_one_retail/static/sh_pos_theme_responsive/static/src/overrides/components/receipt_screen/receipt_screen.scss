@@ -1,0 +1,63 @@
+.pos{
+    .pos-content{
+        .receipt-screen{
+            @if $sh_pos_body_background_type =="bg_color" {
+                background: $sh_pos_body_background_color !important;
+            }
+            @if $sh_pos_body_background_type =="bg_img" {
+                background-color:  transparent !important;
+            } 
+            .sh_receipt_button{
+                display: flex;align-items: center;
+            }
+            .send-email{
+                .input-email.input-group{
+                    .form-control{
+                        border-top-right-radius: 0px !important;
+                        border-bottom-right-radius: 0px !important;
+                    }
+                    .send{
+                        border-top-left-radius: 0px !important;
+                        border-bottom-left-radius: 0px !important;
+                        &:focus{
+                            box-shadow: none !important;
+                        }
+                    }
+                }
+            }
+            .screen-content{
+                .top-content{
+                    .top-content-center{
+                        width: 100%;
+                        h1{
+                            color: $sh_pos_primary_color !important;font-weight: bold;text-shadow: 1px 1px 2px $sh_pos_primary_color;
+                        }
+                    }
+                }
+                .default-view{
+                    .actions{
+                        h1{
+                            text-align: center;color: $sh_pos_primary_color;text-shadow: 1px 1px 2px $sh_pos_primary_color;
+                        }
+                    }
+                }
+                .validation-buttons{
+                    .validation.button.next{
+                        background-color: $sh_pos_primary_color !important;border-color: $sh_pos_primary_color;
+                    }
+                }
+                .pos-receipt-container{
+                    .pos-receipt{
+                        .order-container{
+                            .orderline{
+                                .span_product_image, ul.info-list.ms-2{
+                                    display: none !important;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

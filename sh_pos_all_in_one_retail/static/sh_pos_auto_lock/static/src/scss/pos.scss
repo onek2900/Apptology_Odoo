@@ -1,0 +1,69 @@
+head + .blur_screen{
+	display: none !important;
+}
+.pos {
+	.blur_screen {
+		position: absolute;
+		top: 0;
+		content: "";
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 100%;
+		width: 100%;
+		z-index: 9;
+		background: linear-gradient(-11deg, rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.9) 100%);
+		h3 {
+			position: absolute;
+			top: 58%;
+			left: 50%;
+			transform: translate(-50%, 0%);
+			color: #fff;
+			font-size: 23px;
+		}
+		&:after {
+			position: absolute;
+			content: "\f13e";
+			font-size: 40px;
+			font-family: "fontAwesome";
+			color: #fff;
+			top: 50%;
+			left: 50%;
+			z-index: 2;
+			border-radius: 50%;
+			border: 2px solid #fff;
+			transform: translate(-50%, -50%);
+			width: 110px;
+			height: 110px;
+			display: flex;
+			align-items: center;
+			text-align: center;
+			justify-content: center;
+		}
+	}
+	.popup.popup-number.popup-password {
+		.title {
+			margin-bottom: 15px !important;
+			padding: 14px 20px !important;
+		}
+		.popup-numpad {
+			margin: 8px auto !important;
+			.input-button {
+				height: 45px !important;
+				width: 45px !important;
+			}
+			.mode-button {
+				height: 45px !important;
+				width: 45px !important;
+			}
+			br {
+				display: none;
+			}
+		}
+		.popup-input.value {
+			padding: 5px 10px !important;
+			min-height: 35px !important;
+		}
+	}
+}
+

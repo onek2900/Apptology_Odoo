@@ -1,0 +1,102 @@
+body.pos {
+	.pos-content {
+		.receipt-screen.screen {
+			.screen-content {
+				.pos-receipt-container {
+					.pos-receipt {
+						.discount_receipt {
+							margin-left: 33px;
+							color: #797a7c;
+							font-size: 14px;
+						}
+					}
+				}
+			}
+		}
+		.order-container {
+			.orderline {
+                .d-flex{
+                    align-items: center;
+                }
+				.sh_disc_orderline_icon {
+					.discount_icon {
+						width: 18px;
+						height: 18px;
+						margin-right: 5px;
+					}
+				}
+			}
+		}
+	}
+	.sh_discount_popup {
+		.discount_table {
+			th {
+				padding: 10px !important;
+			}
+			td {
+				padding: 10px !important;
+			}
+			thead {
+				background: #4A4F59;
+				color: #fff;
+				font-size: 16px;
+				text-transform: capitalize;
+				font-weight: 600;
+			}
+			.discount_row {
+				cursor: pointer;
+				&:nth-child(odd) {
+					background: #E0E2E6;
+				}
+				&:nth-child(even) {
+					background: #ffffff;
+				}
+				td {
+					font-size: 16px;
+					color: #4A4F59;
+					font-weight: normal;
+					text-transform: capitalize;
+				}
+				&:hover {
+					background: $sh_pos_primary_color;
+					color: #fff;
+					td {
+						color: #fff;
+					}
+				}
+			}
+			.discount_row.highlight {
+				background: $sh_pos_primary_color;
+				color: #fff;
+				td {
+					color: #fff;
+				}
+			}
+		}
+		.sh_discount_main_table {
+			height: 274px;
+			max-height: 285px !important;
+			overflow: auto !important;
+			&::-webkit-scrollbar {
+				width: 0px;
+			}
+            th, 
+            td{
+                @include media-breakpoint-down(lg) {
+                    white-space: nowrap;
+                }
+            }
+		}
+	}
+	.orderline {
+		.sh_pos_discount_orderline {
+			.info {
+				margin-left: 10px;
+				font-weight: bold;
+				color: #797a7c;
+				font-size: 15px;
+				display: inline-block !important;
+			}
+		}
+	}
+}

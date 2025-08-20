@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+	<t t-name="sh_pos_theme_responsive.ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension" owl="1">
+		<xpath expr="//button[hasclass('print')]" position="before">
+            <button class="button send_mail btn btn-lg btn-secondary w-100 py-3" t-on-click="onDisplaySendEmail">
+                <i class="fa fa-envelope-o ms-2"></i> Send Email
+            </button>
+        </xpath>
+        <xpath expr="//form[hasclass('send-email')]" position="attributes">
+            <attribute name="class">send-email d-flex hide_send_mail</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('my-3')]" position="attributes">
+            <attribute name="class">buttons my-3 sh_receipt_button</attribute>
+        </xpath>
+	</t>
+</templates>

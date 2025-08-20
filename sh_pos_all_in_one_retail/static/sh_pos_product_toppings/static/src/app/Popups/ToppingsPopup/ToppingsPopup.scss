@@ -1,0 +1,33 @@
+.sh_global_topping_popup {
+    .modal-body {
+        &.sh_global_topping_popup_body {
+            max-height: 320px !important;
+            min-height: 320px;
+            overflow: auto;
+
+            .sh_global_topping_div {
+
+                .sh_toppings_products,
+                .sh_global_toppins {
+                    .product {
+                        border: 1px solid transparent;
+                        cursor: pointer;
+
+                        &:focus {
+                            border-color: $sh_pos_primary_color !important;
+                        }
+
+                        &:hover {
+                            border-color: $sh_pos_primary_color !important;
+                        }
+                        .product-content{
+                            .product-name,.price-tag{
+                                font-weight: bolder;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

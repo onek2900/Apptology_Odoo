@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id='sh_pos_customer_view_inherit_form' model='ir.ui.view'>
+        <field name='name'>sh.pos.customer.maximum.discount.form</field>
+        <field name='model'>res.partner</field>
+        <field name='inherit_id' ref='base.view_partner_form'></field>
+        <field name='arch' type='xml'>
+            <field name='barcode' position='after'>
+                <field name='sh_enable_max_dic' class='mt16'></field>
+                <field class='' name='sh_maximum_discount' invisible='not sh_enable_max_dic'></field>
+                <field name='sh_discount_type' widget='radio' invisible='not sh_enable_max_dic'></field>
+            </field>
+        </field>
+    </record>
+    
+</odoo>

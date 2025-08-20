@@ -1,0 +1,137 @@
+.pos {
+	.popup {
+		.sh_discount_main_table {
+			.sh_discount_radio {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin-bottom: 18px;
+				.sh_custom_radio {
+					display: block;
+					position: relative;
+					padding-left: 26px;
+					padding-right: 26px;
+					margin-bottom: 0px;
+					cursor: pointer;
+					font-size: 16px;
+					input {
+						position: absolute;
+						z-index: -1;
+						opacity: 0;
+						margin: 0px !important;
+						padding: 0px !important;
+						width: 0px !important;
+						&:checked {
+							~ {
+								.sh_custom_radio_indicator {
+									background: $sh_pos_primary_color;
+									border: 1px solid $sh_pos_primary_color;
+									&:after {
+										display: block;
+									}
+								}
+							}
+						}
+					}
+					.sh_custom_radio_indicator {
+						position: absolute;
+						top: 0px;
+						left: 0;
+						height: 20px;
+						width: 20px;
+						background: #ffffff;
+						border: 1px solid #cccccc;
+						&:after {
+							content: '';
+							position: absolute;
+							display: none;
+						}
+					}
+				}
+				.sh_control_radio {
+					.sh_custom_radio_indicator {
+						border-radius: 50%;
+						&:after {
+							left: 5px;
+							top: 5px;
+							height: 8px;
+							width: 8px;
+							border-radius: 50%;
+							background: #fff;
+						}
+					}
+				}
+				.sh_return_exchange_radio {
+					display: flex;
+					justify-content: center;
+				}
+			}
+			.discount_amount_div {
+				.sh_discount_label {
+					margin-right: 8px;
+					font-size: 16px;
+				}
+			}
+			padding: 15px;
+			.sh_discount_value {
+				width: 25% !important;
+			}
+			.sh_discount_main_table {
+				.sh_discount_value {
+					&:focus {
+						border: 1px solid $sh_pos_primary_color;
+					}
+					&:focus-visible {
+						border: 1px solid $sh_pos_primary_color;
+					}
+				}
+			}
+			.sh_discount_value.invalid_number {
+				border: 1px solid #C53400 !important;
+				box-shadow: none !important;
+			}
+		}
+	}
+	.pos-content {
+		.leftpane {			
+            .sh_summary {
+				padding: 16px  !important;
+                .line.global_discount_line {
+                    .sh_global_title{
+                        font-weight: bold;
+                        padding: 0  !important;
+                    }
+                }
+            }
+		}
+	}
+}
+@include media-breakpoint-down(md) {
+	.pos {
+		.popup {
+			.sh_discount_main_table {
+				width: 100% !important;
+			}
+		}    
+        .summary.sh_summary {
+            .line.global_discount_line {
+                .total {
+                    font-size: 18px;
+                }
+                float: unset !important;
+                border-top: 0px;
+            }
+            .line {
+                .total {
+                    font-size: 18px;
+                }
+                float: unset !important;
+                .entry.total {
+                    .subentry {
+                        text-align: right;
+                    }
+                }
+            }
+        }
+	}
+}

@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+sh_pos_all_in_one_retail.access_import_pos_wizard,access_import_pos_wizard,sh_pos_all_in_one_retail.model_import_pos_wizard,base.group_user,1,1,1,1

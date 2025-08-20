@@ -1,0 +1,7 @@
+POS,Session Name,Customer,Order Date,User,Product,Description,Ordered Qty,Unit of Measure,Unit Price,Taxes
+pos1,POS/00001,Jay,2018-08-25,Marc Demo,123456,abs desc,10,Units,5000,
+pos2,POS/00001,Jay,2018-08-26,Marc Demo,123456,abs desc,20,Units,5001,
+pos3,POS/00001,Jay,2018-08-27,Marc Demo,123456,abs desc,30,Units,5002,
+pos4,POS/00001,Jay,2018-08-28,Marc Demo,123456,abs desc,1,Units,5003,
+pos5,POS/00001,Jay,2018-08-29,Marc Demo,123456,abs desc,2,Units,5004,
+pos6,POS/00001,Jay,2018-08-30,Marc Demo,123456,abs desc,3,Units,5005,

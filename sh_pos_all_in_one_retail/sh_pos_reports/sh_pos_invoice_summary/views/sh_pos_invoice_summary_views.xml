@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sh_pos_invoice_summary_view_tree" model="ir.ui.view">
+        <field name="name">sh.pos.invoice.summary.view.tree</field>
+        <field name="model">sh.pos.invoice.summary</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="name" />
+                <field name="order_date" optional="show" />
+                <field name="sh_partner_id" optional="show"/>
+                <field name="invoice_number" optional="show" />
+                <field name="invoice_date" optional="show"/>
+                <field name="amount_invoiced" sum="Total Amount Invoiced" optional="show" />
+                <field name="currency_id" column_invisible='True' />
+                <field name="amount_paid" sum="Total Amount Paid" optional="show" />
+                <field name="amount_due" sum="Total Amount Due" optional="show" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_pos_invoice_summary_view_search" model="ir.ui.view">
+        <field name="name">sh.pos.invoice.summary.view.search</field>
+        <field name="model">sh.pos.invoice.summary</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="order_date" />
+                <field name="sh_partner_id" />
+                <field name="invoice_number" />
+                <field name="invoice_date" />
+                <field name="amount_invoiced" />
+                <field name="amount_paid" />
+                <field name="amount_due" />
+                <filter string="Customer" name="group_customer" domain="[]"
+                    context="{'group_by': 'sh_partner_id'}" />
+                <filter string="Order Date" name="group_order_date" domain="[]"
+                    context="{'group_by': 'order_date'}" />
+                <filter string="Invoice Date" name="group_invoice_date" domain="[]"
+                    context="{'group_by': 'invoice_date'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_pos_invoice_summary_action" model="ir.actions.act_window">
+        <field name="name">Point Of Sale Invoice Summary</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.pos.invoice.summary</field>
+        <field name="context">{'search_default_group_customer': 1}</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

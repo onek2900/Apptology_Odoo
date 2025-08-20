@@ -1,0 +1,65 @@
+
+body.pos {
+	.sh_pos_order_detail_table {
+		table {
+            thead{
+                th {
+                    padding: 12px 12px !important;
+                    line-height: unset !important;
+                    background: #ccc;
+                }  
+            }
+            tbody{
+                tr{
+                    td {
+                        padding: 12px 12px !important;
+                        line-height: unset !important;
+                    }
+                    &.highlight{
+                        transition: all 150ms linear;
+                        background: $o-brand-primary !important;
+                        color: white; 
+                    }
+                }
+            }			
+		}
+		margin-top: 40px;
+		width: 100%;
+		overflow: auto;
+		width: 100%;
+		table.Order-Tbl {
+			width: 100%;
+			border: 1px solid #888;
+			box-shadow: rgba(0, 0 ,0 , 0.16) 0px 5px 5px 0px, rgba(0, 0, 0, 0.12) 0px 2px 10px 0px;
+			text-align: center;
+			font-size: 15px;
+		}
+	}
+	.inner_order_line_table {
+		thead{
+            th {
+                padding: 12px 12px !important;
+                line-height: unset !important;
+                background: #ccc;
+            }  
+        }
+        tbody{
+            tr{
+                td {
+                    padding: 12px 12px !important;
+                    line-height: unset !important;
+                }
+                &:hover{
+                    transition: all 150ms linear;
+                    background: $o-brand-primary !important;
+                    color: white;  
+                }
+            }
+        }
+		line-height: unset !important;
+	}
+    .client_history_icon{
+        font-size: 17px;
+        padding-top: 10px;
+    }
+}

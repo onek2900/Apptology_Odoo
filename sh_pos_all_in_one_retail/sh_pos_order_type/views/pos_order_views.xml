@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <record id="sh_order_type_inherit_form_view" model="ir.ui.view">
+        <field name="name">sh.order.type.form.inherit</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <field name="session_id" position="after">
+                <field name="sh_order_type_id" readonly='1'/>
+            </field>
+        </field>
+    </record>
+</odoo>

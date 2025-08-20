@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="sh_payment_pos_report_group" model="res.groups">
+        <field name="name">Show User Field In POS Payment Report</field>
+        <field name="users" eval="[Command.link(ref('base.user_root')), Command.link(ref('base.user_admin'))]" />
+    </record>
+    <record model="res.groups" id="sh_group_payment_pos_report">
+        <field name="name">Payment Pos Report</field>
+        <field name="users" eval="[(4, ref('base.user_admin'))]" />
+    </record>
+</odoo>

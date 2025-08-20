@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <record id="order_inherited_form_view" model="ir.ui.view">
+        <field name="name">pos.order.inherited.view</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="arch" type="xml">
+            <!-- <xpath expr="//page[@name='extra']" position="after"> -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Signature">
+                    <field name="signature" widget="image" options='{"size": [220, 150]}' />
+                    <br />
+                    <label for="signature_name" />
+                    <field name="signature_name" />
+                    <br />
+                    <label for="signature_date" />
+                    <field name="signature_date" />
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

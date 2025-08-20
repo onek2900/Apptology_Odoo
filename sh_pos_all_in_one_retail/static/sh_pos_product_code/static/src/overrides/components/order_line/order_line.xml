@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="sh_product_reference_template" xml:space="preserve">
+
+    <!-- <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr='//div[hasclass("product-name")]' position='inside'>
+            <t t-if='env.services.pos.config.sh_enable_product_code_in_cart'>
+                <t t-if="line.product_default_code_in_cart">
+                    <span id="test_1" class="sh_default_code">
+                        [
+                        <t t-esc="line.product_default_code_in_cart" />
+                        ]
+                    </span>
+                </t>
+            </t>
+            <t t-if='env.services.pos.config.sh_enable_product_code_in_receipt'>
+                <t t-if="line.product_default_code_in_receipt">
+                    <span id="test_1" class="sh_default_code">
+                        [
+                        <t t-esc="line.product_default_code_in_receipt" />
+                        ]
+                    </span>
+                </t>
+            </t>
+        </xpath>
+    </t> -->
+</templates>

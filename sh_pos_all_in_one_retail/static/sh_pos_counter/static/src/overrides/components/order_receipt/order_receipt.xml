@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-extend="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('before-footer')]" position="before">
+            <div style="margin-top: 15px;">
+                <t t-if="env.services.pos.config.enable_pos_item_counter and env.services.pos.config.enable_pos_item_report"> Total Items: <span t-esc="props.data.total_items" class="pos-receipt-left-align" />
+                </t>
+                <t t-if="env.services.pos.config.enable_pos_item_counter and env.services.pos.config.enable_pos_qty_counter and env.services.pos.config.enable_pos_qty_report and env.services.pos.config.enable_pos_item_report">
+                    |
+                </t>
+                <t t-if="env.services.pos.config.enable_pos_qty_counter and env.services.pos.config.enable_pos_qty_report"> Total Qty: <span t-esc="props.data.total_qty" class="pos-receipt-left-align" />
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>

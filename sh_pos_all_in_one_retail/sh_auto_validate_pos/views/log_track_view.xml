@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Log Track FORM VIEW -->
+    <record id="sh_log_track_form_view" model="ir.ui.view">
+        <field name="name">sh.log.track.form.view</field>
+        <field name="model">log.track</field>
+        <field name="arch" type="xml">
+            <form string="Log Track" create="0" edit="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date" />
+                            <field name="session_id" />
+                            <field name="error" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Log Track TREE VIEW -->
+    <record id="sh_log_track_tree_view" model="ir.ui.view">
+        <field name="name">sh.log.track.tree.view</field>
+        <field name="model">log.track</field>
+        <field name="arch" type="xml">
+            <tree string="Log Track" create="0" edit="0">
+                <field name="date" optional='show' />
+                <field name="session_id" optional='show' />
+                <field name="error" optional='show' />
+            </tree>
+        </field>
+    </record>
+    <!-- Log Track ACTION -->
+    <record id="sh_log_track_action" model="ir.actions.act_window">
+        <field name="name">Log Track</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">log.track</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Settings Menu -->
+    <menuitem id="sh_log_track_menu" action="sh_log_track_action" name="Log Track" groups="point_of_sale.group_pos_manager" parent="point_of_sale.menu_point_config_product" sequence="100" />
+</odoo>

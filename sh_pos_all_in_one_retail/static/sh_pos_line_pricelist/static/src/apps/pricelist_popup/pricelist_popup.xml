@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="point_of_sale.PriceListPopupWidget">
+        <div class="popup sh_modal_pricelist">
+            <div class="modal-header">
+                <h4 class="modal-title title drag-handle sh_pricelist_popup">
+                    PRICELIST
+                </h4>
+            </div>
+            <main class="body modal-body sh_pricelist_main_table">
+                <table class="pricelist_table">
+                    <tbody>
+                        <t t-if="props.available_pricelist">
+                            <t t-foreach="props.available_pricelist" t-as="each_pricelist" t-key="each_pricelist.id">
+                                <tr t-att-data-id="each_pricelist.id" class="pricelist_row" t-on-click="onClickPricelistRow">
+                                    <td>
+                                        <t t-esc="each_pricelist.name" />
+                                    </td>
+                                    <td class="price_td" t-att-data-price="each_pricelist.display_price"><t t-esc="env.utils.formatCurrency(each_pricelist.display_price)" /></td>
+                                </tr>
+                            </t>
+                        </t>
+                        <t t-if="props.pricelist_for_code">
+                            <t t-foreach="props.pricelist_for_code" t-as="each_pricelist" t-key="each_pricelist.id">
+                                <tr t-att-data-id="each_pricelist.id" class="pricelist_row only_read" style="background: #ddd;">
+                                    <td>
+                                        <t t-esc="each_pricelist.name" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="each_pricelist.display_price" />
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+            </main>
+            <footer class="footer modal-footer">
+                <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    Cancel
+                </div>
+            </footer>
+        </div>
+    </t>
+
+</templates>

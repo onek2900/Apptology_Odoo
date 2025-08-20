@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="PaymentScreenButtons" t-inherit="point_of_sale.PaymentScreenButtons" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('partner-button')]" position="attributes">
+            <t t-if="pos and pos.user and pos.user.groups_id and pos.config.group_select_customer and pos.config.group_select_customer[0]">
+                <attribute name="t-att-class" >{ 'highlight text-bg-primary': currentOrder.get_partner(),'sh_disabled':pos.user.groups_id.indexOf(pos.config.group_select_customer[0]) !== -1}</attribute>
+            </t>
+        </xpath>
+    </t>
+</templates>

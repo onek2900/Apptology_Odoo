@@ -1,0 +1,514 @@
+<?xml version="1.0"?>
+<odoo>
+    <record id="sh_res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.sh_pos_order_list</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="pos_inventory_section" position="after">
+                <block title="Retail Configurations">
+                    <!-- Counter Config  -->
+                    <div style="font-size: 15px; font-weight: 600;">Update Product/Customer Info</div>
+                    <setting>
+                        <field name="sh_product_upate" widget="radio"/>
+                    </setting>
+                    <setting>
+                        <field name="sh_partner_upate" widget="radio"/>
+                    </setting>
+                    <div style="font-size: 15px; font-weight: 600;">POS Counter</div>
+                    <setting>
+                        <field name="pos_enable_pos_item_counter"/>
+                        <div class="mt16" invisible="not pos_enable_pos_item_counter">
+                            <field name="pos_enable_pos_item_report" />
+                            <label for="pos_enable_pos_item_report"/>
+                        </div>
+                    </setting>
+                    <setting>
+                        <field name="pos_enable_pos_qty_counter" />
+                        <div class="mt16" invisible="not pos_enable_pos_qty_counter">
+                            <field name="pos_enable_pos_qty_report" />
+                            <label for="pos_enable_pos_qty_report"/>
+                        </div>
+                    </setting>
+                    <!-- Create Sale order -->
+                    <div style="font-size: 15px; font-weight: 600;"> Create Sale order </div>
+                    <setting string="Create Sale Order">
+                        <field name="pos_sh_display_sale_btn" />
+                        <div class="text-muted">
+                            Create sale order from point of sale
+                        </div>
+                        <div class="mt16" invisible="not pos_sh_display_sale_btn">
+                            <field name="pos_select_order_state" invisible="not pos_sh_display_sale_btn" widget="radio" />
+                        </div>
+                    </setting>
+                    <!-- Create Purchase from pos -->
+                    <div style="font-size: 15px; font-weight: 600;"> Create Purchase Order </div>
+                    <setting string="Create Purchase Order">
+                        <field name="pos_sh_dispaly_purchase_btn" />
+                        <div class="text-muted">
+                            Create purchase order from point of sale
+                        </div>
+                        <div class="mt16" invisible="not pos_sh_dispaly_purchase_btn">
+                            <field name="pos_select_purchase_state" invisible="not pos_sh_display_sale_btn" widget="radio" />
+                        </div>
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;"> Order Line Label Configuration </div>
+                    <setting string="Enable Order Line Label">
+                        <field name="enable_order_line_label" />
+                        <div class="mt16" invisible="not enable_order_line_label">
+                            <field name="enable_order_line_label_in_receipt" />
+                            <label for="enable_order_line_label_in_receipt"/>
+                        </div>
+                        <div class="mt16" invisible="not enable_order_line_label">
+                            <field name="enabel_delete_label_with_product" />
+                            <label for="enabel_delete_label_with_product"/>
+                        </div>
+                    </setting>
+                    <setting> 
+                         <!-- created for blank dir -->
+                    </setting>
+                    <div style="font-size: 15px; font-weight: 600;"> Order List Configuration </div>
+                    <setting>
+                        <field name="pos_sh_enable_order_list"/>
+                        <div class="mt16">
+                            <div class="text-muted">
+                                Use to show pos ordes in Point of sale
+                            </div>
+                        </div>
+                        <div class="mt16" invisible="not pos_sh_enable_order_list">
+                            <label for="pos_sh_load_order_by" class="o_light_label"/>
+                            <field name="pos_sh_load_order_by" required="pos_sh_enable_order_list" />
+                        </div>
+                        <div class="mt16" invisible="not pos_sh_enable_order_list or pos_sh_load_order_by != 'session_wise'" help="Load Order of Current Session or Last No Of Session">
+                            <label for="pos_sh_session_wise_option" class="o_light_label"/>
+                            <field name="pos_sh_session_wise_option" widget="radio" required="pos_sh_enable_order_list" />
+                            <div invisible="not pos_sh_enable_order_list or pos_sh_load_order_by != 'session_wise' or pos_sh_session_wise_option == 'current_session'">
+                                <label for="pos_sh_last_no_session" class="o_light_label"/>
+                                <field name="pos_sh_last_no_session" invisible="not pos_sh_enable_order_list or pos_sh_load_order_by != 'session_wise' or pos_sh_session_wise_option == 'current_session'" required="pos_sh_enable_order_list" />
+                            </div>
+                        </div>
+                        <div class="mt16" invisible="not pos_sh_enable_order_list or pos_sh_load_order_by != 'day_wise'" help="Load Order of Current Day or Last No Of Days">
+                            <label for="pos_sh_day_wise_option" class="o_light_label"/>
+                            <field name="pos_sh_day_wise_option" widget="radio" required="pos_sh_enable_order_list" />
+                            <div invisible="not pos_sh_enable_order_list or pos_sh_load_order_by != 'day_wise' or pos_sh_day_wise_option == 'current_day'">
+                                <label for="pos_sh_last_no_days" class="o_light_label"/>
+                                <field name="pos_sh_last_no_days" invisible="not pos_sh_enable_order_list or pos_sh_load_order_by != 'day_wise' or pos_sh_day_wise_option == 'current_day'" required="pos_sh_enable_order_list" />
+                            </div>
+                        </div>
+                        <div class="mt16" invisible="not pos_sh_enable_order_list">
+                            <label for="pos_sh_how_many_order_per_page" class="o_light_label"/>
+                            <field name="pos_sh_how_many_order_per_page" required="pos_sh_enable_order_list" />
+                        </div>
+                    </setting>
+
+                    <setting id="sh_pos_order_re_order" invisible="not pos_sh_enable_order_list">
+                        <div class="mt16" invisible="not pos_sh_enable_order_list">
+                            <field name="pos_sh_enable_re_order"/>
+                            <label for="pos_sh_enable_re_order" />
+                            <div class="text-muted">
+                                ReOrder POS Order From Order Screen
+                            </div>
+                        </div>
+                        <div class="mt16" invisible="not pos_sh_enable_order_list">
+                            <field name="pos_sh_enable_order_reprint"/>
+                            <label for="pos_sh_enable_order_reprint" />
+                            <div class="text-muted">
+                                Print Order Receipt From Order Screen
+                            </div>
+                        </div>
+                    </setting>
+                    <div style="font-size: 15px; font-weight: 600;"> Order Return/Exchange Configuration
+                        <setting>
+                            <field name="sh_allow_return"  />
+                        </setting>
+                        <setting invisible="not sh_allow_return">
+                            <field name="sh_return_more_qty"  />
+                        </setting>
+                        <setting invisible="not sh_allow_return">
+                            <field name="sh_return_print_receipt"  />
+                        </setting>
+                        <setting>
+                            <field name="sh_allow_exchange"  />
+                        </setting>
+                        <setting invisible="not sh_allow_exchange">
+                            <field name="sh_exchange_print_receipt"  />
+                        </setting>
+                    </div>
+                    <!-- receipt extend -->
+                    <div style="font-size: 15px; font-weight: 600;"> POS Extended Receipt </div>
+                    <setting help=" Display Barcode / QrCode in Receipt">
+                        <field name="pos_sh_pos_receipt_bacode_qr" />
+                        <div class="content-group mt16" invisible="not pos_sh_pos_receipt_bacode_qr">
+                            <div>
+                                <field name="pos_sh_pos_receipt_barcode_qr_selection" widget="radio" invisible="not pos_sh_pos_receipt_bacode_qr" />
+                            </div>
+                        </div>
+                    </setting>
+                    <setting help="Display Invoice Number in Receipt">
+                        <field name="pos_sh_pos_receipt_invoice"  />
+                    </setting>
+                    <setting help="Display Order Number in Receipt">
+                        <field name="pos_sh_pos_order_number"  />
+                    </setting>
+                    <setting help="Display Customer Detail in Receipt" class="sh_receipt_customer_config">
+                        <field name="pos_sh_pos_receipt_customer_detail"  />
+                        <div class="content-group mt16" invisible="not pos_sh_pos_receipt_customer_detail">
+                            <div>
+                                <field name="pos_sh_pos_receipt_customer_name" style="width: 4%;" />
+                                <label for="pos_sh_pos_receipt_customer_name" style="font-weight: normal;" />
+                                <br />
+                                <field name="pos_sh_pos_receipt_customer_address" style="width: 4%;" />
+                                <label for="pos_sh_pos_receipt_customer_address" style="font-weight: normal;" />
+                                <br />
+                                <field name="pos_sh_pos_receipt_customer_mobile" style="width: 4%;" />
+                                <label for="pos_sh_pos_receipt_customer_mobile" style="font-weight: normal;" />
+                                <br />
+                                <field name="pos_sh_pos_receipt_customer_phone" style="width: 4%;" />
+                                <label for="pos_sh_pos_receipt_customer_phone" style="font-weight: normal;" />
+                                <br />
+                                <field name="pos_sh_pos_receipt_customer_email" style="width: 4%;" />
+                                <label for="pos_sh_pos_receipt_customer_email" style="font-weight: normal;" />
+                                <br />
+                                <field name="pos_sh_pos_vat" style="width: 4%;" />
+                                <label for="pos_sh_pos_vat" style="font-weight: normal;" />
+                                <br />
+                                <field name="pos_sh_pos_vat_name" style='width: 20%;' invisible='not pos_sh_pos_vat' placeholder="Vat" />
+                            </div>
+                        </div>
+                    </setting>
+                    <setting help="Enable A3 recipts inside POS interface">
+                        <field name="pos_sh_enable_a3_receipt"  />
+                    </setting>
+                    <setting help=" Enable A4 recipts inside POS interface">
+                        <field name="pos_sh_enable_a4_receipt"  />
+                    </setting>
+                    <setting help=" Enable A5 recipts inside POS interface">
+                        <field name="pos_sh_enable_a5_receipt"  />
+                    </setting>
+                    <setting string="Default Receipt">
+                        <field name="pos_sh_default_receipt" widget="radio"/>
+                    </setting>
+
+                    <!-- variant cusnfiguratio  -->
+                    <div style="font-size: 15px; font-weight: 600;"> POS product variant </div>
+                    <setting>
+                        <field name="pos_sh_pos_enable_product_variants" />
+                        <setting   invisible="not pos_sh_pos_enable_product_variants">
+                            <field name="pos_sh_pos_variants_group_by_attribute"  />
+                        </setting>
+                    </setting>
+                    <setting  invisible="not pos_sh_pos_enable_product_variants">
+                        <field name="pos_sh_close_popup_after_single_selection"  />
+                    </setting>
+                    <setting   invisible="not pos_sh_pos_enable_product_variants">
+                        <field name="pos_sh_pos_display_alternative_products"  />
+                    </setting>
+
+                    <!-- wh stock -->
+                    <div style="font-size: 15px; font-weight: 600;"> POS Stock Information </div>
+                    <setting  help="Display Warehouse wise Product Quantity">
+                        <field name="pos_sh_display_stock" />
+                        <div class="content-group mt16" invisible="not pos_sh_display_stock">
+                            <div class="row mt16">
+                                <field name="pos_sh_display_by" widget="radio"/>
+                            </div>
+                        </div>
+                    </setting> 
+                    <setting invisible="not pos_sh_display_stock" help="Select precific location to display qty in pos">
+                        <field name="pos_sh_show_qty_location" />
+                        <div class="content-group mt16" invisible="not pos_sh_show_qty_location" >
+                            <div class="row mt16">
+                                <field name="pos_sh_pos_location" required="pos_sh_show_qty_location" />
+                            </div>
+                        </div>
+                        <div class="content-group mt16" invisible="not pos_sh_show_qty_location"  >
+                            <div class="row mt16">
+                                <label for="pos_sh_min_qty" />
+                                <field name="pos_sh_min_qty"  help="Deny order when available quantity lower than"  />
+                                <div class="text-muted">
+                                    Deny order when available quantity lower than
+                                </div>
+                            </div>
+                        </div>
+                    </setting>
+
+                    <!-- remove cart item  -->
+                    <div style="font-size: 15px; font-weight: 600;"> Remove All Item From Cart </div>
+                    <setting string="Remove All Item From Cart" help="Allow to remove all product from cart">
+                        <field name="pos_sh_remove_all_item" />
+                        <div class="row mt16" invisible='not pos_sh_remove_all_item'>
+                            <div class="col">
+                                <field name="sh_validation_to_remove_all_item" />
+                                <label for="sh_validation_to_remove_all_item" class=" o_light_label" />
+                            </div>
+                        </div>
+                    </setting>
+                    
+                    <!-- Keyabotad shortcut -->
+                    
+                    <div style="font-size: 15px; font-weight: 600;"> POS Shortcut </div>
+                    <setting >
+                        <field name="pos_sh_enable_shortcut" />
+                    </setting>
+                    <div class="content-group" invisible='not pos_sh_enable_shortcut'>
+                        <div class="mt16">
+                            <field name="pos_sh_shortcut_keys_screen">
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="sh_shortcut_screen" required="1" />
+                                        </group>
+                                        <group>
+                                            <field name="sh_shortcut_screen_type" required="1" />
+                                        </group>
+                                    </group>
+                                    <field name="sh_key_ids">
+                                        <tree editable="bottom">
+                                            <field name="sh_key_ids" options="{'no_create': True, 'no_create_edit':True}" />
+                                        </tree>
+                                    </field>
+                                </form>
+                                <tree>
+                                    <field name="sh_shortcut_screen" required="1" />
+                                    <field name="sh_shortcut_screen_type" required="1" />
+                                </tree>
+                            </field>
+                            <field name="pos_sh_payment_shortcut_keys_screen">
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="payment_method_id" required="1" options="{'no_create': True, 'no_create_edit':True}" />
+                                        </group>
+                                        <group>
+                                            <field name="sh_payment_shortcut_screen_type" required="1" />
+                                        </group>
+                                    </group>
+                                    <field name="sh_key_ids">
+                                        <tree editable="bottom">
+                                            <field name="sh_key_ids" options="{'no_create': True, 'no_create_edit':True}" />
+                                        </tree>
+                                    </field>
+                                </form>
+                                <tree>
+                                    <field name="payment_method_id" required="1" options="{'no_create': True, 'no_create_edit':True}" />
+                                    <field name="sh_payment_shortcut_screen_type" required="1" />
+                                </tree>
+                            </field>
+                        </div>
+                    </div>
+
+                    <!-- pos discount -->
+                    <div style="font-size: 15px; font-weight: 600;"> POS Discount </div>
+                    <setting>
+                        <field name="pos_sh_allow_order_line_discount" />
+                    </setting>
+                    <setting>
+                        <field name="pos_sh_allow_global_discount" />
+                    </setting>
+                    
+                    <!-- Product Suggestion -->
+                    <div style="font-size: 15px; font-weight: 600;"> POS Product Suggetion </div>
+                    <setting>
+                        <field name="pos_enable_product_suggestion" />
+                    </setting>
+                    
+                    <div style="font-size: 15px; font-weight: 600;"> Product Internal Reference </div>
+                    <setting>
+                        <field name="pos_sh_enable_prduct_code" />
+                    </setting>
+                    <setting>
+                        <field name="pos_sh_enable_product_code_in_cart" />
+                    </setting>
+                    <setting>
+                        <field name="pos_sh_enable_product_code_in_receipt" />
+                    </setting>
+                    
+                    <!-- POS Cash Control -->
+                    <div style="font-size: 15px; font-weight: 600;"> POS Cash Control </div>
+                    <setting>
+                        <field name="pos_sh_enable_cash_in_out_statement" />
+                    </setting>
+                    <setting>
+                        <field name="pos_sh_enable_payment" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;"> POS Product Modifier </div>
+                    <setting>
+                        <field name="pos_sh_enable_toppings" />
+                    </setting>
+                    <setting  invisible="not pos_sh_enable_toppings">
+                        <field name="pos_sh_add_toppings_on_click_product"/>
+                    </setting>
+                    <setting  invisible="not pos_sh_enable_toppings">
+                        <field name="pos_sh_allow_same_product_different_qty"/>
+                    </setting>
+                    
+                    <div style="font-size: 15px; font-weight: 600;"> Order Types </div>
+                    <setting>
+                        <field name="enable_order_type" />
+                    </setting>
+                    <setting invisible="not enable_order_type" required="1">
+                        <field name="order_type_mode" widget="radio" required="enable_order_type"/>
+                    </setting>
+                    <setting invisible="order_type_mode != 'multi'" >
+                        <field name="order_types_ids" widget="many2many_tags" invisible="order_type_mode != 'multi'"/>
+                    </setting>
+                    <setting invisible="not enable_order_type" >
+                        <field name="order_type_id" required="order_type_mode != 'multi' and enable_order_type"/>
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Multi Barcode</div>
+                    <setting string="Enable Multi Barcode">
+                        <field name="pos_sh_enable_multi_barcode" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Own Customer</div>
+                    <setting>
+                        <field name="pos_sh_enable_own_customer" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Default Customer</div>
+                    <setting>
+                        <field name="pos_sh_enable_default_customer" />
+                    </setting>
+                    <setting invisible="pos_sh_enable_default_customer != True">
+                        <field name="pos_sh_default_customer_id" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Own Product</div>
+                    <setting>
+                        <field name="pos_sh_enable_own_product" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Default Invoice</div>
+                    <setting>
+                        <field name="pos_sh_enable_default_invoice" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Order Signature</div>
+                    <setting>
+                        <field name="pos_sh_enable_order_signature" />
+                        <div class="content-group mt16" invisible="not pos_sh_enable_order_signature">
+                            <field name="pos_sh_enable_name"   />
+                            <label for="pos_sh_enable_name"  />
+                            
+                            <br />
+                            <field name="pos_sh_enable_date" />
+                            <label for="pos_sh_enable_date"  />
+                            <br />
+                        </div>
+                    </setting>
+                    <setting>
+                        <field name="pos_sh_display_signature_detail" />
+                        <div class="content-group mt16" invisible="not pos_sh_display_signature_detail">
+                            <field name="pos_sh_display_signature"  />
+                            <label for="pos_sh_display_signature"  /><br />
+                            <field name="pos_sh_display_name"  />
+                            <label for="pos_sh_display_name"  /><br />
+                            <field name="pos_sh_display_date"  />
+                            <label for="pos_sh_display_date"  /><br />
+                        </div>
+                    </setting>
+                    <div style="font-size: 15px; font-weight: 600;">UOM Settings</div>
+                    <setting>
+                        <field name="pos_select_uom_type" widget="radio" style="width: 180px;"/>
+                    </setting>
+                    <setting invisible="pos_select_uom_type == 'primary'">
+                        <field name="pos_enable_price_to_display" />
+                    </setting>
+                    <div style="font-size: 15px; font-weight: 600;">POS Auto Lock</div>
+                    <setting string="Enable POS Auto Lock">
+                        <field name="pos_sh_enable_auto_lock" />
+                    </setting>
+                    <setting string="Time Interval (In Second)" invisible="not pos_sh_enable_auto_lock">
+                        <field name="pos_sh_lock_timer" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Weight &amp; Volume</div>
+                    <setting>
+                        <field name="pos_enable_weight"/>
+                    </setting>
+                    <setting invisible="not pos_enable_weight">
+                        <field name="pos_product_weight_receipt"/>
+                    </setting>
+                    <setting>
+                        <field name="pos_enable_volume"/>
+                    </setting>
+                    <setting invisible="not pos_enable_volume">
+                        <field name="pos_product_volume_receipt"/>
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Custom Discount</div>
+                    <!-- <setting help="Standard Discount Feature Disable.">
+                        <field name="sh_apply_custom_discount"/>
+                    </setting> -->
+                    <setting help="Separate Action Icon.">
+                        <field name="sh_apply_both_discount"/>
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">POS Custom Maximum Discount</div>
+                    <setting>
+                        <field name="pos_sh_pos_enable_customer_max_discount"/>
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">Product Template</div>
+                    <!-- <setting help="Standard Discount Feature Disable.">
+                        <field name="sh_apply_custom_discount"/>
+                    </setting> -->
+                    <setting>
+                        <field name="pos_sh_enable_product_template"/>
+                    </setting>
+                    <div style="font-size: 15px; font-weight: 600;"> POS Note </div>
+                    <setting >
+                        <field name="pos_enable_orderline_note" />
+                        <div>
+                            <div class="content-group" invisible='not pos_enable_orderline_note'>
+                                <div class="mt16">
+                                    <label for="pos_display_orderline_note_receipt" class="o_light_label" />
+                                    <field name="pos_display_orderline_note_receipt" />
+                                </div>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting >
+                        <field name="pos_enable_order_note" />
+                        <div>
+                            <div class="content-group" invisible='not pos_enable_order_note'>
+                                <div class="mt16">
+                                    <label for="pos_display_order_note_receipt" class="o_light_label" />
+                                    <field name="pos_display_order_note_receipt" />
+                                    <label for="pos_display_order_note_payment" class="o_light_label" />
+                                    <field name="pos_display_order_note_payment" />
+                                </div>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting>
+                        <field name="pos_hide_extra_note_checkbox" />
+                    </setting>
+
+                    <div style="font-size: 15px; font-weight: 600;">Whatsapp Configuration</div>
+                    <setting>
+                        <field name="pos_enable_whatsapp"/>
+                    </setting>
+                </block>
+            </block>
+            <block id="pos_pricing_section" position="inside">
+                <div  id="sh_default_pricelist_setting"  class="col-12 col-lg-6 o_setting_box price_control" groups="base.group_multi_currency,product.group_product_pricelist">
+                    <div class="o_setting_left_pane"></div>
+                    <div class="o_setting_right_pane">
+                        <div>
+                            <label for="pos_sh_pricelist_for_code"/>
+                            <field name="pos_sh_pricelist_for_code" widget="many2many_tag" />
+                        </div>
+                        <div>
+                            <label for="pos_sh_min_pricelist_value" />
+                            <field name="pos_sh_min_pricelist_value" widget="many2many_tag" />
+                        </div>
+                    </div>
+                </div>
+            </block>
+        </field>
+    </record>
+</odoo>

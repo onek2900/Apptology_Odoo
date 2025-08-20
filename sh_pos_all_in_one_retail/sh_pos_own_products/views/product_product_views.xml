@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id='sh_pos_own_product_inherit_product_view' model='ir.ui.view'>
+        <field name='name'>sh.pos.own.product.inherit.product.form</field>
+        <field name='model'>product.product</field>
+        <field name='inherit_id' ref='product.product_normal_form_view' />
+        <field name='arch' type='xml'>
+            <field name='available_in_pos' position='after'>
+                <field name='sh_select_user' widget='many2many_tags'></field>
+            </field>
+        </field>
+    </record>
+    <record id='sh_pos_own_product_inherit_product_template_view' model='ir.ui.view'>
+        <field name='name'>sh.pos.own.product.inherit.product.tempalte.form</field>
+        <field name='model'>product.template</field>
+        <field name='inherit_id' ref='product.product_template_only_form_view' />
+        <field name='arch' type='xml'>
+            <field name='available_in_pos' position='after'>
+                <field name='sh_select_user' widget='many2many_tags'></field>
+            </field>
+        </field>
+    </record>
+</odoo>

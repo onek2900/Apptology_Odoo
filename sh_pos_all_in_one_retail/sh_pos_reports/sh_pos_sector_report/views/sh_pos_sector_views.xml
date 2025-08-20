@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+   
+    <record id="sh_pos_sector_view_form" model="ir.ui.view">
+        <field name="name">sh.pos.sector.view.form</field>
+        <field name="model">sh.pos.sector</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name = "name"/>
+                            <field name = "from_time" widget="float_time"/>
+                            <field name = "to_time" widget="float_time"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+   
+    <record id="sh_pos_sector_view_tree" model="ir.ui.view">
+        <field name="name">sh.pos.sector.view.tree</field>
+        <field name="model">sh.pos.sector</field>
+        <field name="arch" type="xml">
+            <tree>	
+            	<field name="sequence" widget="handle"/>
+                <field name = "name"/>
+                <field name = "from_time" widget="float_time"/>
+                <field name = "to_time" widget="float_time"/> 
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_pos_sector_action" model="ir.actions.act_window">
+        <field name="name">Sector</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.pos.sector</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+            
+    <menuitem id="menu_sh_pos_sector_action"
+                name="Sectors"
+                parent="point_of_sale.menu_point_rep"
+                action="sh_pos_sector_action"
+                sequence="101"
+                />
+</odoo>

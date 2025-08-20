@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_tsp_top_pos_product_wizard_form_view" model="ir.ui.view">
+        <field name="name">sh.tsp.top.pos.product.wizard.form.view</field>
+        <field name="model">sh.tsp.top.pos.product.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Top Products">
+                <group>
+                    <group>
+                        <field name="type" widget="radio" />
+                    </group>
+                    <group></group>
+                    <group>
+                        <field name="date_from" />
+                        <field name="date_to" />
+                        <field name="no_of_top_item" />
+                    </group>
+                    <group>
+                        <field name="date_compare_from" invisible="type!='compare'" required="type=='compare'" />
+                        <field name="date_compare_to" invisible="type!='compare'" required="type=='compare'" />
+                    </group>
+                    <group>
+                        <field name="qty" />
+                        <field name="company_ids" widget="many2many_tags" options="{'no_create': True}" groups="base.group_multi_company" />
+                        <field name="config_ids" widget="many2many_tags" options="{'no_create': True}" />
+                    </group>
+                </group>
+                <footer>
+                    <button name="display_report" string="View" type="object" class="oe_highlight"
+                        invisible="type == 'compare'" />
+                    <button string="Print Report" name="print_top_pos_product_report" type="object" class="btn-primary" />
+                    <button name="print_top_pos_product_xls_report" string="Print Xls" type="object" class="oe_highlight" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="sh_tsp_top_pos_product_wizard_action" model="ir.actions.act_window">
+        <field name="name">Top POS Products</field>
+        <field name="res_model">sh.tsp.top.pos.product.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="sh_tsp_top_pos_products_main" action="sh_tsp_top_pos_product_wizard_action"
+        parent="point_of_sale.menu_point_rep" sequence="109" />
+
+</odoo>

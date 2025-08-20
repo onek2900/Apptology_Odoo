@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_z_report.PosZReceipt">
+        <div class="pos-receipt sh_pos_sz_report_receipt">
+            <div class="sh_company_detail">
+                <img t-attf-src="/web/image?model=res.company&amp;id={{props.data.headerData.company.id}}&amp;field=logo" alt="Logo" class="pos-receipt-logo"/>
+                <br/>
+                <div class="pos-receipt-contact">
+                    <div t-if="props.data.headerData.company.partner_id?.[1]" t-esc="props.data.headerData.company.partner_id[1]" />
+                    <t t-if="props.data.headerData.company.phone">
+                        <div>Tel:<t t-esc="props.data.headerData.company.phone" /></div>
+                    </t>
+                    <t t-if="props.data.headerData.company.vat">
+                        <div><t t-esc="props.data.headerData.company.country?.vat_label || 'Tax ID'"/>: <t t-esc="props.data.headerData.company.vat" /></div>
+                    </t>
+                    <div t-if="props.data.headerData.company.email" t-esc="props.data.headerData.company.email" />
+                    <div t-if="props.data.headerData.company.website" t-esc="props.data.headerData.company.website" />
+                   
+                </div>
+            </div>
+            <div class="sh_z_report_header" style="text-align: center;">    
+                <h2 style="font-size: 16px;">Z Report</h2>
+            </div>          
+            <div class="sh_report_date_div">
+                <table class="sh_report_date_table" style="width: 100%;">
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;text-align: left;">
+                            Report Date  
+                        </td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;text-align: left;">
+                            <t t-esc="props.data.date"/>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="sh_report_user_div">
+                <table class="sh_report_user_table" style="width: 100%;">
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;text-align: left;width: 40%;">
+                            Salesperson
+                        </td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;text-align: left;width: 58%;">
+                            <t t-if="props.data.cashier">
+                                <t t-esc="props.data.cashier"/>
+                            </t>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <t t-if="pos and pos.session_data">
+                <div class="sh_session_detail_header" style="text-align: center;font-weight: bold;font-size: 13px;padding: 10px 0px;">
+                    Session Detail
+                </div>
+                <table class="sh_session_detail_table" style="width: 100%;">
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Session Name </td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                            <t t-if="pos and pos.session_data and pos.session_data['name']">
+                                <t t-esc="pos.session_data['name']"/>
+                            </t>
+                            <t t-else="">
+                                -
+                            </t>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">POS Name</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                            <t t-if="pos and pos.session_data and pos.session_data['config_id']">
+                                <t t-esc="pos.session_data['config_id']"/>
+                            </t>
+                            <t t-else="">
+                                -
+                            </t>
+                        </td>
+                    </tr>
+                    <t t-if="pos.session_data.state">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Status</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                                <t t-if="pos.session_data.state == 'opening_control'">
+                                    Opening Control
+                                </t>
+                                <t t-if="pos.session_data.state == 'opened'">
+                                    In Progress
+                                </t>
+                                <t t-if="pos.session_data.state == 'closing_control'">
+                                    Closing Control
+                                </t>
+                                <t t-if="pos.session_data.state == 'closed'">
+                                    Closed &amp; Posted
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-if="pos.session_data.start_at">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Opened Date</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;"><t t-esc="pos.session_data.start_at"/></td>
+                        </tr>
+                    </t>
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Opening Balance</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;"><t t-esc="props.formatCurrency(pos.session_data.cash_register_balance_start)"/></td>
+                    </tr>
+                    <t t-if="pos.session_data.total_payments_amount">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Total Sales</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;"><t t-esc="props.formatCurrency(pos.session_data.total_payments_amount)"/></td>
+                        </tr>
+                    </t>
+                    <t t-if="pos.session_data">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Total Tax</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                                <t t-if="pos.session_data['total_tax']">
+                                    <t t-esc="props.formatCurrency(pos.session_data['total_tax'])"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-set="tax" t-value="0"/>
+                                    <t t-esc="props.formatCurrency(tax)"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-if="pos.session_data">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Total Discount</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                                <t t-if="pos.session_data['total_discount']">
+                                    <t t-esc="props.formatCurrency(pos.session_data['total_discount'])"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-set="discount" t-value="0"/>
+                                    <t t-esc="props.formatCurrency(discount)"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-if="pos.session_data">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Total Return</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                                <t t-if="pos.session_data['total_return_amount']">
+                                    <t t-esc="props.formatCurrency(pos.session_data['total_return_amount'])"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-set="return_amount" t-value="0"/>
+                                    <t t-esc="props.formatCurrency(return_amount)"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Total Cash-In</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                            <t t-esc="props.formatCurrency(pos.session_data['total_cash_in'])"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Total Cash-Out</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                            <t t-esc="props.formatCurrency(pos.session_data['total_cash_out'])"/>
+                        </td>
+                    </tr>
+                    <t t-if="pos.session_data">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Closing Balance</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                                <t t-if="pos.session_data.cash_register_balance_end">
+                                    <t t-esc="props.formatCurrency(pos.session_data.cash_register_balance_end)"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="props.formatCurrency(0)"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-if="pos.session_data">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Difference</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                                <t t-if="pos.session_data.cash_register_difference">
+                                    <t t-esc="props.formatCurrency(pos.session_data.cash_register_difference)"/>
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="props.formatCurrency(0)"/>
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-if="pos.session_data">
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 40%;">Closing Date</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 2%;">:</td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;">
+                                <t t-if="pos.session_data.stop_at">
+                                    <t t-esc="pos.session_data.stop_at"/>
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </t>
+            <t t-if="pos.config and pos.config.sh_display_category_wise_detail">
+                <div class="sh_category_wise_header" style="text-align: center;font-weight: bold;font-size: 13px;padding: 10px 0px;">
+                    Category Wise Detail
+                </div>
+                <table class="sh_category_wise_table" style="width: 100%;">
+                    <t t-if="pos.session_data and pos.session_data['sold_product'] and Object.keys(pos.session_data['sold_product']).length > 0">
+                        <thead>
+                            <tr>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 58%;text-align: center;border: 1px solid #d7d7d7;">Name</th>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 15%;text-align: center;border: 1px solid #d7d7d7;">Quantity</th>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 27%;text-align: center;border: 1px solid #d7d7d7;">Amount</th>
+                            </tr>
+                        </thead>
+                        <t t-set="total_qty" t-value="0"/>
+                        <t t-set="total_price" t-value="0"/>
+                        <t t-foreach="pos.session_data['sold_product']" t-as="each_category" t-key="each_category">
+                            <t t-if="each_category">
+                                <tr>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;text-align: left;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_category">
+                                            <t t-esc="each_category"/>
+                                        </t>
+                                    </td>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 15%;text-align: center;border: 1px solid #d7d7d7;">
+                                        <t t-if="pos.session_data['sold_product'][each_category]['qty']">
+                                            <t t-set="total_qty" t-value="total_qty + pos.session_data['sold_product'][each_category]['qty']"/>
+                                            <t t-esc="pos.session_data['sold_product'][each_category]['qty']"/>
+                                        </t>
+                                        <t t-else="">
+                                            0
+                                        </t>
+                                    </td>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 27%;text-align: center;border: 1px solid #d7d7d7;">
+                                        <t t-if="pos.session_data['sold_product'][each_category]['price']">
+                                            <t t-set="total_price" t-value="total_price + pos.session_data['sold_product'][each_category]['price']"/>
+                                            <t t-esc="props.formatCurrency(pos.session_data['sold_product'][each_category]['price'])"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="total" t-value="0"/>
+                                            <t t-esc="props.formatCurrency(total)"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 58%;text-align: left;border: 1px solid #d7d7d7;">
+                                Total
+                            </td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 15%;text-align: center;border: 1px solid #d7d7d7;">
+                                <t t-esc="total_qty"/>
+                            </td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 27%;text-align: center;border: 1px solid #d7d7d7;">
+                                <t t-esc="props.formatCurrency(total_price)"/>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-else="">
+                        <tr>
+                            <td colspan="3" style="padding: 3px;vertical-align: middle;font-weight: normal;text-align: center;width: 100%;font-size: 13px;">
+                                No Any Data Found
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </t>
+            <t t-if="pos.config and pos.config.sh_display_product_wise_detail">
+                <div class="sh_product_wise_header" style="text-align: center;font-weight: bold;font-size: 13px;padding: 10px 0px;">
+                    Product Wise Detail
+                </div>
+                <table class="sh_product_wise_table" style="width: 100%;">
+                    <t t-if="pos.session_data and pos.session_data['products_detail']">
+                        <thead>
+                            <tr>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;text-align: center;width: 58%;border: 1px solid #d7d7d7;">Name</th>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;text-align: center;width: 15%;border: 1px solid #d7d7d7;">Quantity</th>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;text-align: center;width: 27%;border: 1px solid #d7d7d7;">Amount</th>
+                            </tr>
+                        </thead>
+                        <t t-set="total_qty" t-value="0"/>
+                        <t t-set="total_price" t-value="0"/>
+                        <t t-foreach="pos.session_data['products_detail']" t-as="each_product" t-key="each_product['product_id']">
+                            <t t-if="each_product">
+                                <tr>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 58%;text-align: left;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_product['product_id'] and pos.db and pos.db.get_product_by_id(each_product['product_id']) and pos.db.get_product_by_id(each_product['product_id']).display_name">
+                                            <t t-esc="pos.db.get_product_by_id(each_product['product_id']).display_name"/>
+                                        </t>
+                                    </td>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 15%;text-align: center;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_product['quantity']">
+                                            <t t-set="total_qty" t-value="total_qty + each_product['quantity']"/>
+                                            <t t-esc="each_product['quantity']"/>
+                                        </t>
+                                        <t t-else="">
+                                            0
+                                        </t>
+                                    </td>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 27%;text-align: center;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_product['total']">
+                                            <t t-set="total_price" t-value="total_price + each_product['total']"/>
+                                            <t t-esc="props.formatCurrency(each_product['total'])"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="total" t-value="0"/>
+                                            <t t-esc="props.formatCurrency(total)"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                        <tr>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 58%;text-align: left;border: 1px solid #d7d7d7;">
+                                Total
+                            </td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 15%;text-align: center;border: 1px solid #d7d7d7;">
+                                <t t-esc="total_qty"/>
+                            </td>
+                            <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 27%;text-align: center;border: 1px solid #d7d7d7;">
+                                <t t-esc="props.formatCurrency(total_price)"/>
+                            </td>
+                        </tr>
+                    </t>
+                    <t t-else="">
+                        <tr>
+                            <td colspan="3" style="padding: 3px;vertical-align: middle;font-weight: normal;text-align: center;width: 100%;font-size: 13px;">
+                                No Any Data Found
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </t>
+            <t t-if="pos.config and pos.config.sh_display_customer_wise_detail">
+                <div class="sh_category_wise_header" style="text-align: center;font-weight: bold;font-size: 13px;padding: 10px 0px;">
+                    Customer Wise Detail
+                </div>
+                <table class="sh_category_wise_table" style="width: 100%;">
+                    <t t-if="pos.session_data and pos.session_data['customer_detail']">
+                        <thead>
+                            <tr>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 50%;text-align: center;border: 1px solid #d7d7d7;">Name</th>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 50%;text-align: center;border: 1px solid #d7d7d7;">Amount</th>
+                            </tr>
+                        </thead>
+                        <t t-foreach="pos.session_data['customer_detail']" t-as="each_customer_order" t-key="each_customer_order['name']">
+                            <t t-if="each_customer_order">
+                                <tr>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 50%;text-align: left;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_customer_order['name']">
+                                            <t t-esc="each_customer_order['name']"/>
+                                        </t>
+                                    </td>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 50%;text-align: center;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_customer_order['total']">
+                                            <t t-esc="props.formatCurrency(each_customer_order['total'])"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="total" t-value="0"/>
+                                            <t t-esc="props.formatCurrency(total)"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <tr>
+                            <td colspan="2" style="padding: 3px;vertical-align: middle;font-weight: normal;text-align: center;width: 100%;font-size: 13px;">
+                                No Any Data Found
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </t>
+            <t t-if="pos.config and pos.config.sh_display_payment_detail">
+                <div class="sh_payment_detail_header" style="text-align: center;font-weight: bold;font-size: 13px;padding: 10px 0px;text-align: center;">
+                    Payments Detail
+                </div>
+                <table class="sh_payment_detail_table" style="width: 100%;">
+                    <t t-if="pos.session_data['payment_detail']">
+                        <thead>
+                            <tr>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 50%;text-align: center;border: 1px solid #d7d7d7;">Name</th>
+                                <th style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 50%;text-align: center;border: 1px solid #d7d7d7;">Amount</th>
+                            </tr>
+                        </thead>
+                        <t t-foreach="pos.session_data['payment_detail']" t-as="each_payment" t-key="each_payment['name']">
+                            <t t-if="each_payment">
+                                <tr>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 50%;text-align: left;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_payment['name']">
+                                            <t t-esc="each_payment['name']"/>
+                                        </t>
+                                    </td>
+                                    <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 50%;text-align: center;border: 1px solid #d7d7d7;">
+                                        <t t-if="each_payment['total']">
+                                            <t t-esc="props.formatCurrency(each_payment['total'])"/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="total" t-value="0"/>
+                                            <t t-esc="props.formatCurrency(total)"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </t>
+                    <t t-else="">
+                        <tr>
+                            <td colspan="2" style="padding: 3px;vertical-align: middle;font-weight: normal;text-align: center;width: 100%;font-size: 13px;">
+                                No Any Data Found
+                            </td>
+                        </tr>
+                    </t>
+                </table>
+            </t>
+            <t t-if="pos.session_data">
+                <div class="sh_status_header" style="text-align: center;font-weight: bold;font-size: 13px;padding: 10px 0px;">
+                    Status
+                </div>
+                <table class="sh_status_header_table" style="width: 100%;">
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 50%;text-align: left;">No. Of Orders</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 50%;text-align: right;"><t t-esc="pos.session_data['total_no_order']"/></td>
+                    </tr>
+                    <tr>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: bold;width: 50%;text-align: left;">No. Of Customers</td>
+                        <td style="font-size: 13px;padding: 3px;vertical-align: middle;font-weight: normal;width: 50%;text-align: right;"><t t-esc="pos.session_data['total_partner']"/></td>
+                    </tr>
+                </table>
+            </t>
+        </div>
+    </t>
+</templates>

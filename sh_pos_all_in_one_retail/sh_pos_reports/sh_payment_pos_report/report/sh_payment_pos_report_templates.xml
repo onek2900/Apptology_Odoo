@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sh_payment_pos_report_doc">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="oe_structure" />
+                    <div class="row">
+                        <div class="col-12 mx-auto">
+                            <div class="text-center">
+                                <b>
+                                    <h4>POS Payment Report <span>
+                                            <t t-if="filter_invoice_data == 'wo_invoice'"> (Without
+                                        Invoice)</t>
+                                            <t t-if="filter_invoice_data == 'with_invoice'"> (With
+                                        Invoice)</t>
+                                        </span>
+                                    </h4>
+                                </b>
+                                <b>
+                                    <span t-esc="date_start" t-options="{'widget': 'datetime'}" />
+                                    To <span t-esc="date_end" t-options="{'widget': 'datetime'}" />
+                                </b>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <br />
+
+                    <t t-foreach="user_data_dic.keys()" t-as="user">
+                        <center>
+                            <b>
+                                <span>User :</span>
+                                <span t-esc="user" />
+                            </b>
+                        </center>
+                        <table class="table table-sm o_main_table" style="border: 1px solid black;">
+                            <thead>
+                                <tr style="border: 1px solid black;">
+                                    <th style="border: 1px solid black;" t-foreach="columns"
+                                        t-as="c">
+                                        <t t-esc="c" />
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="sale_tbody">
+                                <t t-if="user_data_dic.get(user,False)">
+                                    <t t-set="pay_list"
+                                        t-value="user_data_dic.get(user).get('pay',[])" />
+                                    <t t-if="pay_list">
+                                        <tr t-foreach="pay_list" t-as="p">
+                                            <td t-att-style="p.get('style','')" t-foreach="columns"
+                                                t-as="c">
+                                                <t
+                                                    t-if="c in ['Invoice','Invoice Date','User','Customer']">
+                                                    <span t-esc="p.get(c,0)" />
+                                                </t>
+                                                <t
+                                                    t-if="c not in ['Invoice','Invoice Date','User','Customer']">
+                                                    <span t-esc="p.get(c,0)"
+                                                        t-options='{"widget": "monetary", "display_currency": currency}' />
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <t t-if="user_data_dic.get(user,False)">
+                                    <t t-set="grand_total"
+                                        t-value="user_data_dic.get(user).get('grand_total',{})" />
+                                    <t t-if="grand_total">
+                                        <tr t-if="grand_total">
+                                            <td style="border: 1px solid black;" t-foreach="columns"
+                                                t-as="c">
+                                                <t
+                                                    t-if="c not in ['Invoice','Invoice Date','User','Customer']">
+                                                    <span t-esc="grand_total.get(c,0)"
+                                                        t-options='{"widget": "monetary", "display_currency": currency}' />
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+                    </t>
+                    <!-- grand journal total -->
+                    <br />
+                    <br />
+
+                    <t t-if="grand_journal_dic">
+                        <h3>Payment Method</h3>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="columns" t-as="c">
+                                    <t
+                                        t-if="c not in ['Invoice','Invoice Date','User','Customer','Total']">
+                                        <tr t-if="grand_journal_dic.get(c,False)">
+                                            <td>
+                                                <t t-esc="c" />
+                                            </td>
+                                            <td>
+                                                <span t-esc="grand_journal_dic.get(c,0.0)"
+                                                    t-options='{"widget": "monetary", "display_currency": currency}' />
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <tr t-if="grand_journal_dic.get('Total',False)">
+                                    <td>Total</td>
+                                    <td>
+                                        <span t-esc="grand_journal_dic.get('Total',0.0)"
+                                            t-options='{"widget": "monetary", "display_currency": currency}' />
+                                    </td>
+                                </tr>
+                                <tr t-if="grand_journal_dic.get('Refund',False)">
+                                    <td>Refund</td>
+                                    <td>
+                                        <span t-esc="'%.2f'%grand_journal_dic.get('Refund',0.0)"
+                                            t-esc-options='{"widget": "monetary", "display_currency": currency}' />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="sh_payment_pos_report_action" model="ir.actions.report">
+        <field name="name">POS Payment Report</field>
+        <field name="model">report.sh_pos_all_in_one_retail.sh_payment_pos_report_doc</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.sh_payment_pos_report_doc</field>
+        <field name="print_report_name">'POS Payment Report'</field>
+    </record>
+</odoo>

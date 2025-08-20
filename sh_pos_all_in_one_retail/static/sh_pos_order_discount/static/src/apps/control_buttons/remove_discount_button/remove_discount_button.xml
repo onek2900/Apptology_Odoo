@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_all_in_one_retail.RemoveDiscountButton">
+        <button class="control-button btn btn-light rounded-0 fw-bolder sh_ctrl_btn" t-on-click="() => this.onClick()">
+            <span class="me-2 sh_ctrl_btn_icon">
+                <svg xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 116 116"><path d="M70,12a58,58,0,1,0,58,58A58,58,0,0,0,70,12ZM96,97s-5,4-10,0L70,81,54,97s-6,4-10-1c0,0-5-4,0-10L60,70,43,54s-4-6,1-10c0,0,4-4,10-1L70,60,86,44s5-5,11,1a8.22,8.22,0,0,1,0,9L81,70,98,88S101,94,96,97Z" transform="translate(-12 -12)"></path>
+                </svg>
+            </span>
+            <span class="sh_ctrl_btn_text">Remove Discount</span>
+        </button>
+    </t>
+</templates>

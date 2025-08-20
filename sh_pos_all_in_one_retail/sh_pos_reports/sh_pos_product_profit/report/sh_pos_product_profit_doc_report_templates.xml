@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<template id="sh_pos_product_profit_doc">
+		<t t-call="web.html_container">
+			<t t-call="web.external_layout">
+				<div class="page">
+					<div class="oe_structure" />
+					<div class="row">
+						<div class="col-12 mx-auto">
+							<div class="text-center">
+								<b>
+									<h4>Point of Sale Product Profit</h4>
+								</b>
+								<b>
+									<span t-esc="date_start" t-options="{'widget': 'datetime'}" />
+									To
+									<span t-esc="date_end" t-options="{'widget': 'datetime'}" />
+								</b>
+							</div>
+						</div>
+					</div>
+					<br />
+					<t t-if="report_by == 'customer'">
+						<t t-if="order_dic_by_customers">
+							<t t-foreach="order_dic_by_customers.keys()" t-as="customer">
+								<center>
+									<b>
+										<span t-esc="customer" />
+									</b>
+								</center>
+								<t t-set="total_cost" t-value="0" />
+								<t t-set="total_sales_price" t-value="0" />
+								<t t-set="total_profit" t-value="0" />
+								<t t-set="total_margin" t-value="0" />
+								<table class="table table-sm o_main_table table-bordered" style="table-layout: fixed; border: 1px solid black;" id="">
+									<thead style="display: table-row-group;" class="thead-light">
+										<tr style="border: 1px solid black;">
+											<th style="border: 1px solid black;">Order Number</th>
+											<th style="border: 1px solid black;">Order Date</th>
+											<th style="border: 1px solid black;">Product</th>
+											<th style="border: 1px solid black;">Quantity</th>
+											<th style="border: 1px solid black;">Cost</th>
+											<th style="border: 1px solid black;">Sale Price</th>
+											<th style="border: 1px solid black;">Profit</th>
+											<th style="border: 1px solid black;">Margin(%)</th>
+										</tr>
+									</thead>
+									<tbody class="sale_tbody">
+										<t t-foreach="order_dic_by_customers[customer]" t-as="order">
+											<t t-set="sale_price" t-value="(order.get('sale_price',0.0)*order.get('qty',0.0))" />
+											<t t-set="cost_price" t-value="(order.get('cost',0.0)*order.get('qty',0.0))" />
+											<t t-set="profit" t-value="(order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0))" />
+											<tr>
+												<td style="border: 1px solid black;">
+													<span t-esc="order.get('order_number','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="order.get('order_date','')" t-options='{"widget": "date"}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="order.get('product','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%(order.get('qty',0.0))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%(order.get('cost',0.0) * order.get('qty',0.0))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%(order.get('sale_price',0.0) * order.get('qty',0.0))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%((order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0)))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<t t-if="sale_price != 0.0">
+														<span t-esc="'%.2f'%((profit / sale_price) * 100)" />
+													</t>
+													<t t-else="">
+														<span t-esc="'%.2f'%(0.00)" />
+													</t>
+												</td>
+												<t t-set="total_cost" t-value="total_cost + order.get('cost',0.0) * order.get('qty',0.0) " />
+												<t t-set="total_sales_price" t-value="total_sales_price + order.get('sale_price',0.0) * order.get('qty',0.0)" />
+												<t t-set="total_profit" t-value="total_profit + (order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0))" />
+												<t t-if="profit">
+													<t t-set="total_margin" t-value="total_margin + (profit / sale_price) * 100" />
+												</t>
+											</tr>
+										</t>
+										<tr>
+											<td style="border:1px solid black;"></td>
+											<td style="border:1px solid black;"></td>
+											<td style="border: 1px solid black;"></td>
+											<td style="border: 1px solid black;">
+												<b>Total</b>
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_cost)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_sales_price)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_profit)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_margin)" />
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</t>
+						</t>
+					</t>
+					<t t-if="report_by == 'product'">
+						<t t-if="order_dic_by_products">
+							<t t-foreach="order_dic_by_products.keys()" t-as="product">
+								<center>
+									<b>
+										<span t-esc="product" />
+									</b>
+								</center>
+								<t t-set="total_cost" t-value="0" />
+								<t t-set="total_sales_price" t-value="0" />
+								<t t-set="total_profit" t-value="0" />
+								<t t-set="total_margin" t-value="0" />
+								<table class="table table-sm o_main_table table-bordered" style="table-layout: fixed; border: 1px solid black;" id="">
+									<thead style="display: table-row-group;" class="thead-light">
+										<tr style="border: 1px solid black;">
+											<th style="border: 1px solid black;">Order Number</th>
+											<th style="border: 1px solid black;">Order Date</th>
+											<th style="border: 1px solid black;">Customer</th>
+											<th style="border: 1px solid black;">Quantity</th>
+											<th style="border: 1px solid black;">Cost</th>
+											<th style="border: 1px solid black;">Sale Price</th>
+											<th style="border: 1px solid black;">Profit</th>
+											<th style="border: 1px solid black;">Margin(%)</th>
+										</tr>
+									</thead>
+									<tbody class="sale_tbody">
+										<t t-foreach="order_dic_by_products[product]" t-as="order">
+											<t t-set="sale_price" t-value="(order.get('sale_price',0.0)*order.get('qty',0.0))" />
+											<t t-set="cost_price" t-value="(order.get('cost',0.0)*order.get('qty',0.0))" />
+											<t t-set="profit" t-value="(order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0))" />
+											<tr>
+												<td style="border: 1px solid black;">
+													<span t-esc="order.get('order_number','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="order.get('order_date','')" t-options='{"widget": "date"}' />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="order.get('customer','')" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%(order.get('qty',0.0))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%(order.get('cost',0.0) * order.get('qty',0.0))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%(order.get('sale_price',0.0) * order.get('qty',0.0))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<span t-esc="'%.2f'%((order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0)))" />
+												</td>
+												<td style="border: 1px solid black;">
+													<t t-if="sale_price != 0.0">
+														<span t-esc="'%.2f'%((profit / sale_price) * 100)" />
+													</t>
+													<t t-else="">
+														<span t-esc="'%.2f'%(0.00)" />
+													</t>
+												</td>
+												<t t-set="total_cost" t-value="total_cost + order.get('cost',0.0) * order.get('qty',0.0) " />
+												<t t-set="total_sales_price" t-value="total_sales_price + order.get('sale_price',0.0) * order.get('qty',0.0)" />
+												<t t-set="total_profit" t-value="total_profit + (order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0))" />
+												<t t-if="profit">
+													<t t-set="total_margin" t-value="total_margin + (profit / sale_price) * 100" />
+												</t>
+											</tr>
+										</t>
+										<tr>
+											<td style="border:1px solid black;"></td>
+											<td style="border:1px solid black;"></td>
+											<td style="border: 1px solid black;"></td>
+											<td style="border: 1px solid black;">
+												<b>Total</b>
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_cost)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_sales_price)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_profit)" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(total_margin)" />
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</t>
+						</t>
+					</t>
+					<t t-if="report_by == 'both'">
+						<t t-if="both_order_list">
+							<t t-set="total_cost" t-value="0" />
+							<t t-set="total_sales_price" t-value="0" />
+							<t t-set="total_profit" t-value="0" />
+							<t t-set="total_margin" t-value="0" />
+							<table class="table table-sm o_main_table table-bordered" style="table-layout: fixed; border: 1px solid black;" id="">
+								<thead style="display: table-row-group;" class="thead-light">
+									<tr style="border: 1px solid black;">
+										<th style="border: 1px solid black;">Order Number</th>
+										<th style="border: 1px solid black;">Order Date</th>
+										<th style="border: 1px solid black;">Customer</th>
+										<th style="border: 1px solid black;">Product</th>
+										<th style="border: 1px solid black;">Quantity</th>
+										<th style="border: 1px solid black;">Cost</th>
+										<th style="border: 1px solid black;">Sale Price</th>
+										<th style="border: 1px solid black;">Profit</th>
+										<th style="border: 1px solid black;">Margin(%)</th>
+									</tr>
+								</thead>
+								<tbody class="sale_tbody">
+									<t t-foreach="both_order_list" t-as="order">
+										<t t-set="sale_price" t-value="(order.get('sale_price',0.0)*order.get('qty',0.0))" />
+										<t t-set="cost_price" t-value="(order.get('cost',0.0)*order.get('qty',0.0))" />
+										<t t-set="profit" t-value="(order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0))" />
+										<tr>
+											<td style="border: 1px solid black;">
+												<span t-esc="order.get('order_number','')" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="order.get('order_date','')" t-options='{"widget": "date"}' />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="order.get('customer','')" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="order.get('product','')" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(order.get('qty',0.0))" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(order.get('cost',0.0) * order.get('qty',0.0))" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%(order.get('sale_price',0.0) * order.get('qty',0.0))" />
+											</td>
+											<td style="border: 1px solid black;">
+												<span t-esc="'%.2f'%((order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0)))" />
+											</td>
+											<td style="border: 1px solid black;">
+												<t t-if="sale_price != 0.0">
+													<span t-esc="'%.2f'%((profit / sale_price) * 100)" />
+												</t>
+												<t t-else="">
+													<span t-esc="'%.2f'%(0.00)" />
+												</t>
+											</td>
+											<t t-set="total_cost" t-value="total_cost + order.get('cost',0.0) * order.get('qty',0.0) " />
+											<t t-set="total_sales_price" t-value="total_sales_price + order.get('sale_price',0.0) * order.get('qty',0.0)" />
+											<t t-set="total_profit" t-value="total_profit + (order.get('sale_price',0.0)*order.get('qty',0.0)) - (order.get('cost',0.0)*order.get('qty',0.0))" />
+											<t t-if="profit">
+												<t t-set="total_margin" t-value="total_margin + (profit / sale_price) * 100" />
+											</t>
+										</tr>
+									</t>
+									<tr>
+										<td style="border:1px solid black;"></td>
+										<td style="border:1px solid black;"></td>
+										<td style="border: 1px solid black;"></td>
+										<td style="border: 1px solid black;"></td>
+										<td style="border: 1px solid black;">
+											<b>Total</b>
+										</td>
+										<td style="border: 1px solid black;">
+											<span t-esc="'%.2f'%(total_cost)" />
+										</td>
+										<td style="border: 1px solid black;">
+											<span t-esc="'%.2f'%(total_sales_price)" />
+										</td>
+										<td style="border: 1px solid black;">
+											<span t-esc="'%.2f'%(total_profit)" />
+										</td>
+										<td style="border: 1px solid black;">
+											<span t-esc="'%.2f'%(total_margin)" />
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</t>
+					</t>
+				</div>
+			</t>
+		</t>
+	</template>
+	<record id="paperformat_pos_profit" model="report.paperformat">
+		<field name="name">Point of Sale Product Profit</field>
+		<field name="default" eval="True" />
+		<field name="format">A4</field>
+		<field name="orientation">Portrait</field>
+		<field name="margin_top">60</field>
+		<field name="margin_bottom">30</field>
+		<field name="margin_left">5</field>
+		<field name="margin_right">5</field>
+		<field name="header_line" eval="False" />
+		<field name="header_spacing">55</field>
+		<field name="dpi">90</field>
+	</record>
+	<record id="sh_pos_product_profit_action" model="ir.actions.report">
+		<field name="name">Point of Sale Product Profit</field>
+		<field name="model">report.sh_pos_all_in_one_retail.sh_pos_product_profit_doc</field>
+		<field name="report_type">qweb-pdf</field>
+		<field name="report_name">sh_pos_all_in_one_retail.sh_pos_product_profit_doc</field>
+		<field name="print_report_name">'Point of Sale Product Profit'</field>
+		<field name="paperformat_id" ref="sh_pos_all_in_one_retail.paperformat_pos_profit" />
+	</record>
+</odoo>

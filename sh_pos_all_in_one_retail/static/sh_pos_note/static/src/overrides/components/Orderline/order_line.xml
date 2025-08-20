@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+<t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" >
+    <xpath expr="//ul[hasclass('info-list')]/li[hasclass('sh_orderline_icon')]" position="before">
+        <t t-if="line.line_note">
+            <li class="info" style="margin: 7px; color: #888;margin-left: 0px !important;">
+                <t t-if="line.show_icon">
+                    <i class="fa fa-pencil" aria-hidden="true" style="margin-right: 5px;" />
+                </t>
+                <span class="note">
+                    <t t-esc="line.line_note" />
+                </span>
+            </li>
+        </t>
+    </xpath>
+</t>
+</templates>

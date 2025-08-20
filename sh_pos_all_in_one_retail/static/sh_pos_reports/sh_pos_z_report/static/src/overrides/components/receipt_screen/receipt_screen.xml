@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('top-content-center')]" position="attributes">
+            <attribute name="t-attf-class">{{ pos.is_z_report_receipt  ? 'hide-top-content-center' : '' }}</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('pos-receipt-container')]" position="replace">
+            <div class="pos-receipt-container bg-200 text-center overflow-auto">
+                <div class="d-inline-block m-3 p-3 border rounded bg-view text-start overflow-hidden">
+                    <t t-if="pos.is_z_report_receipt">
+                        <PosZReceipt data="pos.get_order().export_for_printing()" formatCurrency="env.utils.formatCurrency"/>
+                    </t>
+                    <t t-elif="pos.cash_in_out_statement_receipt" >
+                        <CashInOutStatementReceipt />
+                    </t>
+                    <t t-else="">
+                        <OrderReceipt data="pos.get_order().export_for_printing()" formatCurrency="env.utils.formatCurrency" />
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </t>
+    
+</templates>

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_cash_in_out.CashInOutStatementReceipt">
+        <div class="pos-receipt sh_pos_statement_receipt ">
+            <t t-if="pos.company">
+                <div style="display: none" t-if="pos.company.logo">
+                    <img class="pos-receipt-logo" t-att-src="pos.company.logo" alt="Logo"/>
+                </div>
+                <div class="pos-receipt-contact">
+                    <t t-if="pos.company.name">
+                        <t t-esc="pos.company.name" />
+                        <br />
+                    </t>
+                    <t t-if="pos.company.phone">
+                        Phone :
+                        <t t-esc="pos.company.phone" />
+                        <br />
+                    </t>
+                    <t t-if="pos.company.email">
+                        Email :
+                        <t t-esc="pos.company.email" />
+                    </t>
+                </div>
+            </t>
+            <t t-if="pos.user and pos.user.name">
+                <div class="pos-receipt-contact">
+                    User :
+                    <t t-esc="pos.user.name" />
+                </div>
+            </t>
+            <br />
+            <br />
+            <t t-if="pos.display_cash_in_out_statement and pos.display_cash_in_out_statement.length > 0">
+                <t t-set="credit_total" t-value="0" />
+                <t t-set="debit_total" t-value="0" />
+                <table class="sh_in_out_statement_table">
+                    <thead>
+                        <tr>
+                            <th style="width: 23%;">Reason</th>
+                            <th style="width: 25%;">Credit</th>
+                            <th style="width: 25%;">Debit</th>
+                            <th style="width: 27%;">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="pos.display_cash_in_out_statement" t-as="each_statement" t-key="each_statement.id">
+                            <td>
+                                <t t-if="each_statement and each_statement.sh_reason">
+                                    <t t-esc="each_statement.sh_reason" />
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if="each_statement and each_statement.sh_transaction_type and each_statement.sh_transaction_type == 'cash_in'">
+                                    <t t-esc="pos.env.utils.formatCurrency(each_statement.sh_amount)" />
+                                    <t t-set="credit_total" t-value="credit_total + each_statement.sh_amount" />
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if="each_statement and each_statement.sh_transaction_type and each_statement.sh_transaction_type == 'cash_out'">
+                                    <t t-esc="pos.env.utils.formatCurrency(each_statement.sh_amount)" />
+                                    <t t-set="debit_total" t-value="debit_total + each_statement.sh_amount" />
+                                </t>
+                                <t t-else="">
+                                    -
+                                </t>
+                            </td>
+                            <td>
+                                <t t-if="each_statement and each_statement.sh_date">
+                                    <t t-esc="each_statement.sh_date.split(' ')[0]" />
+                                </t>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>
+                            Total
+                        </td>
+                            <td>
+                                <t t-esc="pos.env.utils.formatCurrency(credit_total)"></t>
+                            </td>
+                            <td>
+                                <t t-esc="pos.env.utils.formatCurrency(debit_total)"></t>
+                            </td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </t>
+        </div>
+    </t>
+</templates>

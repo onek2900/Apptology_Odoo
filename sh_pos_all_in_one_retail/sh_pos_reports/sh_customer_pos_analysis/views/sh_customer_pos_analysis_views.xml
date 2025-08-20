@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sh_customer_pos_analysis_view_tree" model="ir.ui.view">
+        <field name="name">sh.customer.pos.analysis.order.view.tree</field>
+        <field name="model">sh.customer.pos.analysis.order</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="name" />
+                <field name="order_date" optional="show" />
+                <field name="user_id" options="{'no_open': True, 'no_create': True}" optional="show" />
+                <field name="sh_partner_id" options="{'no_open': True, 'no_create': True}"
+                    optional="show" />
+                <field name="sales_amount" sum="Total Sales Amount" optional="show" />
+                <field name="currency_id" column_invisible='True' />
+                <field name="amount_paid" sum="Total Amount Paid" optional="show" />
+                <field name="balance" sum="Total Balance" optional="show" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_customer_pos_analysis_product_view_tree" model="ir.ui.view">
+        <field name="name">sh.customer.pos.analysis.product.view.tree</field>
+        <field name="model">sh.customer.pos.analysis.product</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="name" />
+                <field name="date" optional="show" />
+                <field name="sh_partner_id" options="{'no_open': True, 'no_create': True}"
+                    optional="show" />
+                <field name="sh_product_id" options="{'no_open': True, 'no_create': True}"
+                    optional="show" />
+                <field name="price" optional="show" />
+                <field name="quantity" optional="show" />
+                <field name="discount" optional="show" />
+                <field name="currency_id" column_invisible='True' />
+                <field name="tax" sum="Total Tax" optional="show" />
+                <field name="subtotal" sum="Total Subtotal" optional="show" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_customer_pos_analysis_order_view_search" model="ir.ui.view">
+        <field name="name">sh.customer.pos.analysis.order.view.search</field>
+        <field name="model">sh.customer.pos.analysis.order</field>
+        <field name="arch" type="xml">
+            <search string="Customer Sales Analysis">
+                <field name="name" />
+                <field name="order_date" />
+                <field name="user_id" />
+                <field name="sh_partner_id" />
+                <field name="sales_amount" />
+                <field name="amount_paid" />
+                <field name="balance" />
+                <filter string="Order Date" name="group_order_date" domain="[]"
+                    context="{'group_by': 'order_date'}" />
+                <filter string="Salesperson" name="group_salesperson" domain="[]"
+                    context="{'group_by': 'user_id'}" />
+                <filter string="Customer" name="group_customer" domain="[]"
+                    context="{'group_by': 'sh_partner_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_customer_pos_analysis_product_view_search" model="ir.ui.view">
+        <field name="name">sh.customer.pos.analysis.product.view.search</field>
+        <field name="model">sh.customer.pos.analysis.product</field>
+        <field name="arch" type="xml">
+            <search string="Customer Sales Analysis">
+                <field name="name" />
+                <field name="date" />
+                <field name="sh_partner_id" />
+                <field name="sh_product_id" />
+                <field name="price" />
+                <field name="quantity" />
+                <field name="discount" />
+                <field name="tax" />
+                <field name="subtotal" />
+                <filter string="Order Date" name="group_order_date" domain="[]"
+                    context="{'group_by': 'date'}" />
+                <filter string="Product" name="group_product" domain="[]"
+                    context="{'group_by': 'sh_product_id'}" />
+                <filter string="Customer" name="group_customer" domain="[]"
+                    context="{'group_by': 'sh_partner_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_customer_pos_analysis_order_action" model="ir.actions.act_window">
+        <field name="name">Customer Sales Analysis</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.customer.pos.analysis.order</field>
+        <field name="context">{'search_default_group_customer': 1}</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+    <record id="sh_customer_pos_analysis_product_action" model="ir.actions.act_window">
+        <field name="name">Customer Sales Analysis</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.customer.pos.analysis.product</field>
+        <field name="context">{'search_default_group_customer': 1}</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

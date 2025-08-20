@@ -1,0 +1,48 @@
+<templates id="template" xml:space="preserve">
+  
+    <!-- added this code in wh stock module -->
+    <!-- <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//ul[hasclass('info-list')]" position="after">
+            <t t-if="line.is_has_topping">
+                <div class='topping-item' t-if='line.Toppings'>
+                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
+                        <div class="sh_topping_line_content">
+                            <div class="sh_toppings_description">
+                                <div style="padding: 0px 5px" class="fa fa-trash" t-att-data-line="topping.id" t-on-click.stop="() => this._clickRemoveLine(topping.id)"></div>
+                                <t t-if="topping">
+                                    <div class="sh_product_name">
+                                        <t t-esc='topping.full_product_name' />
+                                    </div>
+
+                                    <em style="margin-left: 5px;">
+                                        <t t-esc="topping.quantityStr" />
+                                    </em>
+
+                                    <div style="margin-left: 5px;">
+                                        <t t-esc="topping.unit" />
+                                    </div>
+                                    <span style="padding: 0px 5px"> at </span>
+                                    <div class="addon-orderline-price">
+                                        <t t-esc="env.utils.formatCurrency(topping.price_unit)" />
+                                    </div>
+                                    <span style="padding: 0px 5px"> / </span>
+                                    <t t-esc="topping.unit" />
+                                </t>
+                            </div>
+                            <div style="margin-left: 15px; float: right;">
+                                <t t-esc="env.utils.formatCurrency(topping.price_subtotal_incl)" />
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+    </t> -->
+
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//Orderline" position="attributes">
+            <attribute name="t-if" >!line.is_topping</attribute>
+        </xpath>
+    </t>
+
+</templates>

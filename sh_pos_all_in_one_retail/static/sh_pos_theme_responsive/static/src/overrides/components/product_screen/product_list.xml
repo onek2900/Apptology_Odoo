@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_theme_responsive.ProductsWidget" t-inherit="point_of_sale.ProductsWidget" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('product-list-container')]" position="after">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_pos_switch_view">
+                <div class="sh_product_list_view">
+                    <table class="table">
+                        <thead>
+                            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_image">
+                                <th>Image</th>
+                            </t>
+                            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_name">
+                                <th>Name</th>
+                            </t>
+                            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_code">
+                                <th>Code</th>
+                            </t>
+                            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_type">
+                                <th>Type</th>
+                            </t>
+                            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_onhand">
+                                <th>On Hand</th>
+                            </t>
+                            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_uom">
+                                <th>UOM</th>
+                            </t>
+                            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_price">
+                                <th>Price</th>
+                            </t>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="productsToDisplay" t-as="product" t-key="product.id">
+                                <ProductListItem name="product.display_name"
+                                product="product"
+                                productId="product.id"
+                                price="product.getFormattedUnitPrice()"
+                                imageUrl="product.getImageUrl()" t-on-click="() =>this.pos.addProductToCurrentOrder(product)"/>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

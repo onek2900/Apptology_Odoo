@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_all_in_one_retail.VariantPopup">
+        <div class="popup popup-confirm sh_pos_product_variant_popup" t-attf-class="popup popup-confirm {{ shClasses }}">
+            <header class="title drag-handle modal-header">
+                <div>
+                    <span class="modal-title h4">
+                        <t t-esc="props.title"></t>
+                    </span>
+                </div>
+                <div class="sh_header_right_searchbox">
+                    <input class="sh_header_search form-control" placeholder="Search variant" t-on-keyup="updateSearch" />
+                </div>
+
+            </header>
+            <main class="modal-body sh_pos_product_variant_popup_body bg-300 ">
+                <div class="sh_product_variant_1 product-list d-grid gap-1">
+                    <t t-if="product_varaints">
+                        <t t-foreach="VariantProductToDisplay" t-as="product" t-key="product.id">
+                            <VariantProductItem class="sh_pos_product_variants" name="product.display_name" productId="product.id" price="product.getFormattedUnitPrice()" imageUrl="product.getImageUrl()" product_type="product.type"  onClick="() => this.clickProduct(product)" />
+                        </t>
+                    </t>                    
+                </div>
+                <div class="sh_alternative_products">                    
+                    <t t-if="getAlternativeProduct and getAlternativeProduct.length">
+                        <div class="sh_alternative_products_title">
+                            <span class="modal-title h4">
+                                Alternative Products
+                            </span>
+                        </div>
+                        <div class="sh_product_variant_2 product-list d-grid gap-1">
+                            <t t-foreach="getAlternativeProduct" t-as="product" t-key="product.id">
+                                <VariantProductItem class="sh_pos_product_variants" name="product.display_name" productId="product.id" price="product.getFormattedUnitPrice()" product_type="product.type"  imageUrl="product.getImageUrl()" onClick="() => this.clickProduct(product)" />
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </main>
+            <footer class="footer modal-footer">
+                <div class="button cancel btn btn-lg btn-primary" t-on-click="cancel">
+                        Close
+                </div>
+            </footer>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_note.AllNoteButton">
+        <div class="control-button btn btn-light rounded-0 fw-bolder" t-on-click="() => this.onClickAlllineNote()">
+            <a class="sh_list_icon">
+                <i class="fa fa-list" />
+            </a>
+        </div>
+    </t>
+</templates>

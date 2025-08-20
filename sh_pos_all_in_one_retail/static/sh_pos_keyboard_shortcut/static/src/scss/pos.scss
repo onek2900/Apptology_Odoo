@@ -1,0 +1,26 @@
+.sh_shortcut_modal_dialog{
+    font-weight: normal !important;
+    font-size: 15px !important;
+    .sh_payment_popup{       
+        .main_div_sh_payment{
+            .sh_shortcut_table_header{
+                font-weight: bold;
+                margin-bottom: 10px;
+                margin-top: 15px;
+            }
+            .sh_shortcut_table{
+                width: 100%;
+                margin-bottom: 15px;
+                tr{
+                    th {
+                        padding: 0.75rem 0.75rem;
+                        width: 50%;
+                    }
+                    td {
+                        padding: 0.75rem 0.75rem;
+                    }
+                }
+            }
+        }
+    }
+}

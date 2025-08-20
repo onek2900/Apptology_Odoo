@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_portal_pos_user,access_portal_pos_user,point_of_sale.model_pos_order,base.group_portal,1,1,1,0
+access_portal_pos_user_line,access_portal_pos_user_line,point_of_sale.model_pos_order_line,base.group_portal,1,1,1,0
+access_mail_message,access_mail_message,mail.model_mail_message,base.group_portal,1,1,1,0

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_order_inherit_form_view" model="ir.ui.view">
+        <field name="name">pos.order.inherit.form.view</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[1]/field[@name='lines']/tree/field[@name='product_uom_id']" position="after"> 
+                <field name="secondary_qty" /><field name="sh_uom_id" string="Secondary UoM" /> </xpath>
+        </field>
+    </record>
+</odoo>

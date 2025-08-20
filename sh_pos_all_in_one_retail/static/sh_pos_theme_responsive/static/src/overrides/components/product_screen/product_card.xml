@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+	<t t-name="sh_pos_theme_responsive.ProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('product-img')]" position="attributes">
+            <attribute name="t-if">props.imageUrl and env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_display_product_image_name and (env.services.pos.pos_theme_settings_data[0].sh_display_product_image_name == 'image' || env.services.pos.pos_theme_settings_data[0].sh_display_product_image_name == 'image_name')</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('product-name')]" position="attributes">
+            <attribute name="t-if">env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_display_product_image_name and (env.services.pos.pos_theme_settings_data[0].sh_display_product_image_name == 'product_name' || env.services.pos.pos_theme_settings_data[0].sh_display_product_image_name == 'image_name')</attribute>
+        </xpath>
+        <xpath expr="//span[hasclass('price-tag')]" position="after">
+            <span t-if="env.services.pos.isMobile &amp;&amp; env.services.pos.get_order().product_with_qty &amp;&amp; env.services.pos.get_order().product_with_qty[props.productId]" class="counter-tag">
+				<t t-esc="env.services.pos.get_order().product_with_qty[props.productId]"/>
+			</span>
+        </xpath>
+	</t>
+</templates>

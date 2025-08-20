@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-extend="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//ul[hasclass('sh_info_list')]" position="inside">
+            <t t-if="line.is_has_topping">
+                <div class='topping-item' t-if='line.Toppings'>
+                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
+                        <div class="sh_topping_line_content" style=" display: flex; align-items:baseline;justify-content: space-between;font-size: 84%;font-weight:500;margin-left: 10px;">
+                            <div class="sh_toppings_description" style="display: flex; align-items:baseline;">
+                                <div style="padding: 0px 5px" class="fa fa-trash" t-att-data-line="topping.id" t-on-click.stop="() => this._clickRemoveLine(topping.id)"></div>
+                                <t t-if="topping">
+                                    <div class="sh_product_name">
+                                        <t t-esc='topping.full_product_name' />
+                                    </div>
+
+                                    <em style="margin-left: 5px;">
+                                        <t t-esc="topping.quantityStr" />
+                                    </em>
+
+                                    <div style="margin-left: 5px;">
+                                        <t t-esc="topping.unit" />
+                                    </div>
+                                    <span style="padding: 0px 5px"> at </span>
+                                    <div class="addon-orderline-price">
+                                        <t t-esc="env.utils.formatCurrency(topping.price_unit)" />
+                                    </div>
+                                    <span style="padding: 0px 5px"> / </span>
+                                    <t t-esc="topping.unit" />
+                                </t>
+                            </div>
+                            <div style="margin-left: 15px; float: right;">
+                                <t t-esc="env.utils.formatCurrency(topping.price_subtotal_incl)" />
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+            <!-- <t t-if="this.env.services.pos.config.sh_display_stock and props.line.product_type == 'product'">
+                <li class="sh_stock_li_orderline" t-if="env.services.pos.get_order() and !env.services.pos.get_order().finalized">
+                    <span class="product-image-icon sh_orderline_stock_icon me-1 ms-1" t-on-click="() => this.env.services.pos.showStock(props.line.productId)">
+                        <i class="fa fa-building-o" aria-hidden="true"></i>
+                    </span>
+                </li>
+            </t> -->
+        </xpath>
+        <xpath expr="//li[hasclass('sh_orderline_icon')]" position="inside">
+            <t t-if="this.env.services.pos.config.sh_display_stock and props.line.product_type == 'product'">
+                <span class="sh_stock_li_orderline" t-if="env.services.pos.get_order() and !env.services.pos.get_order().finalized">
+                    <span class="product-image-icon sh_orderline_stock_icon me-1 ms-1" t-on-click="() => this.env.services.pos.showStock(props.line.productId)">
+                        <i class="fa fa-building-o" aria-hidden="true"></i>
+                    </span>
+                </span>
+            </t>
+        </xpath>
+    </t>
+</templates>

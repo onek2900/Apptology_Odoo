@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_payment_pos_report_wizard_form" model="ir.ui.view">
+        <field name="name">sh.pos.payment.report.wizard.form</field>
+        <field name="model">sh.pos.payment.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="POS Payment Report">
+                <group>
+                    <group>
+                        <field name="date_start" />
+                        <field name="state" />
+                        <field name="config_ids" options="{'no_create': True}" widget="many2many_tags" groups="base.group_multi_company"/>
+                    </group>
+                    <group>
+                        <field name="date_end" />
+                        <field name="company_ids" options="{'no_create': True}" widget="many2many_tags" groups="base.group_multi_company" />
+                        <field name="filter_invoice_data" widget="radio"/>
+                    </group>
+                </group>
+                <group>
+                    <field colspan="2" nolabel="1" name="user_ids" options="{'no_create': True}"
+                        groups="sh_pos_all_in_one_retail.sh_payment_pos_report_group">
+                        <tree>
+                            <field name="name" />
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                    <button name="display_report" string="View" class="oe_highlight" type="object" />
+                    <button name="print_report" string="Print" class="oe_highlight" type="object" />
+                    <button name="print_xls_report" string="Print In XLS" class="oe_highlight" type="object" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="sh_payment_pos_report_wizard_action" model="ir.actions.act_window">
+        <field name="name">POS Payment Report</field>
+        <field name="res_model">sh.pos.payment.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="sh_payment_pos_report_wizard_menuitem"
+        action="sh_payment_pos_report_wizard_action" parent="point_of_sale.menu_point_rep"
+        groups="sh_pos_all_in_one_retail.sh_group_payment_pos_report" sequence="99" />
+</odoo>

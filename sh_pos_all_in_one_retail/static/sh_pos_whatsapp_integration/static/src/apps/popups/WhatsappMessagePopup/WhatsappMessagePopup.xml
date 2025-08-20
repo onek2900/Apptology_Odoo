@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_whatsapp_integration.WhatsappMessagePopup">
+        <div class="popup sh_modal_whatsapp_message">
+            <div class="modal-header  bg-secondary justify-content-center">
+                <h4 class="modal-title title">
+                    Send Whatsapp Message
+                </h4>
+            </div>
+            <main class="modal-body">
+                <div class="product-list-container flex-grow-1 overflow-y-auto">
+                  <table class="table">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <label class="sh_lbl">Whatsapp Number</label>
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                 <span class="sh_form_element" style="text-align: left;"><input readonly="" type="text" class="mobile_no form-control" t-att-value="props.mobile_no" name="mobile_no" /></span>
+                                </td>
+                            </tr>
+                 
+                            <tr>
+                                <td>
+                                   <label class="sh_lbl">Message</label>
+                                </td>
+                                <td>
+                                    :
+                                </td>
+                                <td>
+                                    <textarea placeholder="Enter Message Here.." class="wp_message sh_form_element form-control" t-att-value="props.message" name="message"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="d-flex sh_box">
+                       
+                    </div>
+
+                    <a class="wp_url" target="blank" href=""><span></span></a>
+                    <div class="sh_bottom_note">
+                        <p><strong>Note:</strong></p>
+                        <p>1) Use *text* to make text bold.</p>
+                        <p>2) Use _text_ to make text italic.</p>
+                        <p>3) Use %0A after/before Text if you want to add blank line.</p>
+                        <p>4) use %20 after/before any Text if you want to give space.</p>
+                        <p>5) go to users => preferences to add signature.</p>
+                    </div>
+                </div>
+            </main>
+            <footer class="footer footer-flex modal-footer">
+                <div class="button confirm highlight" t-on-click="confirm">
+                    <t t-esc="props.confirmText" />
+                </div>
+                <div class="button cancel" t-on-click="cancel">
+                    <t t-esc="props.cancelText" />
+                </div>
+            </footer>
+        </div>
+    </t>
+
+</templates>

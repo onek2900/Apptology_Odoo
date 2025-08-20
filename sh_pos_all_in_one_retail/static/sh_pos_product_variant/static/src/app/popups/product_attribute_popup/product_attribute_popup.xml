@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_all_in_one_retail.ProductAttributePopup">
+        <div class="popup popup-confirm sh_attribute_popup">
+            <header class="title drag-handle modal-header">
+                <div class="modal-title h4">
+                    <t t-esc="props.title"></t>
+                </div>
+            </header>
+            <main class="modal-body sh_attribute_body">
+                <div class="sh_attribute_content_box">
+                    <t t-foreach="getAttribute_lines" t-as="attribute_line" t-key="attribute_line.id">
+                        <div class="sh_attribute_content d-flex" >
+                            <div class="sh_attribute_title">
+                                <t t-esc="attribute_line.display_name"></t>
+                            </div>
+                            <div class="sh_attribute_line d-flex" t-att-attribute_line_id="attribute_line.id" t-att-class="'sh_attribute_line_'+attribute_line.id" >
+                                <t t-foreach="attribute_line.product_template_value_ids" t-as="att_value_id" t-key="att_value_id">
+                                    <div class="sh_att_value" t-att-class=" 'sh_attribute_value_'+att_value_id " t-on-click="selectAttributeValue" t-att-att_value_id="att_value_id">
+                                        <t t-if="this.pos.db.attribute_value_by_id[att_value_id]">  
+                                            <t t-esc="this.pos.db.attribute_value_by_id[att_value_id].name"></t>
+                                        </t>
+                                    </div>
+                                </t>
+                            </div>
+                            
+                        </div>
+                    </t>
+                </div>
+                <div class="sh_alternative_products bg-300">                    
+                    <t t-if="showAlternativeProducts ">
+                        <div class="sh_alternative_products_title">
+                            <span class="modal-title h4">
+                                Alternative Products
+                            </span>
+                        </div>
+                        <div class="sh_product_variant_2 product-list d-grid gap-1">
+                            <t t-foreach="getAlternativeProduct" t-as="product" t-key="product.id">
+                                <VariantProductItem class="sh_pos_product_variants" name="product.display_name" productId="product.id" price="product.getFormattedUnitPrice()" imageUrl="product.getImageUrl()" onClick="() => this.clickProduct(product)" />
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </main>
+            <footer class="footer footer-flex modal-footer">
+                <div class="button btn btn-lg btn-primary sh_display_stock" t-if="selected_product and pos.config.sh_display_stock" t-on-click="() => this.on_click_show_qty(selected_attribute)">
+                    Stock Info.
+                 </div>
+                <div class="button confirm highlight btn btn-lg btn-primary" t-on-click="confirm">
+                    Add Variant
+                </div>
+                <div class="button cancel btn btn-lg btn-secondary " t-on-click="cancel">
+                    Close
+                </div>
+            </footer>
+        </div>
+    </t>
+</templates>

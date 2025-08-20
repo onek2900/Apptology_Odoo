@@ -1,0 +1,24 @@
+
+/* odoo 16 */ 
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div{padding: 10px;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_barcode_popup_exchange_label{padding: 5px 0px 0px 0px !important;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_barcode_popup_exchange_label.show_checkbox {display: block !important;}
+
+/* custom radio button design  */ 
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_custom_radio{display: block;position: relative;padding-left: 26px;padding-right: 26px;margin-bottom: 0px;cursor: pointer;font-size: 16px;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_custom_radio input {position: absolute;z-index: -1;opacity: 0;margin: 0px !important;padding: 0px !important;width: 0px !important;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_custom_radio .sh_custom_radio_indicator {position: absolute;top: 0px;left: 0;height: 20px;width: 20px;background: #e6e6e6;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_control_radio .sh_custom_radio_indicator {border-radius: 50%;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_custom_radio input:checked ~ .sh_custom_radio_indicator {background: #017e84;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_custom_radio .sh_custom_radio_indicator:after {content: '';position: absolute;display: none;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_control_radio .sh_custom_radio_indicator:after {left: 7px;top: 7px;height: 6px;width: 6px;border-radius: 50%;background: #fff;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_custom_radio input:checked ~ .sh_custom_radio_indicator:after {display: block;}
+.pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_return_exchange_radio{display: flex;justify-content: center;}
+
+@media only screen and (max-width: 767.98px){
+    .pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_radio_btn_div .sh_custom_radio{font-size: 15px;}
+    body .pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_order_return_exch_footer .sh_cancel_footer_btn{width: 60px !important;}
+    body .pos .popups .sh_order_return_product_modal_dialog .sh_order_return_popup .sh_order_return_exch_footer .sh_return_exchange_footer_btn{width: 70px !important;}
+}
+
+

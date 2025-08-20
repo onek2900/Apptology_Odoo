@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_order_return_exchange.OrderListScreen" t-inherit="sh_pos_order_list.OrderListScreen" t-inherit-mode="extension">
+        <xpath expr="//th[hasclass('sh-actions')]" position="before">
+            <t t-if="pos.config.sh_allow_return">
+                <th class="py-2"> Return Status </th>
+            </t>
+        </xpath>
+        <xpath expr="//th[hasclass('sh-actions')]" position="after">
+            <t t-if="pos.config.sh_allow_return or pos.config.sh_allow_exchange">
+                <th class="py-2 sh_orderlist_print_order_tool_th"></th>
+            </t>
+        </xpath>
+        <xpath expr="//td[hasclass('sh-actions')]" position="before">
+            <t t-if="pos.config.sh_allow_return">
+                <td class="sh_return_status_td">
+                    <t t-if="order[0].return_status">
+                        <t t-if="order[0].return_status == 'nothing_return'">
+                            -
+                        </t>
+                        <t t-if="order[0].return_status == 'partialy_return'">
+                            Partially-Returned
+                        </t>
+                        <t t-if="order[0].return_status == 'fully_return'">
+                            Fully-Returned
+                        </t>
+                    </t>
+                </td>
+            </t>
+        </xpath>
+        <xpath expr="//td[hasclass('sh-actions')]" position="after">
+            <td class="sh_orderlist_print_order_tool_td" t-if="pos.config.sh_allow_return or pos.config.sh_allow_exchange" >
+                <t t-if="pos.config.sh_allow_return" >
+                    <span class="tool d-contents" data-tip="Return" title="Return" style="padding: 0px 5px;">
+                        <i t-att-data-id="order[0].id" class="fa fa-reply order_return pe-2" aria-hidden="true" t-on-click="return_pos_order"></i>
+                    </span>
+                </t>
+                <t t-if="pos.config.sh_allow_exchange">
+                    <span class="order_return" t-if="pos.config.sh_allow_exchange" style="    padding: 0px 5px;">
+                        <span class="tool" data-tip="Exchange" title="Exchange">
+                            <i t-att-data-id="order[0].id" class="fa fa-exchange order_exchange" aria-hidden="true" t-on-click="exchange_pos_order"></i>
+                        </span>
+                    </span>
+                </t>
+            </td>
+        </xpath>
+        <xpath expr="//tr[hasclass('sh_sub_order_line_tr')]//td[1]" position="attributes">
+            <attribute name="colspan">11</attribute>
+        </xpath>
+        <xpath expr="//tr[hasclass('sh_sub_order_line_tr')]//table[hasclass('sh_sub_order_line')]//thead//th[2]" position="after">
+            <th class="sh_pos_order_return_th" style="width: 10%"> Return Qty </th>
+        </xpath>
+        <xpath expr="//td[hasclass('sh_inner_table_product_td')]" position="inside">
+            <t t-if="pos.db.product_by_id[line.product_id] and pos.db.product_by_id[line.product_id].sh_product_non_returnable and pos.db.product_by_id[line.product_id].sh_product_non_exchangeable" >
+                <span class="no_return"> (Non-Returnable)</span>
+                <span class="no_exchange"> (Non-Exchangeable)</span>
+            </t>
+            <t t-elif="pos.db.product_by_id[line.product_id] and pos.db.product_by_id[line.product_id].sh_product_non_returnable" >
+                <span class="no_return"> (Non-Returnable)</span>
+            </t>
+            <t t-elif="pos.db.product_by_id[line.product_id] and pos.db.product_by_id[line.product_id].sh_product_non_exchangeable" >
+                <span class="no_exchange"> (Non-Exchangeable)</span>
+            </t>
+        </xpath>
+        <xpath expr="//tr[hasclass('sh_sub_order_line_tr')]" position="before">
+            <t t-if="order[0].return_status != 'nothing_return'">
+                <tr t-att-id="'sh_order_reference_line'+order[0].id" class="sh_sub_order_line_tr sh_hide_lines">
+                    <td colspan="11" class="sh_return_order_ref_td">
+                        <span class="sh_return_order_ref_lable">Return Order Reference : </span>
+                        <span class="sh_return_order_ref_val">
+                            <t t-if="order[0].old_pos_reference">
+                                <t t-esc="order[0].old_pos_reference" />
+                            </t>
+                        </span>
+                    </td>
+                </tr>
+            </t>
+        </xpath>
+        <xpath expr="//tr[hasclass('sh_sub_order_line_tr')]//table[hasclass('sh_sub_order_line')]//td[2]" position="after">
+            <td>  
+                <t t-if="line.sh_return_qty">
+                    <t t-esc="line.sh_return_qty"></t>
+                </t>
+                <t t-else="">
+                    0
+                </t>
+            </td>
+        </xpath>    
+        <xpath expr="//div[hasclass('sh_header_buttons')]//div[hasclass('button')]" position="after">
+            <button class="button back btn btn-lg btn-secondary mx-2" t-on-click="sh_return_pos_order"> 
+                <i t-if="ui.isSmall" class="fa fa-angle-double-left"/>
+                <t t-else=""> Return  </t>
+            </button>
+        </xpath>
+    </t>
+</templates>

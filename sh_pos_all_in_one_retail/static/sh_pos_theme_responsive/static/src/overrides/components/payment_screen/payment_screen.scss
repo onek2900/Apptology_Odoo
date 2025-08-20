@@ -1,0 +1,144 @@
+.pos{
+    .pos-content{
+        .payment-screen{
+            @if $sh_pos_body_background_type =="bg_color" {
+                background: $sh_pos_body_background_color !important;
+            }
+            @if $sh_pos_body_background_type =="bg_img" {
+                background-color:  transparent !important;
+            } 
+            // Payment Methods Container//
+            .paymentmethods-container{
+                .paymentlines{
+                    gap: 6px !important;padding: 8px;
+                    .title-category{
+                        font-weight: bold;padding-top: 8px !important;
+                    }
+                    .paymentline{
+                        transition: all .5s;border: 1px solid #dee2e6;border-radius: 5px !important;
+                        .delete-button {
+                            color: $sh_pos_primary_color;
+                        }
+                        .payment-infos{
+                            padding-top: 10px !important;padding-bottom: 10px !important;
+                        }
+                        &:active, &:hover,&.selected{
+                            background-color: lighten($sh_pos_primary_color, 47%) !important;
+                            border: 1px solid $sh_pos_primary_color !important;
+                        }
+                        @if $sh_pos_button_style =="style_1" {
+                            border-radius: 5px !important;
+                        }
+                        @if $sh_pos_button_style =="style_2" {
+                            border-radius: 10px 0px 10px 0px !important;
+                        }
+                        @if $sh_pos_button_style =="style_3" {
+                            border-radius: 0px !important;
+                        }
+                    }
+                }
+                .paymentmethods{
+                    gap: 6px !important;padding: 8px;
+                    .title-category{
+                        font-weight: bold;padding-top: 8px !important;
+                    }
+                    .button.paymentmethod{
+                        transition: all .5s;border-color: #dee2e6;
+                        @if $sh_pos_button_style =="style_1" {
+                            border-radius: 5px !important;
+                        }
+                        @if $sh_pos_button_style =="style_2" {
+                            border-radius: 10px 0px 10px 0px !important;
+                        }
+                        @if $sh_pos_button_style =="style_3" {
+                            border-radius: 0px !important;
+                        }
+                        &:active, &:hover{
+                            background: lighten($sh_pos_primary_color, 47%);
+                            border-color: $sh_pos_primary_color !important;
+                        }
+                    }
+                }
+            }
+            // Payment Button //
+            .payment-buttons{
+                gap: 6px !important;padding: 8px;
+                button.button{
+                    &.highlight{
+                        background: $sh_pos_primary_color !important;border-color: $sh_pos_primary_color !important;
+                    }
+                    transition: all .5s;border-color: #dee2e6;
+                    @if $sh_pos_button_style =="style_1" {
+                        border-radius: 5px !important;
+                    }
+                    @if $sh_pos_button_style =="style_2" {
+                        border-radius: 10px 0px 10px 0px !important;
+                    }
+                    @if $sh_pos_button_style =="style_3" {
+                        border-radius: 0px !important;
+                    }
+                    &:hover{
+                        color: $sh_pos_primary_color;border-color: $sh_pos_primary_color !important;
+                    }
+                }
+            }
+            // Payment Status Container //
+            .paymentlines-container{
+                .payment-status-container{
+                    .amount.highlight{
+                        background-color: transparent !important;
+                        color: $sh_pos_primary_color !important;
+                    }
+                }
+            }
+            .main-content{
+                .left-content{
+                    @if $sh_pos_body_background_type =="bg_color" {
+                        background: $sh_pos_body_background_color !important;
+                    }
+                    @if $sh_pos_body_background_type =="bg_img" {
+                        background-color:  transparent !important;
+                    }
+                }
+                .right-content{
+                    @if $sh_pos_body_background_type =="bg_color" {
+                        background: $sh_pos_body_background_color !important;
+                    }
+                    @if $sh_pos_body_background_type =="bg_img" {
+                        background-color:  transparent !important;
+                    }
+                }
+                .center-content{
+                    .numpad{
+                        gap: 10px;justify-content: center;
+                        .col{
+                            transition: all .5s;
+                            &:hover,&:active{
+                                background: $sh_pos_primary_color;border-color: $sh_pos_primary_color;color: #FFFFFF;
+                            }
+                            width: 23%;
+                            @if $sh_pos_button_style =="style_1" {
+                                border-radius: 5px !important;
+                            }
+                            @if $sh_pos_button_style =="style_2" {
+                                border-radius: 10px 0px 10px 0px !important;
+                            }
+                            @if $sh_pos_button_style =="style_3" {
+                                border-radius: 0px !important;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        @include media-breakpoint-down(lg){
+            .paymentlines-container{
+                .paymentlines-empty{
+                    .total{
+                        color: $sh_pos_primary_color !important;
+                    }
+                }
+            }
+        }
+    }
+}

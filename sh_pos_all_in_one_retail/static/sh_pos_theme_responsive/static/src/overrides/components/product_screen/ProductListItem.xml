@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_theme_responsive.ProductListItem">
+        <tr t-on-keypress="(event) => event.which === 32 ? props.onClick(event) : ()=>{}" t-att-data-product-id="props.productId" t-attf-aria-labelledby="article_product_{{props.productId}}" class="1563">
+            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_image">
+                <td>
+                    <t t-if="env.services.pos.pos_theme_settings_data[0].sh_product_image_size == 'small_size' and props.imageUrl">
+                        <img t-att-src="props.imageUrl" t-att-alt="props.name" class="small_size_image" />
+                    </t>
+                    <t t-if="env.services.pos.pos_theme_settings_data[0].sh_product_image_size == 'medium_size' and props.imageUrl">
+                        <img t-att-src="props.imageUrl" t-att-alt="props.name" class="medium_size_image" />
+                    </t>
+                    <t t-if="env.services.pos.pos_theme_settings_data[0].sh_product_image_size == 'large_size' and props.imageUrl">
+                        <img t-att-src="props.imageUrl" t-att-alt="props.name" class="large_size_image" />
+                    </t>
+                </td>
+            </t>
+            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_name">
+                <td>
+                    <t t-esc="props.name" />
+                </td>
+            </t>
+            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_code">
+                <td>
+                    <t t-if="props.product.default_code">
+                        <t t-esc="props.product.default_code" />
+                    </t>
+                    <t t-else="">
+                        -
+                    </t>
+                </td>
+            </t>
+            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_type">
+                <td>
+                    <t t-if="props.product.type == 'consu'">
+                        Comsumable
+                    </t>
+                    <t t-if="props.product.type == 'product'">
+                        Storable
+                    </t>
+                    <t t-if="props.product.type == 'service'">
+                        Service
+                    </t>
+                </td>
+            </t>
+            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_onhand">
+                <td>
+                    <t t-if="props.product.qty_available > 0">
+                        <t t-esc="props.product.qty_available" />
+                    </t>
+                    <t t-else="">
+                        0
+                    </t>
+                </td>
+            </t>
+            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_uom">
+                <td>
+                    <t t-esc="props.product.uom_id[1]" />
+                </td>
+            </t>
+            <t t-if="env.services.pos.pos_theme_settings_data[0].sh_display_product_price">
+                <td>
+                   <t t-esc="props.price"/>
+                </td>
+            </t>
+        </tr>
+    </t>
+</templates>

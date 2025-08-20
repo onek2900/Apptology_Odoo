@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!--Email template -->
+    <record id="pos_order_email_template" model="mail.template">
+        <field name="name">POS Order - Send by Email</field>
+        <field name="email_from">{{(object.user_id.email_formatted and '%s &lt;%s&gt;' % (object.user_id.name, object.user_id.email_formatted) or '')}}</field>
+        <field name="partner_to">{{object.partner_id.id}}</field>
+        <field name="subject">{{object.company_id.name}} (Ref {{object.name or 'n/a' }})</field>
+        <field name="model_id" ref="point_of_sale.model_pos_order" />
+        <field name="auto_delete" eval="True" />
+        <field name="report_template_ids" eval="[(4, ref('sh_pos_all_in_one_retail.action_report_pos_receipt'))]"/>
+        <field name="lang">${object.partner_id.lang}</field>
+        <field name="body_html" type='html'>
+            <div style="font-family: 'Lucida Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+                <p>
+                    Hello
+                    <t t-out='object.partner_id.name or ""'></t>
+                    ,
+                </p>
+                <p>
+                    Here is your order from
+                    <t t-out="object.company_id.name" />
+                    :
+                </p>
+
+                <p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+                    <strong>REFERENCES</strong>
+                    <br />
+                    Order number:
+                    <strong>
+                        <t t-out='object.name or ""' />
+                    </strong>
+                    <br />
+                    Order total:
+                    <strong>
+                        <t t-out='object.amount_total or ""' />
+                        <t t-out='object.pricelist_id.currency_id.name or ""' />
+                    </strong>
+                    <br />
+                    Order date:
+                    <t t-out='object.date_order or ""' />
+                    <br />
+                    <t t-if='object.pos_reference'>
+                        Order Reference:
+                        <t t-out="object.pos_reference" />
+                    </t>
+                    <br />
+                    Your contact:
+                    <a href="mailto:{{object.user_id.email or ''}}?subject=Order%20{{object.name}}">
+                        <t t-out='object.user_id.name or ""' />
+                    </a>
+                </p>
+                <br />
+                <p>If you have any question, do not hesitate to contact us.</p>
+                <p>
+                    Thank you for choosing
+                    <t t-out='object.company_id.name or "us"' />
+                    !
+                </p>
+                <br />
+                <br />
+                <div style="width: 375px; margin: 0px; padding: 0px; background-color: #8E0000; border-top-left-radius: 5px 5px; border-top-right-radius: 5px 5px; background-repeat: repeat no-repeat;">
+                    <h3 style="margin: 0px; padding: 2px 14px; font-size: 12px; color: #DDD;">
+                        <strong style="text-transform:uppercase;">
+                            <t t-out='object.company_id.name' />
+                        </strong>
+                    </h3>
+                </div>
+                <div style="width: 347px; margin: 0px; padding: 5px 14px; line-height: 16px; background-color: #F2F2F2;">
+                    <span style="color: #222; margin-bottom: 5px; display: block; ">
+                        <t t-out='object.company_id.partner_id.sudo().with_context(show_address=True).name_get()[0][1]'>
+                            <br />
+                        </t>
+                    </span>
+                    <t t-if='object.company_id.phone'>
+                        <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                            Phone:
+                            <t t-out='object.company_id.phone' />
+                        </div>
+                    </t>
+                    <t t-if='object.company_id.website'>
+                        <div>
+                            Web :
+                            <a href="{{object.company_id.website}}">
+                                <t t-out='object.company_id.website' />
+                            </a>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </field>
+    </record>
+
+</odoo>

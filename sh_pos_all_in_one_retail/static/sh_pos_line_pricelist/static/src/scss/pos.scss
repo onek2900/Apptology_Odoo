@@ -1,0 +1,76 @@
+body.pos {
+	.sh_modal_pricelist {
+		.modal-body.sh_pricelist_main_table {
+			overflow: auto;
+		}
+	}
+	.popup {		
+		&.sh_modal_pricelist {
+            .pricelist_table {
+                width: 100%;
+                tr {
+                    &:nth-child(even) {
+                        background: $sh_even_row_color;
+                    }
+					&:nth-child(odd) {
+                        background: $sh_odd_row_color;
+                    }
+                    &:not(.only_read).lowlight {
+                        transition: all 150ms linear;
+                        background: #b1d1d3;
+                    }
+                    &:not(.only_read).highlight {
+                        transition: all 150ms linear;
+                        color: $o-brand-primary;
+                        font-weight: bold;
+                    }
+					@if $sh_list_row_hover == "True"{
+						&:hover{
+							background-color: $sh_hover_background_color;
+						}
+					}
+                }
+                td {
+                    padding: 10px 8px;
+                    position: relative;
+                }
+                tbody {
+                    font-weight: normal;
+                    font-size: 16px;
+                    max-height: 400px;
+                }
+            }
+        }
+
+	}
+	.popups {
+		.modal-dialog {
+			.popup.popup-selection {
+				.selection.scrollable-y {
+					.selection-item.selected {
+						color: #ffffff;
+					}
+				}
+			}
+			.sh_modal_pricelist {
+				.sh_modal_pricelist {
+					.modal-body.sh_pricelist_main_table {
+						.pricelist_table {
+							.pricelist_row {
+								&:not(.only_read) {
+									cursor: pointer;
+								}
+							}
+							.pricelist_row.only_read {
+								cursor: not-allowed;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+.product-screen .span_pricelist_icon {
+	display: flex !important;
+}

@@ -1,0 +1,12 @@
+
+.pos{
+	.order-summary{
+		position: relative;
+		.sh_order_left_extra_summary{
+			padding-right: 15px;position: absolute;top: 13px;left: 16px;text-align: left;
+			@include media-breakpoint-between(md, xl)  {
+				top: 13px;
+			}
+		}
+	}
+}

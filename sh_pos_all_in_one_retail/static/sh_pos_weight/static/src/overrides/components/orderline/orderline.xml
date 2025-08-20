@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_weight.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr='//li[hasclass("sh_orderline_icon")]' position='before'>
+            <li t-if='(env.services.pos.config.enable_weight and line and line.weight_in_cart) or (env.services.pos.config.enable_volume and props.line and props.line.volume_in_cart)'>
+                <t t-if="env.services.pos.config.enable_weight and line and line.weight_in_cart">
+                    <span class="sh_orderline_weight_main ms-0">
+                        <span class="sh_orderline_weight_lbl">Weight</span>
+                        <span class="sh_orderline_weight_val1"><t t-esc='line.product_weight.toFixed(2)'></t></span>
+                    </span>
+                </t>
+                <t t-if="env.services.pos.config.enable_volume and props.line and props.line.volume_in_cart">
+                    <span class="sh_orderline_volume_main">
+                        <span class="sh_orderline_volume_lbl">Volume</span>
+                        <span class="sh_orderline_volume_val"><t t-esc='props.line.product_volume.toFixed(2)'></t></span>
+                    </span>
+                </t>
+            </li>
+        </xpath>
+        <xpath expr='//ul[hasclass("info-list")]' position='after'>
+            <t t-if='env.services.pos.config.enable_weight and env.services.pos.config.product_weight_receipt'>
+                <t t-if='line and line.weight_in_receipt'>
+                    <span class="sh_orderline_weight_main ms-0">
+                        <span class="sh_orderline_weight_lbl">Weight</span>
+                        <span class="sh_orderline_weight_val"><t t-esc='line.product_weight.toFixed(2)'></t></span>
+                    </span>
+                </t>
+        
+            </t>
+            <t t-if='env.services.pos.config.enable_volume and env.services.pos.config.product_volume_receipt'>
+                <t t-if='props.line and props.line.volume_in_receipt'>
+                    <span class="sh_orderline_volume_main">
+                        <span class="sh_orderline_volume_lbl">Volume</span>
+                        <span class="sh_orderline_volume_val"><t t-esc='props.line.product_volume.toFixed(2)'></t></span>
+                    </span>
+                </t>
+            </t>
+           
+        </xpath>
+    </t>
+</templates>

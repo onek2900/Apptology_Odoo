@@ -1,0 +1,97 @@
+// .pos .popups .modal-dialog .sh_wh_popup.popup{width: 600px;max-width: 600px;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box{display: flex;margin: 10px;align-items: center;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box .sh_lbl{font-size: 16px;font-weight: bold;margin-right: 10px;width: 30%;text-align: left;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box .sh_form_element{width: 70%;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box .sh_form_element input.mobile_no{width: 100%;font-size: 15px;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box textarea.sh_form_element{height: 65px;font-size: 15px;resize: none;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .sh_bottom_note{text-align: left;margin: 25px 10px;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .sh_bottom_note p{font-size: 16px;margin: 3px 0px;font-weight: normal;}
+
+// @media only screen and (max-width: 767.98px){
+//     .pos .popups .modal-dialog .sh_wh_popup.popup{width: 320px;max-width: 320px;}
+//     .pos .popups .modal-dialog .sh_wh_popup.popup .sh_bottom_note{margin: 18px 0px;}
+//     .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box{margin: 10px 0px;}
+// }
+
+// .pos .screen-content .partner-list .button.send_wp{margin-left: 12px;transition: all .5s;}
+// .pos .screen-content .partner-list .button.send_wp:hover .fa.fa-whatsapp{font-size: 17px;}
+// .pos .screen-content .partner-list .button.send_wp .fa.fa-whatsapp{opacity: 1;}
+// .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box .sh_form_element input.mobile_no:hover,.pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box .sh_form_element input.mobile_no:focus,
+// .pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box textarea.sh_form_element:hover,.pos .popups .modal-dialog .sh_wh_popup.popup .d-flex.sh_box textarea.sh_form_element:focus{box-shadow: none;outline: none;border: 1px solid #017e84;}
+
+body{
+    .pos{
+        .pos-content {
+            .partnerlist-screen{
+                .overflow-auto{
+                    .partner-list {
+                        tbody{
+                            tr{
+                                td{
+                                    div{
+                                        .send_wp{
+                                            margin-left: 15px;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .receipt-screen {
+                .screen-content {
+                    .default-view {
+                        .actions{
+                            .d-flex{
+                                .buttons{
+                                    display: flex;
+                                    justify-content: space-between;
+                                    .button{
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                        width: 100%;
+                                        border: 1px solid #c7c5c5;
+                                        margin: 2px;
+                                        i{
+                                            margin-right: 10px;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .o-main-components-container{
+        .popups{
+            .modal-dialog {
+                .popup{
+                    .modal-body{
+                        .product-list-container {
+                            .sh_bottom_note{
+                                p{
+                                    text-align: start;
+                                    margin: 0;
+                                }
+                            }
+                        }
+                    }
+                    .footer{
+                        .button{
+                            padding: 10px 40px; border-radius: 5px;
+                            &.highlight{background: $o-community-color ; color: #fff;}
+                            &.cancel{border: 1px solid #dee2e6; background: #dee2e6;
+                                &:hover{background: #ced4da; border-color: #ced4da;}
+                                &:active{background: rgba($o-community-color , $alpha:0.2); border-color: $o-community-color;}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- sh.order.type form view -->
+    <record id="sh_order_type_view_form" model="ir.ui.view">
+        <field name="name">sh.order.type.view.form</field>
+        <field name="model">sh.order.type</field>
+        <field name="arch" type="xml">
+            <form string="Order Type">
+                <sheet>
+                    <field name="img" widget="image" class="oe_avatar" />
+                    <h1 >
+                        <field name="name" placeholder="Name of Order Type" required="1" />
+                    </h1>
+                    <group>
+                        <field name="is_home_delivery" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <!-- sh.order.type tree view -->
+    <record id="sh_order_type_view_tree" model="ir.ui.view">
+        <field name="name">sh.order.type.view.tree</field>
+        <field name="model">sh.order.type</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="is_home_delivery"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_order_type_action" model="ir.actions.act_window">
+        <field name="name">Order type</field>
+        <field name="res_model">sh.order.type</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="menu_sh_order_type" name="Order Types" parent="point_of_sale.menu_point_config_product" action="sh_order_type_action" />
+</odoo>

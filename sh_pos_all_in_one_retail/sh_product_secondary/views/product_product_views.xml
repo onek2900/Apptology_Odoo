@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_product_custom_view" model="ir.ui.view">
+        <field name="name">sh.product.custom.view</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='uom_id']" position="after">
+                <field name="category_id" invisible="1" />
+                <field name="sh_is_secondary_unit" groups="sh_pos_all_in_one_retail.group_secondary_unit_product"/>
+                <field name="sh_secondary_uom" 
+                    invisible="not sh_is_secondary_unit" 
+                    required="sh_is_secondary_unit" 
+                    domain="[('category_id','=',category_id)]" 
+                    widget="selection" 
+                    groups="sh_pos_all_in_one_retail.group_secondary_unit_product"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="sh_stock_product_inherit_view" model="ir.ui.view">
+        <field name="name">sh.stock.product.inherit.view</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="stock.product_form_view_procurement_button" />
+        <field name="arch" type="xml">
+            <button name="action_update_quantity_on_hand" position="before">
+                <button type="object" name="action_update_quantity_on_hand" invisible="type != 'product'" class="oe_stat_button" icon="fa-th-large" groups="sh_pos_all_in_one_retail.group_secondary_unit_product">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value" widget="statinfo">
+                            <field name="sh_secondary_uom_onhand" widget="statinfo" class="mr4" />
+                            <field name="sh_uom_name" />
+                        </span>
+                    </div>
+                </button>
+            </button>
+            
+            <xpath expr="//button[@name='action_update_quantity_on_hand']" position="after">
+                <button type="object" name="action_product_forecast_report" invisible="type != 'product'" class="oe_stat_button" icon="fa-th-large" groups="sh_pos_all_in_one_retail.group_secondary_unit_product">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="sh_secondary_uom_forecasted" widget="statinfo" class="mr4"/> 
+                            <field name="sh_uom_name" />
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+    <record id="sh_product_custom_tree_view" model="ir.ui.view">
+        <field name="name">sh.product.custom.tree.view</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_product_tree_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//tree/field[@name='uom_id']" position="after">
+                <field name="sh_secondary_uom_onhand" groups="sh_pos_all_in_one_retail.group_secondary_unit_product"/>
+                <field name="sh_secondary_uom_forecasted" groups="sh_pos_all_in_one_retail.group_secondary_unit_product"/>
+                <field name="sh_secondary_uom" groups="sh_pos_all_in_one_retail.group_secondary_unit_product"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

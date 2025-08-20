@@ -1,0 +1,829 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="report_zdetails">
+            <t t-set="company" t-value="env.company"/>
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <t t-set="session_detail" t-value="o.get_session_detail(o)"/>
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div align="center" style="padding: 10px 0px;font-size:28px !important;color:#212121 !important;">
+                                <span style="margin-bottom: 0px;"><b>Z Report</b></span>
+                            </div>
+                            <table class="report_date_table" style="width: 100%;font-size: 16px;border-collapse: collapse;border: 0px;">
+                                <tbody style="border: 0px;">
+                                    <tr style="border: 0px;">
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 15%;word-break: break-word;font-weight: bold;">
+                                            Report Date :
+                                        </td>
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 85%;word-break: break-word;font-weight: normal;">
+                                            <span t-esc="o.get_current_datetime()" t-options="{'widget': 'datetime'}"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <t t-if="o.user_id and o.user_id.name">
+                                <table class="saple_person_table" style="width: 100%;font-size: 16px;border-collapse: collapse;">
+                                    <tbody style="border: 0px;">
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 15%;word-break: break-word;font-weight: bold;">
+                                                Salesperson :
+                                            </td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 85%;word-break: break-word;font-weight: normal;">
+                                                <span t-esc="o.user_id.name"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+                            <div align="center" style="padding: 10px 0px;font-size:22px !important;color:#212121 !important;">
+                                <span style="margin-bottom: 10px;margin-top: 10px;"><b>Session Detail</b></span>
+                            </div>
+                            <table class="session_detail_table" style="width: 100%;font-size: 16px;border-collapse: collapse;margin-bottom:10px;">
+                                <t t-if="o.name">
+                                    <tr style="border: 0px;">
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Session Name</td>
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="o.name"/></td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.config_id and o.config_id.name">
+                                    <tr style="border: 0px;">
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">POS Name</td>
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="o.config_id.name"/></td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.state">
+                                    <tr style="border: 0px;">
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Status</td>
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                            <t t-if="o.state == 'opening_control'">
+                                                Opening Control
+                                            </t>
+                                            <t t-if="o.state == 'opened'">
+                                                In Progress
+                                            </t>
+                                            <t t-if="o.state == 'closing_control'">
+                                                Closing Control
+                                            </t>
+                                            <t t-if="o.state == 'closed'">
+                                                Closed &amp; Posted
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="o.start_at">
+                                    <tr style="border: 0px;">
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Opened Date</td>
+                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="o.start_at" t-options="{'widget': 'datetime'}"/></td>
+                                    </tr>
+                                </t>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Opening Balance</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="o.cash_register_balance_start" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Sales</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="o.total_payments_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Tax</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                        <t t-if="session_detail and session_detail['total_tax']">
+                                            <t t-esc="session_detail['total_tax']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="tax" t-value="0"/>
+                                            <t t-esc="tax" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Discount</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                        <t t-if="session_detail and session_detail['total_discount']">
+                                            <t t-esc="session_detail['total_discount']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="discount" t-value="0"/>
+                                            <t t-esc="discount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Return</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                        <t t-if="session_detail and session_detail['total_return_amount']">
+                                            <t t-esc="session_detail['total_return_amount']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-set="return_amount" t-value="0"/>
+                                            <t t-esc="return_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Cash-In</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="session_detail['total_cash_in']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Cash-Out</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="session_detail['total_cash_out']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Closing Balance</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="o.cash_register_balance_end" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                        <t t-if="o.cash_register_balance_end">
+                                    </t>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Difference</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="o.cash_register_difference" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                        <t t-if="o.cash_register_difference">
+                                    </t>
+                                </tr>
+                                <tr style="border: 0px;">
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Closing Date</td>
+                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                        <t t-if="o.stop_at">
+                                            <t t-esc="o.stop_at" t-options="{'widget': 'datetime'}"/>
+                                        </t>
+                                        <t t-else="">
+                                            -
+                                        </t>
+                                    </td>
+                                </tr>
+                            </table>
+                            <t t-if="o.config_id and o.config_id.sh_display_category_wise_detail">
+                                <div style="page-break-inside: avoid;">
+                                    <div align="center" style="padding: 10px 0px;font-size:22px !important;color:#212121 !important;">
+                                        <span style="margin-bottom: 10px;margin-top: 10px;"><b>Category Wise Detail</b></span>
+                                    </div>
+                                    <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                        <t t-if="session_detail and session_detail['sold_product']">
+                                            <thead>
+                                                <tr style="border: 0px;">
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">Name</th>
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Quantity</th>
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <t t-set="total_qty" t-value="0"/>
+                                            <t t-set="total_price" t-value="0"/>
+                                            <t t-foreach="session_detail['sold_product']" t-as="each_category" t-key="each_category">
+                                                <t t-if="each_category">
+                                                    <tr style="border: 0px;">
+                                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">
+                                                            <t t-if="each_category">
+                                                                <t t-esc="each_category"/>
+                                                            </t>
+                                                        </td>
+                                                        <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                            <t t-if="session_detail['sold_product'][each_category]['qty']">
+                                                                <t t-set="total_qty" t-value="total_qty + session_detail['sold_product'][each_category]['qty']"/>
+                                                                <t t-esc="session_detail['sold_product'][each_category]['qty']"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                0
+                                                            </t>
+                                                        </td>
+                                                        <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                            <t t-if="session_detail['sold_product'][each_category]['price']">
+                                                                <t t-set="total_price" t-value="total_price + session_detail['sold_product'][each_category]['price']"/>
+                                                                <t t-esc="session_detail['sold_product'][each_category]['price']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-set="total" t-value="0"/>
+                                                                <t t-esc="total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;font-weight:bold;">
+                                                    Total
+                                                </td>
+                                                <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                    <t t-esc="total_qty"/>
+                                                </td>
+                                                <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                    <t t-esc="total_price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-else="">
+                                            <tbody style="border: 0px;">
+                                                <tr style="border: 0px;">
+                                                    <td align="center" colspan="3" style="border: 0px;padding: 6px 10px;width: 100%;font-size: 16px;font-weight: normal;">
+                                                        No Any Data Found
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </t>
+                                    </table>
+                                </div>
+                            </t>
+                            <t t-if="o.config_id and o.config_id.sh_display_product_wise_detail">
+                                <div style="page-break-inside: avoid;">
+                                    <div align="center" style="padding: 10px 0px;font-size:22px !important;color:#212121 !important;">
+                                        <span style="margin-bottom: 10px;margin-top: 10px;"><b>Product Wise Detail</b></span>
+                                    </div>
+                                    <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                        <t t-if="session_detail and session_detail['products_detail']">
+                                            <thead>
+                                                <tr style="border: 0px;">
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">Name</th>
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Quantity</th>
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <t t-set="total_qty" t-value="0"/>
+                                            <t t-set="total_price" t-value="0"/>
+                                            <t t-foreach="session_detail['products_detail']" t-as="each_product" t-key="each_product['product_id']">
+                                                <t t-if="each_product">
+                                                    <tr style="border: 0px;">
+                                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">
+                                                            <t t-if="each_product['product_id'] and o.get_product_name(each_product['product_id'])">
+                                                                <t t-esc="o.get_product_name(each_product['product_id'])"/>
+                                                            </t>
+                                                        </td>
+                                                        <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                            <t t-if="each_product['quantity']">
+                                                                <t t-set="total_qty" t-value="total_qty + each_product['quantity']"/>
+                                                                <t t-esc="each_product['quantity']"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                0
+                                                            </t>
+                                                        </td>
+                                                        <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                            <t t-if="each_product['total']">
+                                                                <t t-set="total_price" t-value="total_price + each_product['total']"/>
+                                                                <t t-esc="each_product['total']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-set="total" t-value="0"/>
+                                                                <t t-esc="total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;font-weight:bold;">
+                                                    Total
+                                                </td>
+                                                <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                    <t t-esc="total_qty"/>
+                                                </td>
+                                                <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                    <t t-esc="total_price" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-else="">
+                                            <tbody style="border: 0px;">
+                                                <tr style="border: 0px;">
+                                                    <td align="center" colspan="3" style="border: 0px;padding: 6px 10px;width: 100%;word-break: break-word;font-size: 16px;font-weight: normal;">
+                                                        No Any Data Found
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </t>
+                                    </table>
+                                </div>
+                            </t>
+                            <t t-if="o.config_id and o.config_id.sh_display_customer_wise_detail">
+                                <div style="page-break-inside: avoid;">
+                                    <div align="center" style="padding: 10px 0px;font-size:22px !important;color:#212121 !important;">
+                                        <span style="margin-bottom: 10px;margin-top: 10px;"><b>Customer Wise Detail</b></span>
+                                    </div>
+                                    <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                        <t t-if="session_detail and session_detail['customer_detail']">
+                                            <thead>
+                                                <tr style="border: 0px;">
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">Name</th>
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <t t-foreach="session_detail['customer_detail']" t-as="each_customer_order" t-key="each_customer_order['name']">
+                                                <t t-if="each_customer_order">
+                                                    <tr style="border: 0px;">
+                                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">
+                                                            <t t-if="each_customer_order['name']">
+                                                                <t t-esc="each_customer_order['name']"/>
+                                                            </t>
+                                                        </td>
+                                                        <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">
+                                                            <t t-if="each_customer_order['total']">
+                                                                <t t-esc="each_customer_order['total']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-set="total" t-value="0"/>
+                                                                <t t-esc="total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tbody style="border: 0px;">
+                                                <tr style="border: 0px;">
+                                                    <td align="center" colspan="2" style="border: 0px;padding: 6px 10px;width: 100%;font-size: 16px;font-weight: normal;">
+                                                        No Any Data Found
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </t>
+                                    </table>
+                                </div>
+                            </t>
+                            <t t-if="o.config_id and o.config_id.sh_display_payment_detail">
+                                <div style="page-break-inside: avoid;">
+                                    <div align="center" style="padding: 10px 0px;font-size:22px !important;color:#212121 !important;">
+                                        <span style="margin-bottom: 10px;margin-top: 10px;"><b>Payments Detail</b></span>
+                                    </div>
+                                    <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                        <t t-if="session_detail and session_detail['payment_detail']">
+                                            <thead>
+                                                <tr style="border: 0px;">
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">Name</th>
+                                                    <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <t t-foreach="session_detail['payment_detail']" t-as="each_payment" t-key="each_payment['name']">
+                                                <t t-if="each_payment">
+                                                    <tr style="border: 0px;">
+                                                        <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">
+                                                            <t t-if="each_payment['name']">
+                                                                <t t-esc="each_payment['name']"/>
+                                                            </t>
+                                                        </td>
+                                                        <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">
+                                                            <t t-if="each_payment['total']">
+                                                                <t t-esc="each_payment['total']" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-set="total" t-value="0"/>
+                                                                <t t-esc="total" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                                            </t>
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tbody style="border: 0px;">
+                                                <tr style="border: 0px;">
+                                                    <td align="center" colspan="2" style="border: 0px;padding: 6px 10px;width: 100%;font-size: 16px;font-weight: normal;">
+                                                        No Any Data Found
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </t>
+                                    </table>
+                                </div>
+                            </t>
+                            <div style="page-break-inside: avoid;">
+                                <div align="center" style="padding: 10px 0px;font-size:22px !important;color:#212121 !important;">
+                                    <span style="margin-bottom: 10px;margin-top: 10px;"><b>Status</b></span>
+                                </div>
+                                <table style="width: 100%;font-size: 16px;border-collapse: collapse;border: 0px;">
+                                    <tbody style="border: 0px;">
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">No. Of Orders :</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 80%;word-break: break-word;font-weight: normal;"><t t-esc="session_detail['total_no_order']"/></td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">No. Of Customers :</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 80%;word-break: break-word;font-weight: normal;"><t t-esc="session_detail['total_partner']"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+
+        <template id="sh_pos_z_report_doc">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        
+                        <t t-if="session_detail">
+                            <div align="center" style="padding: 10px 0px;font-size:28px !important;color:#212121 !important;">
+                                <span style="margin-bottom: 0px;"><b>Z Report</b></span>
+                            </div>
+                            <t t-foreach="session_detail" t-as="each_detail">
+                                <div align="center" style="padding: 10px 0px;font-size:24px !important;color:#888888 !important;margin:0px auto;page-break-inside: avoid;">
+                                    <span style="margin-bottom: 0px;"><b><t t-esc="each_detail['session_name']"/></b></span><br/>
+                                    <hr style="width:15%;margin:0px auto;height:2px;"></hr>
+                                </div>
+                                <table class="report_date_table" style="width: 100%;font-size: 16px;border-collapse: collapse;border: 0px;">
+                                    <tbody style="border: 0px;">
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 15%;word-break: break-word;font-weight: bold;">
+                                                Report Date :
+                                            </td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 85%;word-break: break-word;font-weight: normal;">
+                                                <span t-esc="each_detail['current_date_time']" t-options="{'widget': 'datetime'}"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <t t-if="each_detail['saleperson']">
+                                    <table class="saple_person_table" style="width: 100%;font-size: 16px;border-collapse: collapse;">
+                                        <tbody style="border: 0px;">
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 15%;word-break: break-word;font-weight: bold;">
+                                                    Salesperson :
+                                                </td>
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 85%;word-break: break-word;font-weight: normal;">
+                                                    <span t-esc="each_detail['saleperson']"/>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <div style="page-break-inside: avoid;">
+                                    <div align="center" style="padding: 10px 0px;font-size:20px !important;color:#212121 !important;">
+                                        <span style="margin-bottom: 10px;margin-top: 10px;"><b>Session Detail</b></span>
+                                    </div>
+                                    <table class="session_detail_table" style="width: 100%;font-size: 16px;border-collapse: collapse;margin-bottom:10px;">
+                                        <t t-if="each_detail['session_name']">
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Session Name</td>
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['session_name']"/></td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="each_detail['config_id']">
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">POS Name</td>
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['config_id']"/></td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="each_detail['state']">
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Status</td>
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                                    <t t-if="each_detail['state'] == 'opening_control'">
+                                                        Opening Control
+                                                    </t>
+                                                    <t t-if="each_detail['state'] == 'opened'">
+                                                        In Progress
+                                                    </t>
+                                                    <t t-if="each_detail['state'] == 'closing_control'">
+                                                        Closing Control
+                                                    </t>
+                                                    <t t-if="each_detail['state'] == 'closed'">
+                                                        Closed &amp; Posted
+                                                    </t>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                        <t t-if="each_detail['start_at']">
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Opened Date</td>
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['start_at']" t-options="{'widget': 'datetime'}"/></td>
+                                            </tr>
+                                        </t>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Opening Balance</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['cash_register_balance_start']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/></td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Sales</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['total_payments_amount']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/></td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Tax</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                                <t t-if="each_detail['total_tax']">
+                                                    <t t-esc="each_detail['total_tax']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-set="tax" t-value="0"/>
+                                                    <t t-esc="tax" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Discount</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                                <t t-if="each_detail['total_discount']">
+                                                    <t t-esc="each_detail['total_discount']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-set="discount" t-value="0"/>
+                                                    <t t-esc="discount" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Return</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                                <t t-if="each_detail['total_return_amount']">
+                                                    <t t-esc="each_detail['total_return_amount']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                </t>
+                                                <t t-else="">
+                                                    <t t-set="return_amount" t-value="0"/>
+                                                    <t t-esc="return_amount" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Cash-In</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['total_cash_in']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/></td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Total Cash-Out</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['total_cash_out']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/></td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Closing Balance</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['cash_register_balance_end']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/></td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Difference</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;"><t t-esc="each_detail['cash_register_difference']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/></td>
+                                        </tr>
+                                        <tr style="border: 0px;">
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">Closing Date</td>
+                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 80%;word-break: break-word;">
+                                                <t t-if="each_detail['stop_at']">
+                                                    <t t-esc="each_detail['stop_at']" t-options="{'widget': 'datetime'}"/>
+                                                </t>
+                                                <t t-else="">
+                                                    -
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <t t-if="each_detail['is_display_category_wise']">
+                                    <div style="page-break-inside: avoid;">
+                                        <div align="center" style="padding: 10px 0px;font-size:20px !important;color:#212121 !important;">
+                                            <span style="margin-bottom: 10px;margin-top: 10px;"><b>Category Wise Detail</b></span>
+                                        </div>
+                                        <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                            <t t-if="each_detail['sold_product']">
+                                                <thead>
+                                                    <tr style="border: 0px;">
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">Name</th>
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Quantity</th>
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <t t-set="total_qty" t-value="0"/>
+                                                <t t-set="total_price" t-value="0"/>
+                                                <t t-foreach="each_detail['sold_product']" t-as="each_category" t-key="each_category">
+                                                    <t t-if="each_category">
+                                                        <tr style="border: 0px;">
+                                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">
+                                                                <t t-if="each_category">
+                                                                    <t t-esc="each_category"/>
+                                                                </t>
+                                                            </td>
+                                                            <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                                <t t-if="each_detail['sold_product'][each_category]['qty']">
+                                                                    <t t-set="total_qty" t-value="total_qty + each_detail['sold_product'][each_category]['qty']"/>
+                                                                    <t t-esc="each_detail['sold_product'][each_category]['qty']"/>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    0
+                                                                </t>
+                                                            </td>
+                                                            <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                                <t t-if="each_detail['sold_product'][each_category]['price']">
+                                                                    <t t-set="total_price" t-value="total_price + each_detail['sold_product'][each_category]['price']"/>
+                                                                    <t t-esc="each_detail['sold_product'][each_category]['price']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <t t-set="total" t-value="0"/>
+                                                                    <t t-esc="total" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <tr style="border: 0px;">
+                                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;font-weight:bold;">
+                                                        Total
+                                                    </td>
+                                                    <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                        <t t-esc="total_qty"/>
+                                                    </td>
+                                                    <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                        <t t-esc="total_price" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-else="">
+                                                <tbody style="border: 0px;">
+                                                    <tr style="border: 0px;">
+                                                        <td align="center" colspan="3" style="border: 0px;padding: 6px 10px;width: 100%;font-size: 16px;font-weight: normal;">
+                                                            No Any Data Found
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </t>
+                                        </table>
+                                    </div>
+                                </t>
+                                <t t-if="each_detail['is_display_product_wise']">
+                                    <div style="page-break-inside: avoid;">
+                                        <div align="center" style="padding: 10px 0px;font-size:20px !important;color:#212121 !important;">
+                                            <span style="margin-bottom: 10px;margin-top: 10px;"><b>Product Wise Detail</b></span>
+                                        </div>
+                                        <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                            <t t-if="each_detail['products_detail']">
+                                                <thead>
+                                                    <tr style="border: 0px;">
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">Name</th>
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Quantity</th>
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <t t-set="total_qty" t-value="0"/>
+                                                <t t-set="total_price" t-value="0"/>
+                                                <t t-foreach="each_detail['products_detail']" t-as="each_product" t-key="each_product['product_id']">
+                                                    <t t-if="each_product">
+                                                        <tr style="border: 0px;">
+                                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;">
+                                                                <t t-if="each_product['product_id']">
+                                                                    <t t-set="product" t-value="request.env['product.product'].sudo().search([('id','=',each_product['product_id'])],limit=1)"/>
+                                                                    <t t-if="product and product.display_name">
+                                                                        <t t-esc="product.display_name"/>
+                                                                    </t>
+                                                                    <t t-else="">
+                                                                        <t t-esc="each_product['product_id']"/>
+                                                                    </t>
+                                                                </t>
+                                                            </td>
+                                                            <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                                <t t-if="each_product['quantity']">
+                                                                    <t t-set="total_qty" t-value="total_qty + each_product['quantity']"/>
+                                                                    <t t-esc="each_product['quantity']"/>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    0
+                                                                </t>
+                                                            </td>
+                                                            <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;">
+                                                                <t t-if="each_product['total']">
+                                                                    <t t-set="total_price" t-value="total_price + each_product['total']"/>
+                                                                    <t t-esc="each_product['total']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <t t-set="total" t-value="0"/>
+                                                                    <t t-esc="total" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <tr style="border: 0px;">
+                                                    <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 50%;word-break: break-word;font-weight:bold;">
+                                                        Total
+                                                    </td>
+                                                    <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                        <t t-esc="total_qty"/>
+                                                    </td>
+                                                    <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 25%;word-break: break-word;font-weight:bold;">
+                                                        <t t-esc="total_price" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <t t-else="">
+                                                <tbody style="border: 0px;">
+                                                    <tr style="border: 0px;">
+                                                        <td align="center" colspan="3" style="border: 0px;padding: 6px 10px;width: 100%;word-break: break-word;font-size: 16px;font-weight: normal;">
+                                                            No Any Data Found
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </t>
+                                        </table>
+                                    </div>
+                                </t>
+                                <t t-if="each_detail['is_display_customer_wise']">
+                                    <div style="page-break-inside: avoid;">
+                                        <div align="center" style="padding: 10px 0px;font-size:20px !important;color:#212121 !important;">
+                                            <span style="margin-bottom: 10px;margin-top: 10px;"><b>Customer Wise Detail</b></span>
+                                        </div>
+                                        <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                            <t t-if="each_detail['customer_detail']">
+                                                <thead>
+                                                    <tr style="border: 0px;">
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">Name</th>
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <t t-foreach="each_detail['customer_detail']" t-as="each_customer_order" t-key="each_customer_order['name']">
+                                                    <t t-if="each_customer_order">
+                                                        <tr style="border: 0px;">
+                                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">
+                                                                <t t-if="each_customer_order['name']">
+                                                                    <t t-esc="each_customer_order['name']"/>
+                                                                </t>
+                                                            </td>
+                                                            <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">
+                                                                <t t-if="each_customer_order['total']">
+                                                                    <t t-esc="each_customer_order['total']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <t t-set="total" t-value="0"/>
+                                                                    <t t-esc="total" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <tbody style="border: 0px;">
+                                                    <tr style="border: 0px;">
+                                                        <td align="center" colspan="2" style="border: 0px;padding: 6px 10px;width: 100%;font-size: 16px;font-weight: normal;">
+                                                            No Any Data Found
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </t>
+                                        </table>
+                                    </div>
+                                </t>
+                                <t t-if="each_detail['is_display_payment_wise']">
+                                    <div style="page-break-inside: avoid;">
+                                        <div align="center" style="padding: 10px 0px;font-size:20px !important;color:#212121 !important;">
+                                            <span style="margin-bottom: 10px;margin-top: 10px;"><b>Payments Detail</b></span>
+                                        </div>
+                                        <table style="width: 100%;font-size: 16px;border-collapse: collapse;margin: 10px 0px;">
+                                            <t t-if="each_detail['payment_detail']">
+                                                <thead>
+                                                    <tr style="border: 0px;">
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">Name</th>
+                                                        <th align="center" style="vertical-align: middle;color: #212121;text-transform: capitalize;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">Amount</th>
+                                                    </tr>
+                                                </thead>
+                                                <t t-foreach="each_detail['payment_detail']" t-as="each_payment" t-key="each_payment['name']">
+                                                    <t t-if="each_payment">
+                                                        <tr style="border: 0px;">
+                                                            <td align="left" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 70%;word-break: break-word;">
+                                                                <t t-if="each_payment['name']">
+                                                                    <t t-esc="each_payment['name']"/>
+                                                                </t>
+                                                            </td>
+                                                            <td align="center" style="vertical-align: middle;color: #212121;border: 1px solid #d7d7d7;padding: 6px 10px;width: 30%;word-break: break-word;">
+                                                                <t t-if="each_payment['total']">
+                                                                    <t t-esc="each_payment['total']" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <t t-set="total" t-value="0"/>
+                                                                    <t t-esc="total" t-options='{"widget": "monetary", "display_currency": each_detail["currency"]}'/>
+                                                                </t>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                            </t>
+                                            <t t-else="">
+                                                <tbody style="border: 0px;">
+                                                    <tr style="border: 0px;">
+                                                        <td align="center" colspan="2" style="border: 0px;padding: 6px 10px;width: 100%;font-size: 16px;font-weight: normal;">
+                                                            No Any Data Found
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </t>
+                                        </table>
+                                    </div>
+                                </t>
+                                <div style="page-break-inside: avoid;">
+                                    <div align="center" style="padding: 10px 0px;font-size:20px !important;color:#212121 !important;">
+                                        <span style="margin-bottom: 10px;margin-top: 10px;"><b>Status</b></span>
+                                    </div>
+                                    <table style="width: 100%;font-size: 16px;border-collapse: collapse;border: 0px;">
+                                        <tbody style="border: 0px;">
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">No. Of Orders :</td>
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 80%;word-break: break-word;font-weight: normal;"><t t-esc="each_detail['total_no_order']"/></td>
+                                            </tr>
+                                            <tr style="border: 0px;">
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 20%;word-break: break-word;font-weight: bold;">No. Of Customers :</td>
+                                                <td align="left" style="vertical-align: middle;color: #212121;border: 0px;padding: 6px 10px;width: 80%;word-break: break-word;font-weight: normal;"><t t-esc="each_detail['total_partner']"/></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</openerp>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
+        <xpath expr="//li[hasclass('sh_orderline_icon')]" position="before">
+            <t t-if="line.get_line_discount and line.discount != '0'">
+                <li class="sh_pos_discount_orderline">
+                    <t t-foreach="line.get_line_discount" t-as="each_discount" t-key="each_discount">
+                        <t t-if="line.get_line_discount.length ==1">
+                            <span class="sh_custom_discount">
+                                <t t-esc="each_discount" />
+                            </span>
+                        </t>
+                        <t t-else="">
+                            <span class="sh_custom_discount">
+                                <t t-if="line.get_line_discount.indexOf(each_discount) == (line.get_line_discount.length - 1)">
+                                    <t t-esc="each_discount" />
+                                </t>
+                                <t t-else="">
+                                    <t t-esc="each_discount" />
+                                    ,
+                                </t>
+                            </span>
+                        </t>
+                    </t>
+                </li>
+            </t>
+        </xpath>
+        <xpath expr="//li[hasclass('sh_orderline_icon')]" position="inside">
+            <span class="sh_discount_li_orderline" t-if="env.services.pos.config.sh_apply_both_discount and env.services.pos.get_order() and !env.services.pos.get_order().finalized">
+                <span class="product-image-icon sh_orderline_discount_icon me-1 ms-1" t-on-click="() => env.services.pos.get_order().on_click_show_discount()">
+                    <i class="discount_icon fa fa-percent" aria-hidden="true"></i>
+                </span>
+            </span>
+        </xpath>
+    </t>
+</templates>

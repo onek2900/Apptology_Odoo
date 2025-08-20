@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="product_template_custom">
+        <field name="name">product.template.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sales']" position="after">
+                <page name="suggestion" string="Suggestion">
+                    <field name="suggestion_line">
+                        <tree editable="top">
+                            <field name="product_id" column_invisible="True"/>
+                            <field name="product_suggestion_id" domain="[('available_in_pos','=',True)]" />
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+     <record model="ir.ui.view" id="product_product_custom">
+        <field name="name">product.product.form</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="UOMs" name="UOMs">
+                    <field name="sh_uom_line_ids">
+                        <tree editable="bottom">
+                            <field name="uom_id" />
+                            <field name="price"/>
+                            <field name="sh_qty"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sh_pos_pricelist_form_view" model="ir.ui.view">
+        <field name="name">sh..product.pricelist.form</field>
+        <field name="inherit_id" ref="product.product_pricelist_view"/>
+        <field name="model">product.pricelist</field>
+        <field name="arch" type="xml">
+                <field name="min_quantity"  position="after">
+                        <field name="sh_uom_id" />
+                </field>
+        </field>
+    </record>
+
+    <record id="sh_pos_pricelist_rule_form_view" model="ir.ui.view">
+        <field name="name">sh..product.pricelist.rule.form</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
+        <field name="model">product.pricelist.item</field>
+        <field name="arch" type="xml">
+                <field name="date_start"  position="after">
+                        <field name="sh_uom_id" />
+                </field>
+        </field>
+    </record>
+</odoo>

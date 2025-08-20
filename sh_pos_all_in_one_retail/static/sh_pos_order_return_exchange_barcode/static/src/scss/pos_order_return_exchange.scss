@@ -1,0 +1,79 @@
+.pos .popups .modal-dialog .popup.sh-return-order-popup .modal-body .sh_return_order_table .sh_return_order_tbody tr:nth-child(odd){background:#f5f6f7;}
+.pos .popups .modal-dialog .popup.sh-return-order-popup .modal-body .sh_return_order_table .sh_return_order_tbody tr:hover{
+    background: #e9ecef !important; color:#495057 !important;
+}
+// New Scss //
+.sh-return-order-popup{
+    .modal-header{
+        justify-content: center;
+        h4{
+            font-size:18px;
+        }
+    }
+    .sh_radio_btn_div{
+        .sh_return_exchange_radio{
+            display: flex;justify-content: center;align-items: center;margin-bottom: 20px;
+            @include media-breakpoint-down (md){
+              margin-top:20px;
+            }
+            input#return_radio{
+                    margin-right: 5px;height: 20px;width: 20px; position: relative;
+                    &:before{
+                        height:100%; width:100%; content:''; border-radius:100%; top:0; left:0; position: absolute; background:#e9e9e9; border-color:#e9e9e9;
+                    }
+                    &:after{
+                        height:12px; width:12px; position: absolute; content:''; border-radius:100%; background:#71639e; top:50%; left:50%; transform:translate(-50%,-50%);opacity:0;
+                    }
+                    &:checked{
+                        &:after{
+                            opacity:1;
+                        } 
+                    }
+                
+            }
+            .sh_custom_radio.sh_control_radio{
+                margin-right: 10px;font-size: 14px;
+            }
+            input#exchange_radio{
+                margin-right: 5px;height: 20px;width: 20px; position: relative;
+                &:before{
+                    height:100%; width:100%; content:''; border-radius:100%; top:0; left:0; position: absolute;background:#e9e9e9; border-color:#e9e9e9;
+                }
+                &:after{
+                    height:12px; width:12px; position: absolute; content:''; border-radius:100%; background:#71639e; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0;
+                }
+                &:checked{
+                    &:after{
+                        opacity:1;
+                    } 
+                }
+            
+            }
+        }
+    }
+    .sh_same_product_checkbox{
+        display: flex;justify-content: center;align-items: center;margin-bottom: 20px;
+        .sh_custom_checkbox_exchange{
+            font-size: 14px;display: flex;align-items: center;
+            input#exchange_checkbox{
+                height: 14px;width: 14px;margin-right: 10px;
+            }
+            .sh_custom.sh_cust_checkbox{font-size:16px;}
+        }
+    }
+    .modal-body{
+        @include media-breakpoint-down (md){
+            height:220px;min-height:220px;
+        }
+        .sh_return_order_table{
+         .sh_return_order_thead{
+            th{
+                padding: 0.5rem 0.7rem !important;
+            }
+         }   
+        }
+    }
+    .modal-footer{
+        justify-content: center;
+    }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_loyalty.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
+        <xpath expr="//OrderWidget/t[@t-set-slot='details']" position="inside">
+            <t t-esc="console.log('pos.get_order().get_global_note()',pos.get_order().get_global_note())"/>
+            <t t-if="pos.get_order().get_global_note()">
+                <div class="order_note_div">
+                    <hr class="hr_line" />
+                    <div class="order_note_cart_div">Note :</div>
+                    <div class="note_cart_div"><t t-esc="pos.get_order().get_global_note()" /></div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

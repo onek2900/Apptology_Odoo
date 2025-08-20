@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_order_list.OrderListScreen">
+         <!-- <div class="shorderlist-screen screen h-100 d-flex flex-column bg-100">
+            <div class="top-content d-flex align-items-center p-2 border-bottom text-center sh_header_buttons">
+                <div class="button back btn btn-lg btn-secondary mx-2" t-on-click="back">
+                    <i t-if="ui.isSmall" class="fa fa-angle-double-left"/>
+                    <t t-else=""> Discard</t>
+                </div>
+                <div class="button back btn btn-lg btn-secondary mx-2" >
+                      <select class='sh_pos_order_filter form-select btn-secondary' t-on-change="ShApplyFilter">
+                                <option value="all">All Orders</option>
+                                <option value="paid">Paid</option>
+                                <option value="done">Posted</option>
+                                <option value="invoiced">Invoiced</option>
+                            </select>
+                </div>
+                <div class="top-right-buttons d-flex gap-2 w-100 justify-content-end">
+                    <div class="search-bar-container sb-partner d-flex align-items-center w-100 w-lg-50 h-100 h-100" >
+                        <div class="sh_top_bar_search_box pos-search-bar form-control btn-secondary d-flex align-items-center mx-2">
+                            <input placeholder="Search..." size="1" class="sh_pos_order_search flex-grow-1 w-auto h-100 border-0 p-1 me-4" t-on-keyup="updateOrderList" />
+                            <span class="search-clear-order-list fa fa-times position-absolute end-0 me-2 pe-1 cursor-pointer" t-on-click="clear_search"></span>
+                        </div>
+                        <div class="sh_top_bar_date_box ">
+                            <input type="date" class="form-control btn-secondary" name="date1" id="date1" t-on-change="change_date" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <section class="overflow-auto sh_full_content_service_management sh_order_list_full_content">
+                  <table class="sh_order_list table table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th class="py-2 sh_orderlist_name_th">Name</th>
+                                <th class="py-2 sh_orderlist_ref_th">Order Ref.</th>
+                                <th class="py-2 sh_orderlist_cust_th">Customer</th>
+                                <th class="py-2 sh_orderlist_date_th">Date</th>
+                                <th class="py-2 sh_orderlist_total_th">Total</th>
+                                <th class="py-2 sh_orderlist_state_th">State</th>
+                                <th class="py-2 sh-actions" t-if="pos.config.sh_enable_re_order or pos.config.sh_enable_order_reprint"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="sh_order_list_contents">
+                            <t t-foreach="ordersToShow" t-as="order" t-key="order[0].id">
+                                <tr t-att-data-id="order[0].id" class="sh_order_line" t-on-click="() => this.clickLine(order)">
+                                    <td class="sh_orderlist_name_td">
+                                        <t t-esc="order[0].name"></t>
+                                    </td>
+                                    <td class="sh_orderlist_ref_td">
+                                        <t t-esc="order[0].pos_reference"></t>
+                                    </td>
+                                    <td class="sh_orderlist_customer_td">
+                                        <t t-if="order[0].partner_id">
+                                            <t t-esc="pos.db.get_partner_by_id(order[0].partner_id).name"></t>
+                                        </t>
+                                        <t t-else="">
+                                        -
+                                        </t>
+                                    </td>
+                                    <td class="sh_orderlist_date_td">
+                                        <t t-esc="order[0].date_order"></t>
+                                    </td>
+                                    <td class="pos_order_total_td sh_orderlist_total_td">
+                                        <t t-esc="order[0].amount_total.toFixed(2)"></t>
+                                    </td>
+                                    <td class="sh_orderlist_state_td">
+                                        <t t-esc="order[0].state"></t>
+                                    </td>
+                                    <td class="sh_orderlist_print_order_td sh-actions" t-if="pos.config.sh_enable_re_order or pos.config.sh_enable_order_reprint">
+                                       <t t-if="pos.config.sh_enable_re_order">
+                                            <t t-if="order[0].state != 'done' and order[0].state != 'cancel'">
+                                                <i t-att-data-id="order[0].id" class="fa fa-retweet re_order_icon" aria-hidden="true" t-on-click="reorder_pos_order" title="Re-Order"></i>
+                                            </t>
+                                        </t>
+                                        <t t-if="pos.config.sh_enable_order_reprint">
+                                            <i t-att-data-id="order[0].id" class="fa fa-print print_order" aria-hidden="true" t-on-click="print_pos_order" title="Print Order"></i>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr class="sh_sub_order_line_tr">
+                                    <td colspan='11'>
+                                        <table t-att-id="'inner_table_'+order[0].id" class="w-100 table table-striped inner_data_table sh_sub_order_line sh_hide_lines">
+                                            <thead>
+                                                <th class="sh_inner_table_product_th">Product</th>
+                                                <th class="sh_inner_table_qty_th">Quantity</th>
+                                                <th class="sh_inner_table_disc_th">Discount (%)</th>
+                                                <th class="sh_inner_table_unit_price_th">Unit Price</th>
+                                                <th class="sh_inner_table_sub_total_th">Sub Total</th>
+                                            </thead>
+                                            <tr t-foreach="order[1]" t-as="line" t-key="line.id" class="order_data_row order_data sh_inner_table_data_row">
+                                                <t t-set="product" t-value="pos.db.product_by_id[line.product_id]" />
+                                                <t t-if="product and product.sh_order_label_demo_product == false" >
+                                                    <td class="sh_inner_table_product_td">
+                                                        <t t-if="product">
+                                                            <t t-esc="product.display_name"></t>
+                                                        </t>
+                                                        <t t-else="">
+                                                        Product Not Available in Pos
+                                                        </t>
+                                                    </td>
+                                                    <td class="sh_inner_table_qty_td">
+                                                        <t t-esc="line.qty"></t>
+                                                    </td>
+                                                    <td class="sh_inner_table_disc_td">
+                                                        <t t-esc="line.discount.toFixed(2)"></t>
+                                                    </td>
+                                                    <td class="sh_inner_table_unit_price_td">
+                                                        <t t-esc="line.price_unit.toFixed(2)"></t>
+                                                    </td>
+                                                    <td class="sh_inner_table_sub_total_td">
+                                                        <t t-esc="line.price_subtotal_incl.toFixed(2)"></t>
+                                                    </td>
+                                                </t>
+                                                <t t-else="" >
+                                                    <td colspan='5'>
+                                                        <t t-esc="line.add_section"></t>
+                                                    </td>
+                                                </t>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>  
+            </section>
+            <div class="sh_page_controls item item d-flex align-items-center gap-2">
+                    <div class="page-controls input-group align-items-center justify-content-center gap-4">
+                        <button class="previous btn btn-lg btn-secondary" t-on-click="() => this.onPrevPage()">
+                            <i class="oi oi-chevron-left" role="img" aria-label="Previous Order List" title="Previous Order List"></i>
+                        </button>
+                        <div class="page">
+                            <span class="fs-3 fw-bold">
+                                <t t-esc="pageNumber" />
+                            </span>
+                        </div>
+                        <button class="next btn btn-lg btn-secondary" t-on-click="() => this.onNextPage()">
+                            <i class="oi oi-chevron-right" role="img" aria-label="Next Order List" title="Next Order List"></i>
+                        </button>
+                    </div>
+                </div>
+        </div> -->
+
+        <div class="shorderlist-screen screen h-100 d-flex flex-column ">
+            <div class="top-content sh_top_content text-center">
+                <div class="sh_header_buttons d-flex align-items-center p-2 border-bottom justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="button back btn btn-lg btn-secondary mx-2 " t-on-click="back">
+                            <i t-if="ui.isSmall" class="fa fa-angle-double-left"/>
+                            <t t-else=""> Discard</t>
+                        </div>
+                        <div>
+                            <select class='sh_pos_order_filter form-select btn-secondary   ' t-on-change="ShApplyFilter">
+                                <option value="all">All Orders</option>
+                                <option value="paid">Paid</option>
+                                <option value="done">Posted</option>
+                                <option value="invoiced">Invoiced</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-end">                        
+                        <div class="sh_top_bar_search_box pos-search-bar form-control btn-secondary d-flex align-items-center mx-2">
+                            <input placeholder="Search..." size="1" class="sh_pos_order_search flex-grow-1 w-auto h-100 border-0 p-1 me-4" t-on-keyup="updateOrderList" />
+                            <span class="search-clear-order-list fa fa-times position-absolute end-0 me-2 pe-1 cursor-pointer" t-on-click="clear_search"></span>
+                        </div>
+                        <div class="sh_top_bar_date_box ">
+                            <input type="date" class="form-control btn-secondary" name="date1" id="date1" t-on-change="change_date" />
+                        </div>
+                    </div>
+                </div>
+                <section class="sh_full_content_service_management sh_order_list_full_content">
+                    <table class="sh_order_list table table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th class="py-2 sh_orderlist_name_th">Name</th>
+                                <th class="py-2 sh_orderlist_ref_th">Order Ref.</th>
+                                <th class="py-2 sh_orderlist_cust_th">Customer</th>
+                                <th class="py-2 sh_orderlist_date_th">Date</th>
+                                <th class="py-2 sh_orderlist_total_th">Total</th>
+                                <th class="py-2 sh_orderlist_state_th">State</th>
+                                <th class="py-2 sh-actions" t-if="pos.config.sh_enable_re_order or pos.config.sh_enable_order_reprint"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="sh_order_list_contents">
+                            <t t-foreach="ordersToShow" t-as="order" t-key="order[0].id">
+                                <tr t-att-data-id="order[0].id" class="sh_order_line" t-on-click="() => this.clickLine(order)">
+                                    <td class="sh_orderlist_name_td">
+                                        <t t-esc="order[0].name"></t>
+                                    </td>
+                                    <td class="sh_orderlist_ref_td">
+                                        <t t-esc="order[0].pos_reference"></t>
+                                    </td>
+                                    <td class="sh_orderlist_customer_td">
+                                        <t t-if="order[0].partner_id">
+                                            <t t-esc="pos.db.get_partner_by_id(order[0].partner_id).name"></t>
+                                        </t>
+                                        <t t-else="">
+                                        -
+                                        </t>
+                                    </td>
+                                    <td class="sh_orderlist_date_td">
+                                        <t t-esc="order[0].date_order"></t>
+                                    </td>
+                                    <td class="pos_order_total_td sh_orderlist_total_td">
+                                        <t t-esc="order[0].amount_total.toFixed(2)"></t>
+                                    </td>
+                                    <td class="sh_orderlist_state_td">
+                                        <t t-esc="order[0].state"></t>
+                                    </td>
+                                    <td class="sh_orderlist_print_order_td sh-actions" t-if="pos.config.sh_enable_re_order or pos.config.sh_enable_order_reprint">
+                                       <t t-if="pos.config.sh_enable_re_order">
+                                            <t t-if="order[0].state != 'done' and order[0].state != 'cancel'">
+                                            <span class="">
+                                                <i t-att-data-id="order[0].id" class="fa fa-retweet re_order_icon" aria-hidden="true" t-on-click="reorder_pos_order" title="Re-Order"></i>
+                                            </span>
+                                            </t>
+                                        </t>
+                                        <t t-if="pos.config.sh_enable_order_reprint">
+                                        <span class="">
+                                            <i t-att-data-id="order[0].id" class="fa fa-print print_order" aria-hidden="true" t-on-click="print_pos_order" title="Print Order"></i>
+                                        </span>
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr class="sh_sub_order_line_tr">
+                                    <td colspan='11'>
+                                        <table t-att-id="'inner_table_'+order[0].id" class="w-100 table table-striped inner_data_table sh_sub_order_line sh_hide_lines">
+                                            <thead>
+                                                <th class="sh_inner_table_product_th">Product</th>
+                                                <th class="sh_inner_table_qty_th">Quantity</th>
+                                                <th class="sh_inner_table_disc_th">Discount (%)</th>
+                                                <th class="sh_inner_table_unit_price_th">Unit Price</th>
+                                                <th class="sh_inner_table_sub_total_th">Sub Total</th>
+                                            </thead>
+                                            <tr t-foreach="order[1]" t-as="line" t-key="line.id" class="order_data_row order_data sh_inner_table_data_row">
+                                                <t t-set="product" t-value="pos.db.product_by_id[line.product_id]" />
+                                                <t t-if="product and product.sh_order_label_demo_product == false" >
+                                                    <td class="sh_inner_table_product_td">
+                                                        <t t-if="product">
+                                                            <t t-esc="product.display_name"></t>
+                                                        </t>
+                                                        <t t-else="">
+                                                        Product Not Available in Pos
+                                                        </t>
+                                                    </td>
+                                                    <td class="sh_inner_table_qty_td">
+                                                        <t t-esc="line.qty"></t>
+                                                    </td>
+                                                    <td class="sh_inner_table_disc_td">
+                                                        <t t-esc="line.discount.toFixed(2)"></t>
+                                                    </td>
+                                                    <td class="sh_inner_table_unit_price_td">
+                                                        <t t-esc="line.price_unit.toFixed(2)"></t>
+                                                    </td>
+                                                    <td class="sh_inner_table_sub_total_td">
+                                                        <t t-esc="line.price_subtotal_incl.toFixed(2)"></t>
+                                                    </td>
+                                                </t>
+                                                <t t-else="" >
+                                                    <td colspan='5'>
+                                                        <t t-esc="line.add_section"></t>
+                                                    </td>
+                                                </t>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>                   
+                </section>
+                <div class="sh_page_controls item item d-flex align-items-center gap-2">
+                    <div class="page-controls input-group align-items-center justify-content-center gap-4">
+                        <button class="previous btn btn-lg btn-secondary" t-on-click="() => this.onPrevPage()">
+                            <i class="oi oi-chevron-left" role="img" aria-label="Previous Order List" title="Previous Order List"></i>
+                        </button>
+                        <div class="page">
+                            <span class="fs-3 fw-bold">
+                                <t t-esc="pageNumber" />
+                            </span>
+                        </div>
+                        <button class="next btn btn-lg btn-secondary" t-on-click="() => this.onNextPage()">
+                            <i class="oi oi-chevron-right" role="img" aria-label="Next Order List" title="Next Order List"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

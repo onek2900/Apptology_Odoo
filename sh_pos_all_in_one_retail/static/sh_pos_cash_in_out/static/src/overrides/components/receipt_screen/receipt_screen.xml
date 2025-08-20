@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('next')]" position="replace">
+            <t t-if="pos.cash_in_out_receipt or pos.cash_in_out_statement_receipt">
+                <div class="button cancle d-flex justify-content-center validation btn btn-primary w-100 py-5 rounded-0 fs-2 highlight" t-att-class="{ highlight: !locked }" t-on-click="receiptDone">
+                    <div class="pay-circle me-3">
+                        <i class="fa fa-times" role="img" aria-label="close" title="Close" ></i>
+                    </div>
+                    Close
+                </div>
+            </t>
+            <t t-else="">
+                <button class="button next validation btn btn-primary w-100 py-5 rounded-0 fs-2" t-att-class="{ highlight: !locked }"
+                t-if="!splittedOrder"
+                t-on-click="orderDone" name="done">
+                <i class="oi oi-chevron-right" role="img" aria-label="Pay" title="Pay" />
+                New Order
+            </button>
+            </t>
+        </xpath>
+        <xpath expr="//OrderReceipt" position="attributes">
+            <attribute name="t-if"> !pos.cash_in_out_statement_receipt </attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('pos-receipt-container')]//div[1]" position="inside">
+            <t t-if="pos.cash_in_out_statement_receipt" >
+                <CashInOutStatementReceipt />
+            </t>
+        </xpath>
+        <xpath expr="//div[hasclass('top-content-center')]" position="replace">
+            <div class="top-content-center">
+                <t t-if="!pos.cash_in_out_receipt and !pos.cash_in_out_statement_receipt">
+                    <h1 t-if="!isMobile">
+                        <t t-esc="orderAmountPlusTip" />
+                    </h1>
+                </t>
+            </div>
+        </xpath>
+    </t>
+    
+</templates>

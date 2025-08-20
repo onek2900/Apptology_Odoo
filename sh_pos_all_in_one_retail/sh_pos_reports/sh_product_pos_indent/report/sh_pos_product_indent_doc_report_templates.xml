@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sh_pos_product_indent_doc">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <div class="row pt-4">
+                        <div class="col-12 mx-auto">
+                            <div class="text-center">
+                                <b>
+                                    <h4>Point Of Sale Product Indent</h4>
+                                </b>
+                                <b>
+                                    <span t-esc="date_start" t-options="{'widget': 'datetime'}" />
+                                    To
+                                    <span t-esc="date_end" t-options="{'widget': 'datetime'}" />
+                                </b>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                    <t t-if="order_dic">
+                        <t t-foreach="order_dic.keys()" t-as="key">
+                            <center>
+                                <b>
+                                    <span t-esc="key" />
+                                </b>
+                            </center>
+                            <t t-foreach="order_dic[key]" t-as="category_data">
+                                <t t-foreach="category_data.keys()" t-as="key_2">
+                                    <center>
+                                        <b>
+                                            <span t-esc="key_2" />
+                                        </b>
+                                    </center>
+                                    <br />
+                                    <table class="table table-sm o_main_table table-bordered" style="table-layout: fixed; border: 1px solid black;" id="">
+                                        <thead style="display: table-row-group;" class="thead-light">
+                                            <tr style="border: 1px solid black;">
+                                                <th style="border: 1px solid black;">Product</th>
+                                                <th style="border: 1px solid black;">Quantity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="sale_tbody">
+                                            <t t-set="total" t-value="0.0" />
+                                            <t t-foreach="category_data[key_2]" t-as="data">
+                                                <t t-set="total" t-value="total + data.get('qty',0.0)" />
+                                                <tr>
+                                                    <td style="border: 1px solid black;">
+                                                        <span t-esc="data.get('name','')" />
+                                                    </td>
+                                                    <td style="border: 1px solid black;">
+                                                        <span t-esc="'%.2f'%(data.get('qty',0.0))" />
+                                                    </td>
+                                                </tr>
+                                            </t>
+                                            <tr>
+                                                <td style="border: 1px solid black;">
+                                                    <strong>Total</strong>
+                                                </td>
+                                                <td style="border: 1px solid black;">
+                                                    <strong>
+                                                        <span t-esc="'%.2f'%(total)" />
+                                                    </strong>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+                            </t>
+                        </t>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+    <record id="paperformat_pos_product_indent" model="report.paperformat">
+        <field name="name">Point Of Sale Product Indent</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">60</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">55</field>
+        <field name="dpi">90</field>
+    </record>
+    <record id="sh_pos_product_indent_action" model="ir.actions.report">
+        <field name="name">Point Of Sale Product Indent</field>
+        <field name="model">report.sh_pos_all_in_one_retail.sh_pos_product_indent_doc</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.sh_pos_product_indent_doc</field>
+        <field name="print_report_name">'Point Of Sale Product Indent'</field>
+        <field name="paperformat_id" ref="sh_pos_all_in_one_retail.paperformat_pos_product_indent" />
+    </record>
+</odoo>

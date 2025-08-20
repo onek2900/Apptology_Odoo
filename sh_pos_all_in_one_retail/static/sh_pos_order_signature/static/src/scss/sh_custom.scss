@@ -1,0 +1,82 @@
+
+body{
+    &.pos {
+        .sh_signature_popup {
+            .main_div_signature {
+                font-weight: bold;
+                font-size: 16px;
+            }
+            .signature_name_date {
+                width: 70%;
+                margin: 0 auto;
+                padding-top: 10px;
+                .name_div {                    
+                    margin-bottom: 10px;
+                    span{
+                        font-size: 15px;
+                        font-weight: 500;
+                        width: 25%;
+                    }
+                }
+                .date_div {
+                    span{
+                        font-size: 15px;
+                        font-weight: 500;
+                        width: 25%;
+                    }
+                }
+            }
+            .signature_detail_div {
+                #signature {
+                    canvas.jSignature {
+                        height: 110px !important;
+                        width: 70% !important;
+                        background: #fff !important;
+                        box-shadow: 0px 0px 0px 1px rgb(220, 220, 220) inset !important;
+                    }
+                }
+            }
+        }
+        div.sh_signature_popup.only_sign {
+            height: 282px !important;
+        }
+        div.sh_signature_popup.not_date {
+            height: 345px !important;
+        }
+        div.sh_signature_popup.not_name {
+            height: 350px !important;
+        }
+    }
+}
+
+.pos-receipt-container {
+	.sh_receipt_sign {
+		text-align: center !important;
+		height: 90px !important;
+		background: #fff !important;
+		box-shadow: 0px 0px 0px 1px rgb(220, 220, 220) inset !important;
+		width: 55%;
+		margin: 0px auto !important;
+		margin-top: 15px !important;
+		margin-bottom: 12px !important;
+		img {
+			height: 80px !important;
+			width: 150px !important;
+		}
+	}
+	.sh_receipt_sign_name {
+		text-align: center !important;
+	}
+	.sh_receipt_sign_date {
+		text-align: center !important;
+	}
+}
+.pos-receipt {
+	.pos-receipt-order-data {
+		text-align: center;
+		font-size: 16px !important;
+		margin-top: 12px !important;
+	}
+}
+
+

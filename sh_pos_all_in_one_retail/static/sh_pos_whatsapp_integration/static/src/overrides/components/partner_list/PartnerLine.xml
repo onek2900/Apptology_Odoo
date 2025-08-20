@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-extend="PartnerLine" t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension">
+        <xpath expr="//div[@t-if='props.partner.mobile']" position="inside">
+            <t t-if="props.partner.mobile and env.services.pos.config.enable_whatsapp">
+                <span t-att-data-id="props.partner.id" class="button send_wp" t-on-click="on_click_send_wp" role="img" aria-label="Send Whatsapp" title="Send Whatsapp Message">
+                    <i class="fa fa-whatsapp"></i>
+                </span>
+            </t>
+        </xpath>
+    </t>
+</templates>

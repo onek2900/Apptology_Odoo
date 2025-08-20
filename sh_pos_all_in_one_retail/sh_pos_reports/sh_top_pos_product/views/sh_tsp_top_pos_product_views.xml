@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_top_pos_product_model_tree" model="ir.ui.view">
+        <field name="name">sh.tsp.top.pos.product.model.tree</field>
+        <field name="model">sh.tsp.top.pos.product</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="product_id" optional='show' />
+                <field name="qty" optional='show' decoration-bf="1" sum='Total Qty' />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_top_pos_product_search" model="ir.ui.view">
+        <field name="name">sh.tsp.top.pos.product.view.search</field>
+        <field name="model">sh.tsp.top.pos.product</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id" />
+                <field name="qty" />
+                <filter string="Product" name="group_product" domain="[]"
+                    context="{'group_by': 'product_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_tsp_top_pos_product_model_tree_action" model="ir.actions.act_window">
+        <field name="name">Top POS Products</field>
+        <field name="res_model">sh.tsp.top.pos.product</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_group_product': 1}</field>
+        <field name="view_id" ref="sh_top_pos_product_model_tree" />
+    </record>
+
+</odoo>

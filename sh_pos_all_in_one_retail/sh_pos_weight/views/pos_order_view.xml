@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id='sh_pos_weight_product_view_inherit' model='ir.ui.view'>
+        <field name='name'>sh.pos.weight.order.inherit</field>
+        <field name='model'>pos.order</field>
+        <field name='inherit_id' ref='point_of_sale.view_pos_pos_form'></field>
+        <field name='arch' type='xml'>
+            <xpath expr="//field[@name='discount']" position="after">
+                <field name='product_weight' column_invisible="not parent.enable_product_weight"></field>
+                <field name='total_product_weight' column_invisible="not parent.enable_product_weight"></field>
+                <field name='product_volume' column_invisible="not parent.enable_product_volume"></field>
+                <field name='total_product_volume' column_invisible="not parent.enable_product_volume"></field>
+            </xpath>
+            <xpath expr="//field[@name='amount_paid']" position="after">
+                <field name='enable_product_weight' invisible='1'></field>
+                <field name='enable_product_volume' invisible='1'></field>
+                <field name='total_product_weight' invisible='not enable_product_weight'></field>
+                <field name='total_product_volume' invisible='not enable_product_volume'></field>
+            </xpath>
+        </field>
+    </record>
+</odoo>

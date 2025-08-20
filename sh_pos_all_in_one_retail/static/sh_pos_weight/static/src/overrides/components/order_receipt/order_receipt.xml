@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-extend="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('before-footer')]" position="before">
+            <div>
+                <t t-if='env.services.pos.config.enable_weight and env.services.pos.config.product_weight_receipt'>
+                    <div class="sh_receipt_total_weight_main">
+                        <strong class="sh_receipt_total_weight_label" style="margin-right: 5px;">Total Weight : </strong>
+                        <span class="sh_receipt_total_weight_val"><t t-esc='props.data.total_product_weight' /></span>
+                    </div>
+                </t>
+                <t t-if='env.services.pos.config.enable_volume and env.services.pos.config.product_volume_receipt'>
+                    <div class="sh_receipt_total_vol_main">
+                        <strong class="sh_receipt_total_volume_label" style="margin-right: 5px;">Total Volume :</strong>
+                        <span class="sh_receipt_total_volume_val"><t t-esc='props.data.total_product_volume' /></span>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>

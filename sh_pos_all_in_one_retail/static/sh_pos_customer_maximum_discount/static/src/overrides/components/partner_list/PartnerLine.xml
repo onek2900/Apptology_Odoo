@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-extend="PartnerLine" t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension">
+        <xpath expr="//td[hasclass('partner-line-email')]" position="after">
+            <t t-if="env.services.pos.config.sh_pos_enable_customer_max_discount">
+                <td>
+                    <t t-if="props.partner.sh_enable_max_dic">
+                        <t t-esc="props.partner.sh_maximum_discount or ' - '" />
+                    </t>
+                    <t t-else=''>
+                        -
+                    </t>
+                </td>
+                <td>
+                    <t t-if="props.partner.sh_enable_max_dic">
+                        <t t-if="props.partner.sh_discount_type == 'percentage'">
+                            Percentage
+                        </t>
+                        <t t-elif="props.partner.sh_discount_type == 'fixed'">
+                            Fixed
+                        </t>
+                        <t t-else="">
+                            -
+                        </t>
+                    </t>
+                    <t t-else=''>
+                        -
+                    </t>
+                </td>
+            </t>
+
+        </xpath>
+    </t>
+</templates>

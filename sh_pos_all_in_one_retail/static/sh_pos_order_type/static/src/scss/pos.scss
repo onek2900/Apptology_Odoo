@@ -1,0 +1,63 @@
+.pos{
+    .popups{
+        .popup{
+            &.sh_order_type_popup{
+                .modal-body{
+                    &.sh_discount_main_table{
+                        margin: 0px;
+                        padding: 0px;
+                        height: 250px;
+                        max-height: 250px;
+                        overflow: auto;
+                        .sh_order_type_div{
+                            .sh_order_type_table{
+                                width: 100%;
+                                tbody{
+                                    tr{
+                                        &.sh_order_type_tr{
+                                            td {
+                                                font-size: 16px;
+                                                font-weight: normal;
+                                                padding: 0.75rem 0.75rem;
+                                                text-transform: capitalize;
+                                                color: #4A4F59;
+                                                transition: all .5s;
+                                                cursor: pointer;
+                                                word-break: break-word;
+                                                img{
+                                                    height: 64px;border-radius: 10px;
+                                                }
+                                            }
+                                            &:hover{
+                                                td{
+                                                    background: $sh_hover_background_color;
+                                                    color: $sh_pos_primary_color;
+                                                }
+                                            }
+                                            &.selectedorder{
+                                                td{
+                                                    color: $sh_pos_primary_color;font-weight: bold;
+                                                }
+                                            }
+                                        }
+                                        .sh-alert {
+                                            padding: 15px;
+                                            border: 1px solid transparent;
+                                            border-radius: 4px;
+                                            margin: 5px;
+                                        }                                        
+                                        .sh-alert-warning {
+                                            background-color: #fcf8e3;
+                                            border-color: #faebcc;
+                                            color: #8a6d3b;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                }
+            } 
+        }
+    }
+}

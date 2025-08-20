@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sh_top_pos_product_doc">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <h2 class="text-center">Top POS Products</h2>
+                    <br />
+                    <br />
+                    <t t-if="type == 'basic'">
+                        <strong>From Date :</strong>
+                        <span t-esc="date_from" t-options="{'widget': 'datetime'}" />
+                        <br />
+                        <strong>To Date :</strong>
+                        <span t-esc="date_to" t-options="{'widget': 'datetime'}" />
+                        <br />
+                        <br />
+                        <div class="row">
+                            <div class="col-12">
+                                <table class="table table-bordered">
+                                    <thead class="text-center bg-Primary">
+                                        <tr class="bg-Primary">
+                                            <th>
+                                                <strong>#</strong>
+                                            </th>
+                                            <th>
+                                                <strong>Product</strong>
+                                            </th>
+                                            <th>
+                                                <strong>Qty Sold</strong>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="len(products)" t-as="i">
+                                            <tr>
+                                                <td>
+                                                    <span t-esc="i + 1" />
+                                                </td>
+                                                <td>
+                                                    <span t-esc="products[i].name" />
+                                                </td>
+
+                                                <td>
+                                                    <span t-esc="products_qty[i]" />
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-if="type == 'compare'">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>From Date :</strong>
+                                <span t-esc="date_from" t-options="{'widget': 'datetime'}" />
+                                <br />
+                                <strong>To Date :</strong>
+                                <span t-esc="date_to" t-options="{'widget': 'datetime'}" />
+                                <br />
+                            </div>
+                            <div class="col-6">
+                                <strong>Compare From Date :</strong>
+                                <span t-esc="date_compare_from" t-options="{'widget': 'datetime'}" />
+                                <br />
+                                <strong>Compare To Date :</strong>
+                                <span t-esc="date_compare_to" t-options="{'widget': 'datetime'}" />
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-6">
+                                <table class="table table-bordered">
+                                    <thead class="text-center bg-Primary">
+                                        <tr class="bg-Primary">
+                                            <th>
+                                                <strong>#</strong>
+                                            </th>
+                                            <th>
+                                                <strong>Product</strong>
+                                            </th>
+                                            <th>
+                                                <strong>Qty Sold</strong>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="len(products)" t-as="i">
+                                            <tr>
+                                                <td>
+                                                    <span t-esc="i + 1" />
+                                                </td>
+                                                <td>
+                                                    <span t-esc="products[i].name" />
+                                                </td>
+                                                <td>
+                                                    <span t-esc="products_qty[i]" />
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-bordered">
+                                    <thead class="text-center bg-Primary">
+                                        <tr class="bg-Primary">
+                                            <th>
+                                                <strong>#</strong>
+                                            </th>
+                                            <th>
+                                                <strong>Compare Product</strong>
+                                            </th>
+                                            <th>
+                                                <strong>Qty Sold</strong>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="len(compare_products)" t-as="i">
+                                            <tr>
+                                                <td>
+                                                    <span t-esc="i + 1" />
+                                                </td>
+
+                                                <td>
+                                                    <span t-esc="compare_products[i].name" />
+                                                </td>
+
+                                                <td>
+                                                    <span t-esc="compare_products_qty[i]" />
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <br />
+                        <br />
+                        <div class="row">
+                            <div class="col-6">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr class="text-center bg-Primary">
+                                            <th>New Products</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="new_products" t-as="np">
+                                            <tr>
+                                                <td>
+                                                    <span t-esc="np.name" />
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-6">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr class="text-center bg-Primary">
+                                            <th>Lost Products</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="lost_products" t-as="lp">
+                                            <tr>
+                                                <td>
+                                                    <span t-esc="lp.name" />
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="sh_top_pos_product_report_action" model="ir.actions.report">
+        <field name="name">Top POS Products</field>
+        <field name="model">report.sh_pos_all_in_one_retail.sh_top_pos_product_doc</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.sh_top_pos_product_doc</field>
+        <field name="print_report_name">'Top POS Products'</field>
+    </record>
+</odoo>

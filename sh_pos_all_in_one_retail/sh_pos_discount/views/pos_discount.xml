@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_discount_tree" model="ir.ui.view">
+        <field name="name">POS Discount Tree</field>
+        <field name="model">sh.pos.discount</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="sh_discount_name" optional="show" />
+                <field name="sh_discount_code" optional="show" />
+                <field name="sh_discount_value" optional="show" decoration-bf="1" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_pos_discount_form" model="ir.ui.view">
+        <field name="name">sh.pos.discount.form</field>
+        <field name="model">sh.pos.discount</field>
+        <field name="arch" type="xml">
+            <form string="POS Discount">
+                <sheet>
+                    <group col="2" colspan="4" name="order_fields">
+                        <field name="sh_discount_name" />
+                        <field name="sh_discount_code" />
+                        <field name="sh_discount_value" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sh_pos_discount_search_view" model="ir.ui.view">
+        <field name="name">sh.sh.pos.discount.search.view</field>
+        <field name="model">sh.pos.discount</field>
+        <field name="arch" type="xml">
+            <search string="Point of sale Discount">
+                <field name='sh_discount_name' />
+                <field name='sh_discount_code' />
+                <group expand="1" string="Group By">
+                    <filter string="Discounts" name='user' context="{'group_by':'sh_discount_value'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_pos_discount" model="ir.actions.act_window">
+        <field name="name">POS Discount</field>
+        <field name="res_model">sh.pos.discount</field>
+        <field name="view_mode">tree,form</field>
+        <field name="type">ir.actions.act_window</field>
+    </record>
+
+    <menuitem id="menu_pos_discount" name="POS Discount" action="action_pos_discount" parent="point_of_sale.menu_point_config_product" sequence="3" />
+</odoo>

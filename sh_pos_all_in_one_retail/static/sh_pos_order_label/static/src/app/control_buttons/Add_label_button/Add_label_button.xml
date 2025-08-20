@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_order_label.AddlabelButton">
+        <button class="control-button btn btn-light rounded-0 fw-bolder sh_ctrl_btn" t-on-click="() => this.onclickLabelBtn()">
+            <span class="fa fa-plus-circle sh_ctrl_btn_icon me-2"></span>
+            <span class="sh_ctrl_btn_text"> Add Label</span>
+        </button>
+    </t>
+</templates>

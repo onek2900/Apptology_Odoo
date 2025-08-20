@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_note.TemplateLineNotePopupWidget">
+        <div class="popup popup-import product-configurator-popup line_note_popup">
+            <div class="modal-header">
+                <h4 class="modal-title title drag-handle">
+                    Add Product Note
+                </h4>
+            </div>
+            <main class="body modal-body note_body">
+                <textarea id="textarea_note" class="form-control" t-model="value.notes">
+                    <t t-esc="pos.get_order().get_selected_orderline().get_line_note()"/>
+                </textarea>
+                <div class="button_div">
+                    <t t-foreach="props.pre_defined_note_data_dict" t-as="each_note" t-key="each_note.id">
+                        <span id="note_button" t-att-data-id="each_note.id" style="cursor: pointer;">
+                            <button
+                                type="button"
+                                class="dmy btn btn-secondary each_note_button"
+                                t-att-text="each_note.name"
+                                t-att-data-value="each_note.name"
+                                t-att-data-id="each_note.id"
+                                t-on-click="click_line_note_button"
+                            >
+                                <t t-esc="each_note.name" />
+                            </button>
+                        </span>
+                    </t>
+                </div>
+            </main>
+            <footer class="footer modal-footer justify-content-center align-items-center">
+                <div class="row justify-content-center" >
+                    <div class="col-12 sh_store_checkbox o-checkbox form-check mb-3" t-if = "pos.config.hide_extra_note_checkbox">
+                        <input type="checkbox" class="form-check-input" id="store_checkbox" t-model="value.store_checkbox"/>
+                        <label for="store_checkbox" class="form-check-label ps-2"> Store Extra Note</label><br />
+                    </div>
+                    <div class="col-12">
+                        <div class="button confirm btn btn-lg btn-primary me-3" t-on-click="confirm">
+                            Confirm
+                        </div>
+                        <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                            Cancel
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </t>
+
+</templates>

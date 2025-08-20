@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="PaymentScreen" t-inherit="point_of_sale.PaymentScreenMethods" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('paymentmethods')]" position="after">
+            <t t-if="pos.config.display_order_note_payment">
+                <div class="pymnt_header_note">Global Note :</div>
+                <div class="payment_order_note">
+                    <textarea id="payment_note_textarea"  class="form-control" row="3" cols="4"><t t-esc="pos.get_order().get_global_note()"/></textarea>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

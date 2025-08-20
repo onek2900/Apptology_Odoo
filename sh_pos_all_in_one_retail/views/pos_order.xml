@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+     <record id='sh_pos_order_label_view_pos_pos_form' model='ir.ui.view'>
+          <field name='name'>sh.pos.order.label.form.inherit</field>
+          <field name='model'>pos.order</field>
+          <field name='inherit_id' ref='point_of_sale.view_pos_pos_form' />
+          <field name='arch' type='xml'>
+               
+               <xpath expr="//field[@name='full_product_name']" position='before'>
+                    <field name="add_section" />
+               </xpath>
+               <xpath expr="//field[@name='full_product_name']" position='attributes'>
+                         <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='qty']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='price_unit']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='discount']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='tax_ids_after_fiscal_position']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='price_subtotal']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='price_subtotal_incl']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='pack_lot_ids']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='customer_note']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='is_total_cost_computed']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='total_cost']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='margin']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='margin_percent']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='tax_ids']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+               <xpath expr="//field[@name='refunded_qty']" position='attributes'>
+                    <attribute name="invisible">add_section</attribute>
+               </xpath>
+          </field>
+     </record>
+</odoo>

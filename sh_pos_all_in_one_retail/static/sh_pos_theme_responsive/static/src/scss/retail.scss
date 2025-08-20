@@ -1,0 +1,79 @@
+// Retail // 
+.pos{
+    // cash in out modal //
+    .sh_cash_in_out_statement_popup {
+        .modal-body {
+            &.main_div_sh_statement {
+                max-height: 220px !important;
+                min-height: 220px;
+                overflow: auto;
+            }
+        }
+    }
+    .popups{
+        .modal-dialog{
+            //sale order reference modal & Purchase order reference modal//
+            .popup.sh_sale_order_ref_popup, .popup.sh_purchase_order_ref_popup{
+                .modal-body{
+                    .sh_so_label,.sh_po_label{
+                        font-size: 16px;font-weight: bold;
+                    }
+                    .sh_so_value,.sh_po_value{
+                        font-size: 16px;color: $sh_pos_primary_color;margin-left: 5px;font-weight: bold;transition: all .5s;
+                        &:hover{
+                            color: darken($sh_pos_primary_color, 10%);
+                        }
+                    }
+                }
+            }
+            .popup.combo-configurator-popup{
+                .product-list{
+                    input:checked{
+                        + .combo-line{
+                            box-shadow: 0 0 0 1px $sh_pos_primary_color;
+                        }
+                    }
+                    .product{
+                        .product-content{
+                            @include media-breakpoint-down(md){
+                                margin-right: 8px !important;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // product box // 
+    .pos-content{
+        .product{
+            .product-content{
+                .sh_product_box_icon{
+                    text-align: center;
+                    .sh_pro_icon{
+                        font-size: 15px;transition: all .5s;color: #495057;padding: 2px 5px;
+                        &:hover, &:active, &:focus{
+                            color: $sh_pos_primary_color;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .product-list{
+        &:not(.d-grid){
+            .product{
+                .product-content{
+                    .sh_product_box_icon{
+                        @include media-breakpoint-down(lg){
+                            text-align: left !important;padding: 0px 0px 5px 0px;
+                        }
+                    }
+                    @include media-breakpoint-down(lg){
+                        padding-top: 26px !important;
+                    }
+                }
+            }
+        }
+    }
+}

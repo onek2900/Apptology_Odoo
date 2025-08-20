@@ -1,0 +1,54 @@
+.pos{
+    .pos-topheader{
+        .status-buttons{
+            .btn.btn-light{
+                background-color: $sh_pos_primary_color !important;border-color: $sh_pos_primary_color !important;
+                .cashier-name{
+                    .username{
+                        color: #FFFFFF;
+                    }
+                }
+            }
+            .menu-item{
+                span{
+                    color: #FFFFFF;
+                }
+            }
+        }
+        .pos-rightheader{
+            .sh_cart_badge{
+                position: relative;font-size: 20px;color: #FFFFFF;
+                &:after{
+                    background: darken($sh_pos_primary_color, 10%);border-radius: 10rem;color: #fff;content: attr(badge);font-size: 13px;padding: 4px;position: absolute;text-align: center;min-width: 20px;left: 0.9em;bottom: 0.9em;line-height: 14px;display: flex;align-items: center;justify-content: center;
+                }
+            }
+            // @include media-breakpoint-down(lg){
+                .order-button{
+                    color: #FFFFFF;
+                }
+            // }
+        }
+        .navbar-button.btn.btn-light.menu-button{
+            background-color: $sh_pos_primary_color !important;border-color: $sh_pos_primary_color !important;color: #FFFFFF;
+            @include media-breakpoint-down(lg){
+                padding-left: 10px !important;padding-right: 10px !important;
+            }
+            .menu-item{
+                .sub-menu.dropdown-menu{
+                    li{
+                        .dropdown-item{
+                            transition: all .5s;
+                            &:hover, &:active, &:focus{
+                                color: $sh_pos_primary_color;background: $sh_pos_secondary_color;cursor: pointer;
+                            }
+                            .badge.text-bg-info.rounded-pill{
+                                background: $sh_pos_primary_color !important;
+                            }
+                        }
+                    }
+                }
+            } 
+        }
+        background-color: $sh_pos_primary_color !important;
+    }
+}

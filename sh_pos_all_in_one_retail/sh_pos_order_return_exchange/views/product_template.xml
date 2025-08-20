@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_pos_product_template_pos_return_exchange" model="ir.ui.view">
+        <field name="name">product.product</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='available_in_pos']" position="after">
+                <field name="sh_product_non_returnable" />
+                <field name="sh_product_non_exchangeable" />
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sh_pos_order_line_pos_discount" model="ir.ui.view">
+        <field name="name">pos.order.line.pos.note</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='qty']" position="after">
+                <field name="sh_return_qty" />
+                <!-- <field name="sh_exchange_qty" /> -->
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_pos_new_form_extended">
+        <field name="name">pos.order.form.extend</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='fiscal_position_id']" position="after">
+                <field name="return_status" />
+                <field name="is_return_order" />
+                <field name="is_exchange_order" />
+                <field name="old_pos_reference" />
+            </xpath>
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button name="action_view_return" type="object" class="oe_stat_button" icon="fa-reply-all">
+                    <div class="o_form_field o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="total_return_order" />
+                        </span>
+                        <span class="o_stat_text">Return</span>
+                    </div>
+                </button>
+
+                <button name="action_view_exchange" type="object" class="oe_stat_button" icon="fa-exchange">
+                    <div class="o_form_field o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="total_exchange_order" />
+                        </span>
+                        <span class="o_stat_text">Exchange</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="pos_return_order_select">
+        <field name="name">pos.order.list.select</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_filter" />
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='posted']" position="after">
+                <filter string="Return" name="return" domain="[('is_return_order','=',True)]" />
+                <filter string="Exchange" name="exchange" domain="[('is_exchange_order','=',True)]" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

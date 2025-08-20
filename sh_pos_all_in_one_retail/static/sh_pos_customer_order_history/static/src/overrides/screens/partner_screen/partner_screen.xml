@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="PartnerLine" t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension">
+        <xpath expr="//td[hasclass('edit-partner-button-cell')]" position="after">
+            <t t-if="env.services.pos.config.sh_customer_order_history and env.services.pos.config.sh_enable_order_list">
+                <td><i class="fa fa-history client_history_icon" aria-hidden="true" t-on-click.stop="click_order_history_icon"></i></td>
+            </t>
+        </xpath>
+    </t>
+  
+</templates>

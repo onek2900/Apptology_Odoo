@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_product_suggestion.SuggestedProductList">
+        <div class="product-list-container flex-grow-1 overflow-y-auto">
+            <div t-if="props.products.length != 0" class="product-list d-grid gap-1 p-1">
+                <t t-foreach="props.products" t-as="product" t-key="product.id">
+                    <ProductCard class="env.services.pos.productViewMode" name="product.display_name" productId="product.id" price="product.getFormattedUnitPrice()" imageUrl="product.getImageUrl()" onClick="() =>env.services.pos.addProductToCurrentOrder(product)" />
+                </t>
+            </div>
+            <div t-else="" class="product-list-empty">
+                <div class="product-list-empty">
+                    <t t-if="props.searchWord !== ''">
+                        <p>
+                            No results found for "
+                            <b t-esc="props.searchWord"></b>
+                            ".
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <p>There are no products in this category.</p>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-extend="ProductsWidget" t-inherit="point_of_sale.ProductsWidget" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('products-widget')]" position="inside">
+            <t t-if="pos.config.enable_product_suggestion and suggestedproduct">
+                <div class="suggestion-list" t-if="suggestedproduct and  suggestedproduct.length > 0 ">
+                    <SuggestedProductList products="suggestedproduct" searchWord="searchWord" />
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

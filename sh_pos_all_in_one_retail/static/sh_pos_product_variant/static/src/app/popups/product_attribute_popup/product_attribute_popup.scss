@@ -1,0 +1,160 @@
+.sh_attribute_popup {
+    .sh_attribute_body {
+        padding: 0 !important;
+
+        .sh_attribute_content_box {
+            padding: 16px;
+
+            .sh_attribute_content {
+                padding: 7px 5px;
+                align-items: center;
+
+                .sh_attribute_title {
+                    position: relative;
+                    width: 17%;
+                    text-align: left;
+                    align-self: baseline;
+                    padding-top: 6px;
+
+                    &:after {
+                        position: absolute;
+                        font-family: 'FontAwesome';
+                        content: '\f061';
+                        right: 0;
+                        font-size: 15px;
+                    }
+                }
+
+                .sh_attribute_line {
+                    padding-left: 10px;
+                    display: flex;
+                    flex-wrap: wrap;
+                    width: 83%;
+                    gap: 7px;
+
+                    .sh_att_value {
+                        padding: 2px 8px;
+                        display: flex;
+                        background: #ffffff;
+                        border-radius: 0px;
+                        font-size: 15px;
+                        justify-content: center;
+                        align-items: center;
+                        border: 1px solid #919191;
+                        white-space: nowrap;
+                        cursor: pointer;
+                        font-weight: normal;
+                        @if $sh_pos_button_style =="style_1" {
+                            border-radius: 5px !important;
+                        }
+                        @if $sh_pos_button_style =="style_2" {
+                            border-radius: 10px 0px 10px 0px !important;
+                        }
+                        @if $sh_pos_button_style =="style_3" {
+                            border-radius: 0px !important;
+                        }
+                        &.sh_highlight {
+                            background: $sh_pos_primary_color;
+                            color: #ffffff;
+                            border: 1px solid $sh_pos_primary_color
+                        }
+                    }
+                }
+            }
+        }
+
+        .sh_alternative_products {
+            &:has(.sh_product_variant_2:empty) {
+                display: none !important;
+            }
+
+            .sh_alternative_products_title {
+                background-color: $sh_pos_primary_color;
+                padding: 3px 0px;
+
+                span {
+                    color: #fff;
+                }
+            }
+
+            .sh_product_variant_2 {
+                padding: 16px;
+                max-height: 200px !important;
+                overflow: auto !important;
+
+                &:empty {
+                    display: none;
+                }
+            }
+        }
+    }
+}
+
+.sh_pos_product_variant_popup {
+    header.title{
+        @include media-breakpoint-down(md){
+            flex-direction: column;
+        }
+    }
+    &.sh_morethan_15_variant {
+        max-width: 835px !important;
+    }
+
+    &.sh_lessthen_15_varaint {
+        max-width: 695px !important;
+    }
+
+    .sh_pos_product_variant_popup_body {
+        max-height: 380px;
+        overflow: auto;
+        padding: 0 !important;
+        .product{
+            .sh_product_box_icon{
+                text-align: center;
+                .fa{
+                    font-size: 15px;transition: all .5s;color: #495057;padding: 2px 5px;
+                    &:hover,&:active,&:focus{
+                        color: $sh_pos_primary_color;
+                    }
+                }
+            }
+        }
+
+        &:has(.sh_alternative_products .sh_alternative_products_title) {
+            max-height: unset !important;
+            overflow: auto !important;
+        }
+
+        .sh_product_variant_1 {
+            padding: 16px;
+
+            &:has(+ .sh_alternative_products .sh_alternative_products_title) {
+                max-height: 200px !important;
+                overflow: auto !important;
+            }
+
+            &:has(+ :not(.sh_alternative_products .sh_alternative_products_title)) {
+                max-height: auto !important;
+                overflow: auto !important;
+            }
+        }
+
+        .sh_alternative_products {
+
+            .sh_alternative_products_title {
+                background-color: $sh_pos_primary_color;
+                padding: 3px 0px;
+
+                span {
+                    color: #fff;
+                }
+            }
+
+            .sh_product_variant_2 {
+                padding: 16px;
+                max-height: 200px !important;
+                overflow: auto !important;
+            }
+        }
+    }
+}

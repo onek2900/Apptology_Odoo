@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sh_pos_day_wise_view_tree" model="ir.ui.view">
+        <field name="name">sh.pos.day.wise.report.view.tree</field>
+        <field name="model">sh.pos.day.wise.report</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="name" options="{'no_open': True, 'no_create': True}" />
+                <field name="monday" sum="Total Sales Product on Monday" optional="show" />
+                <field name="tuesday" sum="Total Sales Product on Tuesday" optional="show" />
+                <field name="wednesday" sum="Total Sales Product on Wednesday" optional="show" />
+                <field name="thursday" sum="Total Sales Product on Thursday" optional="show" />
+                <field name="friday" sum="Total Sales Product on Friday" optional="show" />
+                <field name="saturday" sum="Total Sales Product on Saturday" optional="show" />
+                <field name="sunday" sum="Total Sales Product on Sunday" optional="show" />
+                <field name="total" sum="Total Sales Product" optional="show" decoration-bf="1" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_pos_day_wise_view_search" model="ir.ui.view">
+        <field name="name">sh.pos.day.wise.report.view.search</field>
+        <field name="model">sh.pos.day.wise.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="monday" />
+                <field name="tuesday" />
+                <field name="wednesday" />
+                <field name="thursday" />
+                <field name="friday" />
+                <field name="saturday" />
+                <field name="sunday" />
+                <field name="total" />
+                <filter string="Product" name="group_product" domain="[]"
+                    context="{'group_by': 'name'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_day_wise_pos_action" model="ir.actions.act_window">
+        <field name="name">POS Order Day Wise</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.pos.day.wise.report</field>
+        <field name="context">{'search_default_group_product': 1}</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

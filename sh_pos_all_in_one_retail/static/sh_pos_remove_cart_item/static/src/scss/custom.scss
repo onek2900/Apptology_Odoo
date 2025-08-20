@@ -1,0 +1,47 @@
+.pos {
+	.orderline {
+		.span_delete_icon {
+			// margin-left: 12px !important;
+			cursor: pointer;
+			&:hover {
+				color: $sh_pos_primary_color;
+			}
+		}
+	}
+	.order {
+		.orderline.sh_pos_orderline {
+			.sh_price_with_icon {
+				.price {
+					float: unset !important;
+				}
+			}
+			.product-name {
+				width: 65% !important;
+			}
+			.info-list {
+				margin-left: 0px;
+			}
+		}
+	}
+
+}
+@include media-breakpoint-down(sm) {
+	.pos {
+		.order {
+			.orderline.sh_pos_orderline {
+				.product-name {
+					width: 50% !important;
+				}
+			}
+		}
+	}
+}
+@include media-breakpoint-down(md) {
+	.pos {
+		.order {
+			.orderline.sh_pos_orderline {
+				font-size: 15px;
+			}
+		}
+	}
+}

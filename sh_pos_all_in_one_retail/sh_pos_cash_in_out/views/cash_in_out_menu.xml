@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_cash_in_statement" model="report.paperformat">
+        <field name="name">Cash In / Out Statement Paper Format</field>
+        <field name="default" eval="True" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">35</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="sh_pos_cash_in_out_report" model="ir.actions.report">
+        <field name="name">Cash In / Out Statement Report</field>
+        <field name="model">sh.cash.in.out</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.report_cash_in_out</field>
+        <field name="report_file">sh_pos_all_in_one_retail.report_cash_in_out</field>
+        <field name="paperformat_id" ref="paperformat_cash_in_statement" />
+    </record>
+
+    <record id="sh_pos_cash_in_out_date_wise_report" model="ir.actions.report">
+        <field name="name">Cash In / Out Statement Report</field>
+        <field name="model">sh.cash.in.out</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.report_cash_in_out_date_wise</field>
+        <field name="report_file">sh_pos_all_in_one_retail.report_cash_in_out_date_wise</field>
+        <field name="paperformat_id" ref="paperformat_cash_in_statement" />
+    </record>
+
+    <template id="report_cash_in_out">
+        <t t-call="web.basic_layout">
+            <div class="page sh_report_page" style="width: 100%;">
+                <div class="sh_report_date_time" style="line-height: 20px;">
+                    <b style="font-size: 13.4px;">Report Date &amp; Time : </b>
+                    <span class="sh_report_date" t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')" style="font-size: 13.4px;" />
+                </div>
+                <div class="sh_session_div" style="line-height: 20px;">
+                    <b style="font-size: 13.4px;">Session : </b>
+                    <span class="sh_session_name" style="font-size: 13.4px;">
+                        <t t-esc="docs.sh_session.name" />
+                    </span>
+                </div>
+                <div class="sh_report_started_at" style="line-height: 20px;">
+                    <b style="font-size: 13.4px;">Started At : </b>
+                    <span class="sh_session_start_at" style="font-size: 13.4px;">
+                        <t t-esc="docs.sh_session.start_at" />
+                    </span>
+                </div>
+                <div class="sh_report_ended_at" style="line-height: 20px; margin-bottom: 18px;">
+                    <b style="font-size: 13.4px;">Ended At : </b>
+                    <span style="font-size: 13.4px;">
+                        <t t-esc="docs.sh_session.stop_at" />
+                    </span>
+                </div>
+                <t t-set="cash_in_total" t-value="0" />
+                <t t-set="cash_out_total" t-value="0" />
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered text-center o_main_table" style="border-collapse: collapse; table-layout: fixed; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 20%; padding: 8px 10px;">
+                                    Transaction
+                                </th>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 30%; padding: 8px 10px;">
+                                    Amount
+                                </th>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 30%; padding: 8px 10px;">
+                                    Reason
+                                </th>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 20%; padding: 8px 10px;">
+                                    Date &amp; Time
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="o">
+                                <div class="">
+                                    <tr>
+                                        <td style="width: 20%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <t t-if="o.sh_transaction_type">
+                                                <t t-if="o.sh_transaction_type == 'cash_in'">
+                                                    <span style="font-size: 13.4px;">Cash In</span>
+                                                    <t t-set="cash_in_total" t-value="cash_in_total + o.sh_amount" />
+                                                </t>
+                                                <t t-elif="o.sh_transaction_type == 'cash_out'">
+                                                    <span style="font-size: 13.4px;">Cash Out</span>
+                                                    <t t-set="cash_out_total" t-value="cash_out_total + o.sh_amount" />
+                                                </t>
+                                            </t>
+                                        </td>
+                                        <td style="width: 30%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <span style="font-size: 13.4px;">
+                                                <t t-esc="o.sh_amount" t-options='{"widget": "monetary", "display_currency": o.sh_session.currency_id}' />
+                                            </span>
+                                        </td>
+                                        <td style="width: 30%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <span style="font-size: 13.4px;">
+                                                <t t-if="o.sh_reason">
+                                                    <t t-esc="o.sh_reason" />
+                                                </t>
+                                                <t t-else="">
+                                                    -
+                                                </t>
+                                            </span>
+                                        </td>
+                                        <td style="width: 20%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <span style="font-size: 13.4px;">
+                                                <t t-esc="o.sh_date" />
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cash_in_out_total">
+                    <div class="sh_session_starting_balance" style="line-height: 18px;">
+                        <b style="font-size: 13.4px;">Starting Balance :</b>
+                        <span class="sh_starting_label" style="font-size: 13.4px;">
+                            <t t-esc="docs.sh_session.cash_register_balance_start" t-options='{"widget": "monetary", "display_currency": docs.sh_session.currency_id}' />
+                        </span>
+                    </div>
+                    <div class="sh_session_ending_balance" style="line-height: 18px;">
+                        <b style="font-size: 13.4px;">Ending Balance :</b>
+                        <span class="sh_ending_label" style="font-size: 13.4px;">
+                            <t t-esc="docs.sh_session.cash_register_balance_end_real" t-options='{"widget": "monetary", "display_currency": docs.sh_session.currency_id}' />
+                        </span>
+                    </div>
+                    <div class="sh_cash_in_total" style="line-height: 18px;">
+                        <b style="font-size: 13.4px;">Total Cash In : </b>
+                        <span class="sh_cash_in_label" style="font-size: 13.4px;">
+                            <t t-esc="cash_in_total" t-options='{"widget": "monetary", "display_currency": docs.sh_session.currency_id}' />
+                        </span>
+                    </div>
+                    <div class="sh_cash_out_total" style="line-height: 18px;">
+                        <b style="font-size: 13.4px;">Total Cash Out :</b>
+                        <span class="sh_cash_out_label" style="font-size: 13.4px;">
+                            <t t-esc="cash_out_total" t-options='{"widget": "monetary", "display_currency": docs.sh_session.currency_id}' />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_cash_in_out_date_wise">
+        <t t-call="web.basic_layout">
+            <div class="page sh_report_page" style="width: 100%;">
+                <div class="sh_report_date_time" style="line-height: 20px; margin-bottom: 18px;">
+                    <b style="font-size: 13.4px;">Report Date &amp; Time : </b>
+                    <span class="sh_report_date" t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')" style="font-size: 13.4px;" />
+                </div>
+                <t t-set="cash_in_total" t-value="0" />
+                <t t-set="cash_out_total" t-value="0" />
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered text-center o_main_table" style="border-collapse: collapse; table-layout: fixed; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 20%; padding: 8px 10px;">
+                                    Transaction
+                                </th>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 20%; padding: 8px 10px;">
+                                    Amount
+                                </th>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 20%; padding: 8px 10px;">
+                                    Reason
+                                </th>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 20%; padding: 8px 10px;">
+                                    Date &amp; Time
+                                </th>
+                                <th style="color: #000; font-size: 12px; text-transform: uppercase; text-align: center; width: 20%; padding: 8px 10px;">
+                                    Session
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="o">
+                                <div class="">
+                                    <tr>
+                                        <td style="width: 20%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <t t-if="o.sh_transaction_type">
+                                                <t t-if="o.sh_transaction_type == 'cash_in'">
+                                                    <span style="font-size: 13.4px;">Cash In</span>
+                                                    <t t-set="cash_in_total" t-value="cash_in_total + o.sh_amount" />
+                                                </t>
+                                                <t t-elif="o.sh_transaction_type == 'cash_out'">
+                                                    <span style="font-size: 13.4px;">Cash Out</span>
+                                                    <t t-set="cash_out_total" t-value="cash_out_total + o.sh_amount" />
+                                                </t>
+                                            </t>
+                                        </td>
+                                        <td style="width: 30%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <span style="font-size: 13.4px;">
+                                                <t t-esc="o.sh_amount" t-options='{"widget": "monetary", "display_currency": o.sh_session.currency_id}' />
+                                            </span>
+                                        </td>
+                                        <td style="width: 30%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <span style="font-size: 13.4px;">
+                                                <t t-if="o.sh_reason">
+                                                    <t t-esc="o.sh_reason" />
+                                                </t>
+                                                <t t-else="">
+                                                    -
+                                                </t>
+                                            </span>
+                                        </td>
+                                        <td style="width: 20%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <span style="font-size: 13.4px;">
+                                                <t t-esc="o.sh_date" />
+                                            </span>
+                                        </td>
+                                        <td style="width: 20%; word-break: break-word; vertical-align: middle; padding: 8px 10px;">
+                                            <span style="font-size: 13.4px;">
+                                                <t t-esc="o.sh_session.name" />
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </div>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cash_in_out_total">
+                    <div class="sh_cash_in_total" style="line-height: 18px;">
+                        <b style="font-size: 13.4px;">Total Cash In : </b>
+                        <span class="sh_cash_in_label" style="font-size: 13.4px;">
+                            <t t-esc="cash_in_total" />
+                        </span>
+                    </div>
+                    <div class="sh_cash_out_total" style="line-height: 18px;">
+                        <b style="font-size: 13.4px;">Total Cash Out :</b>
+                        <span class="sh_cash_out_label" style="font-size: 13.4px;">
+                            <t t-esc="cash_out_total" />
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

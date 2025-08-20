@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_posreceipt" model="report.paperformat">
+        <field name="name">Point Of Sale Receipt</field>
+        <field name="default" eval="True" />
+        <field name="format">custom</field>
+        <field name="page_height">150</field>
+        <field name="page_width">60</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">30</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">3</field>
+        <field name="margin_right">3</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">30</field>
+        <field name="dpi">130</field>
+    </record>
+
+    <record id="action_report_pos_receipt" model="ir.actions.report">
+        <field name="name">Receipt</field>
+        <field name="model">pos.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.report_receipt</field>
+        <field name="report_file">sh_pos_all_in_one_retail.report_receipt</field>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_order" />
+        <field name="paperformat_id" ref="sh_pos_all_in_one_retail.paperformat_posreceipt" />
+        <field name="binding_type">report</field>
+        <field name="groups_id" eval="[(4, ref('sh_pos_all_in_one_retail.group_sh_pos_receipt'))]" />
+    </record>
+
+</odoo>

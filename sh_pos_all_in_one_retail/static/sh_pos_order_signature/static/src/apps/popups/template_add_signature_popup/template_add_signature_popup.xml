@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_all_in_one_retail.TemplateAddSignaturePopupWidget">
+        <div class="popup sh_signature_popup">
+            <div class="modal-header">
+                <h4 class="modal-title">Add Signature</h4>
+            </div>
+            <main class="modal-body sh_signature_main_body">
+                <div class="main_div_signature">
+                    <div class="signature_detail_div">
+                        <div id="signature"></div>
+                        <div class="signature_name_date">
+                            <div class="name_div d-flex align-items-center" t-if="pos.config.sh_enable_order_signature and pos.config.sh_enable_name">
+                                <t t-if="env.services.pos.config.sh_enable_name"> 
+                                    <span class=""> Name : </span> 
+                                    <input type="text" placeholder="Enter Name" id="sh_name"  class="form-control form-control-md w-75 ms-auto"/>
+                                </t>
+                            </div>
+                            <div class="date_div d-flex align-items-center" t-if="pos.config.sh_enable_order_signature and pos.config.sh_enable_date">
+                                <t t-if="env.services.pos.config.sh_enable_date"> 
+                                    <span class=""> Date : </span> 
+                                    <input type="date" id="sh_date" class="form-control form-control-md w-75 ms-auto" /> 
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <div class="footer footer-flex modal-footer">
+                <div class="button highlight clear btn btn-lg btn-primary" t-on-click="clear">
+                    Clear
+                </div>
+                <div class="button highlight confirm btn btn-lg btn-primary" t-on-click="confirm">
+                    Save
+                </div>
+                <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    Cancel
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<!-- TODO: no update 1 when done -->
+    <data noupdate="1">
+        <!--
+        	one attachment for scss variable settings 
+        	Write this file each time when we change theme settings.
+        	include this file in assets file by url.
+        -->
+        <record id="sh_pos_theme_responsive_setting_scss_attachment_2" model="ir.attachment">
+            <field name="public" eval="True"/>
+            <field name="name">Responsive POS Theme Settings SCSS Variables 2</field>
+        	<field name="datas" type="base64" file="sh_pos_all_in_one_retail/data/sh_pos_theme_responsive/data/pos_theme_variables.scss"></field>            
+            <field name="res_model">ir.ui.view</field>
+            <field name="type">binary</field>
+            <field name="mimetype">text/scss</field>
+            <field name="url">/sh_pos_all_in_one_retail/static/sh_pos_theme_responsive/static/src/overrides/pos_theme_variables.scss</field>
+        </record>      
+        <!-- Create back theme setting record at install time -->
+        <!-- TODO: Give theme style 1 and all fields of record or other when done -->
+        <record id="sh_pos_theme_responsive_setting_rec_1" model="sh.pos.theme.settings">
+            <field name="name">Responsive POS Theme Settings</field> 
+            <field name="sh_cart_position">left_side</field> 
+            <field name="sh_image_display_in_cart" eval="True"/> 
+            <field name="sh_action_button_position">bottom</field> 
+            <field name="sh_mobile_start_screen">product_screen</field> 
+            <field name="theme_style">style_1</field> 
+            <field name="primary_color">#673ab7</field>   
+            <field name="sh_even_row_color">#dee2e6</field>    
+            <field name="sh_odd_row_color">#FFFFFF</field>   
+            <field name="secondary_color">#dee2e6</field>    
+            <field name="button_style">style_1</field>
+            <field name="product_style">style_1</field>    
+            <field name="body_background_type">bg_color</field>   
+            <field name="body_background_color">#FFFFFF</field>   
+            <field name="body_font_family">Roboto</field>                                                                  		
+  			<field name="body_background_image" type="base64" file="sh_pos_all_in_one_retail/static/sh_pos_theme_responsive/static/src/img/background/chair.jpg"/>                                           		
+        
+        </record>  
+	</data>
+</odoo>

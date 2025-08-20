@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+
+
+    <t t-extend="ProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
+        <xpath expr="//span[hasclass('price-tag')]" position="after">
+            <t t-if="this.env.services.pos.config.sh_display_stock and this.type == 'product' and ((this.env.services.pos.config.sh_pos_enable_product_variants and this.product_variant_count &lt; 2) or (!this.env.services.pos.config.sh_pos_enable_product_variants)) ">
+                <div class="sh_product_box_icon">
+                    <span class="product-image-icon" >
+                        <i class="fa fa-building-o sh_pro_icon" t-on-click="() => this.env.services.pos.showStock(props.productId)" aria-hidden="true"></i>
+                    </span>
+                </div>
+                <t t-if="this.env.services.pos.config.sh_show_qty_location">
+                    <span class="sh_product_qty badge">
+                        <t t-esc="get_display_stock"></t>
+                    </span>
+                </t>
+            </t>
+        </xpath>
+    </t>
+</templates>

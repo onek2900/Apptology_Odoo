@@ -1,0 +1,299 @@
+.highlight {
+    background-color: #71639e !important;
+    color: #fff !important;
+}
+
+.more_qty {
+    border: 1px solid #C53400 !important;
+}
+.no_return{
+    color: red;
+}
+.no_exchange{
+    color: red;
+}
+.pos{
+
+    .pos-content{
+        .shorderlist-screen{
+            .sh_order_list_full_content{
+                .sh_order_list {
+                    thead{
+                        tr{
+                            th{
+                                &.sh_orderlist_name_th{
+                                    width: 10% !important;
+                                    background-color: red;
+                                }
+                                &.sh_orderlist_ref_th{
+                                    width: 16% !important;
+                                }
+                                &.sh_orderlist_cust_th{
+                                    width: 24% !important;
+                                }
+                                &.sh_orderlist_date_th{
+                                    width: 14% !important;
+                                }
+                                &.sh_orderlist_total_th{
+                                    width: 12% !important;
+                                }
+                                &.sh_orderlist_state_th{
+                                    width: 6% !important;
+                                }
+                                &.sh-actions{
+                                    width: 5%;
+                                }
+                                &.sh_orderlist_print_order_tool_td{
+                                    width: 5%;
+                                }
+                            }
+                        }
+                    }
+                    .sh_order_list_contents{
+                        tr{
+                            td{
+                                &.sh_orderlist_name_td{
+                                    width: 10% !important;
+                                }
+                                &.sh_orderlist_ref_td{
+                                    width: 16% !important;
+                                }
+                                &.sh_orderlist_customer_td{
+                                    width: 24% !important;
+                                }
+                                &.sh_orderlist_date_td{
+                                    width: 14% !important;
+                                }
+                                &.sh_orderlist_total_td{
+                                    width: 12% !important;
+                                }
+                                &.sh_orderlist_state_td{
+                                    width: 6% !important;
+                                }
+                                &.sh_orderlist_print_order_tool_td{
+                                    width: 5%;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .screen{
+            .overflow-auto{
+                .partner-details {
+                    .container{
+                        .partner-details-box {
+                            .col{
+                                input{
+                                    &:checked{
+                                        background-color: $sh_pos_primary_color;
+                                        border-color: $sh_pos_primary_color;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .popups{
+        .modal-dialog{
+            .popup {
+                &.sh-return-order-popup{
+                    .modal-body{
+                        padding: 0 !important;
+                        height: 260px;max-height: 260px;overflow: auto !important;
+                        .sh_return_order_table{
+                            width: 100%;
+                            .sh_return_order_thead{
+                                background: $sh_pos_primary_color ;
+                                th{
+                                    padding: 0.5rem 0.7rem;
+                                    color: #ffffff;
+                                    position: sticky;
+                                    top: 0;
+                                    font-size: 14px;
+                                    font-weight: 600;
+                                    text-transform: capitalize;
+                                    &.sh_return_order_product_th{
+                                        width: 45% !important;
+                                    }
+                                    &.sh_return_order_qty_th{
+                                        width: 15% !important;
+                                    }
+                                    &.sh_return_order_rqty_th{
+                                        width: 40% !important;
+                                    }
+                                    @include media-breakpoint-down(md) {
+                                        white-space: nowrap;
+                                    }
+                                }
+                            }
+                            .sh_return_order_tbody{                            
+                                tr{
+                                    &:nth-child(odd){background: $sh_odd_row_color;}
+                                    &:nth-child(even){background: $sh_even_row_color;}
+                                    // &:hover{
+                                    //     background: $sh_pos_primary_color !important;color: #ffffff;font-weight: normal;cursor: pointer;
+                                    //     td{
+                                    //         &.sh_return_order_rqty_td{
+                                    //             .sh-qty{
+                                    //                 color: #fff;
+                                    //                 // &:hover,
+                                    //                 // &:focus{
+                                    //                 //     border: 1px solid #ced4da;
+                                    //                 // }
+                                    //             }
+                                    //         }
+                                    //     }
+                                    // }
+                                    @if $sh_list_row_hover =="True" {
+                                        &:hover{
+                                            background: $sh_hover_background_color !important;
+                                        }
+                                    }
+                                    td{
+                                        padding: 0.5rem 0.7rem;
+                                        &.sh_return_order_product_td{
+                                            width: 45% !important;
+                                        }
+                                        &.sh_return_order_qty_td{
+                                            width: 15% !important;
+                                        }
+                                        &.sh_return_order_rqty_td{
+                                            width: 40% !important;
+                                        }
+                                        @include media-breakpoint-down(md) {
+                                            white-space: nowrap;
+                                        }
+                                    }
+                                }                          
+                            }
+                        }
+                        .sh_same_product_checkbox {
+                            padding: 10px;width: 100%;
+                            .sh_custom {
+                                display: block;
+                                position: relative;
+                                padding-left: 20px;
+                                margin-bottom: 0px;
+                                cursor: pointer;
+                                font-size: 16px;
+                                width: 100%;
+                                input {
+                                    position: absolute;
+                                    z-index: -1;
+                                    opacity: 0;
+                                    width: 0px !important;
+                                    padding: 0px !important;
+                                    min-height: 0px !important;
+                                    margin: 0px !important;
+                                }
+                            }
+                            .sh_cust_checkbox_indicator {
+                                position: absolute;
+                                top: 3px;
+                                left: 0;
+                                height: 18px;
+                                width: 18px;
+                                background: #e6e6e6 !important;
+                            }
+                            .sh_custom_checkbox_exchange {
+                                margin: 0px auto;width: 50%;
+                                .sh_cust_checkbox_indicator {
+                                    &:after {
+                                        content: '';
+                                        position: absolute;
+                                        display: none;
+                                    }
+                                }
+                                .sh_cust_checkbox {
+                                    .sh_cust_checkbox_indicator {
+                                        &:after {
+                                            left: 7px;
+                                            top: 3px;
+                                            width: 5px;
+                                            height: 9px;
+                                            border: solid #fff;
+                                            border-width: 0 2px 2px 0;
+                                            transform: rotate(45deg);
+                                        }
+                                    }
+                                }
+                                .sh_custom {
+                                    input {
+                                        &:checked {
+                                            ~ {
+                                                .sh_cust_checkbox_indicator {
+                                                    background: $sh_pos_primary_color !important;
+                                                    &:after {
+                                                        display: block;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .sh_cust_checkbox_indicator{
+                                        @if $sh_form_element_style == "style_1"{
+                                            border-radius: 5px;
+                                        } 
+                                        @if $sh_form_element_style == "style_2"{
+                                            border-radius: 5px 0px 5px 0px !important;
+                                        } 
+                                        @if $sh_form_element_style == "style_3"{
+                                            border-radius: 0;
+                                        } 
+                                    }
+                                }
+                            }
+                        }  
+                    }
+                    .sh_return_exchange_radio{
+                        input{
+                            &:after{
+                                background: $sh_pos_primary_color !important ;
+                            }
+                        }
+                    }
+                    .footer{
+                        .button{
+                            &.confirm{
+                                background: $sh_pos_primary_color !important;
+                            }
+                        }
+                    }
+                }
+                &.popup-barcode{
+                    .footer{
+                        .btn{
+                            background: $sh_pos_primary_color;
+                            border-color: $sh_pos_primary_color;
+                            @if $sh_pos_button_style =="style_1" {
+                                border-radius: 5px !important;
+                            }
+                            @if $sh_pos_button_style =="style_2" {
+                                border-radius: 10px 0px 10px 0px !important;
+                            }
+                            @if $sh_pos_button_style =="style_3" {
+                                border-radius: 0px !important;
+                            }
+                            @if $sh_pos_button_style =="style_4" {
+                                border-radius: 50px !important;
+                            }
+                            
+                        }
+                    }
+                }
+                .footer{
+                    .button{
+                        &.confirm{
+                            background: $sh_pos_primary_color !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_product_search_view" model="ir.ui.view">
+        <field name="name">product.template</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view" />
+        <field name="arch" type="xml">
+            <field name="attribute_line_ids" position="after">
+                <field name="barcode_line_ids" string="Multi Barcodes" />
+            </field>
+        </field>
+    </record>
+
+    <record id="sh_product_product_barcode_view" model="ir.ui.view">
+        <field name="name">sh.product.product.barcode.view</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//page[last()]" position="after">
+                <page name="barcodes" string="Barcodes" invisible="product_variant_count > 1">
+                    <field name="barcode_line_ids" widget="one2many_list">
+                        <tree string="Barcodes" editable="bottom">
+                            <field name="name" />
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

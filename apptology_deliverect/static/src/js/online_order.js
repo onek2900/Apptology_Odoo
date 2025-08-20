@@ -106,10 +106,10 @@ export class OnlineOrderScreen extends Component {
         }
     }
     /**
-     * Starts polling for open orders every 30 seconds.
+     * Starts polling for open orders every 10 seconds.
      */
     async startPollingOrders() {
-        this.pollingInterval = setInterval(async () => this.fetchOpenOrders(), 30000);
+        this.pollingInterval = setInterval(async () => this.fetchOpenOrders(), 10000);
     }
     /**
      * Approves an online order.

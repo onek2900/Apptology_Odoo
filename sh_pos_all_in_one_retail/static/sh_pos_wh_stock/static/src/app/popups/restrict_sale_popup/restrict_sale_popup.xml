@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_wh_stock.ProductStockRestrict">
+        <div class="popup sh-popup-stock">
+            <div class="popup popup-text popup-lg product-configurator-popup sh_wh_stock_restriction_popup">
+                <header class="title drag-handle modal-header">
+                    <span>
+                        <t t-esc="props.title" />
+                    </span>
+                </header>
+                <div class="main-body touch-scrollable scrollable-y body sh_wh_stock_body py-4">
+                    <div class="sh_wh_stock_pro_img">
+                        <img class="w-25" t-att-src="imageUrl" t-att-alt="props.product.display_name" />
+                    </div>
+                    <div class="sh_wh_stock_pro_name">
+                        <span>
+                            <t t-esc="props.product.display_name" />
+                        </span>
+                    </div>
+                    <div class="sh_wh_stock_pro_value">
+                        <span>
+                            <t t-esc="props.body" />
+                        </span>
+                    </div>
+
+                </div>
+                <footer class="footer modal-footer">
+
+                    <div type="button" class="btn btn-primary btn-lg" t-on-click="confirm">
+                        Order
+                    </div>
+                    <div type="button" class="btn btn-secondary btn-lg" t-on-click="cancel">
+                        Cancel
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </t>
+</templates>

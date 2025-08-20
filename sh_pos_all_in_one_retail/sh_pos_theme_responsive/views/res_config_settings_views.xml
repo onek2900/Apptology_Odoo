@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_pos_theme_config" model="ir.ui.view">
+        <field name="name">sh.pos.theme.setting.inherit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <block id="pos_interface_section" position="after">
+                <block title="POS Theme">
+                    <setting>
+                        <field name="pos_sh_pos_night_mode" />
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

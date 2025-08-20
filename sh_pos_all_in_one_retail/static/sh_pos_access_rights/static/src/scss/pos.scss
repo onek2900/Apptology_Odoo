@@ -1,0 +1,14 @@
+.sh_disabled {
+    background: #E0E2E6 !important;
+    border-color: #FFFFFF !important;
+    color: #80848F !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.sh_enable{
+    color: #212529 !important;
+    background-color: #e9ecef !important;
+    border-color: #e9ecef !important;
+    cursor: unset;
+    pointer-events: unset;
+}

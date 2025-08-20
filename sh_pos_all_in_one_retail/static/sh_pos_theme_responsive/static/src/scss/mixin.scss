@@ -1,0 +1,53 @@
+// Button Secondary //
+@mixin pos_secondary_button{
+    font-size: 16px;font-weight: 600;background: #FFFFFF;border: 2px solid $sh_pos_primary_color;color: $sh_pos_primary_color;text-transform: capitalize;transition: all .5s;
+}
+@mixin pos_secondary_button_hover{
+    background: $sh_pos_primary_color;color: #FFFFFF;
+}
+
+// Button Primary //
+@mixin pos_primary_button{
+    font-size: 16px;font-weight: 600;background: $sh_pos_primary_color;border: 2px solid $sh_pos_primary_color;color: #FFFFFF;text-transform: capitalize;transition: all .5s;
+}
+
+// Button Light //
+@mixin pos_light_button{
+    font-size: 16px;font-weight: 600;background: lighten($sh_pos_primary_color, 47%);border: 2px solid lighten($sh_pos_primary_color, 20%);color: $sh_pos_primary_color;text-transform: capitalize;transition: all .5s;
+}
+@mixin pos_light_button_hover{
+    background: #FFFFFF;
+}
+
+// Button Outline Secondary //
+@mixin pos_outline_secondary_button{
+    font-size: 16px;font-weight: 600;background: transparent;border: 2px solid #dee2e6;color: #495057;text-transform: capitalize;transition: all .5s;
+}
+@mixin pos_outline_secondary_button_hover{
+    color: $sh_pos_primary_color;
+}
+
+// Form Element/Input //
+@mixin pos_form_element{
+    font-size: 15px;padding: 0.5125rem 0.625rem;transition: all .5s;border: 1px solid #ced4da;box-shadow: none;
+}
+@mixin pos_form_element_hover{
+    border: 1px solid $sh_pos_primary_color;border-color: $sh_pos_primary_color;
+}
+
+// Action/Control Button //
+@mixin action_button{
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1), 0 3px 5px 0 rgba(0, 0, 0, 0.1);background: #ffffff;color: #414141;font-size: 16px;width: 100%;padding: 10px;line-height: 20px;display: flex;align-items: center;justify-content: center;border: 0px;transition: all .5s;
+}
+
+// List view //
+@mixin list_view_thead_th{
+    background: $sh_pos_primary_color !important;color: #FFFFFF !important;font-weight: 600;text-transform: uppercase;font-size: 15px;
+}
+
+// <---  bg type image for style 4 --->
+
+@mixin bg_type_image_style_4{
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(7.5px) !important;
+}

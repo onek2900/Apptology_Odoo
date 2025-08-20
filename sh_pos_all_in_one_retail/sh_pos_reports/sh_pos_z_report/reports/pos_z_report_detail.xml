@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pos_z_report_detail" model="ir.actions.report">
+        <field name="name">Z Report</field>
+        <field name="model">pos.session</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.report_zdetails</field>
+    </record>
+
+    <record id="sh_pos_z_report_backend" model="ir.actions.report">
+        <field name="name">POS Z Report</field>
+        <field name="model">report.sh_pos_all_in_one_retail.sh_pos_z_report_doc</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sh_pos_all_in_one_retail.sh_pos_z_report_doc</field>
+        <field name="print_report_name">'POS Z Report'</field>
+    </record>
+
+</odoo>

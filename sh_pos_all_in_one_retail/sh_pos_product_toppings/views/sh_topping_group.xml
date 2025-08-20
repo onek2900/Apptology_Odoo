@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- toppings group form view -->
+    <record id="sh_pos_product_toppings_group_form_view" model="ir.ui.view">
+        <field name="name">sh.pos.product.topping.group.form</field>
+        <field name="model">sh.topping.group</field>
+        <field name="arch" type="xml">
+            <form string="Topping Group">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"></field>
+                            <field name="toppinds_ids" widget="many2many_tags"></field>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- toppings group tree view -->
+    <record model="ir.ui.view" id="sh_pos_product_toppingd_group_tree_view">
+        <field name="name">sh.product.toppings.group.tree.view</field>
+        <field name="model">sh.topping.group</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+            </tree>
+        </field>
+    </record>
+
+    <!-- server action for toppings group -->
+    <record id="sh_pos_toppings_group_action" model="ir.actions.act_window">
+        <field name="name">Topping Groups</field>
+        <field name="res_model">sh.topping.group</field>
+        <field name="view_mode">tree,form</field>
+        <!-- <field name="search_view_id" ref="view_account_type_search"/> -->
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define a new Topping Group
+            </p>
+        </field>
+    </record>
+
+    <!-- Top menu item -->
+    <menuitem name="Topping Groups" id="toppings_groups_menu" action="sh_pos_toppings_group_action" parent="point_of_sale.pos_config_menu_catalog" />
+
+</odoo>

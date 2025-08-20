@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_pos_section_report_wizard_view_form" model="ir.ui.view">
+        <field name="name">sh.pos.section.report.wizard.view.form</field>
+        <field name="model">sh.pos.section.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name = "date" />
+                            <field name = "pos_config_ids" widget="many2many_tags" />
+                            <field name = "company_id" invisible = "1"/>
+                        </group>
+
+                        <group>
+                            <field name="state" />
+                            <field name="user_ids" widget="many2many_tags" />
+                            <field name = "total_weeks"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button  string="Print Report" name = "print_section_report" type="object"  class="oe_highlight"  />
+                    <button string="Cancel" class="btn btn-secondary" special="cancel" icon="fa-remove" />
+                </footer>
+            </form>
+        </field> 
+    </record>
+
+    <record id="action_sh_pos_section_report_wizard_view" model="ir.actions.act_window">
+        <field name="name">Sector wise Weekly Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.pos.section.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_sh_pos_section_report_wizard_view"
+                name="Sector wise Weekly Report"
+                parent="point_of_sale.menu_point_rep"
+                action="action_sh_pos_section_report_wizard_view"
+                sequence="102"
+                />
+</odoo>

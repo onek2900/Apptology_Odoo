@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('after-footer')]" position="after">
+            <t t-if="env.services.pos.config.sh_display_signature_detail">
+                <t t-if="env.services.pos.config.sh_display_signature and env.services.pos.get_order().get_signature() and env.services.pos.get_order().get_signature()[1]">
+                    <div class="sh_receipt_sign">
+                        <img style="width: 235px;" t-att-src="'data:image/gif;base64,'+env.services.pos.get_order().signature" />
+                    </div>
+                </t>
+                <t t-if="env.services.pos.config.sh_display_name and env.services.pos.get_order().signature_name">
+                    <div class="sh_receipt_sign_name">Name : <t t-esc="env.services.pos.get_order().signature_name || env.services.pos.get_order().signature_name" /></div>
+                </t>
+                <t t-if="env.services.pos.config.sh_display_date and env.services.pos.get_order().get_signature_date()">
+                    <div class="sh_receipt_sign_date">Date : <t t-esc="env.services.pos.get_order().get_signature_date()" /></div>
+                </t>
+            </t>
+        </xpath>
+    </t>
+   
+</templates>

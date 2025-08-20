@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_auto_validate_pos_session" model="ir.cron">
+        <field name="name">Auto Validate POS session</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="True" />
+        <field name="model_id" ref="model_pos_session" />
+        <field name="code">model._auto_validate_pos_session()</field>
+        <field name="state">code</field>
+    </record>
+</odoo>

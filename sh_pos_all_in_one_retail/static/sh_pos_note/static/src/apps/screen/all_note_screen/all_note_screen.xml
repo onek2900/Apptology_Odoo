@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_note.AllNoteScreen">
+        <div class="templateproductlist-screen screen">
+            <div class="screen-content">
+                <section class="top-content d-flex align-items-center p-2 border-bottom text-center">
+                    <div class="button new-note btn btn-lg btn-primary" role="img" aria-label="Add a Note" t-on-click="onClickGlobalNoteScreen" title="Add a Note">
+                        <t t-if="!env.isMobile">
+                            Create
+                        </t>
+                        <t t-else="">
+                            <i class="fa fa-plus"></i>
+                        </t>
+                    </div>
+                    <div class="button back btn btn-lg btn-secondary mx-2" t-on-click="back">
+                        <t t-if="!env.isMobile">Discard</t>
+                        <t t-else="">
+                            <i class="fa fa-undo"></i>
+                        </t>
+                    </div>
+                </section>
+                <section class="full-content">
+                    <div class="window">
+                        <section class="subwindow">
+                            <div class="subwindow-container">
+                                <div class="subwindow-container-fix touch-scrollable scrollable-y order-list-scroll sh_pre_define_note_list">
+                                    <table class="sh_pre_define_note_table">
+                                        <thead>
+                                            <tr>
+                                                <th width="70%">Note</th>
+                                                <th></th>
+                                                <th></th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="template-list-contents">
+                                            <t t-foreach="props.pre_defined_note_data" t-as="pre_define_note" t-key='pre_define_note.id'>
+                                                <TemplatePreDefineNoteLine pre_define_note="pre_define_note" />
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </t>
+
+
+</templates>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ReturnOrderPopup" t-inherit="sh_pos_all_in_one_retail.ReturnOrderPopup" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('modal-body')]" position="after">
+                <t t-esc="console.log('xxxxxxxx', props.from_barcode)"></t>
+            <div class="sh_radio_btn_div" t-if="props.from_barcode">
+                <div class="sh_return_exchange_radio">
+                    <t t-if="env.services.pos.config.sh_allow_return and env.services.pos.config.sh_allow_exchange">
+                        <input type="radio" id="return_radio" value="Return"  name="return_exchange_radio" checked="true" />
+                        <label class="sh_custom_radio sh_control_radio" for="return_radio">Return
+                            <div class="sh_custom_radio_indicator"></div>
+                        </label>
+                        <input type="radio" id="exchange_radio" value="Exchange" name="return_exchange_radio"  />
+                        <label class="sh_custom_radio sh_control_radio"  for="exchange_radio">Exchange
+                            <div class="sh_custom_radio_indicator"></div>
+                        </label>
+                    </t>
+                    <t t-if="env.services.pos.config.sh_allow_return and !env.services.pos.config.sh_allow_exchange">
+
+                        <input type="radio" id="return_radio"  value="Return" name="return_exchange_radio" checked="checked" />
+                        <label class="sh_custom_radio sh_control_radio" for="return_radio">Return
+                            <div class="sh_custom_radio_indicator"></div>
+                        </label>
+                    </t>
+                    <t t-if="!env.services.pos.config.sh_allow_return and env.services.pos.config.sh_allow_exchange">
+
+                        <input type="radio" id="exchange_radio" value="Exchange" name="return_exchange_radio" checked="checked" />
+                        <label class="sh_custom_radio sh_control_radio"  for="exchange_radio">Exchange
+                            <div class="sh_custom_radio_indicator"></div>
+                        </label>
+                    </t>
+
+                    <br />
+                </div>
+               
+            </div>
+        </xpath>
+       
+    </t>
+</templates>

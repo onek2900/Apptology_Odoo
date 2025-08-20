@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_all_in_one_retail.RemoveAllItemButton">
+        <button class="control-button btn btn-light rounded-0 fw-bolder sh_ctrl_btn" t-on-click="() => this.onClick()">
+            <span class="me-2 sh_ctrl_btn_icon">
+                <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 111 122.01"><path d="M114,39H100V55a7.46,7.46,0,0,1-5,6c-10,2-11-7-11-7,0-6,5-7,5-7v6c0,4,3,3,3,3,2,0,2-3,2-3V30C90,8,69,9,69,9,45,10,45,33,45,33l-.5,5.5L25,39,14,131H125ZM40,55c-1-7,5-8,5-8v7a2,2,0,0,0,2,2,3.7,3.7,0,0,0,3-2V31c2-17,21-17,21-17,17,1,19,18,19,18v7H55V54c-1,5-4,6-4,6C42,63,40,55,40,55Zm53,54-4,4L70,97,50,114l-4-5L64,93,46,76l5-5L70,88,89,71l5,5L75,92Z" transform="translate(-14 -8.99)"></path></svg>
+            </span>
+            <span class="sh_ctrl_btn_text">Remove All Item</span>
+        </button>
+    </t>
+</templates>

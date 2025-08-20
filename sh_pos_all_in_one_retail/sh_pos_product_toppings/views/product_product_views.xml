@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  
+    <record id="sh_pos_product_product_inherit_form_view" model="ir.ui.view">
+        <field name="name">sh.toppings.product.product.form.viwe.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"></field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='default_code']" position="after">
+                <field name="sh_is_global_topping"></field>
+            </xpath>
+            <xpath expr="//sheet//notebook" position="inside">
+                <page id="Toppings" string="Toppings">
+                    <group>
+                        <group>
+                            <field name="sh_topping_group_ids" widget="many2many_tags" ></field>
+                            <field name="sh_topping_ids" widget="many2many_tags"></field>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

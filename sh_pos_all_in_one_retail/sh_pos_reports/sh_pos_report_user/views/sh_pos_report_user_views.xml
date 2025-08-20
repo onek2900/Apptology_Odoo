@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sh_pos_report_user_view_tree" model="ir.ui.view">
+        <field name="name">sh.pos.report.user.view.tree</field>
+        <field name="model">sh.pos.report.user</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="name" />
+                <field name="order_date" optional="show" />
+                <field name="sh_partner_id" />
+                <field name="sh_user_id" />
+                <field name="total" sum="Total Amount" optional="show" />
+                <field name="currency_id" column_invisible='True' />
+                <field name="amount_invoiced" sum="Total Amount Invoiced" optional="show" />
+                <field name="amount_due" sum="Total Amount Due" optional="show" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_pos_report_user_view_search" model="ir.ui.view">
+        <field name="name">sh.pos.report.user.view.search</field>
+        <field name="model">sh.pos.report.user</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="order_date" />
+                <field name="sh_partner_id" />
+                <field name="sh_user_id" />
+                <field name="total" />
+                <field name="amount_invoiced" />
+                <field name="amount_due" />
+                <filter string="Order Date" name="group_order_date" domain="[]"
+                    context="{'group_by': 'order_date'}" />
+                <filter string="User" name="group_user" domain="[]"
+                    context="{'group_by': 'sh_user_id'}" />
+                <filter string="Customer" name="group_customer" domain="[]"
+                    context="{'group_by': 'sh_partner_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_pos_report_user_action" model="ir.actions.act_window">
+        <field name="name">POS Report By POS User</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.pos.report.user</field>
+        <field name="context">{'search_default_group_user': 1}</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

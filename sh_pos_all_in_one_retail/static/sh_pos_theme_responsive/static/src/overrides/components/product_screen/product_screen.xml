@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('price')]" position="after">
+            <t t-if="env.services.pos.config.sh_remove_all_item">
+                <!-- <t t-if="!line.sh_line.hasOwnProperty('refunded_qty')"> -->
+                    <span class="sh_price_with_icon">
+                        <span class="span_delete_icon" t-on-click="() => this.env.services.pos.get_order().shRemoveOrderline(line.sh_model_line)">
+                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                        </span>
+                    </span>
+                <!-- </t> -->
+            </t>
+        </xpath>
+    </t>
+    <t t-name="sh_pos_theme_responsive.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
+        <!-- <xpath expr="//Orderline" position="inside">
+            <t t-set-slot="sh-product-price">
+                <span class="sh_price_with_icon">
+                    <span class="span_delete_icon" t-on-click="() => currentOrder.removeOrderline(line)">
+                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                    </span>
+                </span>
+            </t>
+        </xpath> -->
+
+        <xpath expr="//div[hasclass('control-buttons')]" position="attributes">
+            <attribute name="class">control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_hide_control_buttons</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('product-screen')]" position="after">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'bottom'">
+                <div id="owl-demo" class="owl-carousel owl-theme sh_action_button">
+                    <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
+                        <div class="item">
+                            <t t-component="cb.component" t-key="cb.name"/>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[hasclass('leftpane')]" position="before">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'left_side'">
+                <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300"
+                    t-if="!ui.isSmall">
+                    <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
+                        <t t-component="cb.component" t-key="cb.name"/>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[hasclass('rightpane')]" position="after">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'right_side'">
+                <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300"
+                    t-if="!ui.isSmall">
+                    <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
+                        <t t-component="cb.component" t-key="cb.name"/>
+                    </t>
+                </div>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[hasclass('subpads')]" position="after">
+            <t t-if="ui.isSmall">
+                    <div class="product-reminder d-flex justify-content-center align-items-center py-1 text-bg-warning bg-opacity-50 fw-bolder" t-if="currentOrder.get_selected_orderline() and currentOrder.hasJustAddedProduct" t-key="animationKey" >
+                        <span><t t-esc="selectedOrderlineQuantity"/> <t t-esc="selectedOrderlineDisplayName"/> <t t-esc="selectedOrderlineTotal"/></span>
+                    </div>
+                <div class="switchpane d-flex ">
+                    <button class="btn-switchpane pay-button btn w-50 rounded-0 fw-bolder" t-attf-class="{{ primaryPayButton ? 'btn-primary' : 'btn-secondary' }}" t-on-click="() => currentOrder.pay()">
+                        <span class="fs-1 d-block">Pay</span>
+                        <span><t t-esc="total" /></span>
+                    </button>
+                    <button class="btn-switchpane btn w-50 btn-secondary rounded-0 fw-bolder review-button" t-on-click="switchPane">
+                        <span class="fs-1 d-block">Review</span>
+                        <span><t t-esc="items"/> items</span>
+                    </button>
+                </div>
+            </t>
+        </xpath>
+
+        <xpath expr="//div[hasclass('subpads')]" position="before">
+            <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_mobile_control_button"
+                t-if="ui.isSmall">
+                <div class="sh_mobile_view_control_button_sub_div">
+                    <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
+                        <t t-component="cb.component" t-key="cb.name"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+
+    </t>
+</templates>

@@ -1,0 +1,55 @@
+.label_item {
+    padding: 5px;
+    vertical-align: middle;
+    display: flex;
+    align-items: center;
+    box-shadow: none !important;
+    .line_label {
+        margin: 12px 0px 12px 0px !important;
+        width: 100%;
+        text-align: center;
+        border-bottom: 1px solid #919191;
+        line-height: 0.1em;
+        margin: 0px;
+        b {
+            background: #fff;
+            padding: 0 10px;
+            font-size: 13px;
+        }
+    }
+    .remove_label{
+        transition: all .5s;cursor: pointer;
+        &:hover{
+            color: $sh_pos_primary_color;
+        }
+    }
+}
+
+@include media-breakpoint-down(md) {
+    .sh_lbl_modal_dialog {
+        padding: 10px 0px;
+
+        .label_popup {
+            max-width: 320px !important;
+        }
+    }
+}
+
+.sh_lbl_modal_dialog {
+    .label_popup {
+        #label_value {
+            font-size: 15px;
+            resize: none;
+            width: 70%;
+        }
+    }
+}
+.sh_hide_line {
+    div,
+    span {
+        display: none;
+    }
+}
+.sh_hide_orderline {
+    display: none;
+}

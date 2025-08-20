@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_pos_res_config_settings_enable_product_template" model="ir.ui.view">
+        <field name="name">res.config.settings.enable.template</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <block id="pos_interface_section" position="after">
+                <block title="Enable Product Template">
+                    <setting string="Enable Product Template">
+                        <field name="pos_sh_enable_product_template" />
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

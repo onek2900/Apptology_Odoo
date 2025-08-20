@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//li[hasclass('sh_orderline_icon')]" position="inside">
+            <t t-if="!is_done">
+                 <span class="sh_discount_li_orderline"  t-if="env.services.pos.get_order() and !env.services.pos.get_order().finalized">
+                    <span class="span_pricelist_icon" t-on-click="() => this.env.services.pos.get_order().on_click_pricelist_icon(line.sh_model_line)" style="display:none;">
+                        <i class="discount_icon fa fa-usd" />
+                    </span>
+                </span>
+            </t>
+        </xpath>
+    </t>
+</templates>

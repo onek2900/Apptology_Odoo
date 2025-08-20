@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_theme_responsive.TicketScreen" t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('ticket-screen')]" position="after">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'bottom'">
+                <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300">
+                    <div id="owl-demo" class="owl-carousel owl-theme sh_action_button sh_hide_action_button">
+                        <div class="item">
+                            <InvoiceButton
+                                onInvoiceOrder.bind="onInvoiceOrder"
+                                order="_selectedSyncedOrder" />
+                        </div>
+                        <div class="item">
+                            <ReprintReceiptButton order="_selectedSyncedOrder" />
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[hasclass('control-buttons')]" position="attributes">
+            <attribute name="class">control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_hide_control_buttons</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('rightpane')]" position="before">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'left_side'">
+                <t t-if="isOrderSynced and !ui.isSmall">
+                    <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 56">
+                        <InvoiceButton
+                            onInvoiceOrder.bind="onInvoiceOrder"
+                            order="_selectedSyncedOrder" />
+                        <ReprintReceiptButton order="_selectedSyncedOrder" />
+                    </div>
+                </t>
+            </t>
+        </xpath>
+        <xpath expr="//div[hasclass('leftpane')]" position="after">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'right_side'">
+                <t t-if="isOrderSynced and !ui.isSmall">
+                    <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 56">
+                        <InvoiceButton
+                            onInvoiceOrder.bind="onInvoiceOrder"
+                            order="_selectedSyncedOrder" />
+                        <ReprintReceiptButton order="_selectedSyncedOrder" />
+                    </div>
+                </t>
+            </t>
+        </xpath>
+        <!-- <xpath expr="//div[hasclass('leftpane')]" position="after">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'right_side'">
+                <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300"
+                    t-if="!ui.isSmall">
+                    <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
+                        <t t-component="cb.component" t-key="cb.name"/>
+                    </t>
+                </div>
+            </t>
+        </xpath> -->
+    </t>
+</templates>

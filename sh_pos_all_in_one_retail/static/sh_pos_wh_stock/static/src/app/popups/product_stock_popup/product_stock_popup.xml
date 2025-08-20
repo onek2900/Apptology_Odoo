@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_wh_stock.ProductQtyPopup">
+        <div class="popup sh-popup-stock">
+            <div class="popup popup-text popup-lg product-configurator-popup sh_wh_stock_popup">
+                <header class="title drag-handle modal-header">
+                    <h4 class="modal-title"><t t-esc="props.title" /></h4>
+                </header>
+                <div class="main-body touch-scrollable scrollable-y body">
+                    <div id="sh_table_id">
+                        <table class="table table-borded wh_qty mb-0" t-if="this.env.services.pos.config.sh_display_by == 'warehouse'">
+                            <thead>
+                                <tr>
+                                    <th class="head_td name_th">Warehouse</th>
+                                    <th class="head_td qty_th">Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="getStock">
+                                    <tr t-foreach="getStock" t-as="stock" t-key="stock.name">
+                                        <td class="data_td">
+                                            <t t-esc="stock.name"></t>
+                                        </td>
+                                        <td class="data_td">
+                                            <t t-esc="stock.quantity"></t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="footer_td">Total</th>
+                                    <th class="footer_td"><t t-esc="props.TotalQty" /></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <table class="table table-borded wh_qty mb-0" t-else="">
+                            <thead>
+                                <tr>
+                                    <th class="head_td name_th">Locations</th>
+                                    <th class="head_td qty_th">Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-if="getStock">
+                                    <tr t-foreach="getStock" t-as="stock" t-key="stock.id">
+                                        <td class="data_td">
+                                            <t t-esc="stock.location_name"></t>
+                                        </td>
+                                        <td class="data_td">
+                                            <t t-esc="stock.quantity"></t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class="footer_td">Total</th>
+                                    <th class="footer_td"> <t t-esc="props.TotalQty" /></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <footer class="footer modal-footer">
+                    <div type="button" class="btn btn-secondary" t-on-click="cancel">
+                        Cancel
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </t>
+</templates>

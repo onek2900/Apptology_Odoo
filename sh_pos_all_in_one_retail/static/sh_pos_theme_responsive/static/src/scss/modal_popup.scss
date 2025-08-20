@@ -1,0 +1,76 @@
+.pos{
+    .popups{
+        .modal-dialog{
+            .popup{
+                // @include media-breakpoint-down(md){
+                //     max-width: 330px !important;
+                // }
+                .modal-footer{
+                    justify-content: center;
+                }
+                .modal-header{
+                    font-size: 1.05rem;font-weight: bold;
+                    .modal-title{
+                        font-weight: bold;margin: 0px auto;
+                    }
+                }
+                .modal-body{
+                    .form-check{
+                        .form-check-input:checked{
+                            background-color: $sh_pos_primary_color;border-color: $sh_pos_primary_color;
+                        }
+                    }
+                }
+                header.title{
+                    border-bottom: 1px solid #dee2e6;padding: 16px;font-weight: bold;
+                }
+                main{
+                    padding: 20px;
+                }
+                &.popup-number{
+                    .numpad{
+                        gap: 2px;
+                        &.row-cols-3{
+                            .col{
+                                width: 32.333333%;
+                                @if $sh_pos_button_style =="style_1" {
+                                    border-radius: 5px !important;
+                                }
+                                @if $sh_pos_button_style =="style_2" {
+                                    border-radius: 10px 0px 10px 0px !important;
+                                }
+                                @if $sh_pos_button_style =="style_3" {
+                                    border-radius: 0px !important;
+                                }
+                            }
+                        }
+                        &.row-cols-4{
+                            .col{
+                                width: 24.333333%;
+                                @if $sh_pos_button_style =="style_1" {
+                                    border-radius: 5px !important;
+                                }
+                                @if $sh_pos_button_style =="style_2" {
+                                    border-radius: 10px 0px 10px 0px !important;
+                                }
+                                @if $sh_pos_button_style =="style_3" {
+                                    border-radius: 0px !important;
+                                }
+                            }
+                        }
+                    }
+                }
+                &.popup-selection{
+                    .selection{
+                        .selection-item{
+                            margin-bottom: 5px;
+                            &.selected.active{
+                                color: $sh_pos_primary_color !important;font-weight: bold;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

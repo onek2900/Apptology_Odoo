@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sh_pos_product_profit_view_tree" model="ir.ui.view">
+        <field name="name">sh.pos.product.profit.view.tree</field>
+        <field name="model">sh.pos.product.profit</field>
+        <field name="arch" type="xml">
+            <tree edit="0">
+                <field name="name" />
+                <field name="order_date" optional="show" />
+                <field name="product_id" />
+                <field name="sh_partner_id" />
+                <field name="quantity" />
+                <field name="cost" sum="Total Cost" optional="show" />
+                <field name="sale_price" sum="Total Sale Price" optional="show" />
+                <field name="currency_id" column_invisible='True' />
+                <field name="profit" sum="Total Profit" optional="show" />
+                <field name="margin" sum="Total Margin" optional="show" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sh_pos_product_profit_view_search" model="ir.ui.view">
+        <field name="name">sh.pos.product.profit.view.search</field>
+        <field name="model">sh.pos.product.profit</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="order_date" />
+                <field name="product_id" />
+                <field name="sh_partner_id" />
+                <field name="quantity" />
+                <field name="cost" />
+                <field name="sale_price" />
+                <field name="profit" />
+                <field name="margin" />
+                <filter string="Order Date" name="group_order_date" domain="[]"
+                    context="{'group_by': 'order_date'}" />
+                <filter string="Customer" name="group_customer" domain="[]"
+                    context="{'group_by': 'sh_partner_id'}" />
+                <filter string="Product" name="group_product" domain="[]"
+                    context="{'group_by': 'product_id'}" />
+            </search>
+        </field>
+    </record>
+
+    <record id="sh_pos_sale_product_profit_action" model="ir.actions.act_window">
+        <field name="name">Point Of Sale Product Profit</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">sh.pos.product.profit</field>
+        <field name="context">{'search_default_group_customer': 1}</field>
+        <field name="view_mode">tree</field>
+    </record>
+
+</odoo>

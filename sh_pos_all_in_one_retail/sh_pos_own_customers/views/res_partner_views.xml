@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="sh_pos_own_customer_allocate_sale_person" model="ir.ui.view">
+        <field name='name'>sh.pos.own.customer.allocate.sale.person</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"></field>
+        <field name="arch" type="xml">
+            <field name='barcode' position='after'>
+                <field name='sh_own_customer' widget='many2many_tags'></field>
+            </field>
+        </field>
+    </record>
+</odoo>

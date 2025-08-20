@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_order_discount.OrderTypePopup">
+        <div class="popup sh_order_type_popup">
+            <div class="modal-header drag-handle">
+                <h4 class="modal-title">Order Type</h4>
+            </div>
+            <main class="modal-body sh_discount_main_table">
+                <t t-if="pos and pos.order_types">
+                    <div class="sh_order_type_div">
+                        <table class="sh_order_type_table table">
+                            <tbody>
+                                <t t-foreach="pos.order_types" t-as="type" t-key="type.id">
+                                    <t t-if="(pos.get_order().current_order_type &amp;&amp; type.id == pos.get_order().current_order_type.id) or (pos.current_orderline_type &amp;&amp; type.id == pos.current_orderline_type.id) ">
+                                        <tr class="sh_order_type_tr" t-att-class="{'selectedorder': isSelected , '':!isSelected }" t-att-data-id="type.id" t-on-click="() => this.onClickOrderType(type.id)">
+                                            <td width="33%">
+                                                <img t-att-src="getImg(type.id)" alt="" class="sh_product_type_img"/>
+                                            </td>
+                                            <td>
+                                                <span>
+                                                    <t t-esc="type.name"/>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr t-if='displayWarning'>
+                                            <td colspan="3">
+                                                <div class="sh-alert sh-alert-warning">On click of Apply button we will redirect to Customer screen for selection of delivery address as you have selected Home Delivery Option !</div>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-else="">
+                                        <tr class="sh_order_type_tr" t-att-data-id="type.id" t-on-click="() => this.onClickOrderType(type.id)">
+                                            <td width="33%">
+                                                <img t-att-src="getImg(type.id)" alt="" class=""/>
+                                            </td>
+                                            <td>
+                                                <span>
+                                                    <t t-esc="type.name"/>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </main>
+            <footer class="footer sh_discount_footer modal-footer">
+                <button class="button confirm btn btn-lg btn-primary" t-on-click="applyChanges">
+                    Apply
+                </button>
+                <button class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    Cancel
+                </button>
+            </footer>
+        </div>
+    </t>
+</templates>

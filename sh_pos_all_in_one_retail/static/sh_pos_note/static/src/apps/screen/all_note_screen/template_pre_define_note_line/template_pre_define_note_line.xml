@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_note.TemplatePreDefineNoteLine">
+        <tr t-att-data-id="props.pre_define_note.id">
+            <td class="name_td">
+                <span class="input_name"><input type="text" t-att-value="props.pre_define_note.name" class="input_tag_name" /></span>
+                <span class="note_name"><t t-esc="props.pre_define_note.name" /></span>
+            </td>
+            <td class="remove_icon" t-att-data-id="props.pre_define_note.id" t-on-click="delete_note">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </td>
+            <td class="edit_note"  t-att-data-id="props.pre_define_note.id" t-on-click="edit_note">
+                <i class="fa fa-pencil edit_icon" aria-hidden="true"></i>
+            </td>
+
+            <td class="save_icon"  t-att-data-id="props.pre_define_note.id" t-on-click="save_note">
+                <i class="fa fa-floppy-o"></i>
+            </td>
+        </tr>
+    </t>
+</templates>

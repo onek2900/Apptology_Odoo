@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="PartnerDetailsEdit" t-inherit="point_of_sale.PartnerDetailsEdit" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('partner-details-box')]" position="after">
+            <t t-if='env.services.pos.config.enable_history_on_client_detail and env.services.pos.config.sh_enable_order_list'>
+                <div class='sh_pos_order_detail_table'>
+                    <table style='width:100% !important' class='Order-Tbl'>
+                        <thead class='orderheader' style='font-size:15px'>
+                            <tr>
+                                <th>Name</th>
+                                <th>Order Ref.</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>State</th>
+                            </tr>
+                        </thead>
+                        <tbody class="order-details-contents">
+                            <t t-if="props.customerOrders and props.customerOrders.length">
+                                <t t-foreach="props.customerOrders" t-as="order" t-key="order[0].id">
+                                    <t t-set="each_order" t-value="order[0]"></t>
+                                    <tr t-att-data-id="each_order.id" t-att-class="'sh_client_order_line sh_client_order_line'+each_order.id " t-on-click="() => this.shSelectOrder(each_order)">
+                                        <td style="font-size: 15px;">
+                                            <t t-esc="each_order.name" />
+                                        </td>
+                                        <td style="font-size: 15px;">
+                                            <t t-esc="each_order.pos_reference" />
+                                        </td>
+                                        <td style="font-size: 15px;">
+                                            <t t-if="each_order.partner_name">
+                                                <t t-esc="each_order.partner_name" />
+                                            </t>
+                                        </td>
+                                        <td style="font-size: 15px;">
+                                            <t t-esc="each_order.date_order" />
+                                        </td>
+                                        <td style="font-size: 15px;">
+                                            <t t-esc="each_order.amount_total.toFixed(2)" />
+                                        </td>
+                                        <td style="font-size: 15px;">
+                                            <t t-if="each_order.state == 'draft'">
+                                                New
+                                            </t>
+                                            <t t-if="each_order.state == 'paid'">
+                                                Paid
+                                            </t>
+                                            <t t-if="each_order.state == 'cancel'">
+                                                Cancelled
+                                            </t>
+                                            <t t-if="each_order.state == 'done'">
+                                                Posted
+                                            </t>
+                                        </td>
+                                    </tr>
+                                    <t t-set="lines" t-value="order[1]"></t>
+                                    <t t-if='lines'>
+                                        <tr t-att-class="'sh_hide_order_lines sh_hide_order_lines'+order[0].id ">
+                                            <td colspan="6" >
+                                                <table class="table inner_order_line_table">
+                                                    <thead>
+                                                        <th>Product</th>
+                                                        <th>Quantity</th>
+                                                        <th>Discount%</th>
+                                                        <th>Unit Price</th>
+                                                        <th>Sub Total</th>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr t-foreach="lines" t-as="each_order_line" t-key="each_order_line.id" t-att-data-id="each_order_line.id" >
+                                                            <td style="font-size: 15px;">
+                                                                -
+                                                                <t t-esc="env.services.pos.db.get_product_by_id(each_order_line.product_id).name" />
+                                                            </td>
+                                                            <td style="font-size: 15px;">
+                                                                <t t-esc="each_order_line.qty" />
+                                                            </td>
+                                                            <td style="font-size: 15px;">
+                                                                <t t-esc="each_order_line.discount" />
+                                                            </td>
+                                                            <td style="font-size: 15px;">
+                                                                <t t-esc="each_order_line.price_unit" />
+                                                            </td>
+                                                            <td style="font-size: 15px;">
+                                                                <t t-esc="each_order_line.price_subtotal_incl" />
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>

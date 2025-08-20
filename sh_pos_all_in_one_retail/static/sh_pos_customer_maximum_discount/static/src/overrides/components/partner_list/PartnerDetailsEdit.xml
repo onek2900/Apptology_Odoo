@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="PartnerDetailsEdit" t-inherit="point_of_sale.PartnerDetailsEdit" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('partner-details-box')]" position="inside">
+            <t t-if="env.services.pos.config.sh_pos_enable_customer_max_discount">
+                <div class="partner-detail col">                                                           
+                    <label class="form-label label sh_custom_control_checkbox" for="vat">Set Maximum Customer Discount</label>                           
+                    <input class="detail styled-checkbox  form-check-input sh_set_customer_disc ms-3  " type="checkbox" name="sh_enable_max_dic" id='Set_customer_discount' t-att-checked="props.partner.sh_enable_max_dic || false" t-model="changes.sh_enable_max_dic" checked="checked" />
+                    <div class="sh_custom_control_indicator mt-2" t-if="show_discount_div">  
+                        <label class="form-label label sh_custom_control_checkbox" for="vat">Discount</label>                           
+                        <input class="detail styled-checkbox sh_set_customer_disc form-control form-select" type="number" name="sh_max_dic" id='Sh_customer_discount' t-model="changes.sh_maximum_discount"/>
+                    </div>
+                    <div class="sh_custom_control_indicator mt-3" t-if="show_discount_div">
+                        <label class="form-label label sh_custom_control_checkbox" for="vat">Discount Type</label>                           
+                        <select name="types" id="discount_type" t-model="changes.sh_discount_type" class="form-select">
+                            <option value="percentage">Percentage(%)</option>
+                            <option value="fixed">Fixed</option>
+                          </select>
+                    </div>
+                </div> 
+            </t>
+        </xpath>
+    </t>
+</templates>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_cash_in_out.PaymentsButton">
+        <button class="control-button btn btn-light rounded-0 fw-bolder sh_ctrl_btn" t-on-click="() => this.onClick()">
+            <span class="fa fa-money me-2 sh_ctrl_btn_icon" aria-hidden="true"></span>
+            <span class="sh_ctrl_btn_text">Payments</span>
+        </button>
+    </t>
+</templates>

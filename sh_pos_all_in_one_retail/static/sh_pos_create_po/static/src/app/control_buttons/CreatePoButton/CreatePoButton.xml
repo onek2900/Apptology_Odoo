@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_create_po.CreatePoButton">
+        <button class="control-button btn btn-light rounded-0 fw-bolder sh_ctrl_btn" t-on-click="() => this.onClick()">
+            <span class="me-2 sh_ctrl_btn_icon fa fa-credit-card"></span>
+            <span class="sh_ctrl_btn_text">Create Purchase Order</span>
+        </button>
+    </t>
+</templates>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_z_detail" model="ir.actions.act_window">
+        <field name="name">Z Report</field>
+        <field name="res_model">pos.z.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_z_report_detail" name="Z Report" action="action_report_z_detail" parent="point_of_sale.menu_point_rep" sequence="5"/>
+</odoo>

@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sh_keyboard_key,access_sh_keyboard_key,model_sh_keyboard_key,base.group_user,1,1,1,1
+access_sh_pos_keyboard_shortcut,access_sh_pos_keyboard_shortcut,model_sh_pos_keyboard_shortcut,base.group_user,1,1,1,1
+access_sh_keyboard_key_temp,access_sh_keyboard_key_temp,model_sh_keyboard_key_temp,base.group_user,1,1,1,1
+access_product_suggestion_pos_user,product.suggestion.pos.user,model_product_suggestion,point_of_sale.group_pos_user,1,0,0,0
+access_product_suggestion_pos_manager,product.suggestion.pos.manager,model_product_suggestion,point_of_sale.group_pos_manager,1,1,1,1
+access_sh_cash_in_out,access_sh_cash_in_out,model_sh_cash_in_out,base.group_user,1,1,1,1
+sh_pos_all_in_one_retail.access_sh_topping_group,access_sh_topping_group,sh_pos_all_in_one_retail.model_sh_topping_group,base.group_user,1,1,1,1
+sh_pos_all_in_one_retail.access_sh_mass_update_topings,access_sh_mass_update_topings,sh_pos_all_in_one_retail.model_sh_mass_update_topings,base.group_user,1,1,1,1
+access_logged_track_data,access_logged_user_data,model_log_track,base.group_user,1,1,1,1
+sh_pos_all_in_one_retail.access_sh_uom_line,access_sh_uom_line,sh_pos_all_in_one_retail.model_sh_uom_line,base.group_user,1,1,1,1

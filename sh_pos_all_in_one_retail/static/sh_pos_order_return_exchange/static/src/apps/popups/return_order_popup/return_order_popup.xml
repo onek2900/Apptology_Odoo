@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="ReturnOrderPopup">
+        <div class="popup popup-textarea sh-return-order-popup">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <t t-esc="props.title" />
+                </h4>
+            </div>
+
+            <div class="modal-body">
+                <table class="sh_return_order_table">
+                    <thead class="sh_return_order_thead">
+                        <th class="sh_return_order_product_th">Product</th>
+                        <th class="sh_return_order_qty_th">Quanatity</th>
+                        <th class="sh_return_order_rqty_th">Return Qty</th>
+                    </thead>
+                    <tbody class="sh_return_order_tbody">
+                        <t t-foreach="props.lines" t-as="line" t-key="line.id">
+                            <t t-if="pos.db.get_product_by_id(line.product_id) and ((props.sh_return_order and !pos.db.get_product_by_id(line.product_id).sh_product_non_returnable) or (props.exchange_order and !pos.db.get_product_by_id(line.product_id).sh_product_non_exchangeable))" >
+                                <tr t-if="line.qty - line.sh_return_qty">
+                                    <td class="sh_return_order_product_td">
+                                        <t t-if="pos.db.get_product_by_id(line.product_id)">
+                                            <t t-esc="pos.db.get_product_by_id(line.product_id).display_name" />
+                                        </t>
+                                    </td>
+                                    <td class="sh_return_order_qty_td">
+                                        
+                                        <t t-if="line.sh_return_qty"> 
+                                            <t t-esc="line.qty - line.sh_return_qty"></t>
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="line.qty" />
+                                        </t>
+                                    </td>
+                                    <td class="sh_return_order_rqty_td">
+                                        <input name="sh-qty" class="sh-qty form-control" t-att-max-qty="line.qty - line.sh_return_qty" id="sh_input_qty" t-on-keyup="sh_input_qty" t-att-line-id="line.id"  type="number" />
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+                <t t-if="props.exchange_order">
+                    <div class="sh_same_product_checkbox">
+                        <div class="sh_custom_checkbox_exchange">
+                            <label class="sh_custom sh_cust_checkbox" for="exchange_checkbox">Exchange With Same Products
+                                <input type="checkbox" checked="checked" id="exchange_checkbox" />
+                                <div class="sh_cust_checkbox_indicator"></div>
+                            </label>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <footer class="footer footer-flex modal-footer">
+
+                <t t-if="props.sh_return_order">
+                    <div class="button confirm highlight btn btn-lg btn-primary complete_return" t-on-click="sh_total_retun">
+                        Complete Return
+                    </div>
+                    <div class="button confirm highlight btn btn-lg btn-primary return" t-on-click="sh_retun">
+                        Return
+                    </div>
+                </t>
+                <t t-if="props.exchange_order">
+                    <div class="button confirm highlight btn btn-lg btn-primary complete_exchange" t-on-click="sh_total_exchange">
+                        Complete Exchange
+                    </div>
+                    <div class="button confirm highlight btn btn-lg btn-primary exchange" t-on-click="sh_exchange">
+                        Exchange
+                    </div>
+                </t>
+                <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    Cancel
+                </div>
+            </footer>
+        </div>
+    </t>
+
+</templates>

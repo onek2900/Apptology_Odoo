@@ -1,0 +1,6 @@
+.sh_hide_order_lines{
+    display: none;
+    &.sh_highlight{
+        display: table-row !important;
+    }
+}

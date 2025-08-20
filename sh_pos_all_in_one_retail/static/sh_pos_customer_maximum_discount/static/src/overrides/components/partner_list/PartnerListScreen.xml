@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="PartnerListScreen" t-inherit="point_of_sale.PartnerListScreen" t-inherit-mode="extension">
+        <xpath expr="//th[hasclass('partner-line-email')]" position="after">
+            <t t-if="env.services.pos.config.sh_pos_enable_customer_max_discount">
+                <th>Discount</th>
+                <th>Discount Type</th>
+            </t>
+        </xpath>
+    </t>
+</templates>

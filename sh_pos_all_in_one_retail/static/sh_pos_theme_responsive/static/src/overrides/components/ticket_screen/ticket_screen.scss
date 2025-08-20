@@ -1,0 +1,118 @@
+.pos{
+    .pos-content{
+        .ticket-screen{
+            @if $sh_pos_body_background_type =="bg_color" {
+                background: $sh_pos_body_background_color !important;
+            }
+            @if $sh_pos_body_background_type =="bg_img" {
+                background-color:  transparent !important;
+            } 
+            .rightpane{
+                .controls{
+                    .pos-search-bar{
+                        .search{
+                            .filter.dropdown-toggle{
+                                border-top-left-radius: 0px !important;border-bottom-left-radius: 0px !important;
+                                .options.dropdown-menu{
+                                    .dropdown-item{
+                                        transition: all .5s;padding: 8px 20px;
+                                        &:hover, &:active, &:focus{
+                                            color: $sh_pos_primary_color;background: $sh_pos_secondary_color;cursor: pointer;
+                                        }
+                                    }
+                                }
+                            }
+                            .input-group{
+                                .form-control{
+                                    border-top-right-radius: 0px !important;border-bottom-right-radius: 0px !important;
+                                }
+                                .fields{
+                                    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.10) !important;
+                                    ul{
+                                        li{
+                                            padding-top: 8px !important;padding-bottom: 8px !important;
+                                            .term.text-primary{
+                                                color: $sh_pos_primary_color !important;
+                                            }
+                                            &:hover,.highlight{
+                                                background: $sh_pos_secondary_color !important;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                // List View //
+                .orders{
+                    .header-row{
+                        @include list_view_thead_th;
+                        @if $sh_header_sticky =="True" {
+                            position: sticky;top: 0;
+                        }
+                    }
+                    .order-row{
+                        transition: all .5s;
+                        .col{
+                            padding: 0.75rem 0.75rem !important;
+                        }
+                        &:nth-of-type(even){
+                            background: $sh_even_row_color !important;
+                        }
+                        &:nth-of-type(odd){
+                            background: $sh_odd_row_color !important;
+                        }
+                        &.highlight{
+                            .col{
+                                font-weight: bold;
+                                color: $sh_pos_primary_color;
+                            }
+                            .delete-button{
+                                @include media-breakpoint-down(md){
+                                    color: #FFFFFF;
+                                    @if $sh_pos_button_style =="style_1" {
+                                        border-radius: 5px !important;
+                                    }
+                                    @if $sh_pos_button_style =="style_2" {
+                                        border-radius: 10px 0px 10px 0px !important;
+                                    }
+                                    @if $sh_pos_button_style =="style_3" {
+                                        border-radius: 0px !important;
+                                    }
+                                }
+                            }
+                        }
+                        &:hover{
+                            color: #495057;
+                        }
+                        @if $sh_list_view_border =="without_border" {
+                            border-bottom: 0px;
+                        }
+                        @if $sh_list_view_border =="bordered" {
+                            border-bottom: 1px solid $sh_pos_secondary_color;
+                        }
+                        @if $sh_list_row_hover =="True" {
+                            &:hover{
+                                background: $sh_hover_background_color !important;
+                            }
+                        }
+                    }
+                }
+            }
+            .leftpane{
+                @if $sh_pos_body_background_type =="bg_color" {
+                    background: $sh_pos_body_background_color !important;
+                }
+                @if $sh_pos_body_background_type =="bg_img" {
+                    &,.bg-100.d-flex.flex-column.align-items-center.justify-content-center{
+                        background-color:  transparent !important;
+                    }
+                }
+            }
+        }
+        &.sh_hide_controll_button_screen,.sh_hide_action_button.sh_action_button{
+            display: none !important;
+        }
+    }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sh_inherit_view_pos_pos_form" model="ir.ui.view">
+        <field name="name">sh.inherit.view.pos.pos.form</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form" />
+        <field name="arch" type="xml">
+            <button name="action_pos_order_invoice" position="after">
+                <button name="sh_receipt_send_by_email" string="Send by Email" type="object" groups="sh_pos_all_in_one_retail.group_sh_pos_receipt" />
+            </button>
+        </field>
+    </record>
+
+</odoo>

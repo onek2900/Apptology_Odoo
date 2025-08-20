@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_pos_report_user_wizard_form_view" model="ir.ui.view">
+        <field name="name">sh.pos.report.user.wizard.wizard.form.view</field>
+        <field name="model">sh.pos.report.user.wizard</field>
+        <field name="arch" type="xml">
+            <form string="POS Report By POS User">
+                <group>
+                    <group>
+                        <field name="date_start" />
+                        <field name="date_end" />
+                    </group>
+                    <group>
+                        <field name="state" />
+                        <field name="company_ids" widget="many2many_tags" options="{'no_create': True}" groups="base.group_multi_company" />
+                        <field name="config_ids" widget="many2many_tags" options="{'no_create': True}" groups="base.group_multi_company"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="user_ids" colspan="2" nolabel="1" groups="point_of_sale.group_pos_manager">
+                        <tree>
+                            <field name="name" />
+                        </tree>
+                    </field>
+                </group>
+
+                <footer>
+                    <button name="display_report" string="View" class="oe_highlight" type="object" />
+                    <button name="print_report" string="Print" class="oe_highlight" type="object" />
+                    <button name="print_xls_report" string="Print In XLS" class="oe_highlight" type="object" />
+                    <button string="Cancel" class="btn-default" special="cancel" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="sh_pos_report_user_wizard_action" model="ir.actions.act_window">
+        <field name="name">POS Report By POS User</field>
+        <field name="res_model">sh.pos.report.user.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="sh_pos_report_user_menuitem" action="sh_pos_report_user_wizard_action"
+        parent="point_of_sale.menu_point_rep" sequence="106"
+        groups="sh_pos_all_in_one_retail.sh_group_sh_pos_report_user" />
+</odoo>

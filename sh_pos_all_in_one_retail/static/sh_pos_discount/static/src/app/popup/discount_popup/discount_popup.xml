@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_discount.DiscountPopupWidget">
+        <div class="popup popup-textarea sh_discount_popup">
+            <div class="modal-header">
+                <h4 class="modal-title">Discounts</h4>
+            </div>
+
+            <div class="modal-body sh_discount_main_table">
+                <table width="100%" class="discount_table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Code</th>
+                            <th>Value (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="env.services.pos.all_discount" t-as="each_discount" t-key="each_discount.id">
+                            <t t-if="env.services.pos.get_order().get_selected_orderline() and env.services.pos.get_order().get_selected_orderline().get_line_discount_code() and env.services.pos.get_order().get_selected_orderline().get_line_discount_code().length > 0">
+                                <t t-if="env.services.pos.get_order().get_selected_orderline().get_line_discount_code().includes(each_discount.sh_discount_code)">
+                                    <tr t-att-data-id="each_discount.id" t-att-data-code="each_discount.sh_discount_code" t-att-data-value="each_discount.sh_discount_value" class="discount_row highlight" t-on-click="onClickDiscountRow">
+                                        <td>
+                                            <t t-esc="each_discount.sh_discount_name" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="each_discount.sh_discount_code" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="each_discount.sh_discount_value" />
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-else="">
+                                    <tr t-att-data-id="each_discount.id" t-att-data-code="each_discount.sh_discount_code" t-att-data-value="each_discount.sh_discount_value" class="discount_row" t-on-click="onClickDiscountRow">
+                                        <td>
+                                            <t t-esc="each_discount.sh_discount_name" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="each_discount.sh_discount_code" />
+                                        </td>
+                                        <td>
+                                            <t t-esc="each_discount.sh_discount_value" />
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                            <t t-else="">
+                                <tr t-att-data-id="each_discount.id" t-att-data-code="each_discount.sh_discount_code" t-att-data-value="each_discount.sh_discount_value" class="discount_row" t-on-click="onClickDiscountRow">
+                                    <td>
+                                        <t t-esc="each_discount.sh_discount_name" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="each_discount.sh_discount_code" />
+                                    </td>
+                                    <td>
+                                        <t t-esc="each_discount.sh_discount_value" />
+                                    </td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+            </div>
+
+            <footer class="footer footer-flex modal-footer">
+                <div class="button confirm highlight btn btn-lg btn-primary" t-on-click="confirm">
+                   Confirm
+                </div>
+                <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    Cancel
+                </div>
+            </footer>
+        </div>
+    </t>
+
+</templates>

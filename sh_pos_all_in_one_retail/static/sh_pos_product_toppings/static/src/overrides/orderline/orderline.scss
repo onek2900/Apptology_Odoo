@@ -1,0 +1,50 @@
+.pos {
+    .pos-content {
+        .product-screen {
+            .leftpane {
+                .order-container {
+                    .orderline {
+                        .topping-item {
+                            .sh_topping_line_content {
+                                display: flex;
+                                align-items: baseline;
+                                justify-content: space-between;
+                                font-size: 84%;
+                                font-weight: 500;
+                                margin-left: 10px;
+
+                                .sh_toppings_description {
+                                    display: flex;
+                                    align-items: baseline;
+
+                                    .sh_product_name {
+                                        font-size: 14px;
+                                        white-space: nowrap;
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                        width: 130px;
+                                    }
+                                }
+                            }
+                        }
+                        &.sh-is-topping{
+                            display: none;
+                        }
+                    }
+                }
+            }
+        }
+
+        .receipt-screen {
+            .pos-receipt-container {
+                .pos-receipt {
+                    .sh_toppings_description {
+                        .fa-trash {
+                            display: none !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    
+    <record id="sh_pos_template_product_form_view" model="ir.ui.view">
+        <field name="name">Product Template Form</field>
+        <field name="model">pos.product.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="active" />
+                    </group>
+                    <notebook>
+                        <page string="Template">
+                            <field name="pos_product_template_ids">
+                                <tree editable="bottom">
+                                    <field name="name" />
+                                    <field name="description" />
+                                    <field name="unit_price" />
+                                    <field name="ordered_qty" />
+                                    <field name="product_uom" />
+                                    <field name="discount" />
+                                    <field name="price_subtotal" />
+                                </tree>
+                            </field>
+
+                            <group class="oe_subtotal_footer oe_right" colspan="2" name="pos_sale_total">
+                                <field name="amount_total" />
+                                <field name="discount_total" />
+                                <field name="final_total" />
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sh_pos_template_product_tree_view" model="ir.ui.view">
+        <field name="name">Product Template Tree</field>
+        <field name="model">pos.product.template</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" optional="show" />
+                <field name="pos_product_template_ids" optional="hide" />
+                <field name="discount_total" optional="hide" />
+                <field name="amount_total" optional="hide" />
+                <field name="final_total" decoration-bf="1" sum='Total' />
+                <field name="active" invisible="1" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_pos_template_product" model="ir.actions.act_window">
+        <field name="name">Custom Product Template</field>
+        <field name="res_model">pos.product.template</field>
+        <field name="view_mode">tree,form</field>
+        <field name="type">ir.actions.act_window</field>
+    </record>
+
+    <menuitem id="menu_pos_custom_template_product" name="Custom Product Template" action="action_pos_template_product" parent="point_of_sale.pos_config_menu_catalog" />
+</odoo>

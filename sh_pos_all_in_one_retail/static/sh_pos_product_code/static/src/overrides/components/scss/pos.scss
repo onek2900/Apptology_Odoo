@@ -1,0 +1,22 @@
+.pos{
+    .leftpane {
+        .orderline {
+            .product-name{
+                .sh_default_code_li{
+                    .sh_default_code{
+                        font-weight: bold;color: #919191;font-size: 12px;
+                    }
+                }
+            }
+        }
+    }
+    .rightpane{
+        .product-list{
+            .product-content{
+                .sh_ref_code{
+                    font-weight: bold;color: #919191;font-size: 12px;margin-top: 3px;white-space: nowrap;overflow: hidden;width: 100%;text-overflow: ellipsis;
+                }
+            }
+        }
+    }
+}

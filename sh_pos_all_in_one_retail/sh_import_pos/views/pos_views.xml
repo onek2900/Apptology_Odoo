@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- POS ORDER SIDE MENU -->
+    <menuitem name="Import POS Order" action="sh_import_pos_action" id="sh_import_pos_menu" parent="point_of_sale.menu_point_of_sale" groups="sh_pos_all_in_one_retail.sh_import_pos_group" sequence="2" />
+</odoo>

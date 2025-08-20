@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('buttons')]" position="before">
+            <div class="buttons sh_buttons_group d-flex">
+                
+                <t t-if="this.env.services.pos.config.sh_enable_a3_receipt">
+                    <div class="button print btn btn-lg btn-secondary" t-on-click="printA3Receipt">
+                        <i class="fa fa-print"></i> Print A3 Receipt
+                    </div>
+                </t>
+
+                <t t-if="this.env.services.pos.config.sh_enable_a4_receipt">
+                    <div class="button print btn btn-lg btn-secondary" t-on-click="printA4Receipt">
+                        <i class="fa fa-print"></i> Print A4 Receipt
+                    </div>
+                </t>
+
+                <t t-if="this.env.services.pos.config.sh_enable_a5_receipt">
+                    <div class="button print btn btn-lg btn-secondary" t-on-click="printA5Receipt">
+                        <i class="fa fa-print"></i> Print A5 Receipt
+                    </div>
+                </t>
+               
+            </div>
+        </xpath>
+
+        <xpath expr="//OrderReceipt" position="attributes">
+            <attribute name="receipt_type">receipt_type</attribute>
+        </xpath>
+    </t>
+    <t t-name="ReceiptScreen" t-inherit="point_of_sale.ReprintReceiptScreen" t-inherit-mode="extension" owl="1">
+        <xpath expr="//OrderReceipt" position="attributes">
+            <attribute name="receipt_type">receipt_type</attribute>
+        </xpath>
+    </t>
+</templates>

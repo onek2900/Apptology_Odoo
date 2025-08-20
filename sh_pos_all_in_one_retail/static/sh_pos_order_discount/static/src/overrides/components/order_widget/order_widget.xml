@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="OrderWidget" t-inherit="point_of_sale.OrderWidget" t-inherit-mode="extension">
+        <!-- <xpath expr="//div[hasclass('order-summary')]" position="attributes">
+            <attribute name="t-attf-class">{{ ((env.services.pos and env.services.pos.config and env.services.pos.config.sh_allow_order_line_discount) || (env.services.pos and env.services.pos.config and env.services.pos.config.sh_allow_global_discount))  ? 'sh_summary' : '' }}</attribute>
+        </xpath> -->
+        <xpath expr="//div[hasclass('order-summary')]" position="replace">
+            <div t-if="props.total or props.tax" class="order-summary sh_order_summary w-100 py-2 px-3 bg-100 text-end fw-bolder fs-2">
+                <div class="sh_right_order_summary sh_order_summary_line">
+                    <div class="entry total">
+                        <div class="">
+                            <span style="font-size: 15px;color: #212121;">Total:</span>
+                            <span t-esc="props.total" class="total" style="font-size: 15px;color: #212121;"/>
+                        </div>
+                        <div class="sh_text_vol_main">
+                            <span t-if="props.tax" class="sh_text_total_volume_lbl">
+                                Taxes:
+                            </span>
+                            <span t-esc="props.tax" class="sh_text_total_volume_val"/>
+                        </div>                        
+                        <t t-if='pos.config.enable_volume'>
+                            <div class="sh_cart_vol_main" t-if="pos and pos.get_order()">
+                                <span class="sh_cart_total_volume_lbl">Total Volume :</span>
+                                <t t-set="total_volume" t-value="pos.get_order().get_total_volume()" />
+                                <span class="sh_cart_total_volume_val"><t t-esc='total_volume' /></span>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+                <div class="sh_left_order_summary sh_order_summary_left_line">
+                    <div class="line global_discount_line text-start">
+                        <t t-if="env.services.pos.config.sh_allow_order_line_discount or env.services.pos.config.sh_allow_global_discount">
+                            <span class="total badge">Global Discount : </span>
+                            <span class="sh_value discount_amount">
+                                <t t-if="pos_discount">
+                                    <t t-esc="pos_discount()" />
+                                </t>
+                                <t t-else="">
+                                     0
+                                </t>
+                            </span>
+                        </t>
+                    </div>
+                    <div class="sh_items_counter sh_items_counter_orderline fs-6 text-muted" t-if="this.env.services.pos.get_order()" >
+                        <t t-if="this.env.services.pos.config.enable_pos_item_counter">
+                            <b class="sh_total_item_tag">
+                                Total Items: <span class="value"><t t-esc="get_total_item"/></span>
+                            </b>
+                        </t>
+                        <t t-if="this.env.services.pos.config.enable_pos_item_counter and  this.env.services.pos.config.enable_pos_qty_counter">
+                            <b class="sh_vertical_line"> | </b>
+                        </t>
+                        <t t-if=" this.env.services.pos.config.enable_pos_qty_counter">
+                            <b class="sh_total_qty_tag">
+                                Total Qty: <span class="value"><t t-esc="this.env.services.pos.get_order().get_total_qty()"/></span>
+                            </b>
+                        </t>
+                    </div>
+                    <t t-if='pos.config.enable_weight'>
+                        <div class="sh_cart_weight_main" t-if="pos and pos.get_order()">
+                            <span class="sh_cart_total_weight_lbl">Total Weight :</span>
+                            <t t-set="total_weight" t-value="pos.get_order().get_total_weight()" />
+                            <span class="sh_cart_total_weight_val"><t t-esc='total_weight' /></span>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+sh_pos_all_in_one_retail.access_sh_pos_product_profit_wizard,access_sh_pos_product_profit_wizard,sh_pos_all_in_one_retail.model_sh_pos_product_profit_wizard,base.group_user,1,1,1,1
+sh_pos_all_in_one_retail.access_sh_pos_product_profit,access_sh_pos_product_profit,sh_pos_all_in_one_retail.model_sh_pos_product_profit,base.group_user,1,1,1,1

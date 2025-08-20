@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="sh_pos_theme_responsive.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <xpath expr="//img[hasclass('pos-logo')]" position="attributes">
+            <attribute name="t-if">!env.services.pos.pos_theme_settings_data[0].theme_logo</attribute>
+        </xpath>
+        <xpath expr="//img[hasclass('pos-logo')]" position="before">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].theme_logo">
+                <div t-if="!ui.isSmall" class="pos-branding d-flex justify-content-start flex-grow-1 h-100 p-0 my-0 text-start">
+                    <img class="pos-logo h-75 ms-3 me-auto align-self-center" t-on-click="() => debug.toggleWidget()" t-att-src="'/web/image?model=sh.pos.theme.settings&amp;field=theme_logo&amp;id='+ env.services.pos.pos_theme_settings_data[0].id" alt="Logo" />
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//CashierName" position="before">
+            <t t-if="env.services.pos.config and env.services.pos.config.sh_pos_night_mode">
+                <span class="icon-moon fa" t-attf-class="{{state.sh_pos_night_mode ? 'fa-sun-o' : 'fa-moon-o'}}" id="moon_button" t-on-click="change_mode"></span>
+            </t>
+            <div class="oe_icon oe_green" t-if="ui.isSmall">
+                <div t-att-badge="cart_item_count" class="oe_icon oe_green with-badge sh_cart_badge">
+                    <i class="fa fa-shopping-cart cart_screen_show" aria-hidden="true"></i>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

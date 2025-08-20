@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_receipt">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-foreach="docs" t-as="o">
+                    <div class="page">
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <h4>
+                                    <strong>Order Ref:</strong>
+                                    <span t-field="o.name" />
+                                </h4>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <strong>Customer:</strong>
+                                <span t-if="o.partner_id" t-field="o.partner_id" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <strong>Date: </strong>
+                                <span t-field="o.date_order" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <strong>Sales Person: </strong>
+                                <span t-if="o.user_id" t-field="o.user_id" />
+                            </div>
+                        </div>
+                        <br />
+                        <br />
+                        <table class="table table-condensed">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th class="text-right">Quantity</th>
+                                    <th class="text-right">Unit Price</th>
+                                    <th class="text-right">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.lines" t-as="line">
+                                    <td>
+                                        <span t-if="line.product_id" t-field="line.product_id" />
+                                        <div style="font-size: 12px; font-style: italic; color: #808080;" t-if="line.discount != 0.0">
+                                            With a
+                                            <span t-esc="line.discount" />
+                                            % discount
+                                        </div>
+                                    </td>
+
+                                    <td class="text-right">
+                                        <span t-field="line.qty" />
+                                        <span t-if="line.product_id and line.product_id.uom_id" t-field="line.product_id.uom_id" />
+                                    </td>
+
+                                    <td class="text-right">
+                                        <span t-field="line.price_unit" />
+                                    </td>
+
+                                    <td class="text-right">
+                                        <span t-field="line.price_subtotal_incl" t-options='{"widget": "monetary", "display_currency": o.config_id.currency_id}' />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="clearfix">
+                            <div class="row" name="total">
+                                <div class="col-6" />
+                                <div class="col-6 pull-right">
+                                    <table class="table table-condensed" style="min-width: 200px; max-width: 350px;">
+                                        <tr class="border-black" style="border-bottom: 1px solid #dddddd;">
+                                            <td>
+                                                <strong>Subtotal</strong>
+                                            </td>
+                                            <td class="text-right">
+                                                <t t-set="sh_amount_untaxed" t-value="o.amount_total - o.amount_tax" />
+                                                <span t-esc="sh_amount_untaxed" t-options='{"widget": "monetary", "display_currency": o.config_id.currency_id}' />
+                                            </td>
+                                        </tr>
+                                        <tr class="border-black" style="border-bottom: 1px solid #dddddd;">
+                                            <td>
+                                                <strong>Taxes</strong>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="o.amount_tax" t-options='{"widget": "monetary", "display_currency": o.config_id.currency_id}' />
+                                            </td>
+                                        </tr>
+                                        <tr class="border-black">
+                                            <td>
+                                                <strong>Total</strong>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="o.amount_total" t-options='{"widget": "monetary", "display_currency": o.config_id.currency_id}' />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

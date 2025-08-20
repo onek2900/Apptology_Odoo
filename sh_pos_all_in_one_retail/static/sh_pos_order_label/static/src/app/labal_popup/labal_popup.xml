@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="sh_pos_order_label.LabelPopup">
+        <div class="popup popup-textarea label_popup" >
+            <div class="modal-header">
+                <h4 class="modal-title">Add Label</h4>
+            </div>
+            <div class="modal-body">
+                <textarea rows='3' class="form-control" name='label_value' t-model="state.value" id='label_value' placeholder='Add Label' value='' autofocus="autofocus"></textarea>
+            </div>
+            <footer class="footer footer-flex modal-footer">
+                <div class="button confirm highlight btn btn-lg btn-primary" t-on-click="confirm">
+                    Confirm
+                </div>
+                <div class="button cancel btn btn-lg btn-secondary" t-on-click="cancel">
+                    Cancel
+                </div>
+            </footer>
+        </div>
+    </t>
+</templates>
