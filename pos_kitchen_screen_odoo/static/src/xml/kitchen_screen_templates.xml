@@ -39,11 +39,15 @@
                                                     <li class="fw-bold" style="font-size:2rem;">
                                                         <t t-if="order.is_online_order">
                                                             <t
-                                                                    t-esc="'O' + ' #' + order.tracking_number"/>
+                                                                    t-esc="'O' + ' #' + order.channel_order_reference"/>
                                                         </t>
                                                         <t t-else="">
-                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
+                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.channel_order_reference"/>
                                                         </t>
+                                                    </li>
+                                                    <li class="fw-bold" >
+                                                        <t t-esc="order.partner_id"/>
+
                                                     </li>
                                                     <li class="fw-bold">
                                                         <t t-esc="order.pos_reference"/>
