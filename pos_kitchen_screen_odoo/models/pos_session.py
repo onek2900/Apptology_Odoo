@@ -34,7 +34,7 @@ class PosSession(models.Model):
                                   'fields': ['product_id', 'qty',
                                              'order_status', 'order_ref',
                                              'customer_id',
-                                             'price_subtotal', 'total_cost','is_modifier']}}
+                                             'price_subtotal', 'total_cost']}}
 
     def _get_pos_ui_pos_order_line(self, params):
         """Get pos ui pos order line"""
