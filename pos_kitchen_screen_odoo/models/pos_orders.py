@@ -236,6 +236,19 @@ class PosOrderLine(models.Model):
     customer_id = fields.Many2one('res.partner', string="Customer",
                                   related='order_id.partner_id',
                                   help='Id of the customer')
+    is_modifier = fields.Boolean(
+        string="Is Modifier",
+        compute='_compute_is_modifier',
+        store=True  # Don't store in database, compute on the fly
+    )
+
+    @api.depends('product_id')
+    def _compute_is_modifier(self):
+        for line in self:
+            print(line.product_id.is_modifier)
+            line.is_modifier = line.product_id.is_modifier if line.product_id else False
+            print(line.is_modifier,"kht")
+
 
     def get_product_details(self, ids):
         """To get the product details"""

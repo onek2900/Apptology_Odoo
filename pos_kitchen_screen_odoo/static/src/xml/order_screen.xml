@@ -6,13 +6,30 @@
                 <h2 class="section-title">In preparation</h2>
                 <div class="order-grid">
                     <div class="order-item in-progress" t-foreach="orderInProgress" t-as="order" t-key="order_index">
-                        <div class="tracking-number">
-                            <t t-if="order.is_online_order">
-                                O-<t t-esc="order.tracking_number"/>
-                            </t>
-                            <t t-else="">
-                                <t t-esc="order.tracking_number"/>
-                            </t>
+                        <div class="container">
+                            <div class="tracking-container">
+                                <div class="tracking-row">
+                                    <div class="tracking-type">
+                                        <t t-if="order.order_type == '1'">Pick Up</t>
+                                        <t t-elif="order.order_type == '2'">Delivery</t>
+                                    </div>
+
+                                    <div class="tracking-details">
+                                        <div class="tracking-number-display">
+                                            <t t-if="order.is_online_order">
+                                                O-
+                                                <t t-esc="order.channel_order_reference"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="order.tracking_number"/>
+                                            </t>
+                                        </div>
+                                        <div class="partner-name">
+                                            <t t-esc="order.partner_id[1]"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 <!--                        <span t-esc="order.note ? order.note : ''"/>-->
                     </div>
@@ -23,14 +40,32 @@
                 <h2 class="section-title">Ready to collect</h2>
                 <div class="order-grid">
                     <div class="order-item ready" t-foreach="orderCompleted" t-as="order" t-key="order_index">
-                       <div class="tracking-number">
-                            <t t-if="order.is_online_order">
-                                O-<t t-esc="order.tracking_number"/>
-                            </t>
-                            <t t-else="">
-                                <t t-esc="order.tracking_number"/>
-                            </t>
+                         <div class="container">
+                            <div class="tracking-container">
+                                <div class="tracking-row">
+                                    <div class="tracking-type">
+                                        <t t-if="order.order_type == '1'">Pick Up</t>
+                                        <t t-elif="order.order_type == '2'">Delivery</t>
+                                    </div>
+
+                                    <div class="tracking-details">
+                                        <div class="tracking-number-display">
+                                            <t t-if="order.is_online_order">
+                                                O-
+                                                <t t-esc="order.channel_order_reference"/>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-esc="order.tracking_number"/>
+                                            </t>
+                                        </div>
+                                        <div class="partner-name">
+                                            <t t-esc="order.partner_id[1]"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </div>

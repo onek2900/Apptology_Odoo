@@ -1,12 +1,16 @@
+// ======================
 // Variables
+// ======================
 $background-dark: #1e2837;
 $in-progress-bg: rgba(108, 117, 136, 0.95);
-$ready-bg: #2ecc71; // Fresh green color
+$ready-bg: #2ecc71; // Fresh green
 $text-color: #ffffff;
 $spacing-unit: 1rem;
 $border-radius: 24px;
 
-// Main Styles
+// ======================
+// Main Layout
+// ======================
 .kitchen-display {
   min-height: 100vh;
   display: flex;
@@ -43,23 +47,17 @@ $border-radius: 24px;
   }
 }
 
+// ======================
+// Order Item
+// ======================
 .order-item {
-  aspect-ratio: 2/1;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  padding: 10px;
   border-radius: $border-radius;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-
-  &.ready {
-    background: $ready-bg;
-    box-shadow: 0 4px 15px rgba($ready-bg, 0.3);
-
-    &:hover {
-      background: lighten($ready-bg, 5%);
-      transform: translateY(-2px);
-    }
-  }
+  box-sizing: border-box;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-out forwards;
 
   &.in-progress {
     background: $in-progress-bg;
@@ -69,30 +67,99 @@ $border-radius: 24px;
       transform: translateY(-2px);
     }
   }
+
+  &.ready {
+    background: $ready-bg;
+
+    &:hover {
+      background: lighten($ready-bg, 5%);
+      transform: translateY(-2px);
+    }
+  }
 }
 
-.tracking-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: $text-color;
+// ======================
+// Tracking Layout (row-based)
+// ======================
+.tracking-container {
+  width: 100%;
+}
+
+.tracking-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.tracking-type {
+  flex: 0 0 auto;
+  min-width: 60px;
   text-align: center;
-  line-height: 1;
-  user-select: none; // Prevents text selection
-
-  @media (min-width: 768px) {
-    font-size: 4rem;
-  }
-
-  @media (min-width: 1440px) {
-    font-size: 5rem;
-  }
-
-  @media (min-width: 2560px) {
-    font-size: 8rem;
-  }
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-right: 2px solid #fff;
+  padding-right: 0.5rem;
+  line-height: 1.2;
 }
 
-// Custom Scrollbar
+.tracking-details {
+  flex: 1;
+  padding-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+// ======================
+// Typography
+// ======================
+.tracking-number-display {
+  font-size: 0.9rem;
+  font-weight: 400;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.partner-name {
+  font-size: 0.9rem;
+  font-weight: 400;
+  opacity: 0.85;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+// ======================
+// Responsive Adjustments
+// ======================
+@media (min-width: 768px) {
+  .tracking-number-display { font-size: 1.2rem; }
+  .partner-name { font-size: 1 rem; }
+}
+
+@media (min-width: 1440px) {
+  .tracking-number-display { font-size: 1rem; }
+}
+
+@media (min-width: 2560px) {
+  .tracking-number-display { font-size: 1rem; }
+  .partner-name { font-size: 1.8rem; }
+}
+
+@media (min-width: 3840px) {
+  .tracking-number-display { font-size: 4rem; }
+  .partner-name { font-size: 2rem; }
+}
+
+// ======================
+// Scrollbar Styling
+// ======================
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -110,29 +177,11 @@ $border-radius: 24px;
   }
 }
 
-// Smooth fade-in animation
+// ======================
+// Animation
+// ======================
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.order-item {
-  animation: fadeIn 0.3s ease-out forwards;
-}
-
-// 4K Display Support
-@media (min-width: 3840px) {
-  .order-grid {
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  }
-
-  .tracking-number {
-    font-size: 9rem;
-  }
-}
