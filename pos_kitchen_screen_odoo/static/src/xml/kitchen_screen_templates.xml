@@ -56,11 +56,6 @@
                                                         <t t-elif="order.order_type == '2'">
                                                             <div>Delivery</div>
                                                         </t>
-                                                        <t t-elif="order.order_type == '3'">
-                                                            <div>Dine In</div>
-                                                        </t>
-                                                        <t-else="">--</t>   
-                                                    </li>
                                                     <li class="fw-bold">
                                                         <t t-esc="order.pos_reference"/>
                                                     </li>
@@ -169,10 +164,6 @@
                                                         <t t-elif="order.order_type == '2'">
                                                             <div>Delivery</div>
                                                         </t>
-                                                        <t t-elif="order.order_type == '3'">
-                                                            <div>Dine In</div>
-                                                        </t>
-                                                        <t-else="">--</t>
                                                     </li>
                                                 </ul>
                                             </div>

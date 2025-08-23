@@ -13,7 +13,8 @@ class PosOrder(models.Model):
 
     order_type = fields.Selection([
         ('1', 'Pick up'),
-        ('2', 'Delivery')
+        ('2', 'Delivery'),
+        ('3', 'Eat-In'),       
     ], string='Order Type', help='Type of deliverect order')
     order_payment_type = fields.Selection([
         ('0', 'Credit Card'),

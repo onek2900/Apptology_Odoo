@@ -24,9 +24,9 @@
                                         t-on-click="() => this.onClickOrder(order)"
                                         t-on-dblclick="() => this.onDoubleClick(order)">
                                         <td class="col">
-  <t t-esc="formatTime(order.date_order).time"/><br/>
-  (<t t-esc="formatTime(order.date_order).date"/>)
-</td>
+                                        <t t-esc="formatTime(order.date_order).time"/><br/>
+                                        (<t t-esc="formatTime(order.date_order).date"/>)
+                                        </td>
                                         <td class="col">
                                             <t t-esc="order.channel_order_reference"/>
                                         </td>
@@ -47,6 +47,7 @@
                                         <td class="col end">
                                             <t t-if="order.order_type == '1'"><div>Pick Up</div></t>
                                             <t t-elif="order.order_type == '2'"><div>Delivery</div></t>
+                                            <t t-elif="order.order_type == '3'"><div>Eat In</div></t>
                                         </td>
                                         <td class="col end">
                                             <t t-if="order.state=='paid'"><div>Paid</div></t>

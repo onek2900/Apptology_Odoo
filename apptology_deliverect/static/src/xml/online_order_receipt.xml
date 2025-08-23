@@ -58,6 +58,7 @@
                     <div class="detail-value">
                         <t t-if="props.data.orderData.order_type=='1'">Pickup</t>
                         <t t-elif="props.data.orderData.order_type=='2'">Delivery</t>
+                        <t t-elif="props.data.orderData.order_type=='3'">Eat In</t>
                     </div>
                 </div>
                 <div class="detail-row" t-if="props.data.orderData.pickup_time">
