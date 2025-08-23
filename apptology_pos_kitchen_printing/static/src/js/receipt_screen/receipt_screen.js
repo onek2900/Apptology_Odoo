@@ -31,40 +31,20 @@ patch(ReceiptScreen.prototype, {
                 lines,
             );
             if (data.length > 0) {
-                // $(document.querySelector(".render-container")).empty();
-                // //
-                // const el = await this.renderer.toHtml(PrinterReceipt, {
-                //     data,
-                //     headerData: order.export_for_printing().headerData,
-                //     printer
-                // });
-                // this.renderer.whenMounted({ el, callback: window.print });
 
-                // Get the printer name
-                // const printerName = el.querySelector('.printer-name h6').textContent;
                 const printerName = printer.config.name;
-                // Get the cashier name
-                // const cashierName = el.querySelector('.cashier div').textContent;
+
                 const cashierName = order.export_for_printing().headerData.cashier;
-                // Get the order number
-                // const orderNumber = el.querySelector('.pos-receipt-contact .fw-bolder .fs-2').textContent;
+
                 const orderNumber = order.export_for_printing().headerData.trackingNumber;
-                // Get all line items
-                // const lineItems = el.querySelectorAll('.line-item');
-                // Log the extracted information
+
                 console.log(`Order Start:`);
 
                 console.log(`Printer: ${printerName}`);
                 console.log(`Cashier: ${cashierName}`);
                 console.log(`Order Number: ${orderNumber}`);
                 console.log(`Category\t\tOrder\t\tQuantity`);
-                // Loop through each line item and extract product details
-                // lineItems.forEach((item) => {
-                //     const category = item.querySelector('.line-item__category span').textContent;
-                //     const productName = item.querySelector('.line-item__product').textContent;
-                //     const productQty = item.querySelector('.line-item__qty').textContent;
-                //     console.log(`OrderlinesQTY:${productName}:${productQty}`);
-                // });
+
                 data.forEach(item => {
                     const category = item.category_ids.map(cat => cat.name).join(",");
                     const productName = item.name;
