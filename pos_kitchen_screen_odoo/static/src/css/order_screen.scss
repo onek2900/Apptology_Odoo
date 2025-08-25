@@ -1,31 +1,104 @@
-// ======================
-// Variables
-// ======================
-$background-dark: #1e2837;
-$in-progress-bg: rgba(108, 117, 136, 0.95);
-$ready-bg: #2ecc71; // Fresh green
-$text-color: #ffffff;
-$spacing-unit: 1rem;
-$border-radius: 24px;
+/* =========================================
+   0) Theme tokens (CSS variables) for Order Screen
+   ========================================= */
+:root {
+  /* surfaces & text */
+  --os-bg: #1e2837;                           /* dark background by default (matches your original) */
+  --os-text: #ffffff;
+  --os-border: rgba(255,255,255,0.18);
 
-// ======================
-// Main Layout
-// ======================
-.kitchen-display {
-  min-height: 100vh;
-  display: flex;
-  gap: 1rem;
-  background: $background-dark;
-  padding: $spacing-unit * 2;
-  color: $text-color;
-  overflow-y: auto;
+  /* states */
+  --os-card-in-progress: rgba(108, 117, 136, 0.95);
+  --os-card-in-progress-hover: rgba(128, 137, 156, 0.95);
+  --os-card-ready: #2ecc71;
+  --os-card-ready-hover: #39dc7f;
+
+  /* spacing & shadows */
+  --os-shadow: 0 6px 14px rgba(0,0,0,0.22);
 }
 
+/* Light theme override (if you ever switch to light or prefer OS light) */
+:root[data-theme="light"] {
+  --os-bg: #f5f7fa;
+  --os-text: #1f2937;
+  --os-border: rgba(0,0,0,0.12);
+
+  --os-card-in-progress: #e6eaf1;
+  --os-card-in-progress-hover: #edf1f7;
+  --os-card-ready: #28c466;
+  --os-card-ready-hover: #2fd172;
+
+  --os-shadow: 0 6px 12px rgba(0,0,0,0.12);
+}
+
+/* Respect OS preference when no explicit data-theme is set */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --os-bg: #f5f7fa;
+    --os-text: #1f2937;
+    --os-border: rgba(0,0,0,0.12);
+
+    --os-card-in-progress: #e6eaf1;
+    --os-card-in-progress-hover: #edf1f7;
+    --os-card-ready: #28c466;
+    --os-card-ready-hover: #2fd172;
+
+    --os-shadow: 0 6px 12px rgba(0,0,0,0.12);
+  }
+}
+
+/* =========================================
+   1) SCSS variables (bridge to CSS vars)
+   ========================================= */
+$background-dark: var(--os-bg);
+$in-progress-bg: var(--os-card-in-progress);
+$in-progress-bg-hover: var(--os-card-in-progress-hover);
+$ready-bg: var(--os-card-ready);
+$ready-bg-hover: var(--os-card-ready-hover);
+$text-color: var(--os-text);
+
+$spacing-unit: 1rem;
+$border-radius: 24px;
+$shadow: var(--os-shadow);
+
+/* =========================================
+   2) Mixins & helpers
+   ========================================= */
+@mixin fluid-size($min, $vw, $max) {
+  font-size: clamp($min, $vw, $max);
+}
+
+/* Sass-safe safe-area mixin (no max(env())) */
+@mixin safe-areas {
+  /* fallbacks */
+  padding-top: 16px;
+  padding-bottom: 16px;
+  /* override when env() supported */
+  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+
+/* =========================================
+   3) Main Layout
+   ========================================= */
+.kitchen-display {
+  min-height: 100dvh;                 /* mobile-safe viewport height */
+  display: flex;
+  gap: clamp(0.5rem, 1.2vw, 1rem);
+  background: $background-dark;
+  padding: clamp(0.75rem, 2vw, 2rem);
+  color: $text-color;
+  overflow-y: auto;
+  box-sizing: border-box;
+  @include safe-areas;
+}
+
+/* Sections */
 .order-section {
   margin-bottom: $spacing-unit * 3;
 
   .section-title {
-    font-size: clamp(1rem, 2.5vw, 4rem);
+    @include fluid-size(1rem, 2.5vw, 4rem);
     font-weight: 600;
     margin-bottom: $spacing-unit * 1.5;
     color: rgba(255, 255, 255, 0.9);
@@ -33,10 +106,13 @@ $border-radius: 24px;
   }
 }
 
+/* =========================================
+   4) Responsive Grid for Orders
+   ========================================= */
 .order-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: $spacing-unit * 1.5;
+  gap: clamp(0.75rem, 1.5vw, 1.5rem);
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -47,9 +123,9 @@ $border-radius: 24px;
   }
 }
 
-// ======================
-// Order Item
-// ======================
+/* =========================================
+   5) Order Item
+   ========================================= */
 .order-item {
   display: flex;
   flex-direction: column;
@@ -58,12 +134,14 @@ $border-radius: 24px;
   box-sizing: border-box;
   overflow: hidden;
   animation: fadeIn 0.3s ease-out forwards;
+  box-shadow: $shadow;
+  transform: translateZ(0); /* helps some GPUs on Android */
 
   &.in-progress {
     background: $in-progress-bg;
 
     &:hover {
-      background: lighten($in-progress-bg, 5%);
+      background: $in-progress-bg-hover;  /* replaced lighten() with hover var */
       transform: translateY(-2px);
     }
   }
@@ -72,15 +150,15 @@ $border-radius: 24px;
     background: $ready-bg;
 
     &:hover {
-      background: lighten($ready-bg, 5%);
+      background: $ready-bg-hover;        /* replaced lighten() with hover var */
       transform: translateY(-2px);
     }
   }
 }
 
-// ======================
-// Tracking Layout (row-based)
-// ======================
+/* =========================================
+   6) Tracking Layout (row-based)
+   ========================================= */
 .tracking-container {
   width: 100%;
 }
@@ -98,27 +176,27 @@ $border-radius: 24px;
   flex: 0 0 auto;
   min-width: 60px;
   text-align: center;
-  font-size: 0.9rem;
+  @include fluid-size(0.8rem, 1.4vw, 0.9rem);
   font-weight: 500;
-  border-right: 2px solid #fff;
-  padding-right: 0.5rem;
+  border-inline-end: 2px solid rgba(255,255,255,0.9); /* RTL-friendly */
+  padding-inline-end: 0.5rem;
   line-height: 1.2;
 }
 
 .tracking-details {
   flex: 1;
-  padding-left: 0.5rem;
+  padding-inline-start: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   overflow: hidden;
 }
 
-// ======================
-// Typography
-// ======================
+/* =========================================
+   7) Typography
+   ========================================= */
 .tracking-number-display {
-  font-size: 0.9rem;
+  @include fluid-size(0.9rem, 1.7vw, 1.2rem);
   font-weight: 400;
   margin-bottom: 0.25rem;
   white-space: nowrap;
@@ -127,7 +205,7 @@ $border-radius: 24px;
 }
 
 .partner-name {
-  font-size: 0.9rem;
+  @include fluid-size(0.9rem, 1.7vw, 1.1rem);
   font-weight: 400;
   opacity: 0.85;
   white-space: nowrap;
@@ -135,53 +213,64 @@ $border-radius: 24px;
   overflow: hidden;
 }
 
-// ======================
-// Responsive Adjustments
-// ======================
+/* Legacy step-ups (kept but corrected typo `1 rem` -> `1rem`) */
 @media (min-width: 768px) {
   .tracking-number-display { font-size: 1.2rem; }
-  .partner-name { font-size: 1 rem; }
+  .partner-name { font-size: 1rem; }
 }
-
 @media (min-width: 1440px) {
   .tracking-number-display { font-size: 1rem; }
 }
-
 @media (min-width: 2560px) {
   .tracking-number-display { font-size: 1rem; }
   .partner-name { font-size: 1.8rem; }
 }
-
 @media (min-width: 3840px) {
   .tracking-number-display { font-size: 4rem; }
   .partner-name { font-size: 2rem; }
 }
 
-// ======================
-// Scrollbar Styling
-// ======================
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
+/* =========================================
+   8) Scoped Scrollbar Styling
+   ========================================= */
+.kitchen-display {
+  &::-webkit-scrollbar { width: 8px; }
+  &::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    &:hover { background: rgba(255, 255, 255, 0.3); }
   }
 }
 
-// ======================
-// Animation
-// ======================
+/* =========================================
+   9) Animation
+   ========================================= */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* =========================================
+   10) Accessibility & perf
+   ========================================= */
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* Bigger touch targets on phones */
+@media (pointer: coarse) {
+  .order-item { padding: 12px; }
+}
+
+/* =========================================
+   11) RTL adjustments
+   ========================================= */
+[dir="rtl"] {
+  .tracking-type {
+    border-inline-end: 2px solid rgba(255,255,255,0.9);
+    padding-inline-end: 0.5rem;
+  }
+  .tracking-details { padding-inline-start: 0.5rem; }
+}
