@@ -1,4 +1,16 @@
 /* ==== Upper part compact mode (paste after existing CSS) ==== */
+:root[data-theme="dark"] .section-inprogress h3 {
+  color: #fff !important;
+  border-bottom-color: #c1d963;
+}
+
+/* If you rely on OS dark preference instead of data-theme */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .section-inprogress h3 {
+    color: #fff !important;
+    border-bottom-color: #c1d963;
+  }
+}
 
 /* Page heading */
 .kitchen .main_heading{

@@ -19,7 +19,7 @@
             <div class="row g-4">
                 <!-- In Progress Section -->
                 <div class="col-12 col-lg-6">
-                    <div class="text-center section-header">
+                    <div class="text-center section-header section-inprogress">
                         <h3>
                             In Progress
                             <span class="order-count">
@@ -151,7 +151,7 @@
                                                                     t-esc="'O' + ' #' + order.channel_order_reference"/>
                                                         </t>
                                                         <t t-else="">
-                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
+                                                            <t t-esc="'L' + ' #' + order.tracking_number"/>
                                                         </t>
                                                     </li>
                                                     <li class="fw-bold">
