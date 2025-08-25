@@ -3,9 +3,12 @@
    ========================================= */
 :root {
   /* surfaces & text */
-  --os-bg: #1e2837;                           /* dark background by default (matches your original) */
+  --os-bg: #1e2837;                           /* dark background by default */
   --os-text: #ffffff;
   --os-border: rgba(255,255,255,0.18);
+
+  /* headline */
+  --os-headline: rgba(255,255,255,.22);       /* subtle on dark bg */
 
   /* states */
   --os-card-in-progress: rgba(108, 117, 136, 0.95);
@@ -17,11 +20,13 @@
   --os-shadow: 0 6px 14px rgba(0,0,0,0.22);
 }
 
-/* Light theme override (if you ever switch to light or prefer OS light) */
+/* Light theme override (if you switch to light or prefer OS light) */
 :root[data-theme="light"] {
   --os-bg: #f5f7fa;
   --os-text: #1f2937;
   --os-border: rgba(0,0,0,0.12);
+
+  --os-headline: #475569;
 
   --os-card-in-progress: #e6eaf1;
   --os-card-in-progress-hover: #edf1f7;
@@ -37,6 +42,8 @@
     --os-bg: #f5f7fa;
     --os-text: #1f2937;
     --os-border: rgba(0,0,0,0.12);
+
+    --os-headline: #475569;
 
     --os-card-in-progress: #e6eaf1;
     --os-card-in-progress-hover: #edf1f7;
@@ -56,6 +63,7 @@ $in-progress-bg-hover: var(--os-card-in-progress-hover);
 $ready-bg: var(--os-card-ready);
 $ready-bg-hover: var(--os-card-ready-hover);
 $text-color: var(--os-text);
+$headline-color: var(--os-headline);
 
 $spacing-unit: 1rem;
 $border-radius: 24px;
@@ -101,8 +109,9 @@ $shadow: var(--os-shadow);
     @include fluid-size(1rem, 2.5vw, 4rem);
     font-weight: 600;
     margin-bottom: $spacing-unit * 1.5;
-    color: rgba(255, 255, 255, 0.9);
+    color: $headline-color;                 /* updated headline color */
     padding-left: $spacing-unit;
+    letter-spacing: .02em;
   }
 }
 
@@ -135,13 +144,16 @@ $shadow: var(--os-shadow);
   overflow: hidden;
   animation: fadeIn 0.3s ease-out forwards;
   box-shadow: $shadow;
-  transform: translateZ(0); /* helps some GPUs on Android */
+  transform: translateZ(0);            /* helps some GPUs on Android */
+
+  /* enable card-size-based scaling */
+  container-type: inline-size;
 
   &.in-progress {
     background: $in-progress-bg;
 
     &:hover {
-      background: $in-progress-bg-hover;  /* replaced lighten() with hover var */
+      background: $in-progress-bg-hover;  /* hover var (no lighten()) */
       transform: translateY(-2px);
     }
   }
@@ -150,18 +162,75 @@ $shadow: var(--os-shadow);
     background: $ready-bg;
 
     &:hover {
-      background: $ready-bg-hover;        /* replaced lighten() with hover var */
+      background: $ready-bg-hover;        /* hover var (no lighten()) */
       transform: translateY(-2px);
     }
   }
 }
 
 /* =========================================
-   6) Tracking Layout (row-based)
+   6) Card text that scales with card size
    ========================================= */
-.tracking-container {
-  width: 100%;
+/* Use container queries when supported */
+@supports (container-type: inline-size) {
+  /* Base font for everything inside the card */
+  .order-item { font-size: clamp(12px, 2.2cqi, 18px); }
+
+  /* Prominent bits */
+  .order-item .tracking-number-display,
+  .order-item .order-code,
+  .order-item .order-type,
+  .order-item .status,
+  .order-item .big {
+    font-size: clamp(14px, 2.8cqi, 22px);
+    line-height: 1.15;
+  }
+
+  /* Secondary text */
+  .order-item .partner-name,
+  .order-item .meta,
+  .order-item .note,
+  .order-item .small {
+    font-size: clamp(12px, 2.0cqi, 16px);
+    line-height: 1.25;
+  }
 }
+
+/* Fallback for older browsers (scale by viewport) */
+@supports not (container-type: inline-size) {
+  .order-item { font-size: clamp(12px, 2vw, 18px); }
+
+  .order-item .tracking-number-display,
+  .order-item .order-code,
+  .order-item .order-type,
+  .order-item .status,
+  .order-item .big {
+    font-size: clamp(14px, 2.6vw, 22px);
+  }
+
+  .order-item .partner-name,
+  .order-item .meta,
+  .order-item .note,
+  .order-item .small {
+    font-size: clamp(12px, 1.8vw, 16px);
+  }
+}
+
+/* Keep long text tidy while scaling */
+.order-item .tracking-number-display,
+.order-item .partner-name,
+.order-item .order-code,
+.order-item .order-type,
+.order-item .status {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   7) Tracking Layout (row-based)
+   ========================================= */
+.tracking-container { width: 100%; }
 
 .tracking-row {
   display: flex;
@@ -193,7 +262,7 @@ $shadow: var(--os-shadow);
 }
 
 /* =========================================
-   7) Typography
+   8) Typography (base + legacy steps)
    ========================================= */
 .tracking-number-display {
   @include fluid-size(0.9rem, 1.7vw, 1.2rem);
@@ -213,10 +282,10 @@ $shadow: var(--os-shadow);
   overflow: hidden;
 }
 
-/* Legacy step-ups (kept but corrected typo `1 rem` -> `1rem`) */
+/* Legacy step-ups (optional) */
 @media (min-width: 768px) {
   .tracking-number-display { font-size: 1.2rem; }
-  .partner-name { font-size: 1rem; }
+  .partner-name { font-size: 1rem; }       /* fixed '1 rem' typo */
 }
 @media (min-width: 1440px) {
   .tracking-number-display { font-size: 1rem; }
@@ -231,7 +300,7 @@ $shadow: var(--os-shadow);
 }
 
 /* =========================================
-   8) Scoped Scrollbar Styling
+   9) Scoped Scrollbar Styling
    ========================================= */
 .kitchen-display {
   &::-webkit-scrollbar { width: 8px; }
@@ -244,7 +313,7 @@ $shadow: var(--os-shadow);
 }
 
 /* =========================================
-   9) Animation
+   10) Animation
    ========================================= */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -252,20 +321,18 @@ $shadow: var(--os-shadow);
 }
 
 /* =========================================
-   10) Accessibility & perf
+   11) Accessibility & perf
    ========================================= */
-/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
 
-/* Bigger touch targets on phones */
 @media (pointer: coarse) {
-  .order-item { padding: 12px; }
+  .order-item { padding: 12px; }            /* bigger touch targets */
 }
 
 /* =========================================
-   11) RTL adjustments
+   12) RTL adjustments
    ========================================= */
 [dir="rtl"] {
   .tracking-type {

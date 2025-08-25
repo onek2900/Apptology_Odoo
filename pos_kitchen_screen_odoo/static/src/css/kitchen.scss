@@ -100,9 +100,14 @@ $bp-xl: 1200px;
   font-size: clamp($min, $vw, $max);
 }
 
+/* FIXED: avoid Sass evaluating max(env()) */
 @mixin safe-areas {
-  padding-top: max(20px, env(safe-area-inset-top));
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  /* fallbacks */
+  padding-top: 20px;
+  padding-bottom: 16px;
+  /* override when env() supported */
+  padding-top: calc(20px + env(safe-area-inset-top));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
 }
 
 /* =========================================
@@ -149,7 +154,6 @@ $bp-xl: 1200px;
       }
     }
 
-    // Different color for completed section count
     .completed-section & {
       .order-count { background: $success-color; }
     }
@@ -168,7 +172,6 @@ $bp-xl: 1200px;
     &::-webkit-scrollbar-track { background: #f1f1f1; }
     &::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
 
-    /* Responsive card row (grid-like, no Bootstrap dependency) */
     .row {
       display: flex;
       flex-wrap: wrap;
@@ -176,7 +179,6 @@ $bp-xl: 1200px;
       margin: 0;
     }
 
-    /* Make any child act like a responsive column */
     .row > * {
       display: flex;
       flex: 1 1 320px;      // min card width before wrapping
@@ -298,7 +300,8 @@ $bp-xl: 1200px;
 
         i {
           margin-right: 0.5rem;
-          color: lighten($text-muted, 10%);
+          color: $text-muted; /* was lighten($text-muted, 10%) */
+          opacity: .85;       /* subtle lightening without Sass color math */
         }
       }
     }
@@ -328,7 +331,7 @@ $bp-xl: 1200px;
       border-color: $primary-color;
 
       &:hover {
-        background: $primary-color-hover; // CSS-var hover color (no Sass darken on var)
+        background: $primary-color-hover; // CSS-var hover color
         border-color: $primary-color-hover;
       }
     }
@@ -346,7 +349,7 @@ $bp-xl: 1200px;
   }
 }
 
-/* Ensure ≥44px touch height on phones */
+/* Ensure =44px touch height on phones */
 @media (pointer: coarse) {
   .card-footer .btn,
   .confirmation-popup .btn { min-height: 44px; }
@@ -401,7 +404,7 @@ $bp-xl: 1200px;
     background-color: $surface-color;
     border-radius: 12px;
     padding: clamp(1.5rem, 3vw, 2.5rem);
-    width: min(90vw, 400px);
+    width: clamp(280px, 90vw, 400px); /* was min(90vw, 400px) */
     box-shadow: 0 10px 25px rgba(0,0,0,.2);
     animation: slideInPopup 0.3s ease-out;
     transform-origin: center;

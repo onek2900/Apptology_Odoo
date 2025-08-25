@@ -42,7 +42,7 @@
                                                                     t-esc="'O' + ' #' + order.channel_order_reference"/>
                                                         </t>
                                                         <t t-else="">
-                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
+                                                            <t t-esc="'L' + ' #' + order.tracking_number"/>
                                                         </t>
                                                     </li>
                                                     <li class="fw-bold">
