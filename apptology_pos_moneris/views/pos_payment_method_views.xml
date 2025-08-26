@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_payment_method_view_form_inherit_apptology_pos_moneris" model="ir.ui.view">
+        <field name="name">pos.payment.method.form.inherit.pos.moneris</field>
+        <field name="model">pos.payment.method</field>
+        <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='use_payment_terminal']" position="after">
+                <!-- Moneris -->
+                <field name="moneris_terminal_id" invisible="use_payment_terminal != 'moneris'" required="use_payment_terminal == 'moneris'"/>
+                <field name="moneris_ist_config_code" invisible="use_payment_terminal != 'moneris'" required="use_payment_terminal == 'moneris'"/>
+                <field name="moneris_api_token" invisible="use_payment_terminal != 'moneris'" required="use_payment_terminal == 'moneris'"/>
+                <field name="moneris_store_id" invisible="use_payment_terminal != 'moneris'" required="use_payment_terminal == 'moneris'"/>
+                <field name="moneris_merchant_id" invisible="use_payment_terminal != 'moneris'" required="use_payment_terminal == 'moneris'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
