@@ -1,130 +1,30 @@
-@charset "UTF-8";
-
-/* =========================================
-   0) Theme tokens (CSS variables)
-   ========================================= */
-:root {
-  /* Brand */
-  --color-primary: #c1d963;
-  --color-primary-hover: #a4b854;
-
-  /* Semantic */
-  --color-success: #c1d963;
-  --color-danger: #e74c3c;
-  --color-secondary: #34495e;
-  --color-secondary-online: #5b80a4;
-
-  /* Surfaces and text (LIGHT) */
-  --bg: #f5f7fa;
-  --surface: #ffffff;
-  --text: #2c3e50;
-  --text-muted: #6b7280;
-  --border: rgba(0,0,0,0.1);
-
-  /* Option A - Pale Matcha cards (LIGHT) */
-  --card-surface: #f7fbe8;
-  --card-border: #e6f1c8;
-  --card-shadow: 0 6px 14px rgba(33,39,21,0.06);
-
-  --shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* DARK */
-:root[data-theme="dark"] {
-  --color-primary: #c1d963;
-  --color-primary-hover: #a4b854;
-
-  --color-success: #c1d963;
-  --color-danger: #f87171;
-  --color-secondary: #93a1b6;
-  --color-secondary-online: #89a6c4;
-
-  --bg: #0b1220;
-  --surface: #0f172a; /* not white */
-  --text: #ffffff;
-  --text-muted: #6b7280;
-  --border: rgba(255,255,255,0.12);
-
-  /* Option A - Pale Matcha cards (DARK) */
-  --card-surface: #17200f;  /* deep moss tint */
-  --card-border: #2a3717;
-  --card-shadow: 0 8px 18px rgba(0,0,0,0.5);
-
-  --shadow: 0 6px 12px rgba(0,0,0,0.45);
-}
-
-/* Respect OS theme if no explicit data-theme is set */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --bg: #0b1220;
-    --surface: #0f172a;
-    --text: #2c3e50;
-    --text-muted: #6b7280;
-    --border: rgba(255,255,255,0.12);
-
-    --card-surface: #17200f;
-    --card-border: #2a3717;
-    --card-shadow: 0 8px 18px rgba(0,0,0,0.5);
-
-    --shadow: 0 6px 12px rgba(0,0,0,0.45);
-  }
-}
-
-/* =========================================
-   1) SCSS variables (bridge to CSS vars)
-   ========================================= */
-$primary-color: var(--color-primary);
-$primary-color-hover: var(--color-primary-hover);
-$success-color: var(--color-success);
-$danger-color: var(--color-danger);
-$secondary-color: var(--color-secondary);
-$secondary-color-online: var(--color-secondary-online);
-
+// Variables
+$primary-color: #4a90e2;
+$success-color: #2ecc71;
+$danger-color: #e74c3c;
+$secondary-color: #34495e;
+$secondary-color-online: #5b80a4;
 $text-light: #ffffff;
-$text-color: var(--text);
-$text-muted: var(--text-muted);
-
-$bg-color: var(--bg);
-$surface-color: var(--surface);
-$border-color: var(--border);
-
-$card-surface: var(--card-surface);
-$card-border: var(--card-border);
-$card-shadow: var(--card-shadow);
-
+$card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 $transition-speed: 0.3s;
 
-/* =========================================
-   2) Mixins and breakpoints
-   ========================================= */
-$bp-xs: 360px;
-$bp-sm: 576px;
-$bp-md: 768px;
-$bp-lg: 992px;
-$bp-xl: 1200px;
-
-@mixin respond-to($max) { @media (max-width: $max) { @content; } }
-@mixin flex-center { display: flex; align-items: center; }
-@mixin card-hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,.15); }
-@mixin fluid-size($min,$vw,$max) { font-size: clamp($min,$vw,$max); }
-
-/* compile-safe safe-areas (no max(env())) */
-@mixin safe-areas {
-  padding-top: 20px;
-  padding-bottom: 16px;
-  padding-top: calc(20px + env(safe-area-inset-top));
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
 }
 
-/* =========================================
-   3) Main Dashboard
-   ========================================= */
+@mixin card-hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+// Main Dashboard Styles
 .kitchen-dashboard {
   padding: 20px;
-  background-color: $bg-color;
-  min-height: 100dvh;
-  @include fluid-size(14px,1.8vw,16px);
-  @include safe-areas;
+  background-color: #f5f7fa;
+  //min-height: 100vh;
+  // Add these styles to your existing SCSS file
 
   .section-header {
     position: relative;
@@ -134,52 +34,96 @@ $bp-xl: 1200px;
       display: inline-flex;
       align-items: center;
       gap: 0.75rem;
-      margin: 0;
-      color: $text-color;
-      @include fluid-size(18px,2.2vw,28px);
+      margin-bottom: 0;
 
       .order-count {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         background: $primary-color;
-        color: $text-light;
+        color: white;
         border-radius: 20px;
         padding: 0.2rem 0.8rem;
-        @include fluid-size(12px,1.6vw,16px);
+        font-size: 1rem;
         font-weight: 500;
         min-width: 35px;
         height: 28px;
+
+        // Animation for count changes
         animation: pulseCount 0.3s ease-out;
+
+        @keyframes pulseCount {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.2);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
       }
     }
 
-    .completed-section & { .order-count { background: $success-color; } }
+    // Different color for completed section count
+    .completed-section & {
+      .order-count {
+        background: $success-color;
+      }
+    }
   }
 
-  @include respond-to($bp-md) {
-    .section-header h3 .order-count { padding: 0.15rem 0.6rem; }
+  // Add to your existing media queries if needed
+  @media (max-width: 768px) {
+    .section-header {
+      h3 {
+        font-size: 1.5rem;
+
+        .order-count {
+          font-size: 0.9rem;
+          padding: 0.15rem 0.6rem;
+        }
+      }
+    }
   }
 
   .dashboard-section {
+    //height: calc(100vh - 100px);
+    //overflow-y: auto;
     padding: 15px;
 
-    &::-webkit-scrollbar { width: 8px; }
-    &::-webkit-scrollbar-track { background: #f1f1f1; }
-    &::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
 
-    .row { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0; }
-    .row > * { display: flex; flex: 1 1 320px; max-width: 100%; }
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
 
-    @include respond-to($bp-lg) { .row > * { flex-basis: 300px; } }
-    @include respond-to($bp-md) { .row > * { flex-basis: 260px; } }
-    @include respond-to($bp-sm) { .row > * { flex-basis: 100%; } }
+    &::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    // Row of cards
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      margin: -0.75rem; // Negative margin to offset card padding
+
+      // Column containing the card
+      > [class*='col-'] {
+        display: flex;
+        padding: 0.75rem;
+      }
+    }
   }
 
   h3 {
-    @include fluid-size(18px,2.2vw,28px);
+    font-size: 1.75rem;
     font-weight: 600;
-    color: $text-color;
+    color: #2c3e50;
     margin-bottom: 1.5rem;
     border-bottom: 3px solid $primary-color;
     padding-bottom: 0.5rem;
@@ -187,29 +131,35 @@ $bp-xl: 1200px;
   }
 }
 
-/* =========================================
-   4) Card Styles (Option A applied)
-   ========================================= */
+// Card Styles
 .order-card {
   display: flex;
   flex-direction: column;
   width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  transition: transform $transition-speed ease, box-shadow $transition-speed ease;
-  background: $card-surface;
-  border: 1px solid $card-border;
+  transition: all $transition-speed ease;
+  border: none;
   box-shadow: $card-shadow;
 
-  &:hover { @include card-hover; }
+  &:hover {
+    @include card-hover;
+  }
 
   .card-header {
-    padding: clamp(0.75rem,1.2vw,1rem);
+    padding: 1rem;
     border: none;
-    flex-shrink: 0;
-    &.bg-secondary { background: $secondary-color !important; color: $text-light; }
-    &.bg-secondary-online { background: $secondary-color-online !important; color: $text-light; }
-    &.bg-success { background: $success-color !important; color: $text-light; }
+    flex-shrink: 0; // Prevent header from shrinking
+
+    &.bg-secondary {
+      background: $secondary-color !important;
+    }
+    &.bg-secondary-online {
+      background: $secondary-color-online !important;
+    }
+    &.bg-success {
+      background: $success-color !important;
+    }
   }
 
   .order-info {
@@ -219,149 +169,190 @@ $bp-xl: 1200px;
         @include flex-center;
         gap: 0.5rem;
 
-        &:last-child { margin-bottom: 0; }
-        i { font-size: 1rem; width: 20px; }
-        &.fw-bold { @include fluid-size(16px,1.8vw,17.6px); margin-bottom: 0.75rem; }
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        i {
+          font-size: 1rem;
+          width: 20px;
+        }
+
+        &.fw-bold {
+          font-size: 1.1rem;
+          margin-bottom: 0.75rem;
+        }
       }
     }
   }
 
+  // Make list group expand to fill available space
   .list-group {
     flex: 1 1 auto;
     overflow-y: auto;
-    max-height: 50vh;
-    @include respond-to($bp-md) { max-height: 45vh; }
 
-    &::-webkit-scrollbar { width: 4px; }
-    &::-webkit-scrollbar-track { background: #f1f1f1; }
-    &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 2px;
+    }
   }
 }
 
-/* =========================================
-   5) Order Items List
-   ========================================= */
-.list-group .list-group-item {
-  padding: clamp(0.6rem,1.2vw,0.75rem) clamp(0.75rem,2vw,1rem);
-  border-left: none;
-  border-right: none;
-  @include flex-center;
-  gap: 1rem;
+// Order Items List
+.list-group {
+  .list-group-item {
+    padding: 0.75rem 1rem;
+    border-left: none;
+    border-right: none;
+    @include flex-center;
+    gap: 1rem;
 
-  .qty {
-    font-weight: 600;
-    color: $primary-color;
-    @include fluid-size(14px,1.5vw,17px);
-    min-width: 36px;
-    text-align: center;
-  }
-
-  .product-info {
-    flex: 1;
-
-    .product-name {
-      font-weight: 500;
-      margin-bottom: 0.25rem;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: $text-color;
+    .qty {
+      font-weight: 600;
+      color: $primary-color;
+      font-size: 1.1rem;
+      min-width: 40px;
     }
 
-    .note {
-      color: $text-muted;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .product-info {
+      flex: 1;
 
-      i {
-        margin-right: 0.5rem;
-        color: $text-muted;
-        opacity: 0.85;
+      .product-name {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+      }
+
+      .note {
+        color: #666;
+        display: block;
+        margin-top: 0.25rem;
+
+        i {
+          margin-right: 0.5rem;
+          color: #999;
+        }
       }
     }
   }
 }
 
-/* =========================================
-   6) Buttons
-   ========================================= */
+// Action Buttons
 .card-footer {
   background: transparent;
   padding: 1rem;
-  border-top: 1px solid $border-color;
-  flex-shrink: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0; // Prevent footer from shrinking
 
   .btn {
-    padding: clamp(0.45rem,1.2vw,0.6rem) clamp(0.8rem,2vw,1rem);
-    @include fluid-size(14px,1.4vw,16px);
+    padding: 0.5rem 1rem;
     font-weight: 500;
     transition: all $transition-speed ease;
-    color: $text-light;
+    color: white;
 
-    i { margin-right: 0.5rem; }
+    i {
+      margin-right: 0.5rem;
+    }
 
     &.btn-primary {
       background: $primary-color;
       border-color: $primary-color;
-      &:hover { background: $primary-color-hover; border-color: $primary-color-hover; }
+
+      &:hover {
+        background: darken($primary-color, 10%);
+      }
     }
 
     &.btn-outline-danger {
       color: $danger-color;
       border-color: $danger-color;
-      background: transparent;
-      &:hover { background: $danger-color; color: $text-light; }
+
+      &:hover {
+        background: $danger-color;
+        color: $text-light;
+      }
     }
   }
 }
 
-/* =========================================
-   7) Animations
-   ========================================= */
-.fade-in { animation: fadeIn 0.5s ease-in; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-/* =========================================
-   8) Responsive adjustments
-   ========================================= */
-@media (max-width: 992px) { .kitchen-dashboard .dashboard-section { height: auto; } }
-@media (max-width: 768px) {
-  .order-card { margin-bottom: 1rem; }
-  .card-footer .btn { padding: 0.4rem 0.8rem; @include fluid-size(13px,1.3vw,14.4px); }
+// Animation
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
 }
 
-/* =========================================
-   9) Confirmation Popup
-   ========================================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 992px) {
+  .kitchen-dashboard {
+    .dashboard-section {
+      height: auto;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .order-card {
+    margin-bottom: 1rem;
+  }
+
+  .card-footer {
+    .btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+
+// Confirmation Popup Styles
 .confirmation-popup {
   display: none;
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0,0,0,.7);
+  background-color: rgba(0, 0, 0, 0.7); // Darker overlay for better contrast
   z-index: 1040;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px); // Add subtle blur effect to background
 
-  &.show { display: flex; animation: fadeInBackdrop 0.2s ease-out; }
+  &.show {
+    display: flex;
+    animation: fadeInBackdrop 0.2s ease-out;
+  }
 
   .popup-content {
-    background-color: $surface-color;
-    border-radius: 12px;
-    padding: clamp(1.5rem,3vw,2.5rem);
-    width: clamp(280px,90vw,400px);
-    box-shadow: 0 10px 25px rgba(0,0,0,.2);
+    background-color: #ffffff; // Use explicit color instead of CSS variable
+    border-radius: 12px; // Increased border radius
+    padding: 2.5rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); // Enhanced shadow
     animation: slideInPopup 0.3s ease-out;
     transform-origin: center;
 
     h4 {
-      color: $secondary-color;
-      @include fluid-size(18px,2vw,26px);
+      color: $secondary-color; // Use SCSS variable instead of CSS variable
+      font-size: 26px;
       font-weight: 700;
       margin-bottom: 1.5rem;
       text-align: center;
@@ -369,8 +360,8 @@ $bp-xl: 1200px;
     }
 
     p {
-      color: $text-muted;
-      @include fluid-size(14px,1.6vw,18px);
+      color: #4a5568; // More subtle text color
+      font-size: 18px;
       margin-bottom: 2.5rem;
       text-align: center;
       font-weight: 500;
@@ -381,13 +372,13 @@ $bp-xl: 1200px;
   .popup-actions {
     display: flex;
     justify-content: center;
-    gap: clamp(0.75rem,2vw,1.25rem);
+    gap: 1.25rem;
 
     .btn {
       border-radius: 8px;
-      @include fluid-size(13px,1.5vw,14px);
+      font-size: 14px;
       letter-spacing: 0.5px;
-      padding: clamp(10px,2.2vw,12px) clamp(18px,3vw,25px);
+      padding: 12px 25px;
       font-weight: 700;
       text-transform: uppercase;
       transition: all 0.2s ease;
@@ -398,41 +389,67 @@ $bp-xl: 1200px;
         background-color: $secondary-color !important;
         border-color: $secondary-color !important;
         color: $text-light !important;
-        &:hover { color: $secondary-color !important; background-color: transparent !important; transform: translateY(-2px); }
+
+        &:hover {
+          color: $secondary-color !important;
+          background-color: transparent !important;
+          transform: translateY(-2px);
+        }
       }
 
       &-danger {
         background-color: $danger-color !important;
         border-color: $danger-color !important;
         color: $text-light !important;
-        &:hover { color: $danger-color !important; background-color: transparent !important; transform: translateY(-2px); }
+
+        &:hover {
+          color: $danger-color !important;
+          background-color: transparent !important;
+          transform: translateY(-2px);
+        }
       }
     }
   }
 }
 
-@keyframes fadeInBackdrop { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideInPopup { from { opacity: 0; transform: scale(0.9) translateY(-20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-
-@media screen and (max-width: 768px) {
-  .confirmation-popup .popup-content { width: 95%; margin: 0 15px; }
-  .confirmation-popup .popup-actions { flex-direction: column; gap: 1rem; }
-  .confirmation-popup .popup-actions .btn { width: 100%; padding: 15px 20px; }
+// New animations
+@keyframes fadeInBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-/* =========================================
-   10) Accessibility and perf
-   ========================================= */
-.kitchen-dashboard :focus-visible { outline: 2px solid $primary-color; outline-offset: 2px; }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-@media (pointer: coarse) { .card-footer .btn, .confirmation-popup .btn { min-height: 44px; } }
-@media (max-width: $bp-md) { .order-card:hover { transform: translateY(-3px); box-shadow: 0 6px 10px rgba(0,0,0,.12); } }
+@keyframes slideInPopup {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
 
-/* =========================================
-   11) RTL support
-   ========================================= */
-[dir="rtl"] .list-group .list-group-item .product-info .note i {
-  margin-inline-end: 0.5rem;
-  margin-inline-start: 0;
-  margin-right: 0;
+// Media queries for responsive design
+@media screen and (max-width: 768px) {
+  .confirmation-popup {
+    .popup-content {
+      width: 95%;
+      padding: 2rem;
+      margin: 0 15px;
+    }
+
+    .popup-actions {
+      flex-direction: column;
+      gap: 1rem;
+
+      .btn {
+        width: 100%;
+        padding: 15px 20px;
+      }
+    }
+  }
 }

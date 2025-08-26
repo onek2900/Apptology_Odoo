@@ -24,9 +24,9 @@
                                         t-on-click="() => this.onClickOrder(order)"
                                         t-on-dblclick="() => this.onDoubleClick(order)">
                                         <td class="col">
-                                        <t t-esc="formatTime(order.date_order).time"/><br/>
-                                        (<t t-esc="formatTime(order.date_order).date"/>)
-                                        </td>
+  <t t-esc="formatTime(order.date_order).time"/><br/>
+  (<t t-esc="formatTime(order.date_order).date"/>)
+</td>
                                         <td class="col">
                                             <t t-esc="order.channel_order_reference"/>
                                         </td>

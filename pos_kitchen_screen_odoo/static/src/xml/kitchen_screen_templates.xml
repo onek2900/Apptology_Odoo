@@ -19,7 +19,7 @@
             <div class="row g-4">
                 <!-- In Progress Section -->
                 <div class="col-12 col-lg-6">
-                    <div class="text-center section-header section-inprogress">
+                    <div class="text-center section-header">
                         <h3>
                             In Progress
                             <span class="order-count">
@@ -42,7 +42,7 @@
                                                                     t-esc="'O' + ' #' + order.channel_order_reference"/>
                                                         </t>
                                                         <t t-else="">
-                                                            <t t-esc="'L' + ' #' + order.tracking_number"/>
+                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
                                                         </t>
                                                     </li>
                                                     <li class="fw-bold">
@@ -75,23 +75,23 @@
                                                 <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
                                                 <li t-if="line" class="list-group-item">
                                                     <div class="qty">
-<!--                                                        <t t-if="!line.is_modifier">-->
+                                                        <t t-if="!line.is_modifier">
 
                                                             <t t-esc="line.qty"/>×
-<!--                                                        </t>-->
+                                                        </t>
                                                     </div>
                                                     <div class="product-info">
                                                         <div class="product-name">
-<!--                                                            <t t-if="!line.is_modifier">-->
+                                                            <t t-if="!line.is_modifier">
                                                                 <t t-esc="line.full_product_name"/>
-<!--                                                            </t>-->
-<!--                                                            <t t-else="">-->
-<!--                                                                <span class="modifier-info"-->
-<!--                                                                     style="padding-left:20px; font-size:0.9em; color:#bbb;">-->
-<!--                                                                    →-->
-<!--                                                                    <t t-esc="line.full_product_name"/>-->
-<!--                                                                </span>-->
-<!--                                                            </t>-->
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span class="modifier-info"
+                                                                     style="padding-left:20px; font-size:0.9em; color:#bbb;">
+                                                                    →
+                                                                    <t t-esc="line.full_product_name"/>
+                                                                </span>
+                                                            </t>
 
                                                         </div>
                                                         <small t-if="line.note" class="note">
@@ -151,7 +151,7 @@
                                                                     t-esc="'O' + ' #' + order.channel_order_reference"/>
                                                         </t>
                                                         <t t-else="">
-                                                            <t t-esc="'L' + ' #' + order.tracking_number"/>
+                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
                                                         </t>
                                                     </li>
                                                     <li class="fw-bold">
@@ -174,13 +174,23 @@
                                             <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
                                                 <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
                                                 <li t-if="line" class="list-group-item">
-                                                    <div class="qty">
-                                                        <t t-esc="line.qty"/>×
+                                                   <div class="qty">
+                                                        <t t-if="!line.is_modifier">
+
+                                                            <t t-esc="line.qty"/>×
+                                                        </t>
                                                     </div>
                                                     <div class="product-info">
-                                                        <div class="product-name">
-                                                            <t t-esc="line.full_product_name"/>
-                                                        </div>
+                                                          <t t-if="!line.is_modifier">
+                                                                <t t-esc="line.full_product_name"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span class="modifier-info"
+                                                                     style="padding-left:20px; font-size:0.9em; color:#bbb;">
+                                                                    →
+                                                                    <t t-esc="line.full_product_name"/>
+                                                                </span>
+                                                            </t>
                                                         <small t-if="line.note" class="note">
                                                             <i class="fa fa-tag"/>
                                                             <t t-esc="line.note"/>

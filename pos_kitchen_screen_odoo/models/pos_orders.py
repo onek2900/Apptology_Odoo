@@ -236,16 +236,19 @@ class PosOrderLine(models.Model):
     customer_id = fields.Many2one('res.partner', string="Customer",
                                   related='order_id.partner_id',
                                   help='Id of the customer')
-    # is_modifier = fields.Boolean(
-    #     string="Is Modifier",
-    #     compute='_compute_is_modifier',
-    #     store=True  # Don't store in database, compute on the fly
-    # )
+    is_modifier = fields.Boolean(
+        string="Is Modifier",
+        compute='_compute_is_modifier',
+        store=True  # Don't store in database, compute on the fly
+    )
 
-    # @api.depends('product_id')
-    # def _compute_is_modifier(self):
-    #     for line in self:
-    #         line.is_modifier = line.product_id.is_modifier if line.product_id else False
+    @api.depends('product_id')
+    def _compute_is_modifier(self):
+        for line in self:
+            modifier=self.env['sh.topping.group'].sudo().search([])
+            if modifier and modifier.toppinds_ids:
+                if line.product_id in modifier.toppinds_ids:
+                    line.is_modifier = True
 
 
     def get_product_details(self, ids):

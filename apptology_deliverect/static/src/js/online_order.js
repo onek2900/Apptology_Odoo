@@ -63,6 +63,33 @@ export class OnlineOrderScreen extends Component {
             console.error("No order data returned from backend.");
             return;
         }
+        if (exportedOrder) {
+        const cashierName = exportedOrder.headerData?.cashier || "N/A";
+        const orderNumber = exportedOrder.headerData?.trackingNumber || "N/A";
+
+        console.log("Order Start:");
+
+        // Loop through printers
+        for (const printer of this.pos.unwatched.printers) {
+            const printerName = printer.config.name;
+            console.log(`Printer: ${printerName}`);
+            console.log(`Cashier: ${cashierName}`);
+            console.log(`Order Number: ${orderNumber}`);
+            console.log("Category\t\tOrder\t\tQuantity");
+
+            // Order lines
+            exportedOrder.lines.forEach(lineArr => {
+                const line = lineArr[2];
+                if (line) {
+                    console.log(
+                        `OrderlinesQTY: ${line.full_product_name}:${line.qty}:${line.note || ""}`
+                    );
+                }
+            });
+        }
+
+        console.log("Order Completed");
+    }
         const currentOrder = this.pos.pos_orders.find(o => o.id === order);
         const orderLines = [];
         exportedOrder.lines.forEach(lineArr => {

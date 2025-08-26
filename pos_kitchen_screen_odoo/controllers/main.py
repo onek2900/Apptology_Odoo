@@ -70,6 +70,7 @@ class OrderScreen(http.Controller):
                                                                              ("is_online_order", "=", True),
                                                                              ("online_order_status", "=", 'approved')
                                                                              ], order="date_order")
+        # print(approved_deliverect_orders,"oooo")
         combined_orders = pos_orders | approved_deliverect_orders
         if not kitchen_screen.pos_categ_ids:
             pos_orders_no_category = request.env["pos.order"].sudo().search([
@@ -79,6 +80,7 @@ class OrderScreen(http.Controller):
             ], order="date_order")
             combined_orders = pos_orders | pos_orders_no_category
         values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
+        # print(values,"values")
         return values
 
     @http.route("/apptology_kitchen_screen", auth="public", type="http", website=True)

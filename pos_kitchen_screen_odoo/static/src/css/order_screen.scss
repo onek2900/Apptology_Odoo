@@ -1,317 +1,187 @@
-@charset "UTF-8";
+// ======================
+// Variables
+// ======================
+$background-dark: #1e2837;
+$in-progress-bg: rgba(108, 117, 136, 0.95);
+$ready-bg: #2ecc71; // Fresh green
+$text-color: #ffffff;
+$spacing-unit: 1rem;
+$border-radius: 24px;
 
-/* ========= Theme (aligned with kitchen) ========= */
-:root {
-  --os-bg: #f5f7fa;
-  --os-text: #2c3e50;
-  --os-border: rgba(0,0,0,0.12);
-
-  --os-headline: var(--os-text);
-  --os-headline-underline: #c1d963;
-
-  --os-card-in-progress: #edeff5;
-  --os-card-in-progress-hover: #e3e7f0;
-
-  --os-card-ready: #c1d963;
-  --os-card-ready-hover: #a4b854;
-
-  --os-shadow: 0 6px 12px rgba(0,0,0,0.12);
-
-  /* global knob for in-card font sizes */
-  --os-card-font-scale: 1.45;
-}
-
-:root[data-theme="dark"] {
-  --os-bg: #0b1220;
-  --os-text: #2c3e50;
-  --os-border: rgba(255,255,255,0.18);
-
-  --os-headline: #ffffff;
-  --os-headline-underline: #c1d963;
-
-  --os-card-in-progress: rgba(255,255,255,0.08);
-  --os-card-in-progress-hover: rgba(255,255,255,0.14);
-  --os-card-ready: #c1d963;
-  --os-card-ready-hover: #c1d963;
-
-  --os-shadow: 0 6px 14px rgba(0,0,0,0.22);
-  --os-card-font-scale: 1.45;
-}
-
-/* OS dark if data-theme not set */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --os-bg: #0b1220;
-    --os-text: #ffffff;
-    --os-border: rgba(255,255,255,0.18);
-    --os-headline: #ffffff;
-    --os-headline-underline: #c1d963;
-    --os-card-in-progress: rgba(255,255,255,0.08);
-    --os-card-in-progress-hover: rgba(255,255,255,0.14);
-    --os-card-ready: #c1d963;
-    --os-card-ready-hover: #c1d963;
-    --os-shadow: 0 6px 14px rgba(0,0,0,0.22);
-    --os-card-font-scale: 1.45;
-  }
-}
-
-/* ========= SCSS bridges ========= */
-$background: var(--os-bg);
-$text: var(--os-text);
-$headline: var(--os-headline);
-$headline_underline: var(--os-headline-underline);
-
-$in_progress: var(--os-card-in-progress);
-$in_progress_hover: var(--os-card-in-progress-hover);
-$ready: var(--os-card-ready);
-$ready_hover: var(--os-card-ready-hover);
-
-$spacing: 1rem;
-$radius: 24px;
-$shadow: var(--os-shadow);
-
-/* helpers */
-@mixin fluid-size($min,$vw,$max){ font-size: clamp($min,$vw,$max); }
-@mixin safe-areas{
-  padding-top:16px; padding-bottom:16px;
-  padding-top: calc(16px + env(safe-area-inset-top));
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
-}
-
-/* ========= Layout ========= */
-.kitchen-display{
-  min-height: 100dvh;
-  display:flex;
-  gap: clamp(.5rem, 1.2vw, 1rem);
-  background: $background;
-  padding: clamp(.75rem, 2vw, 2rem);
-  color: $text;
-  box-sizing: border-box;
-  overflow-y: auto;
-  @include safe-areas;
-}
-
-/* headings */
-.order-section{
-  margin-bottom: $spacing * 3;
-
-  .section-title{
-    @include fluid-size(1rem, 2.5vw, 4rem);
-    font-weight: 600;
-    color: $headline;
-    display: inline-block;
-    padding-bottom: .35rem;
-    border-bottom: 3px solid $headline_underline;
-    margin-bottom: $spacing * 1.5;
-    letter-spacing: .02em;
-  }
-}
-
-/* grid */
-.order-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: clamp(.75rem, 1.5vw, 1.5rem);
-  @media (min-width:768px){ grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); }
-  @media (min-width:1440px){ grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); }
-}
-
-/* ========= Cards / states ========= */
-.order-item{
-  position: relative;             /* for the P/D badge */
-  display:flex; flex-direction:column;
-  padding:14px 20px;
-  border-radius:$radius;
-  box-sizing:border-box; overflow:hidden;
-  animation: fadeIn .3s ease-out forwards;
-  box-shadow: $shadow; transform: translateZ(0);
-  container-type: inline-size;
-
-  &.in-progress{
-    background: $in_progress;
-    &:hover{ background: $in_progress_hover; transform: translateY(-2px); }
-  }
-  &.ready{
-    background: $ready;
-    &:hover{ background: $ready_hover; transform: translateY(-2px); }
-  }
-}
-
-/* ========= Larger in-card typography (knob-controlled) ========= */
-@supports (container-type: inline-size) {
-  .order-item {
-    font-size: clamp(
-      calc(13px * var(--os-card-font-scale)),
-      calc(2.6cqi * var(--os-card-font-scale)),
-      calc(22px * var(--os-card-font-scale))
-    );
-  }
-
-  .order-item .tracking-number-display,
-  .order-item .order-code,
-  .order-item .order-type,
-  .order-item .status,
-  .order-item .big {
-    font-size: clamp(
-      calc(18px * var(--os-card-font-scale)),
-      calc(3.4cqi * var(--os-card-font-scale)),
-      calc(30px * var(--os-card-font-scale))
-    );
-    line-height: 1.15;
-    font-weight: 700;
-    letter-spacing: .2px;
-  }
-
-  .order-item .partner-name,
-  .order-item .meta,
-  .order-item .note,
-  .order-item .small {
-    font-size: clamp(
-      calc(14px * var(--os-card-font-scale)),
-      calc(2.6cqi * var(--os-card-font-scale)),
-      calc(20px * var(--os-card-font-scale))
-    );
-    line-height: 1.3;
-    font-weight: 600;
-  }
-}
-
-/* fallback */
-@supports not (container-type: inline-size) {
-  .order-item {
-    font-size: clamp(
-      calc(13px * var(--os-card-font-scale)),
-      calc(2.2vw * var(--os-card-font-scale)),
-      calc(22px * var(--os-card-font-scale))
-    );
-  }
-
-  .order-item .tracking-number-display,
-  .order-item .order-code,
-  .order-item .order-type,
-  .order-item .status,
-  .order-item .big {
-    font-size: clamp(
-      calc(18px * var(--os-card-font-scale)),
-      calc(3.0vw * var(--os-card-font-scale)),
-      calc(30px * var(--os-card-font-scale))
-    );
-    font-weight: 700;
-  }
-
-  .order-item .partner-name,
-  .order-item .meta,
-  .order-item .note,
-  .order-item .small {
-    font-size: clamp(
-      calc(14px * var(--os-card-font-scale)),
-      calc(2.2vw * var(--os-card-font-scale)),
-      calc(20px * var(--os-card-font-scale))
-    );
-    font-weight: 600;
-  }
-}
-
-/* keep long text tidy */
-.order-item .tracking-number-display,
-.order-item .partner-name,
-.order-item .order-code,
-.order-item .order-type,
-.order-item .status{
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-
-/* ========= Tracking layout + tiny P/D badge ========= */
-.tracking-container{ width:100%; }
-
-.tracking-row{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap: .5rem;
-  width:100%;
-}
-
-/* small circular badge for P / D
-   (Template should render "P" for Pick Up and "D" for Delivery) */
-.order-item .tracking-type{
-  position: absolute;
-  top: 10px;
-  left: 12px;
-  width: 28px;
-  height: 28px;
-  border-radius: 9999px;
+// ======================
+// Main Layout
+// ======================
+.kitchen-display {
+  min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  line-height: 1;
-  padding: 0;
-  font-size: clamp(11px, 1.6cqi, 14px);
-  background: rgba(0,0,0,0.06);
-  border: 2px solid rgba(0,0,0,0.08);
-  color: #2c3e50;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
-  pointer-events: none;
+  gap: 1rem;
+  background: $background-dark;
+  padding: $spacing-unit * 2;
+  color: $text-color;
+  overflow-y: auto;
 }
 
-/* shift main text so the badge never overlaps */
-.tracking-row .tracking-details{
-  padding-inline-start: 2.6rem;
-}
+.order-section {
+  margin-bottom: $spacing-unit * 3;
 
-.order-item.ready .tracking-type{
-  background: rgba(0,0,0,0.18);
-  border-color: rgba(0,0,0,0.22);
-  color: #1a2106;
-}
-
-/* dark mode for the badge */
-:root[data-theme="dark"] .order-item .tracking-type{
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.20);
-  color: #fff;
-}
-:root[data-theme="dark"] .order-item.ready .tracking-type{
-  background: rgba(0,0,0,0.28);
-  border-color: rgba(0,0,0,0.32);
-  color: #fff;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme]) .order-item .tracking-type{
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.20);
-    color: #fff;
-  }
-  :root:not([data-theme]) .order-item.ready .tracking-type{
-    background: rgba(0,0,0,0.28);
-    border-color: rgba(0,0,0,0.32);
-    color: #fff;
+  .section-title {
+    font-size: clamp(1rem, 2.5vw, 4rem);
+    font-weight: 600;
+    margin-bottom: $spacing-unit * 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    padding-left: $spacing-unit;
   }
 }
 
-/* ========= Wide displays (optional legacy) ========= */
-@media (min-width:768px){ .tracking-number-display{ font-size:1.3rem; } .partner-name{ font-size:1.1rem; } }
-@media (min-width:1440px){ .tracking-number-display{ font-size:1.1rem; } }
-@media (min-width:2560px){ .tracking-number-display{ font-size:1.1rem; } .partner-name{ font-size:1.9rem; } }
-@media (min-width:3840px){ .tracking-number-display{ font-size:4.2rem; } .partner-name{ font-size:2.2rem; } }
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: $spacing-unit * 1.5;
 
-/* ========= Scrollbar (scoped) ========= */
-.kitchen-display{
-  &::-webkit-scrollbar{ width:8px; }
-  &::-webkit-scrollbar-track{ background: rgba(0,0,0,0.08); }
-  &::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.18); border-radius:4px; }
-  &::-webkit-scrollbar-thumb:hover{ background: rgba(0,0,0,0.28); }
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+
+  @media (min-width: 1440px) {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
 }
 
-/* ========= Motion + a11y ========= */
-@keyframes fadeIn{ from{opacity:0; transform: translateY(10px);} to{opacity:1; transform: translateY(0);} }
-@media (prefers-reduced-motion: reduce){ *{ animation: none !important; transition: none !important; } }
-@media (pointer: coarse){ .order-item{ padding:12px; } }
+// ======================
+// Order Item
+// ======================
+.order-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: $border-radius;
+  box-sizing: border-box;
+  overflow: hidden;
+  animation: fadeIn 0.3s ease-out forwards;
 
-/* ========= RTL ========= */
-[dir="rtl"] .order-item .tracking-type{ left: auto; right: 12px; }
-[dir="rtl"] .tracking-row .tracking-details{
-  padding-inline-start: 0;
-  padding-inline-end: 2.6rem;
+  &.in-progress {
+    background: $in-progress-bg;
+
+    &:hover {
+      background: lighten($in-progress-bg, 5%);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.ready {
+    background: $ready-bg;
+
+    &:hover {
+      background: lighten($ready-bg, 5%);
+      transform: translateY(-2px);
+    }
+  }
 }
+
+// ======================
+// Tracking Layout (row-based)
+// ======================
+.tracking-container {
+  width: 100%;
+}
+
+.tracking-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.tracking-type {
+  flex: 0 0 auto;
+  min-width: 60px;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-right: 2px solid #fff;
+  padding-right: 0.5rem;
+  line-height: 1.2;
+}
+
+.tracking-details {
+  flex: 1;
+  padding-left: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+// ======================
+// Typography
+// ======================
+.tracking-number-display {
+  font-size: 0.9rem;
+  font-weight: 400;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.partner-name {
+  font-size: 0.9rem;
+  font-weight: 400;
+  opacity: 0.85;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+// ======================
+// Responsive Adjustments
+// ======================
+@media (min-width: 768px) {
+  .tracking-number-display { font-size: 1.2rem; }
+  .partner-name { font-size: 1 rem; }
+}
+
+@media (min-width: 1440px) {
+  .tracking-number-display { font-size: 1rem; }
+}
+
+@media (min-width: 2560px) {
+  .tracking-number-display { font-size: 1rem; }
+  .partner-name { font-size: 1.8rem; }
+}
+
+@media (min-width: 3840px) {
+  .tracking-number-display { font-size: 4rem; }
+  .partner-name { font-size: 2rem; }
+}
+
+// ======================
+// Scrollbar Styling
+// ======================
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// ======================
+// Animation
+// ======================
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
