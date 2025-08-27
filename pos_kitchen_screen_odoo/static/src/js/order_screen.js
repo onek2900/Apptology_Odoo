@@ -136,7 +136,7 @@ export class OrderScreenDashboard extends Component {
         // Refresh every 30 seconds
         this.refreshInterval = setInterval(() => {
             this.refreshOrderDetails();
-        }, 30000);
+        }, 5000);
     }
 
     /**

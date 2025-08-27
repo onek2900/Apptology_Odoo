@@ -5,7 +5,7 @@
     'category': 'Point Of Sale',
     'summary': 'Module to Connect Deliverect with Odoo Point of Sale',
     'description': 'Module to Connect Deliverect with Odoo Point of Sale',
-    'depends': ['account','point_of_sale','pos_restaurant','pos_kitchen_screen_odoo'],
+    'depends': ['account','point_of_sale','pos_restaurant','pos_kitchen_screen_odoo','sh_pos_all_in_one_retail'],
     'data': [
         'security/ir.model.access.csv',
         # 'data/pos_payment_method_data.xml',
@@ -17,7 +17,8 @@
         'views/pos_payment_method_views.xml',
         'views/product_template_views.xml',
         'views/res_partner_views.xml',
-        'views/menu_views.xml'
+        'views/menu_views.xml',
+        'views/toping_group_limit.xml'
     ],
     'assets': {
         'point_of_sale._assets_pos': [

@@ -7,12 +7,12 @@
         <field name="context">{'default_is_modifier': True}</field>
         <field name="view_mode">kanban,form</field>
     </record>
-    <menuitem id="menu_pos_modifier"
-              action="deliverect_modifier_action"
-              parent="point_of_sale.pos_config_menu_catalog"
-    />
-    <menuitem id="menu_pos_modifier_group"
-              action="deliverect_modifier_group_action"
-              parent="point_of_sale.pos_config_menu_catalog"
-    />
+<!--    <menuitem id="menu_pos_modifier"-->
+<!--              action="deliverect_modifier_action"-->
+<!--              parent="point_of_sale.pos_config_menu_catalog"-->
+<!--    />-->
+<!--    <menuitem id="menu_pos_modifier_group"-->
+<!--              action="deliverect_modifier_group_action"-->
+<!--              parent="point_of_sale.pos_config_menu_catalog"-->
+<!--    />-->
 </odoo>

@@ -166,7 +166,7 @@ class PosConfig(models.Model):
     def create_product_json(self, product_type, plu, product_price, product_name, product_arabicname, product_tmpl_id, product_note, description_arabic,
                             product_tax, product_category_ids):
         """Generate product JSON data for Deliverect."""
-        product = self.env['product.product'].search([('product_tmpl_id', '=', product_tmpl_id)])
+        product = self.env['product.product'].search([('product_tmpl_id', '=', product_tmpl_id)],limit=1)
         arabicname = ""
         description_arabic =""
         if not product_arabicname:
@@ -198,7 +198,7 @@ class PosConfig(models.Model):
         """create product with modifier in deliverect"""
         domain = [('active', '=', True),
                   ('detailed_type', '!=', 'combo'),
-                  ('modifier_group_ids', '!=', False),
+                  ('sh_topping_group_ids', '!=', False),
                   ('available_in_pos', '=', True)]
         if self.iface_available_categ_ids:
             domain.append(('pos_categ_ids', 'in',
@@ -208,13 +208,22 @@ class PosConfig(models.Model):
             **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
-            "subProducts": [f"MOD_GRP-{group.id}" for group in prod.modifier_group_ids]
+            "subProducts": [f"MOD_GRP-{group.id}" for group in prod.sh_topping_group_ids],
+
+
         })
 
     def create_modifier_and_modifier_group(self):
-        """create modifier and modifier group in deliverect"""
-        modifiers = self.env['product.product'].sudo().search([('is_modifier', '=', True)])
-        modifier_groups = self.env['deliverect.modifier.group'].sudo().search([])
+        # Find all products that are included as toppings in any product
+        modifiers = self.env['product.product'].sudo().search([
+            ('id', 'in', self.env['product.product'].sudo().search([]).mapped('sh_topping_ids').ids)
+        ])
+
+        print("Modifier Products (used as toppings):", modifiers)
+        for rec in modifiers:
+            print(rec.name)
+
+        modifier_groups = self.env['sh.topping.group'].sudo().search([])
         modifiers_data = modifiers.mapped(lambda prod: {
             **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
@@ -226,8 +235,11 @@ class PosConfig(models.Model):
             "productType": 3,
             "plu": f"MOD_GRP-{group.id}",
             "name": group.name,
-            "description": group.description,
-            "subProducts": [f"MOD-{modifier.product_id.id}" for modifier in group.modifier_product_lines_ids],
+            # "description": group.description,
+            "subProducts": [f"MOD-{modifier.id}" for modifier in group.toppinds_ids],
+            "max": group.max,
+            "min": group.min,
+            "multiMax": group.multi_max,
         })
         return modifiers_data + modifier_group_data
 
@@ -243,7 +255,7 @@ class PosConfig(models.Model):
         domain = [('active', '=', True),
                   ('is_modifier', '=', False),
                   ('detailed_type', '!=', 'combo'),
-                  ('modifier_group_ids', '=', False),
+                  ('sh_topping_group_ids', '=', False),
                   ('available_in_pos', '=', True)]
         if self.iface_available_categ_ids:
             domain.append(('pos_categ_ids', 'in',

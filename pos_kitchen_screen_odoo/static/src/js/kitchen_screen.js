@@ -176,7 +176,7 @@ export class KitchenScreenDashboard extends Component {
         // Refresh every 30 seconds
         this.refreshInterval = setInterval(() => {
             this.refreshOrderDetails();
-        }, 30000);
+        }, 50000);
     }
 
     /**

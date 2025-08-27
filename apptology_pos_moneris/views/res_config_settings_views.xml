@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_moneris" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.moneris</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='pos_payment_terminals_section']" position="inside">
+                <setting id="pos_paymob_setting" title="The transactions are processed by Moneris."
+                         string="Moneris" help="Accept payments with a Moneris payment terminal">
+                    <field name="module_apptology_pos_moneris"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
