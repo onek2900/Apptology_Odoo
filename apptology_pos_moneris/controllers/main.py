@@ -20,6 +20,8 @@ class PosMonerisController(http.Controller):
     )
     def moneris_return(self, **kwargs):
         """Handles Moneris POST notifications."""
+        print("pppp")
+
         try:
             json_data = json.loads(request.httprequest.data)
         except json.JSONDecodeError:
@@ -36,6 +38,7 @@ class PosMonerisController(http.Controller):
             return {"error": "Invalid event type"}, 400
 
     def _handle_transaction(self, json_data):
+        print("lloo")
         try:
 
             # Verify HMAC
