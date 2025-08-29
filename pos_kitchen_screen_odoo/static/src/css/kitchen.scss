@@ -1,455 +1,412 @@
-// Variables
-$primary-color: #4a90e2;
-$success-color: #2ecc71;
-$danger-color: #e74c3c;
-$secondary-color: #34495e;
-$secondary-color-online: #5b80a4;
-$text-light: #ffffff;
-$card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-$transition-speed: 0.3s;
+@charset "UTF-8";
 
-// Mixins
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-}
+/* ─────────────────────────────────────────────────────────
+   THEME TOKENS (Light = default). Put data-theme="dark" on
+   <html>, <body>, or .kitchen-dashboard to switch.
+   ───────────────────────────────────────────────────────── */
 
-@mixin card-hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-}
-
-// Main Dashboard Styles
+/* ========== LIGHT (default) ========== */
+:root,
+body,
 .kitchen-dashboard {
-  padding: 20px;
-  background-color: #f5f7fa;
-  //min-height: 100vh;
-  // Add these styles to your existing SCSS file
+  --k-brand: #c1d963;
+  --k-brand-ink: #26300f;
 
-  .section-header {
-    position: relative;
-    margin-bottom: 2rem;
+  --k-bg: #f5f7fa;
+  --k-surface: #ffffff;
+  --k-text: #2c3e50;
+  --k-muted: #64748b;
 
-    h3 {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0;
+  --k-card-inprogress: #edeff5;
+  --k-card-inprogress-hover: #e3e7f0;
 
-      .order-count {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: $primary-color;
-        color: white;
-        border-radius: 20px;
-        padding: 0.2rem 0.8rem;
-        font-size: 1rem;
-        font-weight: 500;
-        min-width: 35px;
-        height: 28px;
+  --k-card-completed: #c1d963;        /* brand green */
+  --k-card-completed-hover: #b7cf56;
+  --k-completed-ink: #26300f;
 
-        // Animation for count changes
-        animation: pulseCount 0.3s ease-out;
+  --k-header-offline: #34495e;
+  --k-header-online: #5b80a4;
 
-        @keyframes pulseCount {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.2);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-      }
-    }
+  --k-btn-primary-bg: var(--k-brand);
+  --k-btn-primary-ink: #0b1220;
+  --k-btn-danger-bg: #e74c3c;
+  --k-btn-danger-ink: #ffffff;
 
-    // Different color for completed section count
-    .completed-section & {
-      .order-count {
-        background: $success-color;
-      }
-    }
-  }
+  --k-shadow: 0 10px 30px rgba(17, 24, 39, 0.12);
+  --k-radius: 16px;
+  --k-spacing: 1rem;
 
-  // Add to your existing media queries if needed
-  @media (max-width: 768px) {
-    .section-header {
-      h3 {
-        font-size: 1.5rem;
+  --k-title-inprogress: var(--k-text);
+  --k-title-completed: var(--k-text);
 
-        .order-count {
-          font-size: 0.9rem;
-          padding: 0.15rem 0.6rem;
-        }
-      }
-    }
-  }
+  --k-line-bg: #eef2f6;
+  --k-line-border: rgba(0, 0, 0, 0.08);
+  --k-line-color: #2c3e50;
+}
 
-  .dashboard-section {
-    //height: calc(100vh - 100px);
-    //overflow-y: auto;
-    padding: 15px;
+/* ========== DARK (support data-theme, data-bs-theme, and Odoo flags) ========== */
+html[data-theme="dark"],
+html[data-bs-theme="dark"],
+body[data-theme="dark"],
+body[data-bs-theme="dark"],
+.o_web_client.o_dark,
+.o_web_client[data-bs-theme="dark"],
+.kitchen-dashboard[data-theme="dark"] {
+  --k-bg: #0b1220;
+  --k-surface: #0f172a;
+  --k-text: #e5e7eb;
+  --k-muted: #a8b1c7;
 
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
+  --k-card-inprogress: rgba(255, 255, 255, 0.08);
+  --k-card-inprogress-hover: rgba(255, 255, 255, 0.14);
 
-    &::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
+  --k-card-completed: #c1d963;
+  --k-card-completed-hover: #b7cf56;
+  --k-completed-ink: #26300f;
 
-    &::-webkit-scrollbar-thumb {
-      background: #888;
-      border-radius: 4px;
-    }
+  --k-header-offline: #2a3647;
+  --k-header-online: #3f5c77;
 
-    // Row of cards
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      margin: -0.75rem; // Negative margin to offset card padding
+  --k-btn-primary-bg: #b6cf59;
+  --k-btn-primary-ink: #0b1220;
 
-      // Column containing the card
-      > [class*='col-'] {
-        display: flex;
-        padding: 0.75rem;
-      }
-    }
-  }
+  --k-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
 
-  h3 {
-    font-size: 1.75rem;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 1.5rem;
-    border-bottom: 3px solid $primary-color;
-    padding-bottom: 0.5rem;
-    display: inline-block;
+  --k-title-inprogress: #ffffff;
+  --k-title-completed: #ffffff;
+
+  --k-line-bg: rgba(255, 255, 255, 0.06);
+  --k-line-border: rgba(255, 255, 255, 0.10);
+  --k-line-color: #e5e7eb;
+}
+
+/* ========== OS fallback when no explicit theme is set ========== */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]):not([data-bs-theme]),
+  body:not([data-theme]):not([data-bs-theme]),
+  .kitchen-dashboard:not([data-theme]) {
+    --k-bg: #0b1220;
+    --k-surface: #0f172a;
+    --k-text: #e5e7eb;
+    --k-muted: #a8b1c7;
+
+    --k-card-inprogress: rgba(255, 255, 255, 0.08);
+    --k-card-inprogress-hover: rgba(255, 255, 255, 0.14);
+
+    --k-card-completed: #c1d963;
+    --k-card-completed-hover: #b7cf56;
+    --k-completed-ink: #26300f;
+
+    --k-header-offline: #2a3647;
+    --k-header-online: #3f5c77;
+
+    --k-btn-primary-bg: #b6cf59;
+    --k-btn-primary-ink: #0b1220;
+
+    --k-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
+
+    --k-title-inprogress: #ffffff;
+    --k-title-completed: #ffffff;
+
+    --k-line-bg: rgba(255, 255, 255, 0.06);
+    --k-line-border: rgba(255, 255, 255, 0.10);
+    --k-line-color: #e5e7eb;
   }
 }
 
-// Card Styles
+
+/* ─────────────────────────────────────────────────────────
+   SCSS bridges & helpers
+   ───────────────────────────────────────────────────────── */
+$brand: var(--k-brand);
+$brand-ink: var(--k-brand-ink);
+$bg: var(--k-bg);
+$surface: var(--k-surface);
+$text: var(--k-text);
+$muted: var(--k-muted);
+
+$inprogress: var(--k-card-inprogress);
+$inprogress-hover: var(--k-card-inprogress-hover);
+$completed: var(--k-card-completed);
+$completed-hover: var(--k-card-completed-hover);
+
+$header-offline: var(--k-header-offline);
+$header-online: var(--k-header-online);
+
+$btn-primary-bg: var(--k-btn-primary-bg);
+$btn-primary-ink: var(--k-btn-primary-ink);
+$btn-danger-bg: var(--k-btn-danger-bg);
+$btn-danger-ink: var(--k-btn-danger-ink);
+
+$radius: var(--k-radius);
+$shadow: var(--k-shadow);
+$space: var(--k-spacing);
+
+@mixin safe-areas {
+  padding-top: 16px;
+  padding-bottom: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}
+@mixin fluid($min,$vw,$max) { font-size: clamp($min, $vw, $max); }
+
+/* ─────────────────────────────────────────────────────────
+   Layout
+   ───────────────────────────────────────────────────────── */
+.kitchen-dashboard {
+  background: $bg;
+  color: $text;
+  padding: clamp(1rem, 2vw, 2rem);
+  min-height: 100dvh;
+  box-sizing: border-box;
+  @include safe-areas;
+}
+
+.section-header .section-title,
+.section-header h3 {
+  @include fluid(1.25rem, 3vw, 2.5rem);
+  font-weight: 700;
+  color: $text;
+  display: inline-block;
+  padding-bottom: .4rem;
+  border-bottom: 4px solid $brand;
+  margin-bottom: 1.25rem;
+  letter-spacing: .02em;
+}
+.section--inprogress .section-header .section-title { color: var(--k-title-inprogress); }
+.section--completed .section-header .section-title { color: var(--k-title-completed); }
+
+.section-header .order-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: .6rem;
+  background: $brand;
+  color: $brand-ink;
+  border-radius: 999px;
+  padding: .15rem .6rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+/* ─────────────────────────────────────────────────────────
+   Order card
+   ───────────────────────────────────────────────────────── */
 .order-card {
+  border-radius: $radius;
+  box-shadow: $shadow;
+  overflow: hidden;
+  background: $surface;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all $transition-speed ease;
-  border: none;
-  box-shadow: $card-shadow;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.order-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.18); }
 
-  &:hover {
-    @include card-hover;
-  }
+.order-card--inprogress { background: $inprogress; }
+.order-card--inprogress:hover { background: $inprogress-hover; }
 
-  .card-header {
-    padding: 1rem;
-    border: none;
-    flex-shrink: 0; // Prevent header from shrinking
+/* ✅ Completed cards: full brand green with readable ink */
+.order-card--completed { background: $completed !important; }
+.order-card--completed:hover { background: $completed-hover !important; }
 
-    &.bg-secondary {
-      background: $secondary-color !important;
-    }
-    &.bg-secondary-online {
-      background: $secondary-color-online !important;
-    }
-    &.bg-success {
-      background: $success-color !important;
-    }
-  }
+/* header */
+.order-card__header {
+  padding: .85rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  position: relative;
+  border: 0;
+}
+.order-card__header.bg-secondary { background: $header-offline !important; }
+.order-card__header.bg-secondary-online { background: $header-online !important; }
 
-  .order-info {
-    ul {
-      li {
-        margin-bottom: 0.5rem;
-        @include flex-center;
-        gap: 0.5rem;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-
-        i {
-          font-size: 1rem;
-          width: 20px;
-        }
-
-        &.fw-bold {
-          font-size: 1.1rem;
-          margin-bottom: 0.75rem;
-        }
-      }
-    }
-  }
-
-  // Make list group expand to fill available space
-  .list-group {
-    flex: 1 1 auto;
-    overflow-y: auto;
-
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #ddd;
-      border-radius: 2px;
-    }
-  }
+/* Completed: remove blue strip, use dark ink on green */
+.order-card--completed .order-card__header {
+  background: transparent !important;
+  color: var(--k-completed-ink);
 }
 
-// Order Items List
-.list-group {
-  .list-group-item {
-    padding: 0.75rem 1rem;
-    border-left: none;
-    border-right: none;
-    @include flex-center;
-    gap: 1rem;
-
-    .qty {
-      font-weight: 600;
-      color: $primary-color;
-      font-size: 1.1rem;
-      min-width: 40px;
-    }
-
-    .product-info {
-      flex: 1;
-
-      .product-name {
-        font-weight: 500;
-        margin-bottom: 0.25rem;
-      }
-
-      .note {
-        color: #666;
-        display: block;
-        margin-top: 0.25rem;
-
-        i {
-          margin-right: 0.5rem;
-          color: #999;
-        }
-      }
-    }
-  }
-}
-
-// Action Buttons
-.card-footer {
-  background: transparent;
-  padding: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0; // Prevent footer from shrinking
-
-  .btn {
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-    transition: all $transition-speed ease;
-    color: white;
-
-    i {
-      margin-right: 0.5rem;
-    }
-
-    &.btn-primary {
-      background: $primary-color;
-      border-color: $primary-color;
-
-      &:hover {
-        background: darken($primary-color, 10%);
-      }
-    }
-
-    &.btn-outline-danger {
-      color: $danger-color;
-      border-color: $danger-color;
-
-      &:hover {
-        background: $danger-color;
-        color: $text-light;
-      }
-    }
-  }
-}
-
-// Animation
-.fade-in {
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Responsive adjustments
-@media (max-width: 992px) {
-  .kitchen-dashboard {
-    .dashboard-section {
-      height: auto;
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .order-card {
-    margin-bottom: 1rem;
-  }
-
-  .card-footer {
-    .btn {
-      padding: 0.4rem 0.8rem;
-      font-size: 0.9rem;
-    }
-  }
-}
-
-
-// Confirmation Popup Styles
-.confirmation-popup {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); // Darker overlay for better contrast
-  z-index: 1040;
-  justify-content: center;
+/* badge (icon) */
+.order-card__type-badge {
+  position: absolute;
+  top: .65rem;
+  left: .75rem;
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.88);
+  color: #0b1220;
+  font-weight: 800;
+  display: inline-flex;
   align-items: center;
-  backdrop-filter: blur(3px); // Add subtle blur effect to background
+  justify-content: center;
+  line-height: 1;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.order-card__type-badge i { font-size: 14px; }
+/* On completed: white badge + dark ink looks best on green */
+.order-card--completed .order-card__type-badge { background: #ffffff; color: var(--k-completed-ink); }
 
-  &.show {
-    display: flex;
-    animation: fadeInBackdrop 0.2s ease-out;
-  }
+/* header meta */
+.order-card__meta { color: #ffffff; padding-left: 2.6rem; }
+/* Completed: dark ink instead of white */
+.order-card--completed .order-card__meta { color: var(--k-completed-ink); }
 
-  .popup-content {
-    background-color: #ffffff; // Use explicit color instead of CSS variable
-    border-radius: 12px; // Increased border radius
-    padding: 2.5rem;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); // Enhanced shadow
-    animation: slideInPopup 0.3s ease-out;
-    transform-origin: center;
+/* order number (white, not bold) */
+.order-card__code {
+  color: #ffffff;
+  font-weight: 500;
+  letter-spacing: .2px;
+  font-size: clamp(1.3rem, 2.1vw, 1.8rem);
+  margin: 0 0 .25rem 0;
+}
+/* Completed: dark ink on green */
+.order-card--completed .order-card__code { color: var(--k-completed-ink); }
 
-    h4 {
-      color: $secondary-color; // Use SCSS variable instead of CSS variable
-      font-size: 26px;
-      font-weight: 700;
-      margin-bottom: 1.5rem;
-      text-align: center;
-      text-transform: capitalize;
-    }
+.order-card__partner,
+.order-card__posref { font-weight: 600; opacity: .95; }
+.order-card__floor { margin-top: .15rem; opacity: .9; }
+.order-card__floor i { margin-right: .35rem; }
 
-    p {
-      color: #4a5568; // More subtle text color
-      font-size: 18px;
-      margin-bottom: 2.5rem;
-      text-align: center;
-      font-weight: 500;
-      line-height: 1.5;
-    }
-  }
-
-  .popup-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1.25rem;
-
-    .btn {
-      border-radius: 8px;
-      font-size: 14px;
-      letter-spacing: 0.5px;
-      padding: 12px 25px;
-      font-weight: 700;
-      text-transform: uppercase;
-      transition: all 0.2s ease;
-      min-width: 160px;
-      border-width: 2px;
-
-      &-secondary {
-        background-color: $secondary-color !important;
-        border-color: $secondary-color !important;
-        color: $text-light !important;
-
-        &:hover {
-          color: $secondary-color !important;
-          background-color: transparent !important;
-          transform: translateY(-2px);
-        }
-      }
-
-      &-danger {
-        background-color: $danger-color !important;
-        border-color: $danger-color !important;
-        color: $text-light !important;
-
-        &:hover {
-          color: $danger-color !important;
-          background-color: transparent !important;
-          transform: translateY(-2px);
-        }
-      }
-    }
-  }
+/* ─────────────────────────────────────────────────────────
+   Order lines
+   ───────────────────────────────────────────────────────── */
+.order-card__items { background: transparent; }
+.order-card__item,
+.order-card__items .list-group-item {
+  background: var(--k-line-bg) !important;
+  color: var(--k-line-color) !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-top: 1px solid var(--k-line-border) !important;
+  border-bottom: 0 !important;
+  padding: .85rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+/* On completed cards, let rows inherit the green surface */
+.order-card--completed .order-card__item,
+.order-card--completed .order-card__items .list-group-item {
+  background: transparent !important;
+  color: var(--k-completed-ink) !important;
+  border-color: rgba(0,0,0,0.15) !important;
 }
 
-// New animations
-@keyframes fadeInBackdrop {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.order-card__qty {
+  min-width: 34px;
+  text-align: center;
+  font-weight: 800;
+  color: #ffffff;
+  background: rgba(0,0,0,0.35);
+  border-radius: 999px;
+  padding: .1rem .5rem;
+}
+/* qty on green stays legible */
+.order-card--completed .order-card__qty { background: rgba(0,0,0,0.20); color: #ffffff; }
+
+.order-card__product { flex: 1 1 auto; font-weight: 600; }
+.order-card__note { display: block; color: var(--k-muted); margin-left: auto; }
+.order-card__note i { margin-right: .35rem; }
+
+/* footer / actions */
+/* footer / actions (responsive + compact) */
+.order-card__footer {
+  background: transparent;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  padding: .85rem;
+}
+:root[data-theme="dark"] .order-card__footer { border-top: 1px solid rgba(255,255,255,0.07); }
+.order-card--completed .order-card__footer { border-top-color: rgba(0,0,0,0.15); }
+
+/* Make actions flexible and allow shrinking */
+.order-card {
+  container-type: inline-size; /* enables container queries based on card width */
+}
+.order-card__actions {
+  display: flex;                /* keep Bootstrap d-flex behaviour */
+  gap: .75rem;
+  align-items: stretch;
+}
+.order-card__actions .btn {
+  flex: 1 1 0;                  /* let both buttons share space and shrink */
+  min-width: 0;                 /* allow shrinking below content width */
+  border-width: 2px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  padding: clamp(.5rem, 1.2vw, .65rem) clamp(.75rem, 2vw, 1rem);
+  font-size: clamp(.9rem, 1.4vw, 1rem);
 }
 
-@keyframes slideInPopup {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+/* Colors stay as you defined */
+.order-card__actions .btn.btn-primary {
+  background: var(--k-btn-primary-bg);
+  color: var(--k-btn-primary-ink);
+  border-color: var(--k-btn-primary-bg);
+}
+.order-card__actions .btn.btn-primary:hover {
+  background: transparent;
+  color: var(--k-btn-primary-bg);
+}
+.order-card__actions .btn.btn-outline-danger {
+  color: var(--k-btn-danger-bg);
+  border-color: var(--k-btn-danger-bg);
+  background: transparent;
+}
+.order-card__actions .btn.btn-outline-danger:hover {
+  background: var(--k-btn-danger-bg);
+  color: var(--k-btn-danger-ink);
 }
 
-// Media queries for responsive design
-@media screen and (max-width: 768px) {
-  .confirmation-popup {
-    .popup-content {
-      width: 95%;
-      padding: 2rem;
-      margin: 0 15px;
-    }
-
-    .popup-actions {
-      flex-direction: column;
-      gap: 1rem;
-
-      .btn {
-        width: 100%;
-        padding: 15px 20px;
-      }
-    }
-  }
+/* ⬇️ Stack buttons when the card is narrow (container query) */
+@container (max-width: 360px) {
+  .order-card__actions { flex-direction: column; }
+  .order-card__actions .btn { width: 100%; }
 }
+
+/* ⬇️ Fallback for browsers without container queries */
+@media (max-width: 420px) {
+  .order-card__actions { flex-direction: column; }
+  .order-card__actions .btn { width: 100%; }
+}
+
+
+/* ─────────────────────────────────────────────────────────
+   Confirmation popup / animations / responsive / RTL
+   ───────────────────────────────────────────────────────── */
+.confirmation-popup {
+  display: none; position: fixed; inset: 0; z-index: 1040;
+  background: rgba(0,0,0,0.58); backdrop-filter: blur(3px);
+  align-items: center; justify-content: center;
+}
+.confirmation-popup.show { display: flex; }
+.confirmation-popup .popup-content {
+  width: 90%; max-width: 420px; background: $surface; color: $text;
+  border-radius: 14px; padding: 2rem; box-shadow: $shadow; animation: popupIn .25s ease-out;
+}
+.confirmation-popup h4 { margin: 0 0 .75rem 0; font-weight: 800; color: $text; }
+.confirmation-popup p { margin: 0 0 1.25rem 0; color: $muted; }
+.confirmation-popup .popup-actions { display: flex; gap: .75rem; justify-content: center; }
+.confirmation-popup .btn.btn-secondary { background: $header-offline; border-color: $header-offline; color: #ffffff; }
+.confirmation-popup .btn.btn-secondary:hover { background: transparent; color: $header-offline; }
+.confirmation-popup .btn.btn-danger { background: $btn-danger-bg; border-color: $btn-danger-bg; color: $btn-danger-ink; }
+.confirmation-popup .btn.btn-danger:hover { background: transparent; color: $btn-danger-bg; }
+
+@keyframes popupIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.fade-in { animation: fadeIn .4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 992px) {
+  .order-card__code { font-size: 1.35rem; }
+  .order-card__item { padding: .75rem .9rem; }
+}
+@media (max-width: 768px) {
+  .section-header .section-title { font-size: 1.5rem; }
+  .order-card { border-radius: 14px; }
+}
+
+[dir="rtl"] .order-card__type-badge { left: auto; right: .75rem; }
+[dir="rtl"] .order-card__meta { padding-left: 0; padding-right: 2.6rem; }
