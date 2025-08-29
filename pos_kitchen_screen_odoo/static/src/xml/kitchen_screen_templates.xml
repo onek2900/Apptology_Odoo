@@ -1,75 +1,64 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <templates>
-    <t t-name="KitchenCustomDashBoard">
-        <div class="confirmation-popup" t-att-class="{'show': state.showCancelConfirm}">
-            <div class="popup-content">
-                <h4>Confirm Cancellation</h4>
-                <p>Are you sure you want to cancel this order?</p>
-                <div class="popup-actions">
-                    <button class="btn btn-secondary" t-on-click="() => this.closeCancelConfirm()">
-                        No, Keep Order
-                    </button>
-                    <button class="btn btn-danger" t-on-click="() => this.cancel_order(state.orderToCancel)">
-                        Yes, Cancel Order
-                    </button>
-                </div>
-            </div>
+
+  <!-- Reusable Order Card component -->
+  <t t-name="KitchenOrderCard">
+    <!-- expects: order, status ('inprogress'|'completed'), showActions (boolean) -->
+    <article class="order-card"
+             t-att-class="{
+               'order-card--inprogress': status === 'inprogress',
+               'order-card--completed': status === 'completed',
+               'is-online': order.is_online_order,
+               'is-pickup': order.order_type == '1',
+               'is-delivery': order.order_type == '2'
+             }"
+             t-att-data-order-id="order.id"
+             t-att-data-order-type="order.order_type"
+             t-att-data-online="order.is_online_order">
+
+      <!-- Header -->
+      <header class="order-card__header"
+              t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white">
+
+        <!-- tiny badge with icon (P/D/In-store) -->
+        <span class="order-card__type-badge"
+              t-att-title="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')"
+              t-att-aria-label="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')">
+          <t t-if="order.order_type == '1'">
+            <i class="fa fa-shopping-basket" aria-hidden="true"></i>
+          </t>
+          <t t-elif="order.order_type == '2'">
+            <i class="fa fa-truck" aria-hidden="true"></i>
+          </t>
+          <t t-else="">
+            <i class="fa fa-cutlery" aria-hidden="true"></i>
+          </t>
+        </span>
+
+        <!-- Meta -->
+        <div class="order-card__meta">
+          <h4 class="order-card__code">
+            <t t-if="order.is_online_order">
+              <t t-esc="order.channel_order_reference"/>
+            </t>
+            <t t-else="">
+              <t t-esc="order.tracking_number"/>
+            </t>
+          </h4>
+
+          <div class="order-card__partner" t-esc="order.partner_id[1]"></div>
+          <div class="order-card__posref" t-if="status === 'inprogress'" t-esc="order.pos_reference"></div>
+
+          <!-- Floor: only when present and not the literal 'false'
+               NOTE: escape ampersands in XML attributes -->
+          <div t-if="order.floor &amp;&amp; order.floor !== 'false'" class="order-card__floor">
+            <i class="fa fa-building" aria-hidden="true"></i>
+            <span>Floor <t t-esc="order.floor"/></span>
+          </div>
         </div>
-        <div class="kitchen-dashboard">
-            <div class="row g-4">
-                <!-- In Progress Section -->
-                <div class="col-12 col-lg-6">
-                    <div class="text-center section-header">
-                        <h3>
-                            In Progress
-                            <span class="order-count">
-                                <t t-esc="orderInProgress.length"/>
-                            </span>
-                        </h3>
-                    </div>
-                    <div class="dashboard-section">
-                        <div t-if="orderInProgress.length" class="row g-4">
-                            <t t-foreach="orderInProgress" t-as="order" t-key="order.id">
-                                <div class="col-12 col-md-4 fade-in">
-                                    <div class="order-card card">
-                                        <div
-                                                t-attf-class="card-header #{order.is_online_order?'bg-secondary-online':'bg-secondary'} text-white">
-                                            <div class="order-info">
-                                                <ul class="list-unstyled m-0">
-                                                    <li class="fw-bold" style="font-size:2rem;">
-                                                        <t t-if="order.is_online_order">
-                                                            <t
-                                                                    t-esc="'O' + ' #' + order.channel_order_reference"/>
-                                                        </t>
-                                                        <t t-else="">
-                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
-                                                        </t>
-                                                    </li>
-                                                    <li class="fw-bold">
-                                                        <t t-esc="order.partner_id[1]"/>
+      </header>
 
-                                                    </li>
-                                                    <li class="fw-bold">
-                                                        <t t-if="order.order_type == '1'">
-                                                            <div>Pick Up</div>
-                                                        </t>
-                                                        <t t-elif="order.order_type == '2'">
-                                                            <div>Delivery</div>
-                                                        </t>
-                                                    </li>
-                                                    <li class="fw-bold">
-                                                        <t t-esc="order.pos_reference"/>
-                                                    </li>
-                                                    <li>
-                                                        <i class="fa fa-building"/>
-                                                        <span>Floor
-                                                            <t t-esc="order.floor"/>
-                                                        </span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
+        <!-- Lines -->
                                         <ul class="list-group list-group-flush">
                                             <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
                                                 <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
@@ -103,112 +92,96 @@
                                             </t>
                                         </ul>
 
-                                        <div class="card-footer">
-                                            <div class="d-flex gap-3">
-                                                <button class="btn btn-primary flex-grow-1"
-                                                        t-on-click="(ev) => this.done_order(order.id)">
-                                                    <i class="fa fa-check"/>
-                                                    Accept
-                                                </button>
-                                                <button class="btn btn-outline-danger"
-                                                        t-on-click="(ev) => this.showCancelConfirm(order.id)">
-                                                    <i class="fa fa-times"/>
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </t>
-                        </div>
-                        <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100">
-                            <h1 t-esc="noOrders"/>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Completed Section -->
-                <div class="col-12 col-lg-6">
-                    <div class="text-center section-header">
-                        <h3>
-                            Completed
-                            <span class="order-count">
-                                <t t-esc="orderCompleted.length"/>
-                            </span>
-                        </h3>
-                    </div>
-                    <div class="dashboard-section">
-                        <div t-if="orderCompleted.length" class="row g-4">
-                            <t t-foreach="orderCompleted" t-as="order" t-key="order.id">
-                                <div class="col-12 col-md-4 fade-in">
-                                    <div class="order-card card completed">
-                                        <div class="card-header bg-success text-white">
-                                            <div class="order-info">
-                                                <ul class="list-unstyled m-0">
-                                                    <li class="fw-bold" style="font-size:2rem;">
-                                                        <t t-if="order.is_online_order">
-                                                            <t
-                                                                    t-esc="'O' + ' #' + order.channel_order_reference"/>
-                                                        </t>
-                                                        <t t-else="">
-                                                            <t t-esc="'T' + order.table_id[1] + ' #' + order.tracking_number"/>
-                                                        </t>
-                                                    </li>
-                                                    <li class="fw-bold">
-                                                        <t t-esc="order.partner_id[1]"/>
-
-                                                    </li>
-                                                    <li class="fw-bold">
-                                                        <t t-if="order.order_type == '1'">
-                                                            <div>Pick Up</div>
-                                                        </t>
-                                                        <t t-elif="order.order_type == '2'">
-                                                            <div>Delivery</div>
-                                                        </t>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <ul class="list-group list-group-flush">
-                                            <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
-                                                <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-                                                <li t-if="line" class="list-group-item">
-                                                   <div class="qty">
-                                                        <t t-if="!line.is_modifier">
-
-                                                            <t t-esc="line.qty"/>×
-                                                        </t>
-                                                    </div>
-                                                    <div class="product-info">
-                                                          <t t-if="!line.is_modifier">
-                                                                <t t-esc="line.full_product_name"/>
-                                                            </t>
-                                                            <t t-else="">
-                                                                <span class="modifier-info"
-                                                                     style="padding-left:20px; font-size:0.9em; color:#bbb;">
-                                                                    →
-                                                                    <t t-esc="line.full_product_name"/>
-                                                                </span>
-                                                            </t>
-                                                        <small t-if="line.note" class="note">
-                                                            <i class="fa fa-tag"/>
-                                                            <t t-esc="line.note"/>
-                                                        </small>
-                                                    </div>
-                                                </li>
-                                            </t>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </t>
-                        </div>
-                        <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100">
-                            <h1 t-esc="noOrders"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- Footer -->
+      <footer t-if="showActions" class="order-card__footer card-footer">
+        <div class="order-card__actions d-flex gap-3">
+          <button class="btn btn-primary flex-grow-1" t-on-click="(ev) => this.done_order(order.id)">
+            <i class="fa fa-check" aria-hidden="true"></i> Accept
+          </button>
+          <button class="btn btn-outline-danger" t-on-click="(ev) => this.showCancelConfirm(order.id)">
+            <i class="fa fa-times" aria-hidden="true"></i> Cancel
+          </button>
         </div>
-    </t>
+      </footer>
+    </article>
+  </t>
+
+  <!-- Page -->
+  <t t-name="KitchenCustomDashBoard">
+
+    <!-- Cancel confirmation -->
+    <div class="confirmation-popup" t-att-class="{'show': state.showCancelConfirm}">
+      <div class="popup-content">
+        <h4>Confirm Cancellation</h4>
+        <p>Are you sure you want to cancel this order?</p>
+        <div class="popup-actions">
+          <button class="btn btn-secondary" t-on-click="() => this.closeCancelConfirm()">No, Keep Order</button>
+          <button class="btn btn-danger" t-on-click="() => this.cancel_order(state.orderToCancel)">Yes, Cancel Order</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="kitchen-dashboard">
+      <div class="row g-4">
+
+        <!-- In Progress -->
+        <section class="col-12 col-lg-6 section section--inprogress">
+          <div class="text-center section-header section-inprogress">
+            <h3 class="section-title">
+              In Progress
+              <span class="order-count"><t t-esc="orderInProgress.length"/></span>
+            </h3>
+          </div>
+
+          <div class="dashboard-section">
+            <div t-if="orderInProgress.length" class="row g-4">
+              <t t-foreach="orderInProgress" t-as="order" t-key="order.id">
+                <div class="col-12 col-md-4 fade-in">
+                  <t t-call="KitchenOrderCard">
+                    <t t-set="order" t-value="order"/>
+                    <t t-set="status" t-value="'inprogress'"/>
+                    <t t-set="showActions" t-value="true"/>
+                  </t>
+                </div>
+              </t>
+            </div>
+            <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100">
+              <h1 t-esc="noOrders"/>
+            </div>
+          </div>
+        </section>
+
+        <!-- Completed -->
+        <section class="col-12 col-lg-6 section section--completed">
+          <div class="text-center section-header">
+            <h3 class="section-title">
+              Completed
+              <span class="order-count"><t t-esc="orderCompleted.length"/></span>
+            </h3>
+          </div>
+
+          <div class="dashboard-section">
+            <div t-if="orderCompleted.length" class="row g-4">
+              <t t-foreach="orderCompleted" t-as="order" t-key="order.id">
+                <div class="col-12 col-md-4 fade-in">
+                  <t t-call="KitchenOrderCard">
+                    <t t-set="order" t-value="order"/>
+                    <t t-set="status" t-value="'completed'"/>
+                    <t t-set="showActions" t-value="false"/>
+                  </t>
+                </div>
+              </t>
+            </div>
+            <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100">
+              <h1 t-esc="noOrders"/>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </t>
 </templates>
+
+      

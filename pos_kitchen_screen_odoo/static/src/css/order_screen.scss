@@ -1,187 +1,116 @@
-// ======================
-// Variables
-// ======================
-$background-dark: #1e2837;
-$in-progress-bg: rgba(108, 117, 136, 0.95);
-$ready-bg: #2ecc71; // Fresh green
-$text-color: #ffffff;
-$spacing-unit: 1rem;
-$border-radius: 24px;
+@charset "UTF-8";
 
-// ======================
-// Main Layout
-// ======================
+/* ========== LIGHT (default) ========== */
+:root,
+body,
 .kitchen-display {
-  min-height: 100vh;
-  display: flex;
-  gap: 1rem;
-  background: $background-dark;
-  padding: $spacing-unit * 2;
-  color: $text-color;
-  overflow-y: auto;
+  --k-brand:#c1d963; --k-brand-ink:#26300f;
+
+  --k-bg:#f5f7fa; --k-surface:#ffffff; --k-text:#2c3e50; --k-muted:#64748b;
+
+  --k-card-inprogress:#edeff5; --k-card-inprogress-hover:#e3e7f0;
+  --k-card-completed:#c1d963; --k-card-completed-hover:#b7cf56; --k-completed-ink:#26300f;
+
+  --k-shadow:0 10px 30px rgba(17,24,39,.12);
+  --k-radius:16px; --k-spacing:1rem;
+
+  --k-title-inprogress:var(--k-text); --k-title-completed:var(--k-text);
+  --k-line-bg:#eef2f6; --k-line-border:rgba(0,0,0,.08); --k-line-color:#2c3e50;
 }
 
-.order-section {
-  margin-bottom: $spacing-unit * 3;
+/* ========== DARK (watch multiple switches) ========== */
+html[data-theme="dark"],
+html[data-bs-theme="dark"],
+body[data-theme="dark"],
+body[data-bs-theme="dark"],
+.o_web_client.o_dark,
+.o_web_client[data-bs-theme="dark"],
+.kitchen-display[data-theme="dark"] {
+  --k-bg:#0b1220; --k-surface:#0f172a; --k-text:#e5e7eb; --k-muted:#a8b1c7;
 
-  .section-title {
-    font-size: clamp(1rem, 2.5vw, 4rem);
-    font-weight: 600;
-    margin-bottom: $spacing-unit * 1.5;
-    color: rgba(255, 255, 255, 0.9);
-    padding-left: $spacing-unit;
+  --k-card-inprogress:rgba(255,255,255,.08);
+  --k-card-inprogress-hover:rgba(255,255,255,.14);
+
+  --k-card-completed:#c1d963; --k-card-completed-hover:#b7cf56; --k-completed-ink:#26300f;
+
+  --k-shadow:0 12px 36px rgba(0,0,0,.28);
+
+  --k-title-inprogress:#fff; --k-title-completed:#fff;
+  --k-line-bg:rgba(255,255,255,.06); --k-line-border:rgba(255,255,255,.10); --k-line-color:#e5e7eb;
+}
+
+/* ========== OS fallback ========== */
+@media (prefers-color-scheme: dark){
+  html:not([data-theme]):not([data-bs-theme]),
+  body:not([data-theme]):not([data-bs-theme]),
+  .kitchen-display:not([data-theme]){
+    --k-bg:#0b1220; --k-surface:#0f172a; --k-text:#e5e7eb; --k-muted:#a8b1c7;
+
+    --k-card-inprogress:rgba(255,255,255,.08);
+    --k-card-inprogress-hover:rgba(255,255,255,.14);
+
+    --k-card-completed:#c1d963; --k-card-completed-hover:#b7cf56; --k-completed-ink:#26300f;
+
+    --k-shadow:0 12px 36px rgba(0,0,0,.28);
+
+    --k-title-inprogress:#fff; --k-title-completed:#fff;
+    --k-line-bg:rgba(255,255,255,.06); --k-line-border:rgba(255,255,255,.10); --k-line-color:#e5e7eb;
   }
 }
 
-.order-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: $spacing-unit * 1.5;
+/* …keep the rest of your order_screen.scss as-is… */
 
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  }
 
-  @media (min-width: 1440px) {
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  }
+/* Layout */
+.kitchen-display{ min-height:100dvh; display:flex; gap:1rem; background:var(--k-bg);
+  padding:calc(var(--k-spacing) * 2); color:var(--k-text); box-sizing:border-box; overflow-y:auto; }
+
+.order-section .section-title{
+  font-weight:700; font-size:clamp(1.25rem,3vw,2.3rem); color:var(--k-text);
+  border-bottom:4px solid var(--k-brand); padding-bottom:.35rem; margin:0 0 1rem; display:inline-block;
 }
+.section--inprogress .section-title{ color:var(--k-title-inprogress); }
+.section--completed  .section-title{ color:var(--k-title-completed); }
 
-// ======================
-// Order Item
-// ======================
-.order-item {
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-  border-radius: $border-radius;
-  box-sizing: border-box;
-  overflow: hidden;
-  animation: fadeIn 0.3s ease-out forwards;
+/* Grid */
+.order-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr));
+  gap:calc(var(--k-spacing)*1.15); }
+@media (max-width:768px){ .order-grid{ grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }}
 
-  &.in-progress {
-    background: $in-progress-bg;
-
-    &:hover {
-      background: lighten($in-progress-bg, 5%);
-      transform: translateY(-2px);
-    }
-  }
-
-  &.ready {
-    background: $ready-bg;
-
-    &:hover {
-      background: lighten($ready-bg, 5%);
-      transform: translateY(-2px);
-    }
-  }
+/* Card */
+.order-item{
+  display:flex; flex-direction:column; border-radius:14px;
+  box-shadow:var(--k-shadow); padding:.65rem .7rem; background:var(--k-surface);
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
 }
+.order-item:hover{ transform:translateY(-2px); box-shadow:0 16px 40px rgba(0,0,0,.18); }
 
-// ======================
-// Tracking Layout (row-based)
-// ======================
-.tracking-container {
-  width: 100%;
+.order-item.in-progress{ background:var(--k-card-inprogress); }
+.order-item.in-progress:hover{ background:var(--k-card-inprogress-hover); }
+.order-item.ready{ background:var(--k-card-completed); color:var(--k-completed-ink); }
+.order-item.ready:hover{ background:var(--k-card-completed-hover); }
+
+/* Row (no inner rectangle frame) */
+.tracking-row{ display:flex; align-items:center; gap:.45rem; }
+
+/* Icon badge (smaller) */
+.tracking-type{
+  width:22px; height:22px; border-radius:9999px; flex:0 0 auto;
+  display:inline-flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.9); color:#0b1220;
 }
+.tracking-type i{ font-size:12px; line-height:1; }
+.order-item.ready .tracking-type{ background:#fff; color:var(--k-completed-ink); }
 
-.tracking-row {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 0.75rem;
-  width: 100%;
+/* Text */
+.tracking-details{ display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+.tracking-number-display{
+  font-weight:500; font-size:clamp(1rem,2vw,1.4rem); letter-spacing:.2px; color:var(--k-text);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
+.order-item.ready .tracking-number-display{ color:var(--k-completed-ink); }
+.partner-name{ font-size:clamp(.85rem,1.3vw,.95rem); color:var(--k-muted);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-.tracking-type {
-  flex: 0 0 auto;
-  min-width: 60px;
-  text-align: center;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-right: 2px solid #fff;
-  padding-right: 0.5rem;
-  line-height: 1.2;
-}
-
-.tracking-details {
-  flex: 1;
-  padding-left: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  overflow: hidden;
-}
-
-// ======================
-// Typography
-// ======================
-.tracking-number-display {
-  font-size: 0.9rem;
-  font-weight: 400;
-  margin-bottom: 0.25rem;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-.partner-name {
-  font-size: 0.9rem;
-  font-weight: 400;
-  opacity: 0.85;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
-// ======================
-// Responsive Adjustments
-// ======================
-@media (min-width: 768px) {
-  .tracking-number-display { font-size: 1.2rem; }
-  .partner-name { font-size: 1 rem; }
-}
-
-@media (min-width: 1440px) {
-  .tracking-number-display { font-size: 1rem; }
-}
-
-@media (min-width: 2560px) {
-  .tracking-number-display { font-size: 1rem; }
-  .partner-name { font-size: 1.8rem; }
-}
-
-@media (min-width: 3840px) {
-  .tracking-number-display { font-size: 4rem; }
-  .partner-name { font-size: 2rem; }
-}
-
-// ======================
-// Scrollbar Styling
-// ======================
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-  }
-}
-
-// ======================
-// Animation
-// ======================
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
+/* Remove framed rectangles completely */
+.order-item .tracking-container{ padding:0; background:transparent; border:0; }
