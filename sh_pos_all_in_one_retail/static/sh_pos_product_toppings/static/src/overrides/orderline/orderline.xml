@@ -55,7 +55,7 @@
                         <t t-set="toppings_total" t-value="toppings_total + (t.price_subtotal_incl || 0)"/>
                     </t>
                 </t>
-                <t t-set="main_total" t-value="(line.get_price_with_tax && line.get_price_with_tax()) || 0"/>
+                <t t-set="main_total" t-value="(line.get_price_with_tax &amp;&amp; line.get_price_with_tax()) || 0"/>
                 <div class="d-flex justify-content-between">
                     <span>
                         <t t-esc="line.qty"/> x <t t-esc="line.productName"/>
