@@ -75,10 +75,6 @@
                 </div>
             </t>
         </xpath>
-        <!-- Hide default detail rows under product (price-per-unit etc.) in receipt -->
-        <xpath expr="//Orderline//ul[hasclass('info-list')]" position="attributes">
-            <attribute name="style">display:none</attribute>
-        </xpath>
     </t>
 
 </templates>
