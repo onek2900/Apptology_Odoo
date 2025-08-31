@@ -51,6 +51,15 @@
         </xpath>
         <!-- Show toppings under each main order line on the receipt -->
         <xpath expr="//Orderline" position="after">
+            <!-- Custom compact main line: qty x Product .... total (incl toppings if available) -->
+            <div class="d-flex justify-content-between">
+                <span>
+                    <t t-esc="line.qty"/> x <t t-esc="line.productName"/>
+                </span>
+                <span>
+                    <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings || line.price)"/>
+                </span>
+            </div>
             <t t-if="line.Toppings and line.Toppings.length">
                 <div class="pos-receipt-left-padding">
                     <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
@@ -63,14 +72,12 @@
                             </span>
                         </div>
                     </t>
-                    <div class="d-flex justify-content-between fw-bold mt-1">
-                        <span>Total with toppings</span>
-                        <span>
-                            <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings || 0)"/>
-                        </span>
-                    </div>
                 </div>
             </t>
+        </xpath>
+        <!-- Hide default detail rows under product (price-per-unit etc.) in receipt -->
+        <xpath expr="//Orderline//ul[hasclass('info-list')]" position="attributes">
+            <attribute name="style">display:none</attribute>
         </xpath>
     </t>
 
