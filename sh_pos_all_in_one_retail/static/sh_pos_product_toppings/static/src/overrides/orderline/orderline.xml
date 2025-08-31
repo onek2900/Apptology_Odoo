@@ -1,4 +1,3 @@
-@ -1,81 +1,81 @@
 <templates id="template" xml:space="preserve">
     <!-- Force-disable any animation on all POS orderlines -->
     <t t-name="sh_pos_product_toppings.OrderlineNoAnim" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
