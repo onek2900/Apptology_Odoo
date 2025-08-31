@@ -326,7 +326,7 @@
             'sh_pos_all_in_one_retail/static/sh_pos_secondary/static/src/apps/control_buttons/change_UOM_button/change_UOM_button.xml',
             'sh_pos_all_in_one_retail/static/sh_pos_secondary/static/src/overrides/models/models.js',
             'sh_pos_all_in_one_retail/static/sh_pos_secondary/static/src/overrides/components/order_line/order_line.xml',
-            "sh_pos_all_in_one_retail/static/sh_pos_secondary/static/src/overrides/components/ticket_screen/ticket_screen.js",
+
             
             # Return Exchange Barcode
             'sh_pos_all_in_one_retail/static/sh_pos_order_return_exchange_barcode/static/src/apps/models.js',
