@@ -340,6 +340,8 @@
             
             # Whatsapp Intergration
             'sh_pos_all_in_one_retail/static/sh_pos_whatsapp_integration/static/src/**/*',
+            # Global: disable animations/transitions across POS UI
+            'sh_pos_all_in_one_retail/static/global_disable_animation/static/src/scss/no_anim_pos.scss',
         ]
     },
     "images": [

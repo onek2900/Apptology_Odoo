@@ -1,0 +1,11 @@
+// Globally disable animations and transitions across POS UI
+// Applies to all Point of Sale screens/components
+
+body.pos,
+.pos {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
