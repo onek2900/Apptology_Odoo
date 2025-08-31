@@ -315,6 +315,8 @@
 
             #advance cache
             'sh_pos_all_in_one_retail/static/sh_pos_advance_cache/static/src/app/indexDB.js',
+            # Clear cache proactively on POS open
+            'sh_pos_all_in_one_retail/static/sh_pos_advance_cache/static/src/js/clear_on_open.js',
             'sh_pos_all_in_one_retail/static/sh_pos_advance_cache/static/src/js/cache_customer.js',
             'sh_pos_all_in_one_retail/static/sh_pos_advance_cache/static/src/js/cache_product.js',
             'sh_pos_all_in_one_retail/static/sh_pos_advance_cache/static/src/js/chrome.js',
