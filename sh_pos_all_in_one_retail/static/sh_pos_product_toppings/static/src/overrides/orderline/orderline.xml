@@ -1,3 +1,4 @@
+@ -1,81 +1,81 @@
 <templates id="template" xml:space="preserve">
     <!-- Force-disable any animation on all POS orderlines -->
     <t t-name="sh_pos_product_toppings.OrderlineNoAnim" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
@@ -51,9 +52,18 @@
         </xpath>
         <!-- Show toppings under each main order line on the receipt -->
         <xpath expr="//Orderline" position="after">
+            <!-- Custom compact main line: qty x Product .... total (incl toppings if available) -->
+            <div class="d-flex justify-content-between">
+                <span>
+                    <t t-esc="line.qty"/> x <t t-esc="line.productName"/>
+                </span>
+                <span>
+                    <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings || line.price)"/>
+                    <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings !== undefined ? line.total_incl_with_toppings : (+line.price || 0))"/>
+                </span>
+            </div>
             <t t-if="line.Toppings and line.Toppings.length">
                 <div class="pos-receipt-left-padding">
-                    <t t-set="toppings_total" t-value="(line.Toppings || []).reduce((s,t) => s + (t.price_subtotal_incl || 0), 0)"/>
                     <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
                         <div class="d-flex justify-content-between">
                             <span>
@@ -64,12 +74,6 @@
                             </span>
                         </div>
                     </t>
-                    <div class="d-flex justify-content-between fw-bold mt-1">
-                        <span>Total with toppings</span>
-                        <span>
-                            <t t-esc="env.utils.formatCurrency((line.price || 0) + (toppings_total || 0))"/>
-                        </span>
-                    </div>
                 </div>
             </t>
         </xpath>
