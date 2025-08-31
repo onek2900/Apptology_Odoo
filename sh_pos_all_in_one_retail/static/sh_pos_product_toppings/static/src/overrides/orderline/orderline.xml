@@ -46,37 +46,31 @@
     </t> -->
 
     <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
-        <!-- Append compact layout and toppings list after each Orderline node -->
+        <xpath expr="//Orderline" position="attributes">
+            <attribute name="t-if" >!line.is_topping</attribute>
+        </xpath>
+        <!-- Show toppings under each main order line on the receipt -->
         <xpath expr="//Orderline" position="after">
-            <t t-if="!line.is_topping">
-                <t t-set="toppings_total" t-value="0"/>
-                <t t-if="line.Toppings">
-                    <t t-foreach="line.Toppings" t-as="t" t-key="t.id">
-                        <t t-set="toppings_total" t-value="toppings_total + (t.price_subtotal_incl || 0)"/>
+            <t t-if="line.Toppings and line.Toppings.length">
+                <div class="pos-receipt-left-padding">
+                    <t t-set="toppings_total" t-value="(line.Toppings || []).reduce((s,t) => s + (t.price_subtotal_incl || 0), 0)"/>
+                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <t t-esc="topping.quantity"/> x <t t-esc="topping.full_product_name"/>
+                            </span>
+                            <span>
+                                <t t-esc="env.utils.formatCurrency(topping.price_subtotal_incl)"/>
+                            </span>
+                        </div>
                     </t>
-                </t>
-                <div class="sh_compact_receipt_line d-flex justify-content-between mt-1">
-                    <span>
-                        <t t-esc="line.qty"/> x <t t-esc="line.productName"/>
-                    </span>
-                    <span>
-                        <t t-esc="env.utils.formatCurrency((line.total_incl_with_toppings !== undefined ? line.total_incl_with_toppings : 0) || (toppings_total || 0))"/>
-                    </span>
-                </div>
-                <t t-if="line.Toppings and line.Toppings.length">
-                    <div class="pos-receipt-left-padding">
-                        <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
-                            <div class="d-flex justify-content-between">
-                                <span>
-                                    <t t-esc="topping.quantity"/> x <t t-esc="topping.full_product_name"/>
-                                </span>
-                                <span>
-                                    <t t-esc="env.utils.formatCurrency(topping.price_subtotal_incl || 0)"/>
-                                </span>
-                            </div>
-                        </t>
+                    <div class="d-flex justify-content-between fw-bold mt-1">
+                        <span>Total with toppings</span>
+                        <span>
+                            <t t-esc="env.utils.formatCurrency((line.price || 0) + (toppings_total || 0))"/>
+                        </span>
                     </div>
-                </t>
+                </div>
             </t>
         </xpath>
     </t>
