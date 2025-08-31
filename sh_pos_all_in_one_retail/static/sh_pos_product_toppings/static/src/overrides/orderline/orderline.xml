@@ -47,7 +47,7 @@
 
     <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
         <!-- Replace the default Orderline rendering with compact layout and toppings list -->
-        <xpath expr="//Orderline" position="replace">
+        <xpath expr="Orderline" position="replace">
             <t t-if="!line.is_topping">
                 <div class="d-flex justify-content-between">
                     <span>
