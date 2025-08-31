@@ -53,6 +53,8 @@
                                 .span_product_image, ul.info-list.ms-2{
                                     display: none !important;
                                 }
+                                // Hide any default detail info rows under product names
+                                ul.info-list{ display: none !important; }
                             }
                         }
                     }

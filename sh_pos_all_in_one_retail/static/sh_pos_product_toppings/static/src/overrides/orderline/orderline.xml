@@ -53,6 +53,7 @@
         <xpath expr="//Orderline" position="after">
             <t t-if="line.Toppings and line.Toppings.length">
                 <div class="pos-receipt-left-padding">
+                    <t t-set="toppings_total" t-value="(line.Toppings || []).reduce((s,t) => s + (t.price_subtotal_incl || 0), 0)"/>
                     <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
                         <div class="d-flex justify-content-between">
                             <span>
@@ -66,7 +67,7 @@
                     <div class="d-flex justify-content-between fw-bold mt-1">
                         <span>Total with toppings</span>
                         <span>
-                            <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings || 0)"/>
+                            <t t-esc="env.utils.formatCurrency((line.price || 0) + (toppings_total || 0))"/>
                         </span>
                     </div>
                 </div>
