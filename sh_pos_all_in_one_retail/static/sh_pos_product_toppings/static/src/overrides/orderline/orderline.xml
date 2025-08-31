@@ -46,32 +46,8 @@
     </t> -->
 
     <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
-
-        <!-- Show toppings under each main order line on the receipt -->
-        <xpath expr="//Orderline" position="after">
-            <!-- Custom compact main line: qty x Product .... total (incl toppings if available) -->
-            <div class="d-flex justify-content-between">
-                <span>
-                    <t t-esc="line.qty"/> x <t t-esc="line.productName"/>
-                </span>
-                <span>
-                <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings !== undefined ? line.total_incl_with_toppings : (+line.price || 0))"/>
-                </span>
-            </div>
-            <t t-if="line.Toppings and line.Toppings.length">
-                <div class="pos-receipt-left-padding">
-                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
-                        <div class="d-flex justify-content-between">
-                            <span>
-                                <t t-esc="topping.quantity"/> x <t t-esc="topping.full_product_name"/>
-                            </span>
-                            <span>
-                                <t t-esc="env.utils.formatCurrency(topping.price_subtotal_incl)"/>
-                            </span>
-                        </div>
-                    </t>
-                </div>
-            </t>
+        <xpath expr="//Orderline" position="attributes">
+            <attribute name="t-if" >!line.is_topping</attribute>
         </xpath>
     </t>
 
