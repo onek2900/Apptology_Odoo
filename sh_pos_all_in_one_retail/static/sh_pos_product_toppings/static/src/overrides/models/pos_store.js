@@ -5,6 +5,25 @@ import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { ToppingsPopup } from "@sh_pos_all_in_one_retail/static/sh_pos_product_toppings/app/Popups/ToppingsPopup/ToppingsPopup";
 
 patch(PosStore.prototype, {
+    async _processData(loadedData) {
+        await super._processData(...arguments);
+        // Store topping groups if provided by the backend
+        this.db.topping_groups = loadedData['sh.topping.group'] || [];
+        this.db.topping_groups_by_id = loadedData['topping_groups_by_id'] || {};
+        // Build inverse index: topping product id -> [group ids]
+        this.db.topping_groups_by_topping_id = {};
+        if (this.db.topping_groups && this.db.topping_groups.length) {
+            for (const grp of this.db.topping_groups) {
+                const productIds = grp.toppinds_ids || [];
+                for (const pid of productIds) {
+                    if (!this.db.topping_groups_by_topping_id[pid]) {
+                        this.db.topping_groups_by_topping_id[pid] = [];
+                    }
+                    this.db.topping_groups_by_topping_id[pid].push(grp.id);
+                }
+            }
+        }
+    },
     //@override
     async addProductToCurrentOrder(product, options = {}) {
         var self = this;
@@ -47,7 +66,12 @@ patch(PosStore.prototype, {
 
         if (self.config.sh_add_toppings_on_click_product && self.config.sh_enable_toppings) {
             if (Topping_products.length > 0) {
-                let { confirmed } = await  this.popup.add(ToppingsPopup, {'title' : 'Toppings','Topping_products': Topping_products, 'Globaltoppings': []});
+                let { confirmed } = await this.popup.add(ToppingsPopup, {
+                    'title': 'Toppings',
+                    'Topping_products': Topping_products,
+                    'Globaltoppings': [],
+                    'base_product': product,
+                });
                 if (confirmed) {
                 } else {
                     return;
