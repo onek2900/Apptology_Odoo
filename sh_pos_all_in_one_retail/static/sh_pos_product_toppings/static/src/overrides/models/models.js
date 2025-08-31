@@ -158,6 +158,21 @@ patch(Orderline.prototype, {
         return res
     }
 });
+
+// Hide topping lines in printed receipt data to avoid duplication
+patch(Order.prototype, {
+    export_for_printing() {
+        const data = super.export_for_printing(...arguments);
+        try {
+            if (data && Array.isArray(data.orderlines)) {
+                data.orderlines = data.orderlines.filter((l) => !l.is_topping);
+            }
+        } catch (e) {
+            // noop
+        }
+        return data;
+    },
+});
 patch(Order.prototype, {
     setup(obj, options) {
         super.setup(...arguments)
