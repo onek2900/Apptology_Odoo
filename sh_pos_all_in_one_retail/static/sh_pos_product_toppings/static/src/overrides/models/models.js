@@ -59,12 +59,18 @@ patch(Orderline.prototype, {
         try {
             if (!this.is_topping) {
                 let toppings_total_incl = 0;
+                let toppings_total_excl = 0;
                 for (const t of result['Toppings']) {
                     toppings_total_incl += t && t.price_subtotal_incl ? t.price_subtotal_incl : 0;
+                    toppings_total_excl += t && t.price_subtotal ? t.price_subtotal : 0;
                 }
-                // Numeric total including toppings (for receipt display)
+                // Numeric totals for display convenience
                 const base_incl = this.get_price_with_tax();
+                const base_excl = this.get_price_without_tax();
                 result['total_incl_with_toppings'] = (base_incl || 0) + toppings_total_incl;
+                result['total_excl_with_toppings'] = (base_excl || 0) + toppings_total_excl;
+                // Show line total without tax on receipts by default
+                result['price'] = base_excl || 0;
             }
         } catch (e) {
             // ignore
