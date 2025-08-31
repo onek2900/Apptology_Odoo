@@ -17,6 +17,13 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         this.numberBuffer = useService("number_buffer");
           this.popup = useService("popup");
         // useListener('click-topping-product', this._clicktoppigProduct);
+        // Wizard state for grouped flow
+        this.state = useState({ currentIndex: 0 });
+        this.baseProduct = this.props.base_product || null;
+        // Resolve groups for the base product (if provided)
+        const groupIds = (this.baseProduct && this.baseProduct.sh_topping_group_ids) || [];
+        const groupsById = (this.pos.db && this.pos.db.topping_groups_by_id) || {};
+        this.groups = groupIds.map((gid) => groupsById[gid]).filter((g) => !!g);
     }
     ClickOk(){ 
         this.props.resolve({ confirmed: true, payload: null });
@@ -28,8 +35,40 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
     get toppingProducts(){
         return this.props.Topping_products
     }
+    get hasGroups() {
+        return this.groups && this.groups.length > 0;
+    }
+    get currentGroup() {
+        if (!this.hasGroups) return null;
+        return this.groups[this.state.currentIndex];
+    }
+    get stepLabel() {
+        if (!this.hasGroups) return "";
+        return `${this.state.currentIndex + 1}/${this.groups.length}`;
+    }
+    nextGroup() {
+        if (!this.hasGroups) return;
+        if (this.state.currentIndex < this.groups.length - 1) {
+            this.state.currentIndex += 1;
+        }
+    }
+    prevGroup() {
+        if (!this.hasGroups) return;
+        if (this.state.currentIndex > 0) {
+            this.state.currentIndex -= 1;
+        }
+    }
+    productsForGroup(group) {
+        if (!group) return [];
+        // Intersect provided topping products with the group's topping ids
+        const allowedIds = new Set(group.toppinds_ids || []);
+        return (this.toppingProducts || []).filter((p) => allowedIds.has(p.id));
+    }
     get imageUrl() {
         const product = this.product; 
+        return `/web/image?model=product.product&field=image_128&id=${product.id}&write_date=${product.write_date}&unique=1`;
+    }
+    imageUrlFor(product) {
         return `/web/image?model=product.product&field=image_128&id=${product.id}&write_date=${product.write_date}&unique=1`;
     }
     get pricelist() {
@@ -50,6 +89,14 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         } else {
             return formattedUnitPrice;
         }
+    }
+    priceFor(product) {
+        const { currencyId, digits } = this.env;
+        const formattedUnitPrice = formatMonetary(product.get_price(this.pricelist, 1), { currencyId, digits });
+        if (product.to_weight) {
+            return `${formattedUnitPrice}/${this.pos.units_by_id[product.uom_id[0]].name}`;
+        }
+        return formattedUnitPrice;
     }
     async _clicktoppigProduct(event){
         if (!this.pos.get_order()) {
