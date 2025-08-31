@@ -10,6 +10,9 @@
                     <group>
                         <group>
                             <field name="name"></field>
+                            <field name="min"/>
+                            <field name="max"/>
+                            <field name="multi_max"/>
                             <field name="toppinds_ids" widget="many2many_tags"></field>
                         </group>
                     </group>

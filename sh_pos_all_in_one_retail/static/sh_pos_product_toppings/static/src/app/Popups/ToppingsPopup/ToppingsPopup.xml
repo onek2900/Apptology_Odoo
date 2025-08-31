@@ -10,6 +10,11 @@
                 <t t-if="hasGroups">
                     <div class="small text-muted">
                         <t t-esc="stepLabel"/> - <t t-esc="currentGroup.name"/>
+                        <t>
+                            <span class="ms-2">Min: <t t-esc="currentGroup.min || 0"/></span>
+                            <span class="ms-2">Max: <t t-esc="currentGroup.max || 0"/></span>
+                            <span class="ms-2">Selected: <t t-esc="currentSelectedCount()"/></span>
+                        </t>
                     </div>
                 </t>
             </div>
@@ -85,9 +90,9 @@
                     <div class="d-flex w-100 justify-content-between">
                         <div class="button btn btn-lg btn-secondary" t-on-click="prevGroup" t-att-class="{'disabled': state.currentIndex === 0}">Previous</div>
                         <t t-if="state.currentIndex &lt; (groups.length - 1)">
-                            <div class="button btn btn-lg btn-primary" t-on-click="nextGroup">Next</div>
+                            <div class="button btn btn-lg btn-primary" t-on-click="nextGroup" t-att-class="{'disabled': !canProceedCurrent()}">Next</div>
                         </t>
-                        <div class="button cancel btn btn-lg btn-success" t-on-click="ClickOk">Done</div>
+                        <div class="button cancel btn btn-lg btn-success" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}">Done</div>
                     </div>
                 </t>
                 <t t-if="!hasGroups">
