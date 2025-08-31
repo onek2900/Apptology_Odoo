@@ -49,6 +49,29 @@
         <xpath expr="//Orderline" position="attributes">
             <attribute name="t-if" >!line.is_topping</attribute>
         </xpath>
+        <!-- Show toppings under each main order line on the receipt -->
+        <xpath expr="//Orderline" position="after">
+            <t t-if="line.Toppings and line.Toppings.length">
+                <div class="pos-receipt-left-padding">
+                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
+                        <div class="d-flex justify-content-between">
+                            <span>
+                                <t t-esc="topping.quantity"/> x <t t-esc="topping.full_product_name"/>
+                            </span>
+                            <span>
+                                <t t-esc="env.utils.formatCurrency(topping.price_subtotal_incl)"/>
+                            </span>
+                        </div>
+                    </t>
+                    <div class="d-flex justify-content-between fw-bold mt-1">
+                        <span>Total with toppings</span>
+                        <span>
+                            <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings || 0)"/>
+                        </span>
+                    </div>
+                </div>
+            </t>
+        </xpath>
     </t>
 
 </templates>
