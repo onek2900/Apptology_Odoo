@@ -46,8 +46,8 @@
     </t> -->
 
     <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
-        <!-- Append compact layout and toppings list after the default Orderline -->
-        <xpath expr="//Orderline" position="after">
+        <!-- Inject compact layout and toppings list inside each Orderline node -->
+        <xpath expr="//Orderline" position="inside">
             <t t-if="!line.is_topping">
                 <t t-set="toppings_total" t-value="0"/>
                 <t t-if="line.Toppings">
@@ -55,13 +55,12 @@
                         <t t-set="toppings_total" t-value="toppings_total + (t.price_subtotal_incl || 0)"/>
                     </t>
                 </t>
-                <t t-set="main_total" t-value="(line.get_price_with_tax &amp;&amp; line.get_price_with_tax()) || 0"/>
-                <div class="d-flex justify-content-between">
+                <div class="sh_compact_receipt_line d-flex justify-content-between mt-1">
                     <span>
                         <t t-esc="line.qty"/> x <t t-esc="line.productName"/>
                     </span>
                     <span>
-                        <t t-esc="env.utils.formatCurrency(main_total + toppings_total)"/>
+                        <t t-esc="env.utils.formatCurrency((line.total_incl_with_toppings !== undefined ? line.total_incl_with_toppings : 0) || (toppings_total || 0))"/>
                     </span>
                 </div>
                 <t t-if="line.Toppings and line.Toppings.length">
