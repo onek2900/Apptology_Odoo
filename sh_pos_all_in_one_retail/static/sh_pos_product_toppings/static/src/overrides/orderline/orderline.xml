@@ -57,7 +57,7 @@
                     <t t-esc="line.qty"/> x <t t-esc="line.productName"/>
                 </span>
                 <span>
-                    <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings || line.price)"/>
+                    <t t-esc="env.utils.formatCurrency(line.total_incl_with_toppings !== undefined ? line.total_incl_with_toppings : (+line.price || 0))"/>
                 </span>
             </div>
             <t t-if="line.Toppings and line.Toppings.length">
