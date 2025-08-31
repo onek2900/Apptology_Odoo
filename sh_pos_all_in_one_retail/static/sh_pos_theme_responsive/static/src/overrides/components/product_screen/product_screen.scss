@@ -124,6 +124,12 @@ body.pos{
                 @if $sh_pos_body_background_type =="bg_img" {
                     background-color: transparent !important;
                 }
+                // Remove any fade/transition animation when orderlines appear
+                .orderline{
+                    animation: none !important;
+                    transition: none !important;
+                    opacity: 1 !important;
+                }
                 .orderline{
                     margin: 8px 10px 0px 10px;background: $sh_pos_secondary_color;transition: all .5s;
                     &:hover{

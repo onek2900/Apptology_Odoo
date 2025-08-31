@@ -1,4 +1,10 @@
 <templates id="template" xml:space="preserve">
+    <!-- Force-disable any animation on all POS orderlines -->
+    <t t-name="sh_pos_product_toppings.OrderlineNoAnim" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//li[hasclass('orderline')]" position="attributes">
+            <attribute name="style">animation: none !important; transition: none !important; opacity: 1 !important;</attribute>
+        </xpath>
+    </t>
   
     <!-- added this code in wh stock module -->
     <!-- <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">

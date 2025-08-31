@@ -11,6 +11,21 @@ patch(Orderline.prototype, {
         this.pos = usePos();
         this.popup = useService("popup");
     },
+    mounted() {
+        if (super.mounted) super.mounted(...arguments);
+        // Ensure no fade/transition on orderline when it appears
+        const root = this.el?.closest?.('li.orderline') || this.el;
+        if (root) {
+            try {
+                root.style.animation = 'none';
+                root.style.transition = 'none';
+                root.style.opacity = 1;
+                root.classList.remove('o-animate', 'fade', 'fade-in', 'o_fade', 'appear');
+            } catch (e) {
+                // noop
+            }
+        }
+    },
     async _clickRemoveLine(line_id) {
         var self = this;
         // event.stopPropagation()

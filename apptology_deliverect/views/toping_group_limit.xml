@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="sh_pos_product_toppings_group_form_view_inherit" model="ir.ui.view">
-        <field name="name">sh.pos.product.topping.group.inherit.form</field>
-        <field name="model">sh.topping.group</field>
-        <field name="inherit_id" ref="sh_pos_all_in_one_retail.sh_pos_product_toppings_group_form_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//group/field[@name='name']" position="after">
-                <field name="min"></field>
-                <field name="max"></field>
-
-                <field name="multi_max"></field>
-
-
-            </xpath>
-
-        </field>
-    </record>
+    <!-- Limits UI moved into sh_pos_product_toppings. Keep file to avoid manifest error but no-op here. -->
 </odoo>

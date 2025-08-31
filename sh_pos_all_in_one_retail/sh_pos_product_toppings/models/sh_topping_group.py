@@ -10,6 +10,10 @@ class ShToppingGroup(models.Model):
 
     name = fields.Char(string="Name", required=True)
     toppinds_ids = fields.Many2many('product.product', string="Toppings", domain="[('available_in_pos', '=', True)]")
+    # Moved from apptology_deliverect: limits per topping group
+    min = fields.Integer(string="Min", default=0, help="Minimum required toppings to select for this group.")
+    max = fields.Integer(string="Max", default=0, help="Maximum toppings allowed for this group (0 = no limit).")
+    multi_max = fields.Integer(string="Multi Max", default=0, help="Maximum quantity per topping item within this group (0 = no limit).")
 
 class MassUpdateToppings(models.TransientModel):
     _name = 'sh.mass.update.topings'

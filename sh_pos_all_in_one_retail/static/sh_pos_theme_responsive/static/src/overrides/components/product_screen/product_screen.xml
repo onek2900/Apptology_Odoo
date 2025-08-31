@@ -2,6 +2,9 @@
 <templates id="template" xml:space="preserve">
 
     <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//li[hasclass('orderline')]" position="attributes">
+            <attribute name="style">animation: none !important; transition: none !important; opacity: 1 !important;</attribute>
+        </xpath>
         <xpath expr="//div[hasclass('price')]" position="after">
             <t t-if="env.services.pos.config.sh_remove_all_item">
                 <!-- <t t-if="!line.sh_line.hasOwnProperty('refunded_qty')"> -->

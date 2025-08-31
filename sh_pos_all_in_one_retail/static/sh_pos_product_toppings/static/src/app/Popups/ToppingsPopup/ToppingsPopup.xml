@@ -7,52 +7,99 @@
                 <h4 class="modal-title title">
                     <t t-esc="props.title" />
                 </h4>
+                <t t-if="hasGroups">
+                    <div class="small text-muted">
+                        <t t-esc="stepLabel"/> - <t t-esc="currentGroup.name"/>
+                        <t>
+                            <span class="ms-2">Min: <t t-esc="currentGroup.min || 0"/></span>
+                            <span class="ms-2">Max: <t t-esc="currentGroup.max || 0"/></span>
+                            <span class="ms-2">Selected: <t t-esc="currentSelectedCount()"/></span>
+                        </t>
+                    </div>
+                </t>
             </div>
             <main class="modal-body sh_global_topping_popup_body">
                 <div class="sh_global_topping_div">
-                    <div class="sh_toppings_products product-list d-grid gap-1 p-1" t-if="toppingProducts and toppingProducts.length > 0">
-                        <t t-foreach="toppingProducts" t-as="product" t-key="product.id">
-                            <t t-if="product">
-                                <article class="product" tabindex="0" t-on-keypress="spaceClickProduct" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-attf-aria-labelledby="article_product_{{product.id}}">
+                    <!-- Wizard view: show one group at a time -->
+                    <t t-if="hasGroups">
+                        <div class="sh_group_products product-list d-grid gap-1 p-1">
+                            <t t-foreach="productsForGroup(currentGroup)" t-as="product" t-key="product.id">
+                                <t t-if="product">
+                                    <article class="product" tabindex="0" t-on-keypress="spaceClickProduct" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-attf-aria-labelledby="article_product_{{product.id}}">
+                                        <div class="product-img">
+                                            <img t-att-src="imageUrlFor(product)" t-att-alt="product.display_name" />
+                                        </div>
+                                        <div class="product-content">
+                                            <div class="product-name" t-attf-id="article_product_{{product.id}}">
+                                                <t t-esc="product.display_name" />
+                                            </div>
+                                            <span class="price-tag">
+                                                <t t-esc="priceFor(product)" />
+                                            </span>
+                                        </div>
+                                    </article>
+                                </t>
+                            </t>
+                        </div>
+                    </t>
+
+                    <!-- Flat list fallback (no groups) -->
+                    <t t-if="!hasGroups">
+                        <div class="sh_toppings_products product-list d-grid gap-1 p-1" t-if="toppingProducts and toppingProducts.length > 0">
+                            <t t-foreach="toppingProducts" t-as="product" t-key="product.id">
+                                <t t-if="product">
+                                    <article class="product" tabindex="0" t-on-keypress="spaceClickProduct" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-attf-aria-labelledby="article_product_{{product.id}}">
+                                        <div class="product-img">
+                                            <img t-att-src="imageUrlFor(product)" t-att-alt="product.display_name" />
+                                        </div>
+                                        <div class="product-content">
+                                            <div class="product-name" t-attf-id="article_product_{{product.id}}">
+                                                <t t-esc="product.display_name" />
+                                            </div>
+                                            <span class="price-tag">
+                                                <t t-esc="priceFor(product)" />
+                                            </span>
+                                        </div>
+                                    </article>
+                                </t>
+                            </t>
+                        </div>
+                        
+                        <div class="sh_global_toppins product-list d-grid gap-1 p-1" t-if="globalToppings and globalToppings.length > 0">
+                            <t t-foreach="globalToppings" t-as="product" t-key="product.id">
+                                <article class="flex-column product position-relative btn btn-light d-flex align-items-stretch p-0 m-0 text-start cursor-pointer overflow-hidden transition-base" tabindex="0" t-on-keypress="spaceClickProduct" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-attf-aria-labelledby="article_product_{{product.id}}">
                                     <div class="product-img">
-                                        <img t-att-src="imageUrl " t-att-alt="product.display_name" />
+                                        <img class="w-100" t-att-src="imageUrlFor(product)" t-att-alt="product.display_name" />
                                     </div>
-                                    <div class="product-content">
+                                    <div class="product-content d-flex flex-column justify-content-between h-100 mx-2 py-1">
                                         <div class="product-name" t-attf-id="article_product_{{product.id}}">
                                             <t t-esc="product.display_name" />
                                         </div>
                                         <span class="price-tag">
-                                            <t t-esc="price" />
+                                            <t t-esc="priceFor(product)" />
                                         </span>
                                     </div>
                                 </article>
                             </t>
-                        </t>
-                    </div>
-                    
-                    <div class="sh_global_toppins product-list d-grid gap-1 p-1" t-if="globalToppings and globalToppings.length > 0">
-                        <t t-foreach="globalToppings" t-as="product" t-key="product.id">
-                            <article class="flex-column product position-relative btn btn-light d-flex align-items-stretch p-0 m-0 text-start cursor-pointer overflow-hidden transition-base" tabindex="0" t-on-keypress="spaceClickProduct" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-attf-aria-labelledby="article_product_{{product.id}}">
-                                <div class="product-img">
-                                    <img class="w-100" t-att-src="imageUrl " t-att-alt="product.display_name" />
-                                </div>
-                                <div class="product-content d-flex flex-column justify-content-between h-100 mx-2 py-1">
-                                    <div class="product-name" t-attf-id="article_product_{{product.id}}">
-                                        <t t-esc="product.display_name" />
-                                    </div>
-                                    <span class="price-tag">
-                                        <t t-esc="price" />
-                                    </span>
-                                </div>
-                            </article>
-                        </t>
-                    </div>
+                        </div>
+                    </t>
                 </div>
             </main>
             <div class="footer modal-footer">
-                 <div class="button cancel btn btn-lg btn-primary" t-on-click="ClickOk">
-                    Ok
-                </div>
+                <t t-if="hasGroups">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div class="button btn btn-lg btn-secondary" t-on-click="prevGroup" t-att-class="{'disabled': state.currentIndex === 0}">Previous</div>
+                        <t t-if="state.currentIndex &lt; (groups.length - 1)">
+                            <div class="button btn btn-lg btn-primary" t-on-click="nextGroup" t-att-class="{'disabled': !canProceedCurrent()}">Next</div>
+                        </t>
+                        <div class="button cancel btn btn-lg btn-success" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}">Done</div>
+                    </div>
+                </t>
+                <t t-if="!hasGroups">
+                    <div class="button cancel btn btn-lg btn-primary" t-on-click="ClickOk">
+                        Ok
+                    </div>
+                </t>
             </div>
         </div>
     </t>

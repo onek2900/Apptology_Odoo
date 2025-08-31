@@ -13,6 +13,21 @@ patch(ClosePosPopup.prototype, {
         this.orm = useService("orm");
     },
     async closeSession() {
+        // Clear POS caches (IndexedDB + localStorage flags)
+        const clearPosCache = () => {
+            try {
+                if (window.indexedDB) {
+                    // Delete module's IndexedDB database
+                    window.indexedDB.deleteDatabase('Softhealer_pos');
+                }
+                // Reset localStorage flags used by advance cache
+                try { localStorage.removeItem('Products'); } catch (e) {}
+                try { localStorage.removeItem('Customers'); } catch (e) {}
+            } catch (e) {
+                // Non-fatal; proceed with session closing
+                console.warn('POS cache clear failed', e);
+            }
+        };
         if (this.pos.user && this.pos.user.sh_is_direct_logout) {
             if (this.pos.config.cash_control) {
                 const response = await this.orm.call(
@@ -30,7 +45,7 @@ patch(ClosePosPopup.prototype, {
                     return this.handleClosingError(response);
                 }
             }
-    
+
             try {
                 await this.orm.call("pos.session", "update_closing_control_state_session", [
                     this.pos.pos_session.id,
@@ -56,6 +71,8 @@ patch(ClosePosPopup.prototype, {
                 if (!response.successful) {
                     return this.handleClosingError(response);
                 }
+                // Clear caches right before redirecting after a successful close
+                clearPosCache();
                 window.location.href = "/web/login";
             } catch (error) {
                 if (error instanceof ConnectionLostError) {
@@ -73,14 +90,17 @@ patch(ClosePosPopup.prototype, {
                                 "You will be redirected to the back-end to manually close the session."
                         ),
                     });
+                    // Clear caches before redirecting to backend on error path
+                    clearPosCache();
                     window.location.href = "/web/login";
                 }
             }
         
         } else {
+            // In the standard flow, clear caches proactively, then proceed
+            clearPosCache();
             super.closeSession();
         }
     }
 });
-
 
