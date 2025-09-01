@@ -184,3 +184,26 @@ class PosPaymentMethod(models.Model):
                 return resp.json()  # validation response
             except Exception:
                 return {"status": "ok"}
+
+    def action_moneris_sync_now(self, session_id=False):
+        """RPC: Trigger SYNC on selected Moneris payment methods.
+        Returns immediate responses; completion also arrives via postback/bus.
+        """
+        session = None
+        if session_id:
+            session = self.env['pos.session'].sudo().browse(int(session_id))
+        res = []
+        for pm in self:
+            try:
+                res.append({"id": pm.id, "resp": pm._moneris_sync_terminal(session=session)})
+            except Exception as e:
+                res.append({"id": pm.id, "error": str(e)})
+        return {"results": res}
+
+    def action_moneris_sync_now_for_config(self, config_id, session_id=False):
+        """RPC: Trigger SYNC for all Moneris methods on a POS config."""
+        cfg = self.env['pos.config'].sudo().browse(int(config_id))
+        if not cfg:
+            return {"error": "config_not_found"}
+        pms = cfg.payment_method_ids.filtered(lambda pm: pm.use_payment_terminal == 'moneris')
+        return pms.action_moneris_sync_now(session_id=session_id)

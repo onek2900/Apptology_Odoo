@@ -1,7 +1,7 @@
 /** @odoo-module */
 import { PaymentInterface } from "@point_of_sale/app/payment/payment_interface";
 import { _t } from "@web/core/l10n/translation";
-import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
+import { AlertDialog, ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 
 export class PaymentMoneris extends PaymentInterface {
     setup() {
@@ -83,9 +83,44 @@ export class PaymentMoneris extends PaymentInterface {
 
 
         line.set_payment_status("waitingCard");
+        // Ensure any previous timer is cleared
+        this._clearCancelTimer();
+        // Start a 5s timer to allow user to cancel if terminal takes long
+        this._cancelTimeoutId = setTimeout(() => {
+            // Guard: payment could have finished already
+            const cur = this.pending_moneris_line();
+            if (!cur || cur.get_payment_status() === 'done') return;
+            this.env.services.dialog.add(ConfirmationDialog, {
+                title: _t("Waiting for terminal"),
+                body: _t("Payment is still pending. Do you want to cancel it?"),
+                confirmLabel: _t("Cancel Payment"),
+                confirm: () => {
+                    this._clearCancelTimer();
+                    const l = this.pending_moneris_line();
+                    if (l) {
+                        l.set_payment_status('retry');
+                    }
+                    if (this.paymentNotificationResolver) {
+                        this.paymentNotificationResolver(false);
+                        this.paymentNotificationResolver = null;
+                    }
+                },
+                cancel: () => {
+                    // Keep waiting
+                },
+            });
+        }, 5000);
+
         return await new Promise((resolve) => {
             this.paymentNotificationResolver = resolve;
         });
+    }
+
+    _clearCancelTimer() {
+        if (this._cancelTimeoutId) {
+            clearTimeout(this._cancelTimeoutId);
+            this._cancelTimeoutId = null;
+        }
     }
 
     pending_moneris_line() {

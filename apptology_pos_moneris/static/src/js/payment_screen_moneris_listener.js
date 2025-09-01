@@ -56,10 +56,18 @@ patch(PaymentScreen.prototype, {
         );
         if (!pl) return;
 
-        if (msg.approved) {
+        if (msg.type === 'sync_success') {
+            this.notification.add(_t("Moneris terminal synced successfully."), { type: "info" });
+            return;
+        } else if (msg.type === 'sync_failed') {
+            const reason = msg.statusCode ? ` (code ${msg.statusCode})` : "";
+            this.notification.add(_t("Moneris terminal sync failed") + reason, { type: "danger", sticky: true });
+            return;
+        } else if (msg.approved) {
             pl.set_payment_status("done");
             const term = pl.payment_method?.payment_terminal;
             if (term?.paymentNotificationResolver) {
+                term._clearCancelTimer?.();
                 term.paymentNotificationResolver(true);
                 term.paymentNotificationResolver = null;
             }
@@ -69,6 +77,7 @@ patch(PaymentScreen.prototype, {
             pl.set_payment_status("rejected");
             const term = pl.payment_method?.payment_terminal;
             if (term?.paymentNotificationResolver) {
+                term._clearCancelTimer?.();
                 term.paymentNotificationResolver(false);
                 term.paymentNotificationResolver = null;
             }
