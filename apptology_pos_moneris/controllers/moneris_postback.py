@@ -69,8 +69,12 @@ class MonerisPostbackController(http.Controller):
 
             # Determine message type & flags
             if action == "sync":
-                # Treat sync success as completed + (commonly) status_code == 5207
-                sync_ok = completed and status_code == "5207"
+                # Treat sync success as completed + known OK codes or OK-ish status text
+                ok_codes = {"5207", "5209"}
+                status_text = (status or "").strip().lower()
+                code_ok = status_code in ok_codes
+                text_ok = status_text in {"approved", "success", "completed", "ok"}
+                sync_ok = completed and (code_ok or text_ok)
                 bus_msg = {
                     "type": "sync_success" if sync_ok else "sync_failed",
                     "completed": completed,

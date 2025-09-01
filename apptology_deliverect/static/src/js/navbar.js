@@ -12,15 +12,24 @@ patch(Navbar.prototype, {
         this.busService = this.env.services.bus_service;
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService.addChannel(this.channel);
-        this.busService.addEventListener('notification', ({detail: notifications})=>{
-            notifications = notifications.filter(item => item.payload.channel === this.channel)
-            notifications.forEach(item => {
-            this.playNotificationSound();
-                var notificationMessage=item.payload.order_status=='success'?"New Online Order Received":"Failed to receive online order"
-                this.notification.add(_t(notificationMessage), { type: "info",
-                                                         sticky: true});
+        this.busService.addEventListener('notification', ({ detail: notifications }) => {
+            const events = notifications.filter((n) => n.payload?.channel === this.channel);
+            for (const evt of events) {
+                const status = evt.payload?.order_status;
+                if (!status) {
+                    // Ignore noise events that do not carry an order status
+                    continue;
+                }
+                this.playNotificationSound();
+                if (status === 'success') {
+                    this.notification.add(_t("New Online Order Received"), { type: "info" });
+                } else if (status === 'failed') {
+                    this.notification.add(_t("Failed to receive online order"), { type: "danger", sticky: true });
+                } else {
+                    // Unknown status; do not notify to avoid confusion
+                }
                 this.onlineOrderCount();
-                })
+            }
         });
         this.orm = useService("orm");
         this.action = useService("action");
