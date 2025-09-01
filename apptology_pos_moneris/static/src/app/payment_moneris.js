@@ -1,7 +1,7 @@
 /** @odoo-module */
 import { PaymentInterface } from "@point_of_sale/app/payment/payment_interface";
 import { _t } from "@web/core/l10n/translation";
-import { AlertDialog, ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
+import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 
 export class PaymentMoneris extends PaymentInterface {
     setup() {
@@ -83,14 +83,8 @@ export class PaymentMoneris extends PaymentInterface {
 
 
         line.set_payment_status("waitingCard");
-        // Ensure any previous timer is cleared
-        this._clearCancelTimer();
-        // Start a 5s timer to allow user to cancel if terminal takes long
-        this._cancelTimeoutId = setTimeout(() => {
-            // Guard: payment could have finished already
-            const cur = this.pending_moneris_line();
-            if (!cur || cur.get_payment_status() === 'done') return;
-        }, 5000);
+        // mark start time so the UI can show inline Cancel after 5s
+        line.moneris_started_at = Date.now();
 
         return await new Promise((resolve) => {
             this.paymentNotificationResolver = resolve;
@@ -102,6 +96,22 @@ export class PaymentMoneris extends PaymentInterface {
             clearTimeout(this._cancelTimeoutId);
             this._cancelTimeoutId = null;
         }
+        const l = this.pending_moneris_line();
+        if (l && l.moneris_started_at) {
+            try { delete l.moneris_started_at; } catch (e) {}
+        }
+    }
+
+    async send_payment_cancel(cid) {
+        const line = this.pending_moneris_line();
+        if (!line) return false;
+        this._clearCancelTimer();
+        line.set_payment_status('retry');
+        if (this.paymentNotificationResolver) {
+            this.paymentNotificationResolver(false);
+            this.paymentNotificationResolver = null;
+        }
+        return true;
     }
 
     pending_moneris_line() {

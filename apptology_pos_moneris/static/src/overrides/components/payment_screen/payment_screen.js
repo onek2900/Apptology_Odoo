@@ -4,12 +4,10 @@ import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment
 import { patch } from "@web/core/utils/patch";
 import { onMounted, onWillUnmount } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
-import { useService } from "@web/core/utils/hooks";
 
 patch(PaymentScreen.prototype, {
     setup() {
         super.setup(...arguments);
-        this.orm = useService("orm");
         onMounted(() => {
             const pendingPaymentLine = this.currentOrder.paymentlines.find(
                 (paymentLine) =>
@@ -42,12 +40,6 @@ patch(PaymentScreen.prototype, {
 
     get controlButtons() {
         const buttons = super.controlButtons || [];
-        buttons.push({
-            name: "moneris_sync",
-            text: _t("Sync Moneris"),
-            action: () => this._monerisManualSync(),
-            sequence: 5,
-        });
         // Contextual Cancel button (appears after 5s of waiting)
         const pl = this.currentOrder?.paymentlines?.find(
             (l) => l.payment_method?.use_payment_terminal === 'moneris' && !l.is_done()
@@ -67,18 +59,5 @@ patch(PaymentScreen.prototype, {
         return buttons;
     },
 
-    async _monerisManualSync() {
-        try {
-            const cfgId = this.pos.config.id;
-            const sessionId = this.pos?.pos_session?.id || this.currentOrder?.pos_session_id;
-            await this.orm.silent.call(
-                "pos.payment.method",
-                "action_moneris_sync_now_for_config",
-                [cfgId, sessionId]
-            );
-            this.notification.add(_t("Moneris sync requested"), { type: "info" });
-        } catch (e) {
-            this.notification.add(_t("Failed to request Moneris sync"), { type: "danger" });
-        }
-    },
+    
 });
