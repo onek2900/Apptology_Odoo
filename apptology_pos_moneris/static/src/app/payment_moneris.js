@@ -83,6 +83,8 @@ export class PaymentMoneris extends PaymentInterface {
 
 
         line.set_payment_status("waitingCard");
+        // mark start time to control cancel visibility in UI
+        line.moneris_started_at = Date.now();
         // Ensure any previous timer is cleared
         this._clearCancelTimer();
         // Start a 5s timer to allow user to cancel if terminal takes long
@@ -121,6 +123,22 @@ export class PaymentMoneris extends PaymentInterface {
             clearTimeout(this._cancelTimeoutId);
             this._cancelTimeoutId = null;
         }
+        const l = this.pending_moneris_line();
+        if (l && l.moneris_started_at) {
+            try { delete l.moneris_started_at; } catch (e) {}
+        }
+    }
+
+    async send_payment_cancel(cid) {
+        const line = this.pending_moneris_line();
+        if (!line) return false;
+        this._clearCancelTimer();
+        line.set_payment_status('retry');
+        if (this.paymentNotificationResolver) {
+            this.paymentNotificationResolver(false);
+            this.paymentNotificationResolver = null;
+        }
+        return true;
     }
 
     pending_moneris_line() {

@@ -71,6 +71,7 @@ patch(PaymentScreen.prototype, {
                 term.paymentNotificationResolver(true);
                 term.paymentNotificationResolver = null;
             }
+            try { delete pl.moneris_started_at; } catch (e) {}
             // Avoid re-entrant order validation while POS is flushing
             this.notification.add(_t("Moneris payment approved."), { type: "info" });
         } else if (msg.completed) {
@@ -81,6 +82,7 @@ patch(PaymentScreen.prototype, {
                 term.paymentNotificationResolver(false);
                 term.paymentNotificationResolver = null;
             }
+            try { delete pl.moneris_started_at; } catch (e) {}
             const reason = msg.responseCode ? ` (code ${msg.responseCode})` : "";
             this.notification.add(_t("Moneris payment declined") + reason, { type: "danger", sticky: true });
         }

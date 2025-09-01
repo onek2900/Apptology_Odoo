@@ -2,7 +2,7 @@
 
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
 import { patch } from "@web/core/utils/patch";
-import { onMounted } from "@odoo/owl";
+import { onMounted, onWillUnmount } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 
@@ -21,6 +21,22 @@ patch(PaymentScreen.prototype, {
             if (pendingPaymentLine) {
                 pendingPaymentLine.set_payment_status("retry");
             }
+            // start a light ticker to refresh controls while waiting
+            this._monerisCancelTicker = setInterval(() => {
+                const pl = this.currentOrder?.paymentlines?.find(
+                    (l) => l.payment_method?.use_payment_terminal === 'moneris' && !l.is_done()
+                );
+                if (pl && pl.moneris_started_at) {
+                    this.render(true);
+                }
+            }, 1000);
+        });
+
+        onWillUnmount(() => {
+            if (this._monerisCancelTicker) {
+                clearInterval(this._monerisCancelTicker);
+                this._monerisCancelTicker = null;
+            }
         });
     },
 
@@ -32,6 +48,22 @@ patch(PaymentScreen.prototype, {
             action: () => this._monerisManualSync(),
             sequence: 5,
         });
+        // Contextual Cancel button (appears after 5s of waiting)
+        const pl = this.currentOrder?.paymentlines?.find(
+            (l) => l.payment_method?.use_payment_terminal === 'moneris' && !l.is_done()
+        );
+        if (pl && pl.moneris_started_at && Date.now() - pl.moneris_started_at >= 5000) {
+            buttons.push({
+                name: "moneris_cancel",
+                text: _t("Cancel Moneris"),
+                action: () => {
+                    const term = pl.payment_method?.payment_terminal;
+                    term?.send_payment_cancel?.();
+                },
+                sequence: 6,
+                isHighlighted: true,
+            });
+        }
         return buttons;
     },
 
