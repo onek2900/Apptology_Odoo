@@ -69,5 +69,24 @@ patch(PaymentScreen.prototype, {
         return buttons;
     },
 
+    // Helpers exposed for XML if needed later
+    _monerisPendingLine() {
+        return this.currentOrder?.paymentlines?.find(
+            (l) => l.payment_method?.use_payment_terminal === 'moneris' && !l.is_done()
+        );
+    },
+    onClickMonerisCancel() {
+        const pl = this._monerisPendingLine();
+        const term = pl?.payment_method?.payment_terminal;
+        term?.send_payment_cancel?.();
+        this.render();
+    },
+    onClickMonerisAccept() {
+        const pl = this._monerisPendingLine();
+        const term = pl?.payment_method?.payment_terminal;
+        term?.send_payment_accept?.();
+        this.render();
+    },
+
     
 });
