@@ -119,8 +119,15 @@ class MonerisPostbackController(http.Controller):
             # Push to per-config channels (Odoo 17: _sendone(channel, message))
             for cfg_id in cfg_ids:
                 channel = f"pos_moneris_{cfg_id}"
-                # Odoo 17: _sendone(channel, message)
-                request.env["bus.bus"].sudo()._sendone(channel, bus_msg)
+                # Build a wrapped payload including channel for client-side filtering
+                wrapped = {"channel": channel, "message": bus_msg}
+                bus = request.env["bus.bus"].sudo()
+                # Compatibility: Some versions expect _sendone(channel, type, message),
+                # others expect _sendone(channel, message)
+                try:
+                    bus._sendone(channel, "notification", wrapped)
+                except TypeError:
+                    bus._sendone(channel, wrapped)
 
             # --- 3) Persist snapshot on pos.payment.method (declined/cancelled/approved alike) ---
             snapshot_vals = {
