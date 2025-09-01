@@ -3,6 +3,7 @@
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
 import { patch } from "@web/core/utils/patch";
 import { onMounted, onWillUnmount } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 
 patch(PaymentScreen.prototype, {
     setup() {
@@ -62,10 +63,8 @@ patch(PaymentScreen.prototype, {
                 term.paymentNotificationResolver(true);
                 term.paymentNotificationResolver = null;
             }
-            if (order.is_paid && order.is_paid()) {
-                this.validateOrder(true);
-            }
-            this.notification.add(this.env._t("Moneris payment approved."), { type: "info" });
+            // Avoid re-entrant order validation while POS is flushing
+            this.notification.add(_t("Moneris payment approved."), { type: "info" });
         } else if (msg.completed) {
             pl.set_payment_status("rejected");
             const term = pl.payment_method?.payment_terminal;
@@ -74,7 +73,7 @@ patch(PaymentScreen.prototype, {
                 term.paymentNotificationResolver = null;
             }
             const reason = msg.responseCode ? ` (code ${msg.responseCode})` : "";
-            this.notification.add(this.env._t("Moneris payment declined") + reason, { type: "danger", sticky: true });
+            this.notification.add(_t("Moneris payment declined") + reason, { type: "danger", sticky: true });
         }
     },
 });
