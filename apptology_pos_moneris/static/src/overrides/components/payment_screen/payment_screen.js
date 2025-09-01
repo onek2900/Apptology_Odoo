@@ -25,7 +25,8 @@ patch(PaymentScreen.prototype, {
                     (l) => l.payment_method?.use_payment_terminal === 'moneris' && !l.is_done()
                 );
                 if (pl && pl.moneris_started_at) {
-                    this.render(true);
+                    // Force a re-render so controlButtons getter reevaluates time-based condition
+                    this.render();
                 }
             }, 1000);
         });
@@ -39,7 +40,7 @@ patch(PaymentScreen.prototype, {
     },
 
     get controlButtons() {
-        const buttons = super.controlButtons || [];
+        const buttons = [...(super.controlButtons || [])];
         // Contextual Cancel button (appears after 5s of waiting)
         const pl = this.currentOrder?.paymentlines?.find(
             (l) => l.payment_method?.use_payment_terminal === 'moneris' && !l.is_done()
