@@ -55,6 +55,15 @@ patch(PaymentScreen.prototype, {
                 sequence: 6,
                 isHighlighted: true,
             });
+            buttons.push({
+                name: "moneris_accept",
+                text: _t("Accept Moneris"),
+                action: () => {
+                    const term = pl.payment_method?.payment_terminal;
+                    term?.send_payment_accept?.();
+                },
+                sequence: 7,
+            });
         }
         return buttons;
     },

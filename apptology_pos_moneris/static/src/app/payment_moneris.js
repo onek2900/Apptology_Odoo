@@ -124,6 +124,18 @@ export class PaymentMoneris extends PaymentInterface {
         return true;
     }
 
+    async send_payment_accept(cid) {
+        const line = this.pending_moneris_line();
+        if (!line) return false;
+        this._clearCancelTimer();
+        line.set_payment_status('done');
+        if (this.paymentNotificationResolver) {
+            this.paymentNotificationResolver(true);
+            this.paymentNotificationResolver = null;
+        }
+        return true;
+    }
+
     pending_moneris_line() {
         return this.pos.getPendingPaymentLine("moneris");
     }
