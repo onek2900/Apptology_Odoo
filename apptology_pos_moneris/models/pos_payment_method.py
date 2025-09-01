@@ -33,9 +33,19 @@ class PosPaymentMethod(models.Model):
     moneris_last_updated = fields.Datetime(string='Moneris Last Updated')
 
     def _is_write_forbidden(self, fields):
-        return super(PosPaymentMethod, self)._is_write_forbidden(
-            fields - {"moneris_latest_response"}
-        )
+        """Allow updating non-critical Moneris snapshot fields even with open sessions.
+        This bypass ensures postback snapshots don't trigger POS write locks.
+        """
+        allowed = {
+            "moneris_latest_response",
+            "moneris_last_action",
+            "moneris_last_status",
+            "moneris_last_status_code",
+            "moneris_last_response_code",
+            "moneris_last_completed",
+            "moneris_last_updated",
+        }
+        return super(PosPaymentMethod, self)._is_write_forbidden(fields - allowed)
 
     def get_latest_moneris_status(self):
         """
