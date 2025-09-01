@@ -4,7 +4,7 @@ import requests
 import json
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import AccessDenied
 
 
@@ -175,7 +175,7 @@ class PosPaymentMethod(models.Model):
 
             _logger = logging.getLogger(__name__)
             _logger.info("Moneris SYNC request for terminal %s -> %s", terminal_id, endpoint_url)
-            _logger.debug("SYNC payload: %s", json.dumps(payload))
+            _logger.info("Moneris SYNC payload: %s", json.dumps(payload))
 
             resp = requests.post(endpoint_url, json=payload, headers=headers, timeout=30)
             _logger.info("Moneris SYNC response [%s]: %s", resp.status_code, resp.text)
@@ -200,10 +200,16 @@ class PosPaymentMethod(models.Model):
                 res.append({"id": pm.id, "error": str(e)})
         return {"results": res}
 
+    @api.model
     def action_moneris_sync_now_for_config(self, config_id, session_id=False):
         """RPC: Trigger SYNC for all Moneris methods on a POS config."""
+        _logger = logging.getLogger(__name__)
+        _logger.info("Moneris: action_moneris_sync_now_for_config called (config_id=%s, session_id=%s)", config_id, session_id)
         cfg = self.env['pos.config'].sudo().browse(int(config_id))
         if not cfg:
+            _logger.warning("Moneris: POS config not found for id=%s", config_id)
             return {"error": "config_not_found"}
         pms = cfg.payment_method_ids.filtered(lambda pm: pm.use_payment_terminal == 'moneris')
+        if not pms:
+            _logger.warning("Moneris: No Moneris payment methods on config id=%s", config_id)
         return pms.action_moneris_sync_now(session_id=session_id)
