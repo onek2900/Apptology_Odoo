@@ -63,6 +63,11 @@ patch(PaymentScreen.prototype, {
             const reason = msg.statusCode ? ` (code ${msg.statusCode})` : "";
             this.notification.add(_t("Moneris terminal sync failed") + reason, { type: "danger", sticky: true });
             return;
+        } else if (msg.type === 'terminal_error' || (msg.status && String(msg.status).toLowerCase().includes('error'))) {
+            const ed = Array.isArray(msg.errorDetails) && msg.errorDetails.length ? `: ${msg.errorDetails[0].issue || msg.errorDetails[0].errorCode}` : '';
+            const code = msg.statusCode ? ` (code ${msg.statusCode})` : '';
+            this.notification.add(_t("Moneris terminal error") + ed + code, { type: "danger", sticky: true });
+            return;
         } else if (msg.approved) {
             pl.set_payment_status("done");
             const term = pl.payment_method?.payment_terminal;

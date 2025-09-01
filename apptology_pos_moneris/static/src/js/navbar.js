@@ -20,12 +20,25 @@ patch(Navbar.prototype, {
         const cfgId = this.pos.config.id;
         const sessionId = this.pos?.pos_session?.id;
         try {
-            await this.orm.call(
+            const resp = await this.orm.call(
                 "pos.payment.method",
                 "action_moneris_sync_now_for_config",
                 [cfgId, sessionId]
             );
-            this.notification.add(_t("Moneris sync requested"), { type: "info" });
+            // Inspect immediate HTTP response for known terminal issues
+            const results = resp && resp.results || [];
+            let anyError = false;
+            for (const it of results) {
+                const first = it?.resp?.receipt?.data?.response?.[0];
+                if (first && (String(first.status || '').toLowerCase().includes('error') || String(first.statusCode || '').startsWith('59'))) {
+                    anyError = true;
+                    const code = first.statusCode ? ` (code ${first.statusCode})` : '';
+                    this.notification.add(_t("Moneris terminal error") + `: ${first.status || 'Unknown'}` + code, { type: "danger", sticky: true });
+                }
+            }
+            if (!anyError) {
+                this.notification.add(_t("Moneris sync requested"), { type: "info" });
+            }
         } catch (e) {
             console.error("Moneris sync request failed", e);
             this.notification.add(_t("Failed to request Moneris sync"), { type: "danger", sticky: true });

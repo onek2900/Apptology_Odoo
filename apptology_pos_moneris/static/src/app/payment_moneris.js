@@ -80,6 +80,16 @@ export class PaymentMoneris extends PaymentInterface {
             line.set_payment_status('force_done');
             return false;
         }
+        // Inspect immediate response for terminal errors (e.g., pinpad not found / communication error)
+        const first = response?.receipt?.data?.response?.[0];
+        if (first && (String(first.status || '').toLowerCase().includes('error') || String(first.statusCode || '').startsWith('59'))) {
+            const notif = this.env.services.notification;
+            const code = first.statusCode ? ` (code ${first.statusCode})` : '';
+            const issue = first.status || first.responseCode || 'Terminal error';
+            notif?.add(_t('Moneris terminal error') + `: ${issue}` + code, { type: 'danger', sticky: true });
+            line.set_payment_status('retry');
+            return false;
+        }
 
 
         line.set_payment_status("waitingCard");

@@ -65,6 +65,7 @@ class MonerisPostbackController(http.Controller):
             status_code    = str(r.get("statusCode", "") or "")
             response_code  = str(r.get("responseCode", "") or "")
             completed      = str(r.get("completed", "false")).lower() == "true"
+            error_details  = r.get("errorDetails") or []
 
             # Determine message type & flags
             if action == "sync":
@@ -76,6 +77,7 @@ class MonerisPostbackController(http.Controller):
                     "status": status,
                     "statusCode": status_code,
                     "terminalId": terminal_id,
+                    "errorDetails": error_details,
                 }
             elif action == "purchase":
                 # Purchase or other action
@@ -94,16 +96,18 @@ class MonerisPostbackController(http.Controller):
                     "cardType": r.get("cardType"),
                     "transactionId": r.get("transactionId"),
                     "authCode": r.get("authCode"),
+                    "errorDetails": error_details,
                 }
             else:
                 # Fallback minimal message
                 bus_msg = {
-                    "type": action or "unknown",
+                    "type": ("terminal_error" if (status and "error" in str(status).lower()) or error_details else (action or "unknown")),
                     "completed": completed,
                     "status": status,
                     "statusCode": status_code,
                     "orderId": order_id,
                     "terminalId": terminal_id,
+                    "errorDetails": error_details,
                 }
 
             # Find target POS configs by terminal mapping (fallback: all configs)
