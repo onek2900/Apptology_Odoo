@@ -1,0 +1,58 @@
+.pos .pos-receipt {
+    /* ~80mm at 96 DPI */
+    width: 302.36px !important;
+    font-size: 14px !important;
+}
+
+.pos-receipt .pos-receipt-right-align {
+    float: right;
+}
+
+.pos-receipt .pos-receipt-center-align {
+    text-align: center;
+}
+
+.pos-receipt .pos-receipt-left-padding {
+    padding-left: 2em;
+}
+
+.pos-receipt .pos-receipt-logo {
+    width: 50%;
+    display: block;
+    margin: 0 auto;
+}
+
+.pos-receipt .pos-receipt-contact,
+.pos-receipt .pos-receipt-order-data {
+    text-align: center;
+    font-size: 75%;
+}
+
+.pos-receipt .pos-receipt-amount {
+    font-size: 110%;
+    padding-left: 6em;
+}
+
+.pos-receipt .pos-receipt-title,
+.pos-receipt .pos-receipt-header {
+    font-weight: bold;
+    font-size: 125%;
+    text-align: center;
+}
+
+.pos-receipt .pos-order-receipt-cancel {
+    color: red;
+}
+
+.pos-payment-terminal-receipt {
+    text-align: center;
+    font-size: 75%;
+}
+
+/* Ensure 80mm on paper prints as well */
+@media print {
+    .pos .pos-receipt {
+        width: 80mm !important;
+    }
+}
+

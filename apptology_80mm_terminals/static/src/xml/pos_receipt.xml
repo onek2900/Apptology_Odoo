@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="point_of_sale.template" xml:space="preserve">
+    <!-- Intentionally empty: CSS-only module to enforce width -->
+    <!-- Keep file to ensure assets bundle loads cleanly in Odoo -->
+    <t t-name="apptology_80mm_terminals.placeholder"/>
+</templates>
+  
