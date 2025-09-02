@@ -88,6 +88,12 @@
                                             <t t-else="">
                                                 <div class="status-badge rejected">Cancelled</div>
                                             </t>
+                                            <!-- Print online order receipt -->
+                                            <t t-if="['open','approved','finalized'].includes(order.online_order_status)">
+                                                <button class="btn-action print" t-on-click.stop="() => this.printReceipt(order.id)">
+                                                    <i class="fa fa-print" aria-hidden="true"/>
+                                                </button>
+                                            </t>
                                         </td>
                                     </tr>
                                 </t>
