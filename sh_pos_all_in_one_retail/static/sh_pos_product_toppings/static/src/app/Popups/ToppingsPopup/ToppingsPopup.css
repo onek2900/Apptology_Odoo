@@ -1,0 +1,27 @@
+/* Compact, aligned topping rows without shadows */
+.sh_global_topping_popup .sh_group_products_list,
+.sh_global_topping_popup .sh_toppings_products_list,
+.sh_global_topping_popup .sh_global_toppings_list {
+  width: 100%;
+}
+.sh_global_topping_popup .topping-row td {
+  padding: 10px 12px;
+  vertical-align: middle;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+.sh_global_topping_popup .topping-row:first-child td {
+  border-top: none;
+}
+.sh_global_topping_popup .topping-row .indicator {
+  color: var(--muted, #888);
+  text-align: center;
+}
+.sh_global_topping_popup .topping-row .topping-name {
+  display: inline-block;
+}
+.sh_global_topping_popup .topping-row .actions .btn {
+  box-shadow: none !important;
+}
+.sh_global_topping_popup .topping-row.selected td {
+  background-color: #eef1f5;
+}

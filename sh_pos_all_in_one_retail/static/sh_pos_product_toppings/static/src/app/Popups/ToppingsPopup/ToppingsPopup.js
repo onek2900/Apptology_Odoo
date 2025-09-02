@@ -111,6 +111,10 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         const allowedIds = new Set(group.toppinds_ids || []);
         return (this.toppingProducts || []).filter((p) => allowedIds.has(p.id));
     }
+    groupAllowedIdSet() {
+        const g = this.currentGroup;
+        return new Set((g && g.toppinds_ids) || []);
+    }
     get imageUrl() {
         const product = this.product; 
         return `/web/image?model=product.product&field=image_128&id=${product.id}&write_date=${product.write_date}&unique=1`;
@@ -145,11 +149,44 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         }
         return formattedUnitPrice;
     }
+    isSelected(product) {
+        const order = this.pos.get_order();
+        const line = order && order.get_selected_orderline();
+        if (!line || !line.get_toppings) return false;
+        const topps = line.get_toppings() || [];
+        return topps.some((t) => (t.product_id || (t.product && t.product.id)) === product.id);
+    }
+    isRadioMode() {
+        const g = this.currentGroup;
+        if (!g) return false;
+        const min = this.groupMin(g) || 0;
+        const max = this.groupMax(g) || 0;
+        return min === 1 && max === 1;
+    }
     async _clicktoppigProduct(event){
         if (!this.pos.get_order()) {
             this.pos.add_new_order();
         }
         const product = event;
+        // Radio: enforce single selection per group by replacing
+        if (this.hasGroups && this.currentGroup && this.isRadioMode()) {
+            const allowed = this.groupAllowedIdSet();
+            const order = this.pos.get_order();
+            const base = order.get_selected_orderline();
+            if (base && base.get_toppings_temp && base.get_toppings_temp().length) {
+                const toRemove = base.get_toppings_temp().filter((t) => allowed.has(t.product.id));
+                for (const t of toRemove) {
+                    // remove child line from order and arrays
+                    order.remove_orderline(t);
+                }
+                if (toRemove.length) {
+                    base.Toppings_temp = base.get_toppings_temp().filter((t) => !allowed.has(t.product.id));
+                    base.Toppings = (base.get_toppings() || []).filter((d) => !allowed.has(d.product_id));
+                    const gid = this.currentGroup.id;
+                    this.state.selectedByGroup[gid] = 0;
+                }
+            }
+        }
         // Enforce per-group max before adding
         if (this.hasGroups && this.currentGroup) {
             const gid = this.currentGroup.id;
@@ -177,6 +214,29 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
             // })
         }
         this.numberBuffer.reset();
+    }
+    removeTopping(ev, product) {
+        // prevent triggering row click add
+        if (ev && ev.stopPropagation) ev.stopPropagation();
+        const order = this.pos.get_order();
+        const base = order && order.get_selected_orderline();
+        if (!base) return;
+        const temp = base.get_toppings_temp && base.get_toppings_temp();
+        if (!temp || !temp.length) return;
+        const toRemove = temp.filter((t) => t.product && t.product.id === product.id);
+        for (const t of toRemove) {
+            order.remove_orderline(t);
+        }
+        base.Toppings_temp = temp.filter((t) => !(t.product && t.product.id === product.id));
+        base.Toppings = (base.get_toppings() || []).filter((d) => d.product_id !== product.id);
+        if (this.hasGroups && this.currentGroup) {
+            const gid = this.currentGroup.id;
+            const curr = this.state.selectedByGroup[gid] || 0;
+            this.state.selectedByGroup[gid] = Math.max(0, curr - toRemove.length);
+        }
+        if ((base.Toppings || []).length === 0) {
+            base.set_is_has_topping(false);
+        }
     }
 }
   
