@@ -1,11 +1,16 @@
 /* Compact, aligned topping rows without shadows */
-.sh_global_topping_popup .sh_group_products_list,
-.sh_global_topping_popup .sh_toppings_products_list,
-.sh_global_topping_popup .sh_global_toppings_list {
+.sh_global_topping_popup .topping-table {
   width: 100%;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 6px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  table-layout: fixed;
 }
 .sh_global_topping_popup .topping-row td {
-  padding: 10px 12px;
+  padding: 12px 14px;
   vertical-align: middle;
   border-top: 1px solid var(--border, #e5e7eb);
 }
@@ -15,7 +20,9 @@
 .sh_global_topping_popup .topping-row .indicator {
   color: var(--muted, #888);
   text-align: center;
+  width: 32px;
 }
+.sh_global_topping_popup .topping-row .thumb { width: 64px; }
 .sh_global_topping_popup .topping-row .topping-name {
   display: inline-block;
 }
@@ -25,3 +32,4 @@
 .sh_global_topping_popup .topping-row.selected td {
   background-color: #eef1f5;
 }
+.sh_global_topping_popup .topping-row:hover td { background-color: #f6f8fa; }

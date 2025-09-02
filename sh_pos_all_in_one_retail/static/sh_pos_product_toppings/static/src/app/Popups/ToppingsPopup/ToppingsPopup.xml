@@ -23,22 +23,24 @@
                 <div class="sh_global_topping_div">
                     <!-- Wizard view: show one group at a time -->
                     <t t-if="hasGroups">
-                        <table class="table sh_group_products_list">
+                        <table class="table sh_group_products_list topping-table">
                             <tbody>
                                 <t t-foreach="productsForGroup(currentGroup)" t-as="product" t-key="product.id">
                                     <t t-if="product">
                                         <tr class="topping-row" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-att-class="{'selected': isSelected(product)}">
-                                            <td class="indicator" width="24" t-if="isRadioMode()">
-                                                <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
-                                                <i t-else="" class="fa fa-circle-o"/>
+                                            <td class="indicator">
+                                                <t t-if="isRadioMode()">
+                                                    <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
+                                                    <i t-else="" class="fa fa-circle-o"/>
+                                                </t>
                                             </td>
-                                            <td width="60">
+                                            <td class="thumb">
                                                 <img t-if="product.image_128" t-att-src="imageUrlFor(product)" t-att-alt="product.display_name" style="max-height:40px; max-width:56px;"/>
                                             </td>
                                             <td>
                                                 <span class="topping-name"><t t-esc="product.display_name"/></span>
                                             </td>
-                                            <td class="text-end actions" width="150">
+                                            <td class="text-end actions">
                                                 <span class="price-tag"><t t-esc="priceFor(product)"/></span>
                                                 <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => this.removeTopping(ev, product)" title="Remove">
                                                     <i class="fa fa-times"/>
@@ -54,22 +56,24 @@
                     <!-- Flat list fallback (no groups) -->
                     <t t-if="!hasGroups">
                         <t t-if="toppingProducts and toppingProducts.length > 0">
-                            <table class="table sh_toppings_products_list">
+                            <table class="table sh_toppings_products_list topping-table">
                                 <tbody>
                                     <t t-foreach="toppingProducts" t-as="product" t-key="product.id">
                                         <t t-if="product">
                                             <tr class="topping-row" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-att-class="{'selected': isSelected(product)}">
-                                                <td class="indicator" width="24" t-if="isRadioMode()">
-                                                    <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
-                                                    <i t-else="" class="fa fa-circle-o"/>
+                                                <td class="indicator">
+                                                    <t t-if="isRadioMode()">
+                                                        <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
+                                                        <i t-else="" class="fa fa-circle-o"/>
+                                                    </t>
                                                 </td>
-                                                <td width="60">
+                                                <td class="thumb">
                                                     <img t-if="product.image_128" t-att-src="imageUrlFor(product)" t-att-alt="product.display_name" style="max-height:40px; max-width:56px;"/>
                                                 </td>
                                                 <td>
                                                     <span class="topping-name"><t t-esc="product.display_name"/></span>
                                                 </td>
-                                                <td class="text-end actions" width="150">
+                                                <td class="text-end actions">
                                                     <span class="price-tag"><t t-esc="priceFor(product)"/></span>
                                                     <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => this.removeTopping(ev, product)" title="Remove">
                                                         <i class="fa fa-times"/>
@@ -83,21 +87,23 @@
                         </t>
 
                         <t t-if="globalToppings and globalToppings.length > 0">
-                            <table class="table sh_global_toppings_list">
+                            <table class="table sh_global_toppings_list topping-table">
                                 <tbody>
                                     <t t-foreach="globalToppings" t-as="product" t-key="product.id">
                                         <tr class="topping-row" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-att-class="{'selected': isSelected(product)}">
-                                            <td class="indicator" width="24" t-if="isRadioMode()">
-                                                <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
-                                                <i t-else="" class="fa fa-circle-o"/>
+                                            <td class="indicator">
+                                                <t t-if="isRadioMode()">
+                                                    <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
+                                                    <i t-else="" class="fa fa-circle-o"/>
+                                                </t>
                                             </td>
-                                            <td width="60">
+                                            <td class="thumb">
                                                 <img t-if="product.image_128" t-att-src="imageUrlFor(product)" t-att-alt="product.display_name" style="max-height:40px; max-width:56px;"/>
                                             </td>
                                             <td>
                                                 <span class="topping-name"><t t-esc="product.display_name"/></span>
                                             </td>
-                                            <td class="text-end actions" width="150">
+                                            <td class="text-end actions">
                                                 <span class="price-tag"><t t-esc="priceFor(product)"/></span>
                                                 <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => this.removeTopping(ev, product)" title="Remove">
                                                     <i class="fa fa-times"/>
