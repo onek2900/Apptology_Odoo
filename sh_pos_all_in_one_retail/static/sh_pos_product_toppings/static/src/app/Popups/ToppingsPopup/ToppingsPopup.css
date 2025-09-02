@@ -14,6 +14,11 @@
   padding: 12px 14px;
   vertical-align: middle;
   border-top: 1px solid var(--border, #e5e7eb);
+  background-color: #fff; /* neutral base to disable zebra */
+}
+.sh_global_topping_popup .topping-table tr:nth-child(odd) > td,
+.sh_global_topping_popup .topping-table tr:nth-child(even) > td {
+  background-color: #fff; /* override any global table striping */
 }
 .sh_global_topping_popup .topping-row:first-child td {
   border-top: none;
