@@ -163,7 +163,7 @@ class DeliverectWebhooks(http.Controller):
             order_lines = []
             total_untaxed = 0
             total_taxed = 0
-            for item in data.get('items'):
+            for item in data.get('items') or []:
                 if item.get("plu").split('-')[0] == 'VAR_PRD':
                     if item.get('subItems'):
                         for sub_item in item.get('subItems'):
@@ -245,6 +245,9 @@ class DeliverectWebhooks(http.Controller):
                 'customer_phone': data.get('customer', {}).get('phoneNumber'),
                 'channel_tax': (data.get('taxTotal') or 0) / 100,
             }
+            # Do not create orders with no lines to avoid empty POS orders
+            if not order_lines:
+                raise Exception("Deliverect payload contained no items to create order lines")
             return order_data
         except Exception as e:
             _logger.error(f"Failed to create order data: {str(e)}")

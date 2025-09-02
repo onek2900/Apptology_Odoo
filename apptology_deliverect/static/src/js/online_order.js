@@ -25,19 +25,14 @@ export class OnlineOrderScreen extends Component {
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService = this.env.services.bus_service;
         this.busService.addChannel(this.channel);
-        this._onBusNotif = ({ detail: notifications }) => {
-            const hits = (notifications || []).filter((n) => n?.payload?.channel === this.channel);
-            if (hits.length) {
-                this.fetchOpenOrders();
-            }
-        };
-        this.busService.addEventListener('notification', this._onBusNotif);
+        this.busService.addEventListener('notification', ({detail: notifications})=>{
+            notifications = notifications.filter(item => item.payload.channel === this.channel)
+            notifications.forEach(item => {
+                    this.fetchOpenOrders();
+                })
+        });
         this.initiateServices();
-        onWillUnmount(() => {
-            try { clearInterval(this.pollingInterval); } catch (e) {}
-            if (this._onBusNotif) this.busService.removeEventListener('notification', this._onBusNotif);
-            if (this.channel) this.busService.deleteChannel?.(this.channel);
-        })
+        onWillUnmount(()=>clearInterval(this.pollingInterval))
     }
     /**
      * Initiates services by fetching open orders and starting polling.
@@ -135,21 +130,9 @@ export class OnlineOrderScreen extends Component {
      */
     async fetchOpenOrders(){
         try {
-            const raw = await this.orm.call("pos.order", "get_open_orders", [], { config_id: this.pos.config.id });
-            const dedup = new Map();
-            (raw || []).forEach((o) => {
-                if (o && o.id) dedup.set(o.id, o);
-            });
-            // filter out pathological/empty items that cause blank rows
-            this.state.openOrders = Array.from(dedup.values()).filter((o) => {
-                if (!o || !o.id) return false;
-                const hasLines = Array.isArray(o.lines) && o.lines.length > 0;
-                const hasAmount = typeof o.amount_total !== 'undefined' && o.amount_total !== null;
-                return hasLines && hasAmount;
-            });
-            if (this.state.clickedOrder?.id && !this.state.openOrders.find((o) => o.id === this.state.clickedOrder.id)) {
-                this.state.clickedOrder = {};
-            }
+            const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
+            const unpaidOrders = await this.pos.get_order_list().filter(order => order.name.includes("Online-Order"));
+            this.state.openOrders = openOrders;
         } catch (error) {
             console.error("Error fetching open orders:", error);
         }
