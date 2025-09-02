@@ -70,39 +70,43 @@
                 <t t-foreach="props.data.orderlines" t-as="line" t-key="line_index">
                     <t t-if="!line.is_topping">
                         <t t-set="price_excl" t-value="line.priceWithoutTax || line.price_subtotal || line.price_subtotal_excl || 0"/>
-                        <div>
-                            <span><t t-esc="line.qty" /> </span>
-                            <span><t t-esc="line.productName" /></span>
-                            <span class="pos-receipt-right-align">
-                                <t t-if="price_excl">
-                                    <t t-esc="props.formatCurrency(price_excl)" />
-                                </t>
-                                <t t-else="">
-                                    <t t-esc="line.price" />
-                                </t>
-                            </span>
-                        </div>
-                        <t t-if="line.customerNote">
-                            <div class="pos-receipt-left-padding pos-receipt-customer-note">
-                                <small><i class="fa fa-pencil-square-o">&#160;<t t-esc="line.customerNote"/></i></small>
-                            </div>
-                        </t>
-                        <t t-if="line.is_has_topping &amp;&amp; line.Toppings &amp;&amp; line.Toppings.length">
-                            <div class="pos-receipt-left-padding">
-                                <t t-foreach="line.Toppings" t-as="topping" t-key="topping_index">
-                                    <small><div>- 
-                                        <t t-if="topping.full_product_name">
-                                            <t t-esc="topping.full_product_name" />
+                        <table class="sh-receipt-lines" style="width:100%">
+                            <tr>
+                                <td class="sh-cell-desc">
+                                    <span><t t-esc="line.qty" /> <t t-esc="line.productName" /></span>
+                                    <t t-if="line.customerNote">
+                                        <div class="pos-receipt-left-padding pos-receipt-customer-note"><small><i class="fa fa-pencil-square-o">&#160;<t t-esc="line.customerNote"/></i></small></div>
+                                    </t>
+                                </td>
+                                <td class="sh-cell-amount">
+                                    <span class="pos-receipt-right-align">
+                                        <t t-if="price_excl">
+                                            <t t-esc="props.formatCurrency(price_excl)" />
                                         </t>
                                         <t t-else="">
-                                            <t t-if="topping.product">
-                                                <t t-esc="topping.product.display_name" />
-                                            </t>
+                                            <t t-esc="line.price" />
                                         </t>
-                                    </div></small>
+                                    </span>
+                                </td>
+                            </tr>
+                            <t t-if="line.is_has_topping &amp;&amp; line.Toppings &amp;&amp; line.Toppings.length">
+                                <t t-foreach="line.Toppings" t-as="topping" t-key="topping_index">
+                                    <tr>
+                                        <td class="pos-receipt-left-padding"><small>- 
+                                            <t t-if="topping.full_product_name">
+                                                <t t-esc="topping.full_product_name" />
+                                            </t>
+                                            <t t-else="">
+                                                <t t-if="topping.product">
+                                                    <t t-esc="topping.product.display_name" />
+                                                </t>
+                                            </t>
+                                        </small></td>
+                                        <td></td>
+                                    </tr>
                                 </t>
-                            </div>
-                        </t>
+                            </t>
+                        </table>
                     </t>
                 </t>
             </div>
