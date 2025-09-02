@@ -130,9 +130,18 @@ export class OnlineOrderScreen extends Component {
      */
     async fetchOpenOrders(){
         try {
-            const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
-            const unpaidOrders = await this.pos.get_order_list().filter(order => order.name.includes("Online-Order"));
-            this.state.openOrders = openOrders;
+            const raw = await this.orm.call("pos.order", "get_open_orders", [], { config_id: this.pos.config.id });
+            const dedup = new Map();
+            (raw || []).forEach((o) => {
+                if (o && o.id) dedup.set(o.id, o);
+            });
+            // filter out pathological/empty items that cause blank rows
+            this.state.openOrders = Array.from(dedup.values()).filter(
+                (o) => o && o.id && typeof o.amount_total !== 'undefined'
+            );
+            if (this.state.clickedOrder?.id && !this.state.openOrders.find((o) => o.id === this.state.clickedOrder.id)) {
+                this.state.clickedOrder = {};
+            }
         } catch (error) {
             console.error("Error fetching open orders:", error);
         }

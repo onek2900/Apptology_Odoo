@@ -26,6 +26,7 @@
                             </thead>
                             <tbody style="display: block;">
                                 <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
+                                    <t t-if="order and order.id">
                                     <tr class="order-row" t-att-data-id="order.id"
                                         t-on-click="() => this.onClickOrder(order)"
                                         t-on-dblclick="() => this.onDoubleClick(order)">
@@ -90,6 +91,7 @@
                                             </t>
                                         </td>
                                     </tr>
+                                    </t>
                                 </t>
                             </tbody>
                         </table>
