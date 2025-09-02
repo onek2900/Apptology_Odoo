@@ -64,7 +64,7 @@
         <xpath expr="//OrderWidget" position="before">
             <div>
                 <div>
-                    <span>Description</span>
+                    <span>Product</span>
                     <span class="pos-receipt-right-align">Price</span>
                 </div>
                 <t t-foreach="props.data.orderlines" t-as="line" t-key="line_index">
@@ -73,7 +73,17 @@
                         <table class="sh-receipt-lines" style="width:100%">
                             <tr>
                                 <td class="sh-cell-desc" style="text-align:left; padding:0;">
-                                    <span><t t-esc="line.qty" /> <t t-esc="line.productName" /></span>
+                                    <span class="sh-qty">
+                                        <t t-if="Math.floor(line.qty) === line.qty">
+                                            <t t-esc="parseInt(line.qty)" />
+                                        </t>
+                                        <t t-else="">
+                                            <t t-esc="line.qty" />
+                                        </t>
+                                    </span>
+                                    <span class="sh-product" style="margin-left:6px;">
+                                        <t t-esc="line.productName" />
+                                    </span>
                                     <t t-if="line.customerNote">
                                         <div class="pos-receipt-customer-note"><small><i class="fa fa-pencil-square-o">&#160;<t t-esc="line.customerNote"/></i></small></div>
                                     </t>
