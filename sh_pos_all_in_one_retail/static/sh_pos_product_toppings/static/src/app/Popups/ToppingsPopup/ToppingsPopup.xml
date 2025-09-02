@@ -40,7 +40,7 @@
                                             </td>
                                             <td class="text-end actions" width="150">
                                                 <span class="price-tag"><t t-esc="priceFor(product)"/></span>
-                                                <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => removeTopping(ev, product)" title="Remove">
+                                                <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => this.removeTopping(ev, product)" title="Remove">
                                                     <i class="fa fa-times"/>
                                                 </button>
                                             </td>
@@ -71,7 +71,7 @@
                                                 </td>
                                                 <td class="text-end actions" width="150">
                                                     <span class="price-tag"><t t-esc="priceFor(product)"/></span>
-                                                    <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => removeTopping(ev, product)" title="Remove">
+                                                    <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => this.removeTopping(ev, product)" title="Remove">
                                                         <i class="fa fa-times"/>
                                                     </button>
                                                 </td>
@@ -99,7 +99,7 @@
                                             </td>
                                             <td class="text-end actions" width="150">
                                                 <span class="price-tag"><t t-esc="priceFor(product)"/></span>
-                                                <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => removeTopping(ev, product)" title="Remove">
+                                                <button t-if="isSelected(product)" class="btn btn-sm btn-link text-danger ms-2" t-on-click="(ev) => this.removeTopping(ev, product)" title="Remove">
                                                     <i class="fa fa-times"/>
                                                 </button>
                                             </td>
