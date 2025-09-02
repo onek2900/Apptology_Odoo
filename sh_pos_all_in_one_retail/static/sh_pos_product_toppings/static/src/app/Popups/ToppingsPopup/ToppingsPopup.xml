@@ -116,19 +116,25 @@
             </main>
             <div class="footer modal-footer">
                 <t t-if="hasGroups">
-                    <div class="d-flex w-100 justify-content-between align-items-center gap-2">
-                        <div class="button btn btn-lg btn-secondary" t-on-click="prevGroup" t-att-class="{'disabled': state.currentIndex === 0}">Previous</div>
-                        <t t-if="state.currentIndex &lt; (groups.length - 1)">
-                            <div class="button btn btn-lg btn-primary" t-on-click="nextGroup" t-att-class="{'disabled': !canProceedCurrent()}">Next</div>
-                        </t>
-                        <t t-if="isCurrentOptional()">
-                            <div class="button btn btn-lg btn-outline-secondary" t-on-click="skipCurrent">Skip</div>
-                        </t>
-                        <div class="button confirm btn btn-lg btn-primary" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}"><t t-esc="confirmCtaText()"/></div>
+                    <div class="toppings-footer w-100">
+                        <div class="nav-row">
+                            <div class="button btn btn-lg btn-secondary" t-on-click="prevGroup" t-att-class="{'disabled': state.currentIndex === 0}">Previous</div>
+                            <t t-if="state.currentIndex &lt; (groups.length - 1)">
+                                <div class="button btn btn-lg btn-primary" t-on-click="nextGroup" t-att-class="{'disabled': !canProceedCurrent()}">Next</div>
+                            </t>
+                            <t t-if="isCurrentOptional()">
+                                <div class="button btn btn-lg btn-outline-secondary" t-on-click="skipCurrent">Skip</div>
+                            </t>
+                        </div>
+                        <div class="cta-row">
+                            <div class="button confirm btn btn-lg btn-primary w-100" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}"><t t-esc="confirmCtaText()"/></div>
+                        </div>
                     </div>
                 </t>
                 <t t-if="!hasGroups">
-                    <div class="button confirm btn btn-lg btn-primary" t-on-click="ClickOk"><t t-esc="confirmCtaText()"/></div>
+                    <div class="cta-row w-100">
+                        <div class="button confirm btn btn-lg btn-primary w-100" t-on-click="ClickOk"><t t-esc="confirmCtaText()"/></div>
+                    </div>
                 </t>
             </div>
         </div>

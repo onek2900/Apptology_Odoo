@@ -83,14 +83,9 @@
 }
 
 /* footer buttons alignment like screenshots */
-.sh_global_topping_popup .modal-footer {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-.sh_global_topping_popup .modal-footer .button {
-  width: 100%;
-}
-.sh_global_topping_popup .modal-footer .btn-outline-secondary {
-  border: 1px solid #e1e1e8;
-}
+.sh_global_topping_popup .modal-footer { display: block; }
+.sh_global_topping_popup .toppings-footer { display: flex; flex-direction: column; gap: 16px; }
+.sh_global_topping_popup .toppings-footer .nav-row { display: flex; gap: 16px; width: 100%; }
+.sh_global_topping_popup .toppings-footer .nav-row .button { flex: 1; }
+.sh_global_topping_popup .toppings-footer .cta-row .button { width: 100%; }
+.sh_global_topping_popup .modal-footer .btn-outline-secondary { border: 1px solid #e1e1e8; }
