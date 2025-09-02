@@ -124,11 +124,11 @@
                         <t t-if="isCurrentOptional()">
                             <div class="button btn btn-lg btn-outline-secondary" t-on-click="skipCurrent">Skip</div>
                         </t>
-                        <div class="button cancel btn btn-lg btn-success" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}"><t t-esc="confirmCtaText()"/></div>
+                        <div class="button confirm btn btn-lg btn-primary" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}"><t t-esc="confirmCtaText()"/></div>
                     </div>
                 </t>
                 <t t-if="!hasGroups">
-                    <div class="button cancel btn btn-lg btn-primary" t-on-click="ClickOk"><t t-esc="confirmCtaText()"/></div>
+                    <div class="button confirm btn btn-lg btn-primary" t-on-click="ClickOk"><t t-esc="confirmCtaText()"/></div>
                 </t>
             </div>
         </div>
