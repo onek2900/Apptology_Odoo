@@ -13,22 +13,27 @@ patch(Navbar.prototype, {
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService.addChannel(this.channel);
         this.busService.addEventListener('notification', ({ detail: notifications }) => {
-            const events = notifications.filter((n) => n.payload?.channel === this.channel);
-            for (const evt of events) {
-                const status = evt.payload?.order_status;
-                if (!status) {
-                    // Ignore noise events that do not carry an order status
-                    continue;
+            try {
+                const events = (notifications || []).filter((n) => {
+                    const p = n && n.payload;
+                    const ch = (p && (p.channel || (Array.isArray(p) && p[0]?.channel))) || null;
+                    return ch === this.channel;
+                });
+                for (const evt of events) {
+                    const p = evt.payload;
+                    const status = p?.order_status;
+                    if (!status) continue;
+                    this.playNotificationSound();
+                    if (status === 'success') {
+                        this.notification.add(_t("New Online Order Received"), { type: "info" });
+                    } else if (status === 'failed' || status === 'failure') {
+                        this.notification.add(_t("Failed to receive online order"), { type: "danger", sticky: true });
+                    }
+                    this.onlineOrderCount();
                 }
-                this.playNotificationSound();
-                if (status === 'success') {
-                    this.notification.add(_t("New Online Order Received"), { type: "info" });
-                } else if (status === 'failed') {
-                    this.notification.add(_t("Failed to receive online order"), { type: "danger", sticky: true });
-                } else {
-                    // Unknown status; do not notify to avoid confusion
-                }
-                this.onlineOrderCount();
+            } catch (e) {
+                // Non-fatal: keep POS usable even if parsing fails
+                console.warn('Online order bus parse failed', e);
             }
         });
         this.orm = useService("orm");
@@ -86,8 +91,9 @@ patch(Navbar.prototype, {
      * Starts polling for online order count every 30 seconds.
      */
     async startPollingOrderCount() {
+        // Refresh the counter every 10 seconds as a fallback
         this.pollingOrderCountInterval=setInterval(() => {
             this.onlineOrderCount();
-        }, 30000);
+        }, 10000);
     },
 });
