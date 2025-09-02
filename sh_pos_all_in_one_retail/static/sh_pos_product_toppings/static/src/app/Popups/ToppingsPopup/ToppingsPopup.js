@@ -149,6 +149,41 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         }
         return formattedUnitPrice;
     }
+    allowedAllIds() {
+        if (this.hasGroups) {
+            const ids = new Set();
+            for (const g of this.groups) {
+                (g.toppinds_ids || []).forEach((id) => ids.add(id));
+            }
+            return ids;
+        }
+        const ids = new Set();
+        (this.toppingProducts || []).forEach((p) => ids.add(p.id));
+        (this.globalToppings || []).forEach((p) => ids.add(p.id));
+        return ids;
+    }
+    selectedExtrasTotal() {
+        const order = this.pos.get_order();
+        const line = order && order.get_selected_orderline();
+        if (!line) return 0;
+        const allowed = this.allowedAllIds();
+        const items = (line.get_toppings && line.get_toppings()) || [];
+        let total = 0;
+        for (const d of items) {
+            const pid = d.product_id || (d.product && d.product.id);
+            if (!allowed.has(pid)) continue;
+            const qty = d.quantity || 1;
+            const unit = typeof d.price_unit === 'number' ? d.price_unit : 0;
+            total += unit * qty;
+        }
+        return total;
+    }
+    confirmCtaText() {
+        const { currencyId, digits } = this.env;
+        const total = this.selectedExtrasTotal();
+        const label = total > 0 ? `${_t('Add for')} ${formatMonetary(total, { currencyId, digits })}` : _t('Add');
+        return label;
+    }
     isSelected(product) {
         const order = this.pos.get_order();
         const line = order && order.get_selected_orderline();

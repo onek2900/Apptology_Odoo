@@ -30,8 +30,7 @@
                                         <tr class="topping-row" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-att-class="{'selected': isSelected(product)}">
                                             <td class="indicator">
                                                 <t t-if="isRadioMode()">
-                                                    <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
-                                                    <i t-else="" class="fa fa-circle-o"/>
+                                                    <span class="radio-dot" t-att-class="{'checked': isSelected(product)}"></span>
                                                 </t>
                                             </td>
                                             <td class="thumb">
@@ -63,8 +62,7 @@
                                             <tr class="topping-row" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-att-class="{'selected': isSelected(product)}">
                                                 <td class="indicator">
                                                     <t t-if="isRadioMode()">
-                                                        <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
-                                                        <i t-else="" class="fa fa-circle-o"/>
+                                                        <span class="radio-dot" t-att-class="{'checked': isSelected(product)}"></span>
                                                     </t>
                                                 </td>
                                                 <td class="thumb">
@@ -93,8 +91,7 @@
                                         <tr class="topping-row" t-on-click="() => this._clicktoppigProduct(product)" t-att-data-product-id="product.id" t-att-class="{'selected': isSelected(product)}">
                                             <td class="indicator">
                                                 <t t-if="isRadioMode()">
-                                                    <i t-if="isSelected(product)" class="fa fa-dot-circle-o"/>
-                                                    <i t-else="" class="fa fa-circle-o"/>
+                                                    <span class="radio-dot" t-att-class="{'checked': isSelected(product)}"></span>
                                                 </t>
                                             </td>
                                             <td class="thumb">
@@ -127,13 +124,11 @@
                         <t t-if="isCurrentOptional()">
                             <div class="button btn btn-lg btn-outline-secondary" t-on-click="skipCurrent">Skip</div>
                         </t>
-                        <div class="button cancel btn btn-lg btn-success" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}">Done</div>
+                        <div class="button cancel btn btn-lg btn-success" t-on-click="ClickOk" t-att-class="{'disabled': !canFinish()}"><t t-esc="confirmCtaText()"/></div>
                     </div>
                 </t>
                 <t t-if="!hasGroups">
-                    <div class="button cancel btn btn-lg btn-primary" t-on-click="ClickOk">
-                        Ok
-                    </div>
+                    <div class="button cancel btn btn-lg btn-primary" t-on-click="ClickOk"><t t-esc="confirmCtaText()"/></div>
                 </t>
             </div>
         </div>
