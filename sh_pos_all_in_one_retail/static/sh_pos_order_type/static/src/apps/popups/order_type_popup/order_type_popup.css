@@ -1,0 +1,14 @@
+/* Make order type rows left-aligned and disable zebra striping */
+.sh_order_type_popup .sh_order_type_table td {
+  text-align: left;
+  background-color: #fff;
+}
+.sh_order_type_popup .sh_order_type_table tr:nth-child(odd) > td,
+.sh_order_type_popup .sh_order_type_table tr:nth-child(even) > td {
+  background-color: #fff; /* override any theme zebra striping */
+}
+
+/* Optional: keep a subtle hover without stripes */
+.sh_order_type_popup .sh_order_type_table tr:hover > td {
+  background-color: #f6f8fa;
+}
