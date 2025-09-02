@@ -273,5 +273,22 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
             base.set_is_has_topping(false);
         }
     }
+    async cancelWithoutToppings() {
+        const order = this.pos.get_order();
+        const base = order && order.get_selected_orderline();
+        if (base) {
+            const temp = base.get_toppings_temp && base.get_toppings_temp();
+            if (temp && temp.length) {
+                for (const t of [...temp]) {
+                    await order.removeOrderline(t);
+                }
+            }
+            base.Toppings_temp = [];
+            base.Toppings = [];
+            base.set_is_has_topping(false);
+        }
+        this.props.resolve({ confirmed: true, payload: null });
+        this.cancel();
+    }
 }
   

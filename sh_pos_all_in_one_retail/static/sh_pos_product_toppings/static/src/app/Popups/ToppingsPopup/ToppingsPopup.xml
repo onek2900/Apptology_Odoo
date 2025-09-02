@@ -4,6 +4,9 @@
 
         <div class="popup product-configurator-popup sh_global_topping_popup">
             <div class="modal-header">
+                <button class="btn btn-sm btn-link close-btn" t-on-click="cancelWithoutToppings" title="Close without toppings">
+                    <i class="fa fa-times"/>
+                </button>
                 <h4 class="modal-title title">
                     <t t-if="hasGroups"><t t-esc="currentGroup.name"/></t>
                     <t t-else=""><t t-esc="props.title or 'Toppings'" /></t>
