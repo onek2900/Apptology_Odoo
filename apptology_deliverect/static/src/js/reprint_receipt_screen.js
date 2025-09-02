@@ -22,6 +22,7 @@ patch(ReprintReceiptScreen.prototype, {
                 name: order.full_product_name,
                 qty: order.quantity,
                 note: order.note,
+                is_topping: !!order.is_topping,
             };
         });
         this.printer.print(

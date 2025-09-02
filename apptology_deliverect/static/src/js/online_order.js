@@ -93,16 +93,21 @@ export class OnlineOrderScreen extends Component {
         const currentOrder = this.pos.pos_orders.find(o => o.id === order);
         const orderLines = [];
         exportedOrder.lines.forEach(lineArr => {
-        const line = lineArr[2];
-    if (line && line.id) {
-        orderLines.push({
-            lineId: line.id,
-            name: line.full_product_name,
-            qty: line.qty,
-            note: line.note,
+            const line = lineArr[2];
+            if (line && line.id) {
+                const shIsToppingRaw = line.sh_is_topping;
+                const isTopping = Array.isArray(shIsToppingRaw)
+                    ? !!shIsToppingRaw[0]
+                    : !!shIsToppingRaw || !!line.is_topping;
+                orderLines.push({
+                    lineId: line.id,
+                    name: line.full_product_name,
+                    qty: line.qty,
+                    note: line.note,
+                    is_topping: isTopping,
+                });
+            }
         });
-    }
-});
         this.printer.print(
             onlineOrderReceipt,
             {

@@ -17,6 +17,11 @@ patch(ReceiptScreen.prototype, {
      * Print online order from receipt screen.
      */
     async printOnlineReceipt() {
+        // Guard: only allow for online orders
+        const current = this.pos.get_order();
+        if (!current || !current.is_online_order) {
+            return;
+        }
         const currentOrder = this.pos.pos_orders.filter(order => order.id === this.pos.selectedOrder.server_id);
         const orderLines = this.pos.selectedOrder.orderlines.map(order => {
             return {
@@ -24,6 +29,7 @@ patch(ReceiptScreen.prototype, {
                 name: order.full_product_name,
                 qty: order.quantity,
                 note: order.note,
+                is_topping: !!order.is_topping,
             };
         });
         this.buttonOnlineOrderPrintReceipt.el.className = "fa fa-fw fa-spin fa-circle-o-notch";
