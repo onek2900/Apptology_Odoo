@@ -181,6 +181,8 @@ class PosOrder(models.Model):
              ('declined_time', '=', False),
              ('declined_time', '>', expiration_time),
              ('is_online_order', '=', True),
+             ('online_order_status', 'in', ['open', 'approved']),
+             ('state', '=', 'draft'),
              ('amount_total', '>', 0),
              ('lines', '!=', False),
              ('config_id', '=', config_id),

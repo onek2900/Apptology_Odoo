@@ -25,22 +25,19 @@ export class OnlineOrderScreen extends Component {
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService = this.env.services.bus_service;
         this.busService.addChannel(this.channel);
-        this.busService.addEventListener('notification', ({ detail: notifications }) => {
-            try {
-                const hasOnlineOrderPing = (notifications || []).some((n) => {
-                    const p = n && n.payload;
-                    const channel = (p && (p.channel || p?.[0]?.channel || p?.payload?.channel)) || null;
-                    return channel === this.channel;
-                });
-                if (hasOnlineOrderPing) {
-                    this.fetchOpenOrders();
-                }
-            } catch (e) {
-                console.warn('Bus notification parsing failed:', e);
+        this._onBusNotif = ({ detail: notifications }) => {
+            const hits = (notifications || []).filter((n) => n?.payload?.channel === this.channel);
+            if (hits.length) {
+                this.fetchOpenOrders();
             }
-        });
+        };
+        this.busService.addEventListener('notification', this._onBusNotif);
         this.initiateServices();
-        onWillUnmount(()=>clearInterval(this.pollingInterval))
+        onWillUnmount(() => {
+            try { clearInterval(this.pollingInterval); } catch (e) {}
+            if (this._onBusNotif) this.busService.removeEventListener('notification', this._onBusNotif);
+            if (this.channel) this.busService.deleteChannel?.(this.channel);
+        })
     }
     /**
      * Initiates services by fetching open orders and starting polling.
