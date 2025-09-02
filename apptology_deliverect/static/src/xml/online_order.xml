@@ -4,6 +4,12 @@
         <div class="online-order-screen screen h-100 bg-100" t-att-class="{ 'd-none': !props.isShown }">
             <div class="screen-full-width d-flex w-100 h-100">
                 <div class="rightpane pane-border d-flex flex-column flex-grow-1 w-100 h-100 h-lg-100 bg-300 overflow-y-auto">
+                    <div class="d-flex justify-content-between align-items-center p-2 bg-white border-bottom">
+                        <div class="fs-4 fw-bold">Online Orders</div>
+                        <button class="btn btn-lg btn-secondary" t-on-click="closeOnlineOrderScreen">
+                            <i class="fa fa-arrow-left me-2"/> Back
+                        </button>
+                    </div>
                     <div class="orders overflow-y-auto flex-grow-1">
                         <table class="table order_head w-100">
                             <thead>
