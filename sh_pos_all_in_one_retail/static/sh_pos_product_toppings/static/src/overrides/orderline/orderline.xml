@@ -62,7 +62,7 @@
 
         <!-- Inject our custom compact lines before the hidden widget -->
         <xpath expr="//OrderWidget" position="before">
-            <div class="pos-receipt-left-padding">
+            <div>
                 <div>
                     <span>Description</span>
                     <span class="pos-receipt-right-align">Price</span>
@@ -72,13 +72,13 @@
                         <t t-set="price_excl" t-value="line.priceWithoutTax || line.price_subtotal || line.price_subtotal_excl || 0"/>
                         <table class="sh-receipt-lines" style="width:100%">
                             <tr>
-                                <td class="sh-cell-desc">
+                                <td class="sh-cell-desc" style="text-align:left; padding:0;">
                                     <span><t t-esc="line.qty" /> <t t-esc="line.productName" /></span>
                                     <t t-if="line.customerNote">
-                                        <div class="pos-receipt-left-padding pos-receipt-customer-note"><small><i class="fa fa-pencil-square-o">&#160;<t t-esc="line.customerNote"/></i></small></div>
+                                        <div class="pos-receipt-customer-note"><small><i class="fa fa-pencil-square-o">&#160;<t t-esc="line.customerNote"/></i></small></div>
                                     </t>
                                 </td>
-                                <td class="sh-cell-amount">
+                                <td class="sh-cell-amount" style="text-align:right; padding:0;">
                                     <span class="pos-receipt-right-align">
                                         <t t-if="price_excl">
                                             <t t-esc="props.formatCurrency(price_excl)" />
@@ -92,7 +92,7 @@
                             <t t-if="line.is_has_topping &amp;&amp; line.Toppings &amp;&amp; line.Toppings.length">
                                 <t t-foreach="line.Toppings" t-as="topping" t-key="topping_index">
                                     <tr>
-                                        <td class="pos-receipt-left-padding"><small>- 
+                                        <td style="text-align:left; padding:0 0 0 10px;"><small>- 
                                             <t t-if="topping.full_product_name">
                                                 <t t-esc="topping.full_product_name" />
                                             </t>
@@ -102,7 +102,10 @@
                                                 </t>
                                             </t>
                                         </small></td>
-                                        <td></td>
+                                        <td style="text-align:right; padding:0;">
+                                            <t t-set="topping_price_excl" t-value="topping.price_subtotal || topping.price_subtotal_incl || 0" />
+                                            <small><t t-esc="props.formatCurrency(topping_price_excl)" /></small>
+                                        </td>
                                     </tr>
                                 </t>
                             </t>
