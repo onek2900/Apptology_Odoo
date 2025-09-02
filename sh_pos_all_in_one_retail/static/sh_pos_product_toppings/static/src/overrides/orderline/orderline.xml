@@ -111,7 +111,7 @@
                                             <small>
                                                 <t t-if="topping.quantity !== undefined">
                                                     <t t-set="_tq" t-value="Number(topping.quantity)"/>
-                                                    <t t-if="!isNaN(_tq) && Math.floor(_tq) === _tq">
+                                                    <t t-if="!isNaN(_tq) &amp;&amp; Math.floor(_tq) === _tq">
                                                         <t t-esc="parseInt(_tq)"/>
                                                     </t>
                                                     <t t-else="">
