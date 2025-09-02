@@ -18,8 +18,7 @@
         ],
     },
     "images": [],
-    "installable": true,
-    "auto_install": false,
-    "application": false
+    "installable": True,
+    "auto_install": False,
+    "application": False
 }
-
