@@ -65,17 +65,23 @@ class MonerisPostbackController(http.Controller):
             status_code    = str(r.get("statusCode", "") or "")
             response_code  = str(r.get("responseCode", "") or "")
             completed      = str(r.get("completed", "false")).lower() == "true"
+            error_details  = r.get("errorDetails") or []
 
             # Determine message type & flags
             if action == "sync":
-                # Treat sync success as completed + (commonly) status_code == 5207
-                sync_ok = completed and status_code == "5207"
+                # Treat sync success as completed + known OK codes or OK-ish status text
+                ok_codes = {"5207", "5209"}
+                status_text = (status or "").strip().lower()
+                code_ok = status_code in ok_codes
+                text_ok = status_text in {"approved", "success", "completed", "ok"}
+                sync_ok = completed and (code_ok or text_ok)
                 bus_msg = {
                     "type": "sync_success" if sync_ok else "sync_failed",
                     "completed": completed,
                     "status": status,
                     "statusCode": status_code,
                     "terminalId": terminal_id,
+                    "errorDetails": error_details,
                 }
             elif action == "purchase":
                 # Purchase or other action
@@ -94,16 +100,18 @@ class MonerisPostbackController(http.Controller):
                     "cardType": r.get("cardType"),
                     "transactionId": r.get("transactionId"),
                     "authCode": r.get("authCode"),
+                    "errorDetails": error_details,
                 }
             else:
                 # Fallback minimal message
                 bus_msg = {
-                    "type": action or "unknown",
+                    "type": ("terminal_error" if (status and "error" in str(status).lower()) or error_details else (action or "unknown")),
                     "completed": completed,
                     "status": status,
                     "statusCode": status_code,
                     "orderId": order_id,
                     "terminalId": terminal_id,
+                    "errorDetails": error_details,
                 }
 
             # Find target POS configs by terminal mapping (fallback: all configs)

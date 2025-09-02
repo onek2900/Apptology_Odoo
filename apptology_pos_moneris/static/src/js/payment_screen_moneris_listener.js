@@ -9,11 +9,11 @@ patch(PaymentScreen.prototype, {
     setup() {
         super.setup(...arguments);
         this.busService = this.env.services.bus_service;
-        this.channel = `pos_moneris_${this.pos.config.id}`;
-        this.busService.addChannel(this.channel);
+        this.monerisChannel = `pos_moneris_${this.pos.config.id}`;
+        this.busService.addChannel(this.monerisChannel);
 
         this._onNotif = ({ detail: notifications }) => {
-            const events = notifications.filter(n => (n.payload?.channel === this.channel) || n.payload === 'MONERIS_LATEST_RESPONSE');
+            const events = notifications.filter(n => (n.payload?.channel === this.monerisChannel) || n.payload === 'MONERIS_LATEST_RESPONSE');
             for (const evt of events) {
                 const payload = evt.payload;
                 const msg = payload?.message || payload; // either our dict or legacy type
@@ -36,7 +36,7 @@ patch(PaymentScreen.prototype, {
 
         onWillUnmount(() => {
             if (this._onNotif) this.busService.removeEventListener('notification', this._onNotif);
-            if (this.channel) this.busService.deleteChannel(this.channel);
+            if (this.monerisChannel) this.busService.deleteChannel(this.monerisChannel);
         });
     },
 
@@ -56,22 +56,31 @@ patch(PaymentScreen.prototype, {
         );
         if (!pl) return;
 
-        if (msg.approved) {
+        if (msg.type === 'terminal_error' || (msg.status && String(msg.status).toLowerCase().includes('error'))) {
+            const ed = Array.isArray(msg.errorDetails) && msg.errorDetails.length ? `: ${msg.errorDetails[0].issue || msg.errorDetails[0].errorCode}` : '';
+            const code = msg.statusCode ? ` (code ${msg.statusCode})` : '';
+            this.notification.add(_t("Moneris terminal error") + ed + code, { type: "danger", sticky: true });
+            return;
+        } else if (msg.approved) {
             pl.set_payment_status("done");
             const term = pl.payment_method?.payment_terminal;
             if (term?.paymentNotificationResolver) {
+                term._clearCancelTimer?.();
                 term.paymentNotificationResolver(true);
                 term.paymentNotificationResolver = null;
             }
+            try { delete pl.moneris_started_at; } catch (e) {}
             // Avoid re-entrant order validation while POS is flushing
             this.notification.add(_t("Moneris payment approved."), { type: "info" });
         } else if (msg.completed) {
             pl.set_payment_status("rejected");
             const term = pl.payment_method?.payment_terminal;
             if (term?.paymentNotificationResolver) {
+                term._clearCancelTimer?.();
                 term.paymentNotificationResolver(false);
                 term.paymentNotificationResolver = null;
             }
+            try { delete pl.moneris_started_at; } catch (e) {}
             const reason = msg.responseCode ? ` (code ${msg.responseCode})` : "";
             this.notification.add(_t("Moneris payment declined") + reason, { type: "danger", sticky: true });
         }

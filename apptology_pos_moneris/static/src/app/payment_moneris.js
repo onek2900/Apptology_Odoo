@@ -80,12 +80,60 @@ export class PaymentMoneris extends PaymentInterface {
             line.set_payment_status('force_done');
             return false;
         }
+        // Inspect immediate response for terminal errors (e.g., pinpad not found / communication error)
+        const first = response?.receipt?.data?.response?.[0];
+        if (first && (String(first.status || '').toLowerCase().includes('error') || String(first.statusCode || '').startsWith('59'))) {
+            const notif = this.env.services.notification;
+            const code = first.statusCode ? ` (code ${first.statusCode})` : '';
+            const issue = first.status || first.responseCode || 'Terminal error';
+            notif?.add(_t('Moneris terminal error') + `: ${issue}` + code, { type: 'danger', sticky: true });
+            line.set_payment_status('retry');
+            return false;
+        }
 
 
         line.set_payment_status("waitingCard");
+        // mark start time so the UI can show inline Cancel after 5s
+        line.moneris_started_at = Date.now();
+
         return await new Promise((resolve) => {
             this.paymentNotificationResolver = resolve;
         });
+    }
+
+    _clearCancelTimer() {
+        if (this._cancelTimeoutId) {
+            clearTimeout(this._cancelTimeoutId);
+            this._cancelTimeoutId = null;
+        }
+        const l = this.pending_moneris_line();
+        if (l && l.moneris_started_at) {
+            try { delete l.moneris_started_at; } catch (e) {}
+        }
+    }
+
+    async send_payment_cancel(cid) {
+        const line = this.pending_moneris_line();
+        if (!line) return false;
+        this._clearCancelTimer();
+        line.set_payment_status('retry');
+        if (this.paymentNotificationResolver) {
+            this.paymentNotificationResolver(false);
+            this.paymentNotificationResolver = null;
+        }
+        return true;
+    }
+
+    async send_payment_accept(cid) {
+        const line = this.pending_moneris_line();
+        if (!line) return false;
+        this._clearCancelTimer();
+        line.set_payment_status('done');
+        if (this.paymentNotificationResolver) {
+            this.paymentNotificationResolver(true);
+            this.paymentNotificationResolver = null;
+        }
+        return true;
     }
 
     pending_moneris_line() {

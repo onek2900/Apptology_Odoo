@@ -4,7 +4,7 @@ import requests
 import json
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime
-from odoo import fields, models
+from odoo import api, fields, models
 from odoo.exceptions import AccessDenied
 
 
@@ -132,7 +132,11 @@ class PosPaymentMethod(models.Model):
             if not (api_token and store_id and ist_code and terminal_id):
                 _logger = logging.getLogger(__name__)
                 _logger.warning("Skipping Moneris SYNC: missing credentials on payment method '%s'", pm.display_name)
-                continue
+                # Return a structured error so the frontend can notify the user
+                return {
+                    "error": "missing_credentials",
+                    "message": f"Missing Moneris credentials on payment method '{pm.display_name}'",
+                }
 
             # Build postBackUrl for async callback
             base_url = pm.env['ir.config_parameter'].sudo().get_param('web.base.url') or ''
@@ -175,7 +179,7 @@ class PosPaymentMethod(models.Model):
 
             _logger = logging.getLogger(__name__)
             _logger.info("Moneris SYNC request for terminal %s -> %s", terminal_id, endpoint_url)
-            _logger.debug("SYNC payload: %s", json.dumps(payload))
+            _logger.info("Moneris SYNC payload: %s", json.dumps(payload))
 
             resp = requests.post(endpoint_url, json=payload, headers=headers, timeout=30)
             _logger.info("Moneris SYNC response [%s]: %s", resp.status_code, resp.text)
@@ -184,3 +188,32 @@ class PosPaymentMethod(models.Model):
                 return resp.json()  # validation response
             except Exception:
                 return {"status": "ok"}
+
+    def action_moneris_sync_now(self, session_id=False):
+        """RPC: Trigger SYNC on selected Moneris payment methods.
+        Returns immediate responses; completion also arrives via postback/bus.
+        """
+        session = None
+        if session_id:
+            session = self.env['pos.session'].sudo().browse(int(session_id))
+        res = []
+        for pm in self:
+            try:
+                res.append({"id": pm.id, "resp": pm._moneris_sync_terminal(session=session)})
+            except Exception as e:
+                res.append({"id": pm.id, "error": str(e)})
+        return {"results": res}
+
+    @api.model
+    def action_moneris_sync_now_for_config(self, config_id, session_id=False):
+        """RPC: Trigger SYNC for all Moneris methods on a POS config."""
+        _logger = logging.getLogger(__name__)
+        _logger.info("Moneris: action_moneris_sync_now_for_config called (config_id=%s, session_id=%s)", config_id, session_id)
+        cfg = self.env['pos.config'].sudo().browse(int(config_id))
+        if not cfg:
+            _logger.warning("Moneris: POS config not found for id=%s", config_id)
+            return {"error": "config_not_found"}
+        pms = cfg.payment_method_ids.filtered(lambda pm: pm.use_payment_terminal == 'moneris')
+        if not pms:
+            _logger.warning("Moneris: No Moneris payment methods on config id=%s", config_id)
+        return pms.action_moneris_sync_now(session_id=session_id)

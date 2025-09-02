@@ -163,27 +163,41 @@ class DeliverectWebhooks(http.Controller):
             order_lines = []
             total_untaxed = 0
             total_taxed = 0
-            for item in data.get('items'):
+            for item in data.get('items') or []:
                 if item.get("plu").split('-')[0] == 'VAR_PRD':
                     if item.get('subItems'):
                         for sub_item in item.get('subItems'):
-                            sub_item_line_vals = self.create_order_line(int(sub_item.get('plu').split('-')[1]),
-                                                                        item.get('quantity'),
-                                                                        item.get('remark', ""))
+                            sub_item_line_vals = self.create_order_line(
+                                int(sub_item.get('plu').split('-')[1]),
+                                item.get('quantity'),
+                                item.get('remark', "")
+                            )
+                            # mark variant sub-items as toppings for receipt grouping
+                            sub_item_line_vals['sh_is_topping'] = True
                             total_taxed += sub_item_line_vals.get('price_subtotal_incl')
                             total_untaxed += sub_item_line_vals.get('price_subtotal')
                             order_lines.append((0, 0, sub_item_line_vals))
                 else:
-                    line_vals = self.create_order_line(int(item.get('plu').split('-')[1]), item.get('quantity'),
-                                                       item.get('remark', ""))
+                    line_vals = self.create_order_line(
+                        int(item.get('plu').split('-')[1]),
+                        item.get('quantity'),
+                        item.get('remark', "")
+                    )
+                    # flag parent if it has modifiers/toppings
+                    if item.get('subItems'):
+                        line_vals['sh_is_has_topping'] = True
                     total_taxed += line_vals.get('price_subtotal_incl')
                     total_untaxed += line_vals.get('price_subtotal')
                     order_lines.append((0, 0, line_vals))
                     if item.get('subItems'):
                         for sub_item in item.get('subItems'):
-                            sub_item_line_vals = self.create_order_line(int(sub_item.get('plu').split('-')[1]),
-                                                                        item.get('quantity'),
-                                                                        sub_item.get('remark', ""))
+                            sub_item_line_vals = self.create_order_line(
+                                int(sub_item.get('plu').split('-')[1]),
+                                item.get('quantity'),
+                                sub_item.get('remark', "")
+                            )
+                            # mark sub-items of a normal product as toppings
+                            sub_item_line_vals['sh_is_topping'] = True
                             total_taxed += sub_item_line_vals.get('price_subtotal_incl')
                             total_untaxed += sub_item_line_vals.get('price_subtotal')
                             order_lines.append((0, 0, sub_item_line_vals))
@@ -231,6 +245,9 @@ class DeliverectWebhooks(http.Controller):
                 'customer_phone': data.get('customer', {}).get('phoneNumber'),
                 'channel_tax': (data.get('taxTotal') or 0) / 100,
             }
+            # Do not create orders with no lines to avoid empty POS orders
+            if not order_lines:
+                raise Exception("Deliverect payload contained no items to create order lines")
             return order_data
         except Exception as e:
             _logger.error(f"Failed to create order data: {str(e)}")
