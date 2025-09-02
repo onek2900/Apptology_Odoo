@@ -54,9 +54,10 @@
 
     <!-- Normal POS receipt custom lines: Qty first, then product; right column shows price (excl. tax). -->
     <t t-name="sh_pos_product_toppings.OrderReceiptLines" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
-        <!-- Hide the default order lines rendering -->
+        <!-- Hide the default order lines rendering (avoid invalid ':' in bare strings) -->
         <xpath expr="//OrderWidget" position="attributes">
-            <attribute name="style">display:none</attribute>
+            <attribute name="t-if">false</attribute>
+            <attribute name="style">'display:none'</attribute>
         </xpath>
 
         <!-- Inject our custom compact lines before the hidden widget -->
