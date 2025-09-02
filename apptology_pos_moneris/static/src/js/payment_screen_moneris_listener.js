@@ -9,11 +9,11 @@ patch(PaymentScreen.prototype, {
     setup() {
         super.setup(...arguments);
         this.busService = this.env.services.bus_service;
-        this.channel = `pos_moneris_${this.pos.config.id}`;
-        this.busService.addChannel(this.channel);
+        this.monerisChannel = `pos_moneris_${this.pos.config.id}`;
+        this.busService.addChannel(this.monerisChannel);
 
         this._onNotif = ({ detail: notifications }) => {
-            const events = notifications.filter(n => (n.payload?.channel === this.channel) || n.payload === 'MONERIS_LATEST_RESPONSE');
+            const events = notifications.filter(n => (n.payload?.channel === this.monerisChannel) || n.payload === 'MONERIS_LATEST_RESPONSE');
             for (const evt of events) {
                 const payload = evt.payload;
                 const msg = payload?.message || payload; // either our dict or legacy type
@@ -36,7 +36,7 @@ patch(PaymentScreen.prototype, {
 
         onWillUnmount(() => {
             if (this._onNotif) this.busService.removeEventListener('notification', this._onNotif);
-            if (this.channel) this.busService.deleteChannel(this.channel);
+            if (this.monerisChannel) this.busService.deleteChannel(this.monerisChannel);
         });
     },
 

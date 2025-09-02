@@ -15,11 +15,11 @@ patch(Navbar.prototype, {
 
         // Listen for Moneris sync completion on a per-config channel
         this.busService = this.env.services.bus_service;
-        this.channel = `pos_moneris_${this.pos.config.id}`;
-        this.busService.addChannel(this.channel);
+        this.monerisChannel = `pos_moneris_${this.pos.config.id}`;
+        this.busService.addChannel(this.monerisChannel);
         this._onNotif = ({ detail: notifications }) => {
             const events = notifications.filter(
-                (n) => (n.payload?.channel === this.channel)
+                (n) => (n.payload?.channel === this.monerisChannel)
             );
             for (const evt of events) {
                 const payload = evt.payload;
@@ -40,7 +40,7 @@ patch(Navbar.prototype, {
         this.busService.addEventListener('notification', this._onNotif);
         onWillUnmount(() => {
             if (this._onNotif) this.busService.removeEventListener('notification', this._onNotif);
-            if (this.channel) this.busService.deleteChannel(this.channel);
+            if (this.monerisChannel) this.busService.deleteChannel(this.monerisChannel);
         });
     },
 

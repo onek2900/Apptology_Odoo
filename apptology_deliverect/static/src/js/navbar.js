@@ -10,14 +10,14 @@ patch(Navbar.prototype, {
     setup() {
         super.setup();
         this.busService = this.env.services.bus_service;
-        this.channel=`new_pos_order_${this.pos.config.id}`;
-        this.busService.addChannel(this.channel);
+        this.deliverectChannel = `new_pos_order_${this.pos.config.id}`;
+        this.busService.addChannel(this.deliverectChannel);
         this.busService.addEventListener('notification', ({ detail: notifications }) => {
             try {
                 const events = (notifications || []).filter((n) => {
                     const p = n && n.payload;
                     const ch = (p && (p.channel || (Array.isArray(p) && p[0]?.channel))) || null;
-                    return ch === this.channel;
+                    return ch === this.deliverectChannel;
                 });
                 for (const evt of events) {
                     const p = evt.payload;
