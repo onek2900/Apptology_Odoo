@@ -45,9 +45,32 @@
         </xpath>
     </t> -->
 
+    <!-- Normal POS receipt: show "Qty x Product  value (excl. tax)" and toppings smaller -->
     <t t-name="OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
-        <xpath expr="//Orderline" position="attributes">
-            <attribute name="t-if" >!line.is_topping</attribute>
+        <xpath expr="//Orderline" position="replace">
+            <t t-if="!line.is_topping">
+                <t t-set="price_excl" t-value="line.priceWithoutTax or line.price_subtotal or line.price_subtotal_excl or 0"/>
+                <div class="pos-receipt-orderline">
+                    <div class="pos-receipt-left-padding">
+                        <span><t t-esc="line.qty" /> x <t t-esc="line.productName" /></span>
+                        <span class="pos-receipt-right-align">
+                            <t t-if="price_excl">
+                                <t t-esc="props.formatCurrency(price_excl)" />
+                            </t>
+                            <t t-else="">
+                                <t t-esc="line.price" />
+                            </t>
+                        </span>
+                    </div>
+                    <t t-if="line.is_has_topping and line.Toppings and line.Toppings.length">
+                        <div class="pos-receipt-left-padding" style="font-size:85%">
+                            <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
+                                <div>- <t t-esc="topping.full_product_name or topping.product?.display_name" /></div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </t>
         </xpath>
     </t>
 
