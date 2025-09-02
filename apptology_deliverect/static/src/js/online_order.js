@@ -25,11 +25,19 @@ export class OnlineOrderScreen extends Component {
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService = this.env.services.bus_service;
         this.busService.addChannel(this.channel);
-        this.busService.addEventListener('notification', ({detail: notifications})=>{
-            notifications = notifications.filter(item => item.payload.channel === this.channel)
-            notifications.forEach(item => {
+        this.busService.addEventListener('notification', ({ detail: notifications }) => {
+            try {
+                const hasOnlineOrderPing = (notifications || []).some((n) => {
+                    const p = n && n.payload;
+                    const channel = (p && (p.channel || p?.[0]?.channel || p?.payload?.channel)) || null;
+                    return channel === this.channel;
+                });
+                if (hasOnlineOrderPing) {
                     this.fetchOpenOrders();
-                })
+                }
+            } catch (e) {
+                console.warn('Bus notification parsing failed:', e);
+            }
         });
         this.initiateServices();
         onWillUnmount(()=>clearInterval(this.pollingInterval))
@@ -136,9 +144,12 @@ export class OnlineOrderScreen extends Component {
                 if (o && o.id) dedup.set(o.id, o);
             });
             // filter out pathological/empty items that cause blank rows
-            this.state.openOrders = Array.from(dedup.values()).filter(
-                (o) => o && o.id && typeof o.amount_total !== 'undefined'
-            );
+            this.state.openOrders = Array.from(dedup.values()).filter((o) => {
+                if (!o || !o.id) return false;
+                const hasLines = Array.isArray(o.lines) && o.lines.length > 0;
+                const hasAmount = typeof o.amount_total !== 'undefined' && o.amount_total !== null;
+                return hasLines && hasAmount;
+            });
             if (this.state.clickedOrder?.id && !this.state.openOrders.find((o) => o.id === this.state.clickedOrder.id)) {
                 this.state.clickedOrder = {};
             }

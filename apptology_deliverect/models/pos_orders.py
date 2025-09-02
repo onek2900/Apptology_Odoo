@@ -182,6 +182,7 @@ class PosOrder(models.Model):
              ('declined_time', '>', expiration_time),
              ('is_online_order', '=', True),
              ('amount_total', '>', 0),
+             ('lines', '!=', False),
              ('config_id', '=', config_id),
              ('session_id', '=', session_id)
              ],
