@@ -89,7 +89,7 @@
                                 <i class="fa fa-pencil-square-o">&#160;<t t-esc="line.customerNote"/></i>
                             </div>
                         </t>
-                        <t t-if="line.is_has_topping && line.Toppings && line.Toppings.length">
+                        <t t-if="line.is_has_topping &amp;&amp; line.Toppings &amp;&amp; line.Toppings.length">
                             <div class="pos-receipt-left-padding" style="font-size:85%">
                                 <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
                                     <div>- <t t-esc="topping.full_product_name || (topping.product ? topping.product.display_name : '')" /></div>
