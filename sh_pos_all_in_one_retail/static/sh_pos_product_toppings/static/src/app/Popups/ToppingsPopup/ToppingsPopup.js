@@ -181,7 +181,7 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
     confirmCtaText() {
         const { currencyId, digits } = this.env;
         const total = this.selectedExtrasTotal();
-        const label = total > 0 ? `${_t('Add for')} ${formatMonetary(total, { currencyId, digits })}` : _t('Add');
+        const label = total > 0 ? `${_t('Add For')} ${formatMonetary(total, { currencyId, digits })}` : _t('Add');
         return label;
     }
     isSelected(product) {

@@ -2,11 +2,12 @@
 .sh_global_topping_popup .topping-table {
   width: 100%;
   border: 1px solid var(--border, #e5e7eb);
-  border-radius: 6px;
+  border-radius: 10px;
   overflow: hidden;
   border-collapse: separate;
   border-spacing: 0;
   background: #fff;
+  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.06);
   table-layout: fixed;
 }
 .sh_global_topping_popup .topping-row td {
@@ -47,6 +48,7 @@
 .sh_global_topping_popup .topping-row .thumb { width: 64px; }
 .sh_global_topping_popup .topping-row .topping-name {
   display: inline-block;
+  font-weight: 500;
 }
 .sh_global_topping_popup .topping-row .actions .btn {
   box-shadow: none !important;
@@ -55,3 +57,40 @@
   background-color: #eef1f5;
 }
 .sh_global_topping_popup .topping-row:hover td { background-color: #f6f8fa; }
+
+/* nicer purple radio */
+.sh_global_topping_popup .radio-dot {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #c0c4cc;
+  border-radius: 50%;
+}
+.sh_global_topping_popup .radio-dot.checked {
+  position: relative;
+  border-color: #6c5ce7;
+}
+.sh_global_topping_popup .radio-dot.checked:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  background: #6c5ce7;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* footer buttons alignment like screenshots */
+.sh_global_topping_popup .modal-footer {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.sh_global_topping_popup .modal-footer .button {
+  width: 100%;
+}
+.sh_global_topping_popup .modal-footer .btn-outline-secondary {
+  border: 1px solid #e1e1e8;
+}
