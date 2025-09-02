@@ -249,46 +249,36 @@
                     <tbody class="sh_a3_receipt_table_tbody">
                         <t t-set="sr_no" t-value="0"/>
                         <t t-foreach="props.data.orderlines" t-as="line" t-key="line.id">
-                            <t t-if="!line.is_topping">
-                                <t t-set="sr_no" t-value="sr_no + 1"/>
-                                <t t-set="price_excl" t-value="line.priceWithoutTax || line.price_subtotal || line.price_subtotal_excl || false"/>
-                                <tr class="sh_a3_receipt_table_tbody_tr">
-                                    <td class="sh_a3_receipt_table_tbody_td">
-                                        <t t-esc="sr_no"></t>
-                                    </td>
-                                    <td class="sh_a3_receipt_table_tbody_td sh_a3_receipt_table_tbody_td_left">
-                                        <span><t t-esc="line.qty" /> x <t t-esc="line.productName" /></span>
-                                        <t t-if="line.customerNote">
-                                            <br/>
-                                            <em class="pos-receipt-left-padding pos-receipt-customer-note">
-                                                <i class="fa fa-pencil-square-o">&#160;
-                                                    <t t-esc="line.customerNote"/>
-                                                </i>
-                                            </em>
-                                        </t>
-                                    </td>
-                                    <td class="sh_a3_receipt_table_tbody_td"></td>
-                                    <td class="sh_a3_receipt_table_tbody_td"></td>
-                                    <td class="sh_a3_receipt_table_tbody_td">
-                                        <t t-if="price_excl">
-                                            <t t-esc="props.formatCurrency(price_excl)" />
-                                        </t>
-                                        <t t-else="">
-                                            <t t-esc="line.price" />
-                                        </t>
-                                    </td>
-                                </tr>
-                                <t t-if="line.is_has_topping and line.Toppings and line.Toppings.length">
-                                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
-                                        <tr class="sh_a3_receipt_table_tbody_tr">
-                                            <td class="sh_a3_receipt_table_tbody_td">&#160;</td>
-                                            <td class="sh_a3_receipt_table_tbody_td sh_a3_receipt_table_tbody_td_left" colspan="4">
-                                                <span style="font-size: 85%;">- <t t-esc="topping.full_product_name or topping.product?.display_name" /></span>
-                                            </td>
-                                        </tr>
+                            <t t-set="sr_no" t-value="sr_no + 1"/>
+                            <tr class="sh_a3_receipt_table_tbody_tr">
+                                <td class="sh_a3_receipt_table_tbody_td">
+                                    <t t-esc="sr_no"></t>
+                                </td>
+                                <td class="sh_a3_receipt_table_tbody_td sh_a3_receipt_table_tbody_td_left">
+                                    <t t-esc="line.productName" />
+                                    <br />
+                                    <t t-esc="line.default_code" />
+                                    <t t-if="line.customerNote">
+                                       
+                                        <em class="pos-receipt-left-padding pos-receipt-customer-note">
+                                            <i class="fa fa-pencil-square-o">&#160;
+                                                <t t-esc="line.customerNote"/>
+                                            </i>
+                                        </em>
                                     </t>
-                                </t>
-                            </t>
+                                </td>
+                                <td class="sh_a3_receipt_table_tbody_td">
+                                    <t t-esc="line.qty" />
+                                </td>
+                                <td class="sh_a3_receipt_table_tbody_td">
+                                    <t t-esc="line.unitPrice" />
+                                </td>
+
+                                <td class="sh_a3_receipt_table_tbody_td">
+                                    <t t-esc="line.price" />
+                                </td>
+                            </tr>
+
                         </t>
 
                         <tr class="sh_a3_receipt_table_tbody_tr">
@@ -504,46 +494,37 @@
                     <tbody class="sh_a4_receipt_table_tbody">
                         <t t-set="sr_no" t-value="0" />
                         <t t-foreach="props.data.orderlines" t-as="line" t-key="line.id">
-                            <t t-if="!line.is_topping">
-                                <t t-set="sr_no" t-value="sr_no + 1" />
-                                <t t-set="price_excl" t-value="line.priceWithoutTax || line.price_subtotal || line.price_subtotal_excl || false"/>
-                                <tr class="sh_a4_receipt_table_tbody_tr">
-                                    <td class="sh_a4_receipt_table_tbody_td">
-                                        <t t-esc="sr_no"></t>
-                                    </td>
-                                    <td class="sh_a4_receipt_table_tbody_td sh_a4_receipt_table_tbody_td_left">
-                                        <span><t t-esc="line.qty" /> x <t t-esc="line.productName" /></span>
-                                        <t t-if="line.customerNote">
-                                            <br/>
-                                            <em class="pos-receipt-left-padding pos-receipt-customer-note">
-                                                <i class="fa fa-pencil-square-o">&#160;
-                                                    <t t-esc="line.customerNote"/>
-                                                </i>
-                                            </em>
-                                        </t>
-                                    </td>
-                                    <td class="sh_a4_receipt_table_tbody_td"></td>
-                                    <td class="sh_a4_receipt_table_tbody_td"></td>
-                                    <td class="sh_a4_receipt_table_tbody_td">
-                                        <t t-if="price_excl">
-                                            <t t-esc="props.formatCurrency(price_excl)" />
-                                        </t>
-                                        <t t-else="">
-                                            <t t-esc="line.price" />
-                                        </t>
-                                    </td>
-                                </tr>
-                                <t t-if="line.is_has_topping and line.Toppings and line.Toppings.length">
-                                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
-                                        <tr class="sh_a4_receipt_table_tbody_tr">
-                                            <td class="sh_a4_receipt_table_tbody_td">&#160;</td>
-                                            <td class="sh_a4_receipt_table_tbody_td sh_a4_receipt_table_tbody_td_left" colspan="4">
-                                                <span style="font-size: 85%;">- <t t-esc="topping.full_product_name or topping.product?.display_name" /></span>
-                                            </td>
-                                        </tr>
+                            <t t-set="sr_no" t-value="sr_no + 1" />
+                            <tr class="sh_a4_receipt_table_tbody_tr">
+                                <td class="sh_a4_receipt_table_tbody_td">
+                                    <t t-esc="sr_no"></t>
+                                </td>
+                                <td class="sh_a4_receipt_table_tbody_td sh_a4_receipt_table_tbody_td_left">
+                                    <t t-esc="line.productName" />
+                                    <br />
+                                    <t t-esc="line.default_code" />
+                                    
+                                    <t t-if="line.customerNote">
+                                        <br/>
+                                        <em class="pos-receipt-left-padding pos-receipt-customer-note">
+                                            <i class="fa fa-pencil-square-o">&#160;
+                                                <t t-esc="line.customerNote"/>
+                                            </i>
+                                        </em>
                                     </t>
-                                </t>
-                            </t>
+                                </td>
+                                <td class="sh_a4_receipt_table_tbody_td">
+                                    <t t-esc="line.qty" />
+                                </td>
+                                <td class="sh_a4_receipt_table_tbody_td">
+                                    <t t-esc="line.unitPrice" />
+                                </td>
+
+                                <td class="sh_a4_receipt_table_tbody_td">
+                                    <t t-esc="line.price" />
+                                </td>
+                            </tr>
+
                         </t>
 
                         <tr class="sh_a4_receipt_table_tbody_tr">
@@ -753,46 +734,37 @@
                     <tbody class="sh_a5_receipt_table_tbody">
                         <t t-set="sr_no" t-value="0" />
                         <t t-foreach="props.data.orderlines" t-as="line" t-key="line.id">
-                            <t t-if="!line.is_topping">
-                                <t t-set="sr_no" t-value="sr_no + 1" />
-                                <t t-set="price_excl" t-value="line.priceWithoutTax || line.price_subtotal || line.price_subtotal_excl || false"/>
-                                <tr class="sh_a5_receipt_table_tbody_tr">
-                                    <td class="sh_a5_receipt_table_tbody_td">
-                                        <t t-esc="sr_no"></t>
-                                    </td>
-                                    <td class="sh_a5_receipt_table_tbody_td sh_a5_receipt_table_tbody_td_left">
-                                        <span><t t-esc="line.qty" /> x <t t-esc="line.productName" /></span>
-                                        <t t-if="line.customerNote">
-                                            <br/>
-                                            <em class="pos-receipt-left-padding pos-receipt-customer-note">
-                                                <i class="fa fa-pencil-square-o">&#160;
-                                                    <t t-esc="line.customerNote"/>
-                                                </i>
-                                            </em>
-                                        </t>
-                                    </td>
-                                    <td class="sh_a5_receipt_table_tbody_td"></td>
-                                    <td class="sh_a5_receipt_table_tbody_td"></td>
-                                    <td class="sh_a5_receipt_table_tbody_td">
-                                        <t t-if="price_excl">
-                                            <t t-esc="props.formatCurrency(price_excl)" />
-                                        </t>
-                                        <t t-else="">
-                                            <t t-esc="line.price" />
-                                        </t>
-                                    </td>
-                                </tr>
-                                <t t-if="line.is_has_topping and line.Toppings and line.Toppings.length">
-                                    <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
-                                        <tr class="sh_a5_receipt_table_tbody_tr">
-                                            <td class="sh_a5_receipt_table_tbody_td">&#160;</td>
-                                            <td class="sh_a5_receipt_table_tbody_td sh_a5_receipt_table_tbody_td_left" colspan="4">
-                                                <span style="font-size: 85%;">- <t t-esc="topping.full_product_name or topping.product?.display_name" /></span>
-                                            </td>
-                                        </tr>
+                            <t t-set="sr_no" t-value="sr_no + 1" />
+                            <tr class="sh_a5_receipt_table_tbody_tr">
+                                <td class="sh_a5_receipt_table_tbody_td">
+                                    <t t-esc="sr_no"></t>
+                                </td>
+                                <td class="sh_a5_receipt_table_tbody_td sh_a5_receipt_table_tbody_td_left">
+                                    <t t-esc="line.productName" />
+                                    <br />
+                                    <t t-esc="line.default_code" />
+                                    
+                                    <t t-if="line.customerNote">
+                                        <br/>
+                                        <em class="pos-receipt-left-padding pos-receipt-customer-note">
+                                            <i class="fa fa-pencil-square-o">&#160;
+                                                <t t-esc="line.customerNote"/>
+                                            </i>
+                                        </em>
                                     </t>
-                                </t>
-                            </t>
+                                </td>
+                                <td class="sh_a5_receipt_table_tbody_td">
+                                    <t t-esc="line.qty" />
+                                </td>
+                                <td class="sh_a5_receipt_table_tbody_td">
+                                    <t t-esc="line.unitPrice" />
+                                </td>
+    
+                                <td class="sh_a5_receipt_table_tbody_td">
+                                    <t t-esc="line.price" />
+                                </td>
+                            </tr>
+    
                         </t>
     
                         <tr class="sh_a5_receipt_table_tbody_tr">
