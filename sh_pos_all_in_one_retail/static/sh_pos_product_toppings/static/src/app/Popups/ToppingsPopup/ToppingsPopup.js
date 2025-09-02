@@ -86,6 +86,19 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
             this.state.currentIndex += 1;
         }
     }
+    isCurrentOptional() {
+        const g = this.currentGroup;
+        return !!g && (this.groupMin(g) || 0) === 0;
+    }
+    skipCurrent() {
+        if (!this.hasGroups) return;
+        if (this.state.currentIndex < this.groups.length - 1) {
+            this.state.currentIndex += 1;
+        } else {
+            // Last optional group: finish directly
+            this.ClickOk();
+        }
+    }
     prevGroup() {
         if (!this.hasGroups) return;
         if (this.state.currentIndex > 0) {
