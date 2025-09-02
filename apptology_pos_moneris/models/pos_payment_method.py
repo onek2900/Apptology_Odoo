@@ -132,7 +132,11 @@ class PosPaymentMethod(models.Model):
             if not (api_token and store_id and ist_code and terminal_id):
                 _logger = logging.getLogger(__name__)
                 _logger.warning("Skipping Moneris SYNC: missing credentials on payment method '%s'", pm.display_name)
-                continue
+                # Return a structured error so the frontend can notify the user
+                return {
+                    "error": "missing_credentials",
+                    "message": f"Missing Moneris credentials on payment method '{pm.display_name}'",
+                }
 
             # Build postBackUrl for async callback
             base_url = pm.env['ir.config_parameter'].sudo().get_param('web.base.url') or ''

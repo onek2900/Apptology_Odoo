@@ -60,6 +60,13 @@ patch(Navbar.prototype, {
             const results = resp && resp.results || [];
             let anyError = false;
             for (const it of results) {
+                // backend may return a structured error directly (e.g., missing credentials)
+                if (it?.resp?.error === 'missing_credentials') {
+                    anyError = true;
+                    const msg = it.resp.message || _t("Moneris: missing credentials on a payment method");
+                    this.notification.add(msg, { type: "danger", sticky: true });
+                    continue;
+                }
                 const first = it?.resp?.receipt?.data?.response?.[0];
                 if (first && (String(first.status || '').toLowerCase().includes('error') || String(first.statusCode || '').startsWith('59'))) {
                     anyError = true;
