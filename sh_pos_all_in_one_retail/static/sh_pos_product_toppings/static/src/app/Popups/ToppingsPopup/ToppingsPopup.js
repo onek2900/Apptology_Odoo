@@ -212,7 +212,7 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
                 const toRemove = base.get_toppings_temp().filter((t) => allowed.has(t.product.id));
                 for (const t of toRemove) {
                     // remove child line from order and arrays
-                    order.remove_orderline(t);
+                    await order.removeOrderline(t);
                 }
                 if (toRemove.length) {
                     base.Toppings_temp = base.get_toppings_temp().filter((t) => !allowed.has(t.product.id));
@@ -250,7 +250,7 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         }
         this.numberBuffer.reset();
     }
-    removeTopping(ev, product) {
+    async removeTopping(ev, product) {
         // prevent triggering row click add
         if (ev && ev.stopPropagation) ev.stopPropagation();
         const order = this.pos.get_order();
@@ -260,7 +260,7 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         if (!temp || !temp.length) return;
         const toRemove = temp.filter((t) => t.product && t.product.id === product.id);
         for (const t of toRemove) {
-            order.remove_orderline(t);
+            await order.removeOrderline(t);
         }
         base.Toppings_temp = temp.filter((t) => !(t.product && t.product.id === product.id));
         base.Toppings = (base.get_toppings() || []).filter((d) => d.product_id !== product.id);
