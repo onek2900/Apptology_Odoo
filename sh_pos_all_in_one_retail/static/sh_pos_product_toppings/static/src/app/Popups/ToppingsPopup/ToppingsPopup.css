@@ -15,6 +15,7 @@
   vertical-align: middle;
   border-top: 1px solid var(--border, #e5e7eb);
   background-color: #fff; /* neutral base to disable zebra */
+  text-align: left; /* left-align content by default */
 }
 .sh_global_topping_popup .topping-table tr:nth-child(odd) > td,
 .sh_global_topping_popup .topping-table tr:nth-child(even) > td {
@@ -58,6 +59,7 @@
 .sh_global_topping_popup .topping-row .actions .btn {
   box-shadow: none !important;
 }
+.sh_global_topping_popup .topping-row .actions { text-align: right !important; }
 .sh_global_topping_popup .topping-row.selected td {
   background-color: #eef1f5;
 }
