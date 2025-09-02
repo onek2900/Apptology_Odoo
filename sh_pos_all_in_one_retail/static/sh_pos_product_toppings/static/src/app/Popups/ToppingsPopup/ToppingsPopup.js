@@ -86,6 +86,19 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
             this.state.currentIndex += 1;
         }
     }
+    isCurrentOptional() {
+        const g = this.currentGroup;
+        return !!g && (this.groupMin(g) || 0) === 0;
+    }
+    skipCurrent() {
+        if (!this.hasGroups) return;
+        if (this.state.currentIndex < this.groups.length - 1) {
+            this.state.currentIndex += 1;
+        } else {
+            // Last optional group: finish directly
+            this.ClickOk();
+        }
+    }
     prevGroup() {
         if (!this.hasGroups) return;
         if (this.state.currentIndex > 0) {
@@ -97,6 +110,10 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         // Intersect provided topping products with the group's topping ids
         const allowedIds = new Set(group.toppinds_ids || []);
         return (this.toppingProducts || []).filter((p) => allowedIds.has(p.id));
+    }
+    groupAllowedIdSet() {
+        const g = this.currentGroup;
+        return new Set((g && g.toppinds_ids) || []);
     }
     get imageUrl() {
         const product = this.product; 
@@ -132,11 +149,79 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         }
         return formattedUnitPrice;
     }
+    allowedAllIds() {
+        if (this.hasGroups) {
+            const ids = new Set();
+            for (const g of this.groups) {
+                (g.toppinds_ids || []).forEach((id) => ids.add(id));
+            }
+            return ids;
+        }
+        const ids = new Set();
+        (this.toppingProducts || []).forEach((p) => ids.add(p.id));
+        (this.globalToppings || []).forEach((p) => ids.add(p.id));
+        return ids;
+    }
+    selectedExtrasTotal() {
+        const order = this.pos.get_order();
+        const line = order && order.get_selected_orderline();
+        if (!line) return 0;
+        const allowed = this.allowedAllIds();
+        const items = (line.get_toppings && line.get_toppings()) || [];
+        let total = 0;
+        for (const d of items) {
+            const pid = d.product_id || (d.product && d.product.id);
+            if (!allowed.has(pid)) continue;
+            const qty = d.quantity || 1;
+            const unit = typeof d.price_unit === 'number' ? d.price_unit : 0;
+            total += unit * qty;
+        }
+        return total;
+    }
+    confirmCtaText() {
+        const { currencyId, digits } = this.env;
+        const total = this.selectedExtrasTotal();
+        const label = total > 0 ? `${_t('Add For')} ${formatMonetary(total, { currencyId, digits })}` : _t('Add');
+        return label;
+    }
+    isSelected(product) {
+        const order = this.pos.get_order();
+        const line = order && order.get_selected_orderline();
+        if (!line || !line.get_toppings) return false;
+        const topps = line.get_toppings() || [];
+        return topps.some((t) => (t.product_id || (t.product && t.product.id)) === product.id);
+    }
+    isRadioMode() {
+        const g = this.currentGroup;
+        if (!g) return false;
+        const min = this.groupMin(g) || 0;
+        const max = this.groupMax(g) || 0;
+        return min === 1 && max === 1;
+    }
     async _clicktoppigProduct(event){
         if (!this.pos.get_order()) {
             this.pos.add_new_order();
         }
         const product = event;
+        // Radio: enforce single selection per group by replacing
+        if (this.hasGroups && this.currentGroup && this.isRadioMode()) {
+            const allowed = this.groupAllowedIdSet();
+            const order = this.pos.get_order();
+            const base = order.get_selected_orderline();
+            if (base && base.get_toppings_temp && base.get_toppings_temp().length) {
+                const toRemove = base.get_toppings_temp().filter((t) => allowed.has(t.product.id));
+                for (const t of toRemove) {
+                    // remove child line from order and arrays
+                    await order.removeOrderline(t);
+                }
+                if (toRemove.length) {
+                    base.Toppings_temp = base.get_toppings_temp().filter((t) => !allowed.has(t.product.id));
+                    base.Toppings = (base.get_toppings() || []).filter((d) => !allowed.has(d.product_id));
+                    const gid = this.currentGroup.id;
+                    this.state.selectedByGroup[gid] = 0;
+                }
+            }
+        }
         // Enforce per-group max before adding
         if (this.hasGroups && this.currentGroup) {
             const gid = this.currentGroup.id;
@@ -164,6 +249,46 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
             // })
         }
         this.numberBuffer.reset();
+    }
+    async removeTopping(ev, product) {
+        // prevent triggering row click add
+        if (ev && ev.stopPropagation) ev.stopPropagation();
+        const order = this.pos.get_order();
+        const base = order && order.get_selected_orderline();
+        if (!base) return;
+        const temp = base.get_toppings_temp && base.get_toppings_temp();
+        if (!temp || !temp.length) return;
+        const toRemove = temp.filter((t) => t.product && t.product.id === product.id);
+        for (const t of toRemove) {
+            await order.removeOrderline(t);
+        }
+        base.Toppings_temp = temp.filter((t) => !(t.product && t.product.id === product.id));
+        base.Toppings = (base.get_toppings() || []).filter((d) => d.product_id !== product.id);
+        if (this.hasGroups && this.currentGroup) {
+            const gid = this.currentGroup.id;
+            const curr = this.state.selectedByGroup[gid] || 0;
+            this.state.selectedByGroup[gid] = Math.max(0, curr - toRemove.length);
+        }
+        if ((base.Toppings || []).length === 0) {
+            base.set_is_has_topping(false);
+        }
+    }
+    async cancelWithoutToppings() {
+        const order = this.pos.get_order();
+        const base = order && order.get_selected_orderline();
+        if (base) {
+            const temp = base.get_toppings_temp && base.get_toppings_temp();
+            if (temp && temp.length) {
+                for (const t of [...temp]) {
+                    await order.removeOrderline(t);
+                }
+            }
+            base.Toppings_temp = [];
+            base.Toppings = [];
+            base.set_is_has_topping(false);
+        }
+        this.props.resolve({ confirmed: true, payload: null });
+        this.cancel();
     }
 }
   

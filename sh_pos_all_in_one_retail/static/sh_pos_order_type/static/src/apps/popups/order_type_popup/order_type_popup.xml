@@ -14,7 +14,7 @@
                                     <t t-if="(pos.get_order().current_order_type &amp;&amp; type.id == pos.get_order().current_order_type.id) or (pos.current_orderline_type &amp;&amp; type.id == pos.current_orderline_type.id) ">
                                         <tr class="sh_order_type_tr" t-att-class="{'selectedorder': isSelected , '':!isSelected }" t-att-data-id="type.id" t-on-click="() => this.onClickOrderType(type.id)">
                                             <td width="33%">
-                                                <img t-att-src="getImg(type.id)" alt="" class="sh_product_type_img"/>
+                                                <img t-if="type.img" t-att-src="getImg(type.id)" alt="" class="sh_product_type_img"/>
                                             </td>
                                             <td>
                                                 <span>
@@ -31,7 +31,7 @@
                                     <t t-else="">
                                         <tr class="sh_order_type_tr" t-att-data-id="type.id" t-on-click="() => this.onClickOrderType(type.id)">
                                             <td width="33%">
-                                                <img t-att-src="getImg(type.id)" alt="" class=""/>
+                                                <img t-if="type.img" t-att-src="getImg(type.id)" alt="" class=""/>
                                             </td>
                                             <td>
                                                 <span>
