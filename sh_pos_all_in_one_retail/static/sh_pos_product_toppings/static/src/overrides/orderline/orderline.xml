@@ -92,7 +92,16 @@
                         <t t-if="line.is_has_topping &amp;&amp; line.Toppings &amp;&amp; line.Toppings.length">
                             <div class="pos-receipt-left-padding" style="font-size:85%">
                                 <t t-foreach="line.Toppings" t-as="topping" t-key="topping.id">
-                                    <div>- <t t-esc="topping.full_product_name || (topping.product ? topping.product.display_name : '')" /></div>
+                                    <div>- 
+                                        <t t-if="topping.full_product_name">
+                                            <t t-esc="topping.full_product_name" />
+                                        </t>
+                                        <t t-else="">
+                                            <t t-if="topping.product">
+                                                <t t-esc="topping.product.display_name" />
+                                            </t>
+                                        </t>
+                                    </div>
                                 </t>
                             </div>
                         </t>
