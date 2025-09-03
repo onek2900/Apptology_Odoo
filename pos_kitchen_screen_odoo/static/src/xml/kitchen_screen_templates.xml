@@ -149,7 +149,7 @@
 
                     <!-- Lines (tap item to toggle ready) -->
                     <ul class="list-group list-group-flush order-card__items">
-                      <t t-foreach="this.linesWithDivider(order)" t-as="entry" t-key="entry.t + '-' + (entry.id || '')">
+                      <t t-foreach="this.linesWithDivider(order)" t-as="entry" t-key="entry.t + String(entry.id || '')">
                         <t t-if="entry.t === 'divider'">
                           <li class="list-group-item order-card__divider">
                             <span><i class="fa fa-check" aria-hidden="true"></i> Completed items</span>
