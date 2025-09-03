@@ -50,30 +50,73 @@ function findInput(selector) {
     return (appRoot || document).querySelector(selector);
 }
 
+function findByLabel(possibleLabels) {
+    const labels = Array.from(document.querySelectorAll('label, .o_form_label'));
+    for (const expected of possibleLabels) {
+        const lab = labels.find((l) => new RegExp(`\\b${expected}\\b`, 'i').test(l.textContent || ''));
+        if (lab) {
+            const container = lab.closest('.o_form_group, .o_group, .o_row, div');
+            const input = container && container.querySelector('input, textarea, select');
+            if (input && isVisible(input)) return input;
+        }
+    }
+    return null;
+}
+
+function findGenericField(candidates, labelCandidates = []) {
+    for (const sel of candidates) {
+        const el = findInput(sel);
+        if (el && isVisible(el)) return el;
+    }
+    if (labelCandidates.length) {
+        const el = findByLabel(labelCandidates);
+        if (el) return el;
+    }
+    return null;
+}
+
 function findStreetInput() {
-    const candidates = [
+    return findGenericField([
         'input[name="street"]',
         'input[data-name="street"]',
         'input.o_input[name="street"]',
         'div[name="street"] input',
         'input[aria-label*="Street" i]',
         'input[placeholder*="Street" i]'
-    ];
-    for (const sel of candidates) {
-        const el = findInput(sel);
-        if (el && isVisible(el)) return el;
-    }
-    // Heuristic: find label "Street" and its input sibling
-    const labels = Array.from(document.querySelectorAll('label, .o_form_label'));
-    const streetLabel = labels.find(l => /\bstreet\b/i.test(l.textContent || ''));
-    if (streetLabel) {
-        const container = streetLabel.closest('.o_form_group, .o_group, .o_row, div');
-        if (container) {
-            const input = container.querySelector('input[type="text"], input');
-            if (input && isVisible(input)) return input;
-        }
-    }
-    return null;
+    ], ['Street']);
+}
+
+function findCityInput() {
+    return findGenericField([
+        'input[name="city"]',
+        'input[data-name="city"]',
+        'input[placeholder*="City" i]',
+        'input[aria-label*="City" i]'
+    ], ['City']);
+}
+
+function findZipInput() {
+    return findGenericField([
+        'input[name="zip"]',
+        'input[data-name="zip"]',
+        'input[name="postal"]',
+        'input[name="postcode"]',
+        'input[placeholder*="Zip" i]',
+        'input[placeholder*="Postal" i]',
+        'input[placeholder*="Postcode" i]',
+        'input[aria-label*="Zip" i]',
+        'input[aria-label*="Postal" i]'
+    ], ['Zip', 'Postal Code', 'Postcode']);
+}
+
+function findStreet2Input() {
+    return findGenericField([
+        'input[name="street2"]',
+        'input[data-name="street2"]',
+        'input[placeholder*="Apt" i]',
+        'input[placeholder*="Suite" i]',
+        'input[placeholder*="Unit" i]'
+    ], ['Street 2', 'Apartment', 'Suite', 'Unit']);
 }
 
 function setInputValue(selector, value) {
@@ -95,7 +138,11 @@ function parseAddress(place) {
     const subpremise = get("subpremise")?.long_name || "";
     out.street = [streetNumber, route].filter(Boolean).join(" ");
     out.street2 = subpremise;
-    out.city = get("locality")?.long_name || get("sublocality")?.long_name || "";
+    out.city = get("locality")?.long_name
+        || get("postal_town")?.long_name
+        || get("sublocality_level_1")?.long_name
+        || get("sublocality")?.long_name
+        || "";
     const stateComp = get("administrative_area_level_1");
     out.state_name = stateComp?.long_name || "";
     out.state_code = stateComp?.short_name || "";
@@ -119,10 +166,16 @@ function attachAutocompleteToStreet() {
     autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
         const addr = parseAddress(place);
-        setInputValue('input[name="street"], input[data-name="street"]', addr.street);
-        setInputValue('input[name="street2"], input[data-name="street2"]', addr.street2);
-        setInputValue('input[name="city"], input[data-name="city"]', addr.city);
-        setInputValue('input[name="zip"], input[data-name="zip"]', addr.zip);
+        // Delay slightly to override Google's formatted address write
+        setTimeout(() => {
+            const street2 = findStreet2Input();
+            const city = findCityInput();
+            const zip = findZipInput();
+            setInputValue('input[name="street"], input[data-name="street"]', addr.street);
+            if (street2) { street2.value = addr.street2 || ''; street2.dispatchEvent(new Event('input', {bubbles:true})); street2.dispatchEvent(new Event('change', {bubbles:true})); }
+            if (city) { city.value = addr.city || ''; city.dispatchEvent(new Event('input', {bubbles:true})); city.dispatchEvent(new Event('change', {bubbles:true})); }
+            if (zip) { zip.value = addr.zip || ''; zip.dispatchEvent(new Event('input', {bubbles:true})); zip.dispatchEvent(new Event('change', {bubbles:true})); }
+        }, 50);
         // Best-effort: set text fields for state/country if present as inputs.
         setInputValue('input[name="state_name"], input[data-name="state_name"]', addr.state_name);
         setInputValue('input[name="country_name"], input[data-name="country_name"]', addr.country_name);
