@@ -150,7 +150,6 @@ export class GooglePlacesAddress extends CharField {
     }
 }
 
-GooglePlacesAddress.template = CharField.template;
 GooglePlacesAddress.supportedTypes = ["char"];
 
 registry.category("fields").add("google_places_address", GooglePlacesAddress);
