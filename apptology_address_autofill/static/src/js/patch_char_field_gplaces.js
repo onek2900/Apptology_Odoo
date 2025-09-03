@@ -130,7 +130,7 @@ function attachPlacesAutocomplete(component, input) {
     });
 }
 
-patch(CharField.prototype, "apptology_address_autofill_gplaces", {
+patch(CharField.prototype, {
     setup() {
         this._super(...arguments);
         this.rpc = useService("rpc");
@@ -156,4 +156,3 @@ patch(CharField.prototype, "apptology_address_autofill_gplaces", {
         });
     },
 });
-
