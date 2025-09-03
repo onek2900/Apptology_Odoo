@@ -123,7 +123,16 @@ async function attachPlacesAutocomplete(component, input) {
         }
 
         try {
-            await component.props.record.update(values);
+            const active = (component.props.record && component.props.record.activeFields) || {};
+            const filtered = {};
+            for (const [k, v] of Object.entries(values)) {
+                if (Object.prototype.hasOwnProperty.call(active, k)) {
+                    filtered[k] = v;
+                }
+            }
+            if (Object.keys(filtered).length) {
+                await component.props.record.update(filtered);
+            }
         } catch (e) {
             console.error("Failed updating record from Places selection", e);
         }
