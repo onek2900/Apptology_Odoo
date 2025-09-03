@@ -17,7 +17,7 @@
     ],
     "assets": {
         "web.assets_backend": [
-            "apptology_address_autofill/static/src/js/google_places_widget.js",
+            "apptology_address_autofill/static/src/js/patch_char_field_gplaces.js",
         ],
     },
     "maintainers": ["apptology"],
