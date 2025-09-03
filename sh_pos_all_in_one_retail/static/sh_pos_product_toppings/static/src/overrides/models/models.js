@@ -10,6 +10,69 @@ import {
 } from "@web/core/utils/numbers";
 
 patch(Orderline.prototype, {
+    // When a parent orderline quantity changes, keep toppings in sync
+    set_quantity() {
+        const prevQty = this.get_quantity();
+        const res = super.set_quantity(...arguments);
+        try {
+            // Only propagate from a parent (non-topping) line that has toppings
+            if (!this.is_topping && this.get_is_has_topping && this.get_is_has_topping()) {
+                const children = this.get_toppings_temp && this.get_toppings_temp();
+                if (children && children.length) {
+                    const parentQty = this.get_quantity();
+                    const safePrev = prevQty || 0;
+                    // Avoid divide by zero; if previous was 0, just use each child's ratio if set
+                    for (const child of children) {
+                        // Determine desired quantity per parent unit
+                        let perParent = child.sh_qty_per_parent;
+                        if (perParent === undefined || perParent === null) {
+                            if (safePrev > 0) {
+                                perParent = child.get_quantity() / safePrev;
+                            } else {
+                                // Default to 1 child per 1 parent when no history
+                                perParent = 1;
+                            }
+                        }
+                        const newChildQty = perParent * parentQty;
+                        child.set_quantity(newChildQty);
+
+                        // Keep the parent-side summary dict up to date
+                        if (this.Toppings && this.Toppings.length) {
+                            const j = this.Toppings.findIndex((d) => d && d.id === child.id);
+                            if (j >= 0) {
+                                const d = this.Toppings[j];
+                                d.quantity = child.get_quantity();
+                                d.quantityStr = child.quantityStr;
+                                d.price_subtotal = child.get_price_without_tax();
+                                d.price_subtotal_incl = child.get_price_with_tax();
+                                d.price_display = child.get_display_price();
+                            }
+                        }
+                    }
+                }
+            } else if (this.is_topping && this.sh_topping_parent) {
+                // If a topping itself is edited, refresh its ratio relative to parent
+                const parent = this.sh_topping_parent;
+                const parentQtyNow = parent && parent.get_quantity ? parent.get_quantity() : 1;
+                this.sh_qty_per_parent = this.get_quantity() / (parentQtyNow || 1);
+                // and keep the parent's summary dict in sync
+                if (parent && parent.Toppings && parent.Toppings.length) {
+                    const j = parent.Toppings.findIndex((d) => d && d.id === this.id);
+                    if (j >= 0) {
+                        const d = parent.Toppings[j];
+                        d.quantity = this.get_quantity();
+                        d.quantityStr = this.quantityStr;
+                        d.price_subtotal = this.get_price_without_tax();
+                        d.price_subtotal_incl = this.get_price_with_tax();
+                        d.price_display = this.get_display_price();
+                    }
+                }
+            }
+        } catch (err) {
+            console && console.warn && console.warn('Topping qty sync failed:', err);
+        }
+        return res;
+    },
     setup(_defaultObj, options) {
         super.setup(...arguments);
         if(options.json){
@@ -251,6 +314,11 @@ patch(Order.prototype, {
         this.fix_tax_included_price(line);
         this.set_orderline_options(line, options);
         line.set_full_product_name();
+        // remember the child-per-parent ratio so we can scale on parent qty changes
+        try {
+            const parentQty = SelectedOrderline.get_quantity() || 1;
+            line.sh_qty_per_parent = line.get_quantity() / (parentQty || 1);
+        } catch (e) { /* no-op */ }
         var product_ids = []
         var to_merge_orderline;
         if (SelectedOrderline.get_toppings_temp() && SelectedOrderline.get_toppings_temp().length) {
@@ -262,6 +330,11 @@ patch(Order.prototype, {
         }
         if (to_merge_orderline) {
             to_merge_orderline.merge(line);
+            to_merge_orderline.sh_topping_parent = SelectedOrderline;
+            try {
+                const parentQty = SelectedOrderline.get_quantity() || 1;
+                to_merge_orderline.sh_qty_per_parent = to_merge_orderline.get_quantity() / (parentQty || 1);
+            } catch (e) { /* no-op */ }
             var dic1 = {
                 quantity: to_merge_orderline.get_quantity(),
                 quantityStr: to_merge_orderline.quantityStr,
