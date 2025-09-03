@@ -162,6 +162,18 @@ $space: var(--k-spacing);
   @include safe-areas;
 }
 
+/* Grid layout for order cards with fixed tile size */
+.kitchen-dashboard .dashboard-section .row.g-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--k-card-w, 360px));
+  gap: 1rem;
+  justify-content: start;
+  align-content: start;
+  align-items: start;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .section-header .section-title,
 .section-header h3 {
   @include fluid(1.25rem, 3vw, 2.5rem);
@@ -201,6 +213,8 @@ $space: var(--k-spacing);
   display: flex;
   flex-direction: column;
   transition: transform .2s ease, box-shadow .2s ease;
+  width: var(--k-card-w, 360px);
+  height: var(--k-card-h, 520px);
 }
 .order-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.18); }
 
@@ -291,6 +305,14 @@ $space: var(--k-spacing);
   /* subtle entrance for each row */
   animation: k-row-in .25s ease both;
 }
+/* Make lines scroll within fixed card */
+.order-card .list-group,
+.order-card__items {
+  flex: 1 1 auto;
+  min-height: 0; /* allow flex child to shrink for overflow */
+  overflow-y: auto;
+}
+.order-card__items .list-group-item { min-height: 44px; }
 /* On completed cards, let rows inherit the green surface */
 .order-card--completed .order-card__item,
 .order-card--completed .order-card__items .list-group-item {
