@@ -31,7 +31,7 @@ async function ensureGooglePlacesLoaded(rpc) {
 }
 
 const superSetup = WebClient.prototype.setup;
-patch(WebClient.prototype, "apptology_address_autofill_gplaces_bootstrap", {
+patch(WebClient.prototype, {
     setup() {
         superSetup && superSetup.apply(this, arguments);
         this.rpc = useService("rpc");
@@ -39,4 +39,3 @@ patch(WebClient.prototype, "apptology_address_autofill_gplaces_bootstrap", {
         ensureGooglePlacesLoaded(this.rpc);
     },
 });
-
