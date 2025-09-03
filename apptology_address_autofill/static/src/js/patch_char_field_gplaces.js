@@ -30,7 +30,7 @@ async function loadGooglePlaces(rpc) {
         }
         const url = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
             apiKey
-        )}&libraries=places`;
+        )}&libraries=places&loading=async`;
         googleScriptLoading = loadJS(url).catch((e) => {
             console.error("Failed loading Google Maps script", e);
             googleScriptLoading = undefined;
