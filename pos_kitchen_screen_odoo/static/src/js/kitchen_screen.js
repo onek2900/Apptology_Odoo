@@ -312,26 +312,83 @@ export class KitchenScreenDashboard extends Component {
      */
     async accept_order_line(lineId) {
         try {
-            await this.orm.call("pos.order.line", "order_progress_change", [Number(lineId)]);
+            const id = Number(lineId);
+            const line = this.state.lines.find((l) => l.id === id);
+            if (!line) return;
+            // Prevent toggling toppings/modifiers
+            if (line.is_modifier) return;
 
-            const line = this.state.lines.find(l => l.id === Number(lineId));
-            if (line) {
-                line.order_status = line.order_status === ORDER_STATUSES.READY
-                    ? ORDER_STATUSES.WAITING
-                    : ORDER_STATUSES.READY;
+            await this.orm.call("pos.order.line", "order_progress_change", [id]);
+
+            // Local UI update
+            line.order_status = line.order_status === ORDER_STATUSES.READY
+                ? ORDER_STATUSES.WAITING
+                : ORDER_STATUSES.READY;
+
+            // Auto-complete order if all main items are ready
+            const order = this.getOrderByLineId(id);
+            if (order && this.areAllMainItemsReady(order)) {
+                await this.done_order(order.id);
             }
 
-            this.notification.add("Order item updated", {
-                title: "Success",
-                type: "success"
-            });
+            this.notification.add("Item status updated", { title: "Success", type: "success" });
         } catch (error) {
             console.error("Error updating order line:", error);
-            this.notification.add("Failed to update item", {
-                title: "Error",
-                type: "danger"
-            });
+            this.notification.add("Failed to update item", { title: "Error", type: "danger" });
         }
+    }
+
+    /**
+     * Find order containing given line id
+     */
+    getOrderByLineId(lineId) {
+        return this.state.order_details.find((o) => Array.isArray(o.lines) && o.lines.includes(lineId)) || null;
+    }
+
+    /**
+     * True if all non-modifier lines in order are ready
+     */
+    areAllMainItemsReady(order) {
+        const ids = Array.isArray(order.lines) ? order.lines : [];
+        const mains = ids
+            .map((id) => this.state.lines.find((l) => l.id === id))
+            .filter(Boolean)
+            .filter((l) => !l.is_modifier);
+        return mains.length > 0 && mains.every((l) => l.order_status === ORDER_STATUSES.READY);
+    }
+
+    /**
+     * Get line ids sorted so incomplete main items (and their modifiers) appear first.
+     */
+    sortedLineIds(order) {
+        const ids = Array.isArray(order.lines) ? order.lines.slice() : [];
+        const getLine = (id) => this.state.lines.find((l) => l.id === id);
+        const groups = [];
+        let current = [];
+        for (const id of ids) {
+            const line = getLine(id);
+            if (!line) continue;
+            if (!line.is_modifier) {
+                if (current.length) groups.push(current);
+                current = [id];
+            } else {
+                if (current.length) current.push(id);
+                else current = [id];
+            }
+        }
+        if (current.length) groups.push(current);
+
+        const isGroupReady = (g) => {
+            const parent = getLine(g[0]);
+            return parent && parent.order_status === ORDER_STATUSES.READY;
+        };
+
+        const pending = [];
+        const completed = [];
+        for (const g of groups) {
+            (isGroupReady(g) ? completed : pending).push(g);
+        }
+        return pending.concat(completed).flat();
     }
 
     /**
