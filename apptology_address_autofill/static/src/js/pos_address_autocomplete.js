@@ -1,14 +1,10 @@
 /** @odoo-module **/
 
 import { registry } from "@web/core/registry";
-import { patch } from "@web/core/utils/patch";
-import { onMounted, onWillUnmount } from "@odoo/owl";
 
 // We avoid deep POS class dependencies by observing the DOM
 // and attaching Google Places Autocomplete to the street input
 // in the Partner editor when present.
-
-const rpc = registry.category("services").get("rpc");
 
 let googleScriptLoading = null;
 
@@ -31,7 +27,7 @@ async function loadGooglePlaces(apiKey) {
     return googleScriptLoading;
 }
 
-async function fetchPlacesKey() {
+async function fetchPlacesKey(rpc) {
     try {
         const res = await rpc("/apptology_address_autofill/places_key", {});
         return res || { enabled: false, api_key: "" };
@@ -103,22 +99,26 @@ function initObserver() {
 }
 
 // Register a small service that initializes the script and observer when POS boots
-registry.category("services").add("apptology_pos_places_boot", {
-    start: async () => {
-        const { enabled, api_key } = await fetchPlacesKey();
-        if (!enabled || !api_key) return;
-        try {
-            await loadGooglePlaces(api_key);
-            const obs = initObserver();
-            // Return stop method so Odoo can cleanup if needed
-            return {
-                stop() {
-                    try { obs.disconnect(); } catch (e) {}
-                },
-            };
-        } catch (e) {
-            // silently ignore load errors
-        }
-    },
-});
-
+registry.category("services").add(
+    "apptology_pos_places_boot",
+    {
+        dependencies: ["rpc"],
+        start: async (env, { rpc }) => {
+            const { enabled, api_key } = await fetchPlacesKey(rpc);
+            if (!enabled || !api_key) return;
+            try {
+                await loadGooglePlaces(api_key);
+                const obs = initObserver();
+                return {
+                    stop() {
+                        try {
+                            obs.disconnect();
+                        } catch (_) {}
+                    },
+                };
+            } catch (e) {
+                // silently ignore load errors
+            }
+        },
+    }
+);
