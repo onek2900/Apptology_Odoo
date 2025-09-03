@@ -369,48 +369,7 @@ export class KitchenScreenDashboard extends Component {
         return pending.concat(completed).flat();
     }
 
-    /**
-     * Return a mixed sequence of entries for template rendering:
-     * - { t: 'line', id }
-     * - { t: 'divider' } inserted between pending and completed groups
-     */
-    linesWithDivider(order) {
-        const ids = Array.isArray(order.lines) ? order.lines.slice() : [];
-        const getLine = (id) => this.state.lines.find((l) => l.id === id);
-
-        // Build groups: [parent, ...modifiers]
-        const groups = [];
-        let current = [];
-        for (const id of ids) {
-            const line = getLine(id);
-            if (!line) continue;
-            if (!line.is_modifier) {
-                if (current.length) groups.push(current);
-                current = [id];
-            } else {
-                if (current.length) current.push(id);
-                else current = [id];
-            }
-        }
-        if (current.length) groups.push(current);
-
-        const isGroupReady = (g) => {
-            const parent = getLine(g[0]);
-            return parent && parent.order_status === ORDER_STATUSES.READY;
-        };
-
-        const pending = [];
-        const completed = [];
-        for (const g of groups) {
-            (isGroupReady(g) ? completed : pending).push(g);
-        }
-
-        const out = [];
-        for (const g of pending) for (const id of g) out.push({ t: 'line', id });
-        if (pending.length && completed.length) out.push({ t: 'divider' });
-        for (const g of completed) for (const id of g) out.push({ t: 'line', id });
-        return out;
-    }
+    // divider rendering removed; using sortedLineIds(order) directly in template
 
     /**
      * Set current stage
