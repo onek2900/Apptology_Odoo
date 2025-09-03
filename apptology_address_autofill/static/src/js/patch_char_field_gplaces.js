@@ -124,10 +124,6 @@ async function attachPlacesAutocomplete(component, input) {
 
         try {
             await component.props.record.update(values);
-            const formatted = place.formatted_address || street;
-            if (formatted) {
-                await component.props.update(formatted);
-            }
         } catch (e) {
             console.error("Failed updating record from Places selection", e);
         }
