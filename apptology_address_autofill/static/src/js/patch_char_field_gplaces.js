@@ -4,7 +4,7 @@ import { CharField } from "@web/views/fields/char/char_field";
 import { loadJS } from "@web/core/assets";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
-import { onMounted } from "@odoo/owl";
+import { onMounted, onPatched } from "@odoo/owl";
 
 let googleScriptLoading;
 
@@ -39,15 +39,18 @@ async function loadGooglePlaces(rpc) {
     await googleScriptLoading;
 }
 
-function attachPlacesAutocomplete(component, input) {
+async function attachPlacesAutocomplete(component, input) {
     if (!input || !(window.google && window.google.maps && window.google.maps.places)) {
         return;
     }
     if (input.__gplaces_bound) return;
     input.__gplaces_bound = true;
+    try {
+        input.setAttribute("autocomplete", "off");
+    } catch (e) {}
 
     const autocomplete = new window.google.maps.places.Autocomplete(input, {
-        types: ["geocode"],
+        // No types filter to show broader suggestions as you type
         fields: ["address_components", "geometry", "formatted_address"],
     });
 
@@ -136,7 +139,7 @@ patch(CharField.prototype, {
         // Call original CharField setup safely (no _super dependency)
         superSetup && superSetup.apply(this, arguments);
         this.rpc = useService("rpc");
-        onMounted(async () => {
+        const bind = async () => {
             // Only on partner street fields in forms
             try {
                 const record = this.props?.record;
@@ -150,11 +153,13 @@ patch(CharField.prototype, {
                 }
                 const input = this.el?.querySelector?.("input");
                 if (input) {
-                    attachPlacesAutocomplete(this, input);
+                    await attachPlacesAutocomplete(this, input);
                 }
             } catch (e) {
                 console.warn("GPlaces attach error", e);
             }
-        });
+        };
+        onMounted(bind);
+        onPatched(bind);
     },
 });
