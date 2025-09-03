@@ -187,17 +187,25 @@ function attachAutocompleteToStreet() {
             if (street2) { street2.value = addr.street2 || ''; street2.dispatchEvent(new Event('input', {bubbles:true})); street2.dispatchEvent(new Event('change', {bubbles:true})); }
             if (city) { city.value = addr.city || ''; city.dispatchEvent(new Event('input', {bubbles:true})); city.dispatchEvent(new Event('change', {bubbles:true})); }
             if (zip) { zip.value = addr.zip || ''; zip.dispatchEvent(new Event('input', {bubbles:true})); zip.dispatchEvent(new Event('change', {bubbles:true})); }
-            // Close the Google dropdown by blurring the input and focusing the next logical field
+            // Close the Google dropdown by blurring, sending ESC, and cleaning pac containers
             try {
+                // send ESC to autocomplete
+                streetInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27, which: 27, bubbles: true }));
                 streetInput.blur();
                 const next = zip || city || street2;
                 if (next && next.focus) next.focus();
-                // As a safety, temporarily hide any pac containers
+                // Hide and then remove pac containers; Google will recreate them next time
                 const pacs = document.querySelectorAll('.pac-container');
-                pacs.forEach((el) => {
-                    el.style.display = 'none';
-                    setTimeout(() => { el.style.display = ''; }, 250);
-                });
+                pacs.forEach((el) => { el.style.display = 'none'; el.setAttribute('data-apptology-hide', '1'); });
+                setTimeout(() => {
+                    document.querySelectorAll('.pac-container[data-apptology-hide="1"]').forEach((el) => {
+                        try { el.remove(); } catch (_) { el.style.display = 'none'; }
+                    });
+                }, 150);
+                // Optionally clear listeners (not harmful if no-op)
+                if (window.google && window.google.maps && window.google.maps.event) {
+                    try { window.google.maps.event.clearInstanceListeners(autocomplete); } catch (_) {}
+                }
             } catch (_) {}
         }, 50);
         // Best-effort: set text fields for state/country if present as inputs.
