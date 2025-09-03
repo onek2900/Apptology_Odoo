@@ -13,6 +13,7 @@
     ],
     "data": [
         "views/res_partner_views.xml",
+        "views/res_config_settings_simple.xml",
     ],
     "assets": {
         "web.assets_backend": [
