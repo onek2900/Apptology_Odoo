@@ -10,10 +10,12 @@ let googleScriptLoading = null;
 
 async function loadGooglePlaces(apiKey) {
     if (window.google && window.google.maps && window.google.maps.places) {
+        console.info("[POS Places] Google Places already loaded");
         return;
     }
     if (!apiKey) return;
     if (!googleScriptLoading) {
+        console.info("[POS Places] Injecting Google Maps script");
         googleScriptLoading = new Promise((resolve, reject) => {
             const script = document.createElement("script");
             script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places`;
@@ -72,6 +74,7 @@ function attachAutocompleteToStreet() {
     const streetInput = findInput('input[name="street"], input[data-name="street"], input.o_input[name="street"]');
     if (!streetInput || streetInput.__hasAutocomplete) return;
     if (!(window.google && window.google.maps && window.google.maps.places)) return;
+    console.info("[POS Places] Attaching autocomplete to street input");
     const autocomplete = new window.google.maps.places.Autocomplete(streetInput, {
         fields: ["address_components", "geometry", "formatted_address"],
         types: ["address"],
@@ -104,7 +107,9 @@ registry.category("services").add(
     {
         dependencies: ["rpc"],
         start: async (env, { rpc }) => {
+            console.info("[POS Places] Service starting");
             const { enabled, api_key } = await fetchPlacesKey(rpc);
+            console.info("[POS Places] Settings", { enabled, hasKey: Boolean(api_key) });
             if (!enabled || !api_key) return;
             try {
                 await loadGooglePlaces(api_key);
@@ -117,7 +122,7 @@ registry.category("services").add(
                     },
                 };
             } catch (e) {
-                // silently ignore load errors
+                console.warn("[POS Places] Failed to initialize", e);
             }
         },
     }
