@@ -288,6 +288,8 @@ $space: var(--k-spacing);
   align-items: center;
   gap: .75rem;
   cursor: pointer;
+  /* subtle entrance for each row */
+  animation: k-row-in .25s ease both;
 }
 /* On completed cards, let rows inherit the green surface */
 .order-card--completed .order-card__item,
@@ -312,10 +314,13 @@ $space: var(--k-spacing);
 .order-card__product { flex: 1 1 auto; font-weight: 600; }
 .order-card__note { display: block; color: var(--k-muted); margin-left: auto; }
 .order-card__note i { margin-right: .35rem; }
+/* row icon subtle pop on completion */
+.order-card__item i.fa { transition: transform .18s ease; }
 
 /* Per-item completion visuals */
 .order-card__item.completed .order-card__product { text-decoration: line-through; opacity: .7; }
 .order-card__item.completed .order-card__qty { background: rgba(40,167,69,.9); color: #fff; }
+.order-card__item.completed i.fa { transform: scale(1.05); }
 
 /* Modifiers are non-interactive */
 .order-card__item.modifier { cursor: default; opacity: .95; }
@@ -416,3 +421,27 @@ $space: var(--k-spacing);
 
 [dir="rtl"] .order-card__type-badge { left: auto; right: .75rem; }
 [dir="rtl"] .order-card__meta { padding-left: 0; padding-right: 2.6rem; }
+
+/* Keyframes and subtle stagger */
+@keyframes k-row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger first rows for a gentle cascade */
+.order-card__items .list-group-item:nth-child(1) { animation-delay: .00s; }
+.order-card__items .list-group-item:nth-child(2) { animation-delay: .03s; }
+.order-card__items .list-group-item:nth-child(3) { animation-delay: .06s; }
+.order-card__items .list-group-item:nth-child(4) { animation-delay: .09s; }
+.order-card__items .list-group-item:nth-child(5) { animation-delay: .12s; }
+.order-card__items .list-group-item:nth-child(6) { animation-delay: .15s; }
+.order-card__items .list-group-item:nth-child(7) { animation-delay: .18s; }
+.order-card__items .list-group-item:nth-child(8) { animation-delay: .21s; }
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .kitchen-dashboard * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
