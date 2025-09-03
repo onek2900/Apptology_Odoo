@@ -7,10 +7,10 @@
         <field name="arch" type="xml">
             <xpath expr="//block[@id='pos_payment_terminals_section']" position="after">
                 <block string="Address Autofill (Google Places)" id="pos_google_places_section">
-                    <setting string="Google Places Autocomplete" help="Enable address autocomplete in POS customer editor using Google Places.">
+                    <setting id="apptology_pos_places_setting" string="Google Places Autocomplete" help="Enable address autocomplete in POS customer editor using Google Places.">
                         <field name="apptology_google_places_autocomplete_enabled"/>
                     </setting>
-                    <div class="mt16" attrs="{'invisible': [('apptology_google_places_autocomplete_enabled', '=', False)]}">
+                    <group class="mt16" invisible="not apptology_google_places_autocomplete_enabled">
                         <label for="apptology_google_places_api_key" string="Google Places API Key"/>
                         <div class="o_row">
                             <field name="apptology_google_places_api_key" placeholder="AIza..."/>
@@ -18,10 +18,9 @@
                         <p class="text-muted">
                             Ensure the key has the Places API enabled and is allowed for your POS domain(s).
                         </p>
-                    </div>
+                    </group>
                 </block>
             </xpath>
         </field>
     </record>
 </odoo>
-
