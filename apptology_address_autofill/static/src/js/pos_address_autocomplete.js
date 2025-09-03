@@ -38,10 +38,42 @@ async function fetchPlacesKey(rpc) {
     }
 }
 
+function isVisible(el) {
+    if (!el) return false;
+    const style = window.getComputedStyle(el);
+    return style && style.display !== 'none' && style.visibility !== 'hidden' && el.offsetParent !== null;
+}
+
 function findInput(selector) {
     // limit to POS app container if present
     const appRoot = document.querySelector(".pos, .o_pos_app, .o_web_client");
     return (appRoot || document).querySelector(selector);
+}
+
+function findStreetInput() {
+    const candidates = [
+        'input[name="street"]',
+        'input[data-name="street"]',
+        'input.o_input[name="street"]',
+        'div[name="street"] input',
+        'input[aria-label*="Street" i]',
+        'input[placeholder*="Street" i]'
+    ];
+    for (const sel of candidates) {
+        const el = findInput(sel);
+        if (el && isVisible(el)) return el;
+    }
+    // Heuristic: find label "Street" and its input sibling
+    const labels = Array.from(document.querySelectorAll('label, .o_form_label'));
+    const streetLabel = labels.find(l => /\bstreet\b/i.test(l.textContent || ''));
+    if (streetLabel) {
+        const container = streetLabel.closest('.o_form_group, .o_group, .o_row, div');
+        if (container) {
+            const input = container.querySelector('input[type="text"], input');
+            if (input && isVisible(input)) return input;
+        }
+    }
+    return null;
 }
 
 function setInputValue(selector, value) {
@@ -75,7 +107,7 @@ function parseAddress(place) {
 }
 
 function attachAutocompleteToStreet() {
-    const streetInput = findInput('input[name="street"], input[data-name="street"], input.o_input[name="street"]');
+    const streetInput = findStreetInput();
     if (!streetInput || streetInput.__hasAutocomplete) return;
     if (!(window.google && window.google.maps && window.google.maps.places)) return;
     console.info("[POS Places] Attaching autocomplete to street input");
