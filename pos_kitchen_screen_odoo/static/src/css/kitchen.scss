@@ -317,7 +317,8 @@ $space: var(--k-spacing);
 .order-card__item.completed .order-card__product { text-decoration: line-through; opacity: .7; }
 .order-card__item.completed .order-card__qty { background: rgba(40,167,69,.9); color: #fff; }
 
-/* Modifiers behave like regular lines again */
+/* Modifiers are non-interactive */
+.order-card__item.modifier { cursor: default; opacity: .95; }
 
 /* Divider between pending and completed item groups */
 .order-card__divider {
