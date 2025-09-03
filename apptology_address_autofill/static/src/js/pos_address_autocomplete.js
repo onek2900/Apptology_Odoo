@@ -187,6 +187,18 @@ function attachAutocompleteToStreet() {
             if (street2) { street2.value = addr.street2 || ''; street2.dispatchEvent(new Event('input', {bubbles:true})); street2.dispatchEvent(new Event('change', {bubbles:true})); }
             if (city) { city.value = addr.city || ''; city.dispatchEvent(new Event('input', {bubbles:true})); city.dispatchEvent(new Event('change', {bubbles:true})); }
             if (zip) { zip.value = addr.zip || ''; zip.dispatchEvent(new Event('input', {bubbles:true})); zip.dispatchEvent(new Event('change', {bubbles:true})); }
+            // Close the Google dropdown by blurring the input and focusing the next logical field
+            try {
+                streetInput.blur();
+                const next = zip || city || street2;
+                if (next && next.focus) next.focus();
+                // As a safety, temporarily hide any pac containers
+                const pacs = document.querySelectorAll('.pac-container');
+                pacs.forEach((el) => {
+                    el.style.display = 'none';
+                    setTimeout(() => { el.style.display = ''; }, 250);
+                });
+            } catch (_) {}
         }, 50);
         // Best-effort: set text fields for state/country if present as inputs.
         setInputValue('input[name="state_name"], input[data-name="state_name"]', addr.state_name);
