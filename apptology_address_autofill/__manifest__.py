@@ -20,6 +20,10 @@
             "apptology_address_autofill/static/src/js/patch_char_field_gplaces.js",
             "apptology_address_autofill/static/src/css/gplaces.css",
         ],
+        "point_of_sale.assets": [
+            "apptology_address_autofill/static/src/js/pos_gplaces.js",
+            "apptology_address_autofill/static/src/css/gplaces.css",
+        ],
     },
     "maintainers": ["apptology"],
     "application": False,
