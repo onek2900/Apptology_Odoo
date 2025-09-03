@@ -17,6 +17,7 @@
     ],
     "assets": {
         "web.assets_backend": [
+            "apptology_address_autofill/static/src/js/gplaces_bootstrap.js",
             "apptology_address_autofill/static/src/js/patch_char_field_gplaces.js",
             "apptology_address_autofill/static/src/css/gplaces.css",
         ],
