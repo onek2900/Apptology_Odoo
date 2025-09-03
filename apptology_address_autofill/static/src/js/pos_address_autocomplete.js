@@ -166,12 +166,24 @@ function attachAutocompleteToStreet() {
     autocomplete.addListener("place_changed", () => {
         const place = autocomplete.getPlace();
         const addr = parseAddress(place);
-        // Delay slightly to override Google's formatted address write
+        // Delay slightly and override Google's formatted address in the same input we attached to.
+        const overrideStreetValue = () => {
+            try {
+                streetInput.value = addr.street || '';
+                streetInput.dispatchEvent(new Event('input', { bubbles: true }));
+                streetInput.dispatchEvent(new Event('change', { bubbles: true }));
+            } catch (_) {}
+        };
+        // Run a few times to win over Google Autocomplete's own writebacks
+        overrideStreetValue();
+        setTimeout(overrideStreetValue, 30);
+        setTimeout(overrideStreetValue, 120);
+        setTimeout(overrideStreetValue, 300);
+
         setTimeout(() => {
             const street2 = findStreet2Input();
             const city = findCityInput();
             const zip = findZipInput();
-            setInputValue('input[name="street"], input[data-name="street"]', addr.street);
             if (street2) { street2.value = addr.street2 || ''; street2.dispatchEvent(new Event('input', {bubbles:true})); street2.dispatchEvent(new Event('change', {bubbles:true})); }
             if (city) { city.value = addr.city || ''; city.dispatchEvent(new Event('input', {bubbles:true})); city.dispatchEvent(new Event('change', {bubbles:true})); }
             if (zip) { zip.value = addr.zip || ''; zip.dispatchEvent(new Event('input', {bubbles:true})); zip.dispatchEvent(new Event('change', {bubbles:true})); }
