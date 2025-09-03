@@ -130,9 +130,11 @@ function attachPlacesAutocomplete(component, input) {
     });
 }
 
+const superSetup = CharField.prototype.setup;
 patch(CharField.prototype, {
     setup() {
-        this._super(...arguments);
+        // Call original CharField setup safely (no _super dependency)
+        superSetup && superSetup.apply(this, arguments);
         this.rpc = useService("rpc");
         onMounted(async () => {
             // Only on partner street fields in forms
