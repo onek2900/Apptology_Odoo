@@ -7,6 +7,14 @@ import { useService } from "@web/core/utils/hooks";
 import { onMounted, onPatched } from "@odoo/owl";
 
 let googleScriptLoading;
+const dbg = (...args) => {
+    try {
+        if (window.localStorage && localStorage.getItem("gplaces_debug") === "1") {
+            // eslint-disable-next-line no-console
+            console.log("[GPlaces]", ...args);
+        }
+    } catch (_) {}
+};
 
 async function loadGooglePlaces(rpc) {
     if (window.google && window.google.maps && window.google.maps.places) {
@@ -22,12 +30,12 @@ async function loadGooglePlaces(rpc) {
             ],
             kwargs: {},
         });
-        if (!apiKey) {
-            console.warn(
-                "Google Places API key is not set (apptology_address_autofill.google_places_api_key)."
-            );
-            return;
-        }
+    if (!apiKey) {
+        console.warn(
+            "Google Places API key is not set (apptology_address_autofill.google_places_api_key)."
+        );
+        return;
+    }
         const url = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
             apiKey
         )}&libraries=places&loading=async`;
@@ -49,6 +57,7 @@ async function attachPlacesAutocomplete(component, input) {
         input.setAttribute("autocomplete", "off");
     } catch (e) {}
 
+    dbg("binding to", component.props?.name, component.props?.record?.resModel);
     const autocomplete = new window.google.maps.places.Autocomplete(input, {
         // Limit to addresses only
         types: ["address"],
@@ -141,6 +150,7 @@ async function attachPlacesAutocomplete(component, input) {
             if (street) {
                 await component.props.update(street);
             }
+            dbg("updated values", values);
         } catch (e) {
             console.error("Failed updating record from Places selection", e);
         }
