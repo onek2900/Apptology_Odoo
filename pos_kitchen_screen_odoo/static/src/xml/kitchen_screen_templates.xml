@@ -100,17 +100,7 @@
   <!-- Page -->
   <t t-name="KitchenCustomDashBoard">
 
-    <!-- Cancel confirmation -->
-    <div class="confirmation-popup" t-att-class="{'show': state.showCancelConfirm}">
-      <div class="popup-content">
-        <h4>Confirm Cancellation</h4>
-        <p>Are you sure you want to cancel this order?</p>
-        <div class="popup-actions">
-          <button class="btn btn-secondary" t-on-click="() => this.closeCancelConfirm()">No, Keep Order</button>
-          <button class="btn btn-danger" t-on-click="() => this.cancel_order(state.orderToCancel)">Yes, Cancel Order</button>
-        </div>
-      </div>
-    </div>
+    <!-- Cancel confirmation removed (Clover-style UX) -->
 
     <div class="kitchen-dashboard">
       <div class="row g-4">
@@ -159,27 +149,34 @@
 
                     <!-- Lines (tap item to toggle ready) -->
                     <ul class="list-group list-group-flush order-card__items">
-                      <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="lineId">
-                        <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-                        <!-- Main item: clickable to toggle readiness -->
-                        <li t-if="line and !line.is_modifier" class="list-group-item order-card__item"
-                            t-att-class="{'completed': line.order_status === 'ready'}"
-                            t-on-click="() => this.accept_order_line(line.id)">
-                          <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
-                          <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
-                          <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                          <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
-                        </li>
-                        <!-- Modifier/topping: not clickable, no completion toggle -->
-                        <li t-elif="line" class="list-group-item order-card__item modifier">
-                          <div class="order-card__qty"></div>
-                          <div class="order-card__product">
-                            <span class="modifier-info" style="padding-left:20px; font-size:0.9em; color:#bbb;">
-                              <t t-esc="line.full_product_name"/>
-                            </span>
-                          </div>
-                          <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                        </li>
+                      <t t-foreach="this.linesWithDivider(order)" t-as="entry" t-key="entry.t + String(entry.id || '')">
+                        <t t-if="entry.t === 'divider'">
+                          <li class="list-group-item order-card__divider">
+                            <span><i class="fa fa-check" aria-hidden="true"></i> Completed items</span>
+                          </li>
+                        </t>
+                        <t t-else="">
+                          <t t-set="line" t-value="state.lines.find(l => l.id === entry.id)"/>
+                          <!-- Main item: clickable to toggle readiness -->
+                          <li t-if="line and !line.is_modifier" class="list-group-item order-card__item"
+                              t-att-class="{'completed': line.order_status === 'ready'}"
+                              t-on-click="() => this.accept_order_line(line.id)">
+                            <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
+                            <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
+                            <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                            <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
+                          </li>
+                          <!-- Modifier/topping: not clickable, no completion toggle -->
+                          <li t-elif="line" class="list-group-item order-card__item modifier">
+                            <div class="order-card__qty"></div>
+                            <div class="order-card__product">
+                              <span class="modifier-info" style="padding-left:20px; font-size:0.9em; color:#bbb;">
+                                <t t-esc="line.full_product_name"/>
+                              </span>
+                            </div>
+                            <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                          </li>
+                        </t>
                       </t>
                     </ul>
                   </article>

@@ -320,6 +320,20 @@ $space: var(--k-spacing);
 /* Modifiers are non-interactive */
 .order-card__item.modifier { cursor: default; opacity: .95; }
 
+/* Divider between pending and completed item groups */
+.order-card__divider {
+  background: transparent !important;
+  color: var(--k-muted) !important;
+  border-top: 1px dashed var(--k-line-border) !important;
+  border-bottom: 0 !important;
+  padding: .5rem 1rem;
+  font-size: .85rem;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  cursor: default;
+}
+
 /* footer / actions */
 /* footer / actions (responsive + compact) */
 .order-card__footer {
@@ -385,23 +399,7 @@ $space: var(--k-spacing);
 /* ─────────────────────────────────────────────────────────
    Confirmation popup / animations / responsive / RTL
    ───────────────────────────────────────────────────────── */
-.confirmation-popup {
-  display: none; position: fixed; inset: 0; z-index: 1040;
-  background: rgba(0,0,0,0.58); backdrop-filter: blur(3px);
-  align-items: center; justify-content: center;
-}
-.confirmation-popup.show { display: flex; }
-.confirmation-popup .popup-content {
-  width: 90%; max-width: 420px; background: $surface; color: $text;
-  border-radius: 14px; padding: 2rem; box-shadow: $shadow; animation: popupIn .25s ease-out;
-}
-.confirmation-popup h4 { margin: 0 0 .75rem 0; font-weight: 800; color: $text; }
-.confirmation-popup p { margin: 0 0 1.25rem 0; color: $muted; }
-.confirmation-popup .popup-actions { display: flex; gap: .75rem; justify-content: center; }
-.confirmation-popup .btn.btn-secondary { background: $header-offline; border-color: $header-offline; color: #ffffff; }
-.confirmation-popup .btn.btn-secondary:hover { background: transparent; color: $header-offline; }
-.confirmation-popup .btn.btn-danger { background: $btn-danger-bg; border-color: $btn-danger-bg; color: $btn-danger-ink; }
-.confirmation-popup .btn.btn-danger:hover { background: transparent; color: $btn-danger-bg; }
+/* confirmation-popup removed with cancel flow */
 
 @keyframes popupIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .fade-in { animation: fadeIn .4s ease-out; }
