@@ -50,7 +50,8 @@ async function attachPlacesAutocomplete(component, input) {
     } catch (e) {}
 
     const autocomplete = new window.google.maps.places.Autocomplete(input, {
-        // No types filter to show broader suggestions as you type
+        // Limit to addresses only
+        types: ["address"],
         fields: ["address_components", "geometry", "formatted_address"],
     });
 
@@ -151,7 +152,7 @@ patch(CharField.prototype, {
                 if (!(window.google && window.google.maps && window.google.maps.places)) {
                     return;
                 }
-                const input = this.el?.querySelector?.("input");
+                const input = this.el?.querySelector?.("input, textarea");
                 if (input) {
                     await attachPlacesAutocomplete(this, input);
                 }
