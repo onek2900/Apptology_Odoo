@@ -321,6 +321,10 @@ $space: var(--k-spacing);
 .order-card__item.completed .order-card__product { text-decoration: line-through; opacity: .7; }
 .order-card__item.completed .order-card__qty { background: rgba(40,167,69,.9); color: #fff; }
 .order-card__item.completed i.fa { transform: scale(1.05); }
+/* brief background highlight when an item completes */
+.order-card__item.completed {
+  animation: k-row-in .25s ease both, k-line-complete .32s ease-out;
+}
 
 /* Modifiers are non-interactive */
 .order-card__item.modifier { cursor: default; opacity: .95; }
@@ -428,6 +432,11 @@ $space: var(--k-spacing);
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes k-line-complete {
+  0%   { background-color: rgba(193, 217, 99, 0.35); }
+  100% { background-color: transparent; }
+}
+
 /* Stagger first rows for a gentle cascade */
 .order-card__items .list-group-item:nth-child(1) { animation-delay: .00s; }
 .order-card__items .list-group-item:nth-child(2) { animation-delay: .03s; }
@@ -444,4 +453,14 @@ $space: var(--k-spacing);
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Completed card subtle flash when moved */
+.section--completed .order-card {
+  animation: k-card-pulse .42s ease-out;
+}
+@keyframes k-card-pulse {
+  0%   { transform: scale(0.985); box-shadow: 0 0 0 rgba(193,217,99,0.0); }
+  60%  { transform: scale(1.005); box-shadow: 0 0 0 rgba(193,217,99,0.0); }
+  100% { transform: scale(1.0); box-shadow: var(--k-shadow); }
 }
