@@ -348,8 +348,10 @@ $space: var(--k-spacing);
   animation: k-row-in .25s ease both, k-line-complete .32s ease-out;
 }
 
-/* Modifiers are non-interactive */
-.order-card__item.modifier { cursor: default; opacity: .95; }
+/* Modifiers are non-interactive, keep full readability */
+.order-card__item.modifier { cursor: default; opacity: 1; }
+/* Darker topping text for clarity */
+.modifier-info { color: var(--k-line-color) !important; }
 
 /* Divider between pending and completed item groups */
 .order-card__divider {
