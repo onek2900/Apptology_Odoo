@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <!-- Standalone minimal settings form for our module -->
-    <record id="view_res_config_settings_apptology_address_autofill" model="ir.ui.view">
-        <field name="name">res.config.settings.form.apptology.address.autofill</field>
-        <field name="model">res.config.settings</field>
+    <!-- Standalone wizard for API key management -->
+    <record id="view_apptology_address_settings_form" model="ir.ui.view">
+        <field name="name">apptology.address.settings.form</field>
+        <field name="model">apptology.address.settings</field>
         <field name="arch" type="xml">
             <form string="Apptology Address Autofill Settings">
                 <group string="Google Places">
                     <field name="google_places_api_key" password="True"/>
                 </group>
                 <footer>
-                    <button name="execute" type="object" string="Save" class="btn-primary"/>
-                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                    <button name="action_save" type="object" string="Save" class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
         </field>
@@ -19,10 +19,10 @@
 
     <record id="action_apptology_address_autofill_settings" model="ir.actions.act_window">
         <field name="name">Apptology Address Autofill</field>
-        <field name="res_model">res.config.settings</field>
+        <field name="res_model">apptology.address.settings</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="view_res_config_settings_apptology_address_autofill"/>
-        <field name="target">current</field>
+        <field name="view_id" ref="view_apptology_address_settings_form"/>
+        <field name="target">new</field>
         <field name="context">{"default_google_places_api_key": ""}</field>
     </record>
 
@@ -35,4 +35,3 @@
               sequence="10"
               groups="base.group_system"/>
 </odoo>
-
