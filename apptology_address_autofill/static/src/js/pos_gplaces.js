@@ -40,18 +40,36 @@ function setInputValue(input, value) {
     input.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
+function ensureSearchInput(el) {
+    // Try to find existing dedicated search input
+    let input = el.querySelector('input[name="gplaces_search"]');
+    if (input) return input;
+    // Insert a new input above the street field
+    const streetInput = el.querySelector('input[name="street"], textarea[name="street"]');
+    if (!streetInput) return null;
+    const group = streetInput.closest('div, .o_field_widget') || streetInput.parentElement;
+    input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'gplaces_search';
+    input.placeholder = 'Search address...';
+    input.className = streetInput.className || 'o_input';
+    input.style.marginBottom = '6px';
+    group.parentElement?.insertBefore(input, group);
+    return input;
+}
+
 async function bindPOSAutocomplete(component) {
     await loadGooglePlacesPOS(component.rpc);
     if (!(window.google && window.google.maps && window.google.maps.places)) return;
 
     const el = component.el;
     if (!el) return;
-    const streetInput = el.querySelector('input[name="street"], textarea[name="street"]');
-    if (!streetInput || streetInput.__gplaces_bound) return;
-    streetInput.__gplaces_bound = true;
-    streetInput.setAttribute("autocomplete", "off");
+    const searchInput = ensureSearchInput(el);
+    if (!searchInput || searchInput.__gplaces_bound) return;
+    searchInput.__gplaces_bound = true;
+    searchInput.setAttribute("autocomplete", "off");
 
-    const autocomplete = new window.google.maps.places.Autocomplete(streetInput, {
+    const autocomplete = new window.google.maps.places.Autocomplete(searchInput, {
         types: ["address"],
         fields: ["address_components", "geometry", "formatted_address"],
     });
@@ -82,6 +100,7 @@ async function bindPOSAutocomplete(component) {
         const street2 = street2Parts.join(", ");
 
         // Fill simple inputs directly
+        const streetInput = el.querySelector('input[name="street"], textarea[name="street"]');
         setInputValue(streetInput, street);
         setInputValue(el.querySelector('input[name="street2"], textarea[name="street2"]'), street2);
         setInputValue(el.querySelector('input[name="city"], textarea[name="city"]'), city);
@@ -150,4 +169,3 @@ patch(PartnerDetailsEdit.prototype, {
         onPatched(bind);
     },
 });
-
