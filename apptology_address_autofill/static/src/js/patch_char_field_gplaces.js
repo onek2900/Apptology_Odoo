@@ -16,6 +16,16 @@ const dbg = (...args) => {
     } catch (_) {}
 };
 
+function findFieldInput(root, targetName) {
+    const t = String(targetName || "").toLowerCase();
+    const nodes = root?.querySelectorAll?.("input[name], textarea[name]") || [];
+    for (const n of nodes) {
+        const nameAttr = (n.getAttribute("name") || "").toLowerCase();
+        if (nameAttr === t) return n;
+    }
+    return null;
+}
+
 async function loadGooglePlaces(rpc) {
     if (window.google && window.google.maps && window.google.maps.places) {
         return;
@@ -175,8 +185,8 @@ patch(CharField.prototype, {
                 if (!(window.google && window.google.maps && window.google.maps.places)) {
                     return;
                 }
-                const input = this.el?.querySelector?.("input, textarea");
-                if (input && (input.getAttribute("name") === "street")) {
+                const input = findFieldInput(this.el, "street");
+                if (input) {
                     await attachPlacesAutocomplete(this, input);
                 }
             } catch (e) {

@@ -40,12 +40,32 @@ function setInputValue(input, value) {
     input.dispatchEvent(new Event("change", { bubbles: true }));
 }
 
+function findInputCI(root, targetName) {
+    const t = String(targetName || "").toLowerCase();
+    const nodes = root?.querySelectorAll?.('input[name], textarea[name]') || [];
+    for (const n of nodes) {
+        const nameAttr = (n.getAttribute('name') || '').toLowerCase();
+        if (nameAttr === t) return n;
+    }
+    return null;
+}
+
+function findSelectCI(root, targetName) {
+    const t = String(targetName || "").toLowerCase();
+    const nodes = root?.querySelectorAll?.('select[name]') || [];
+    for (const n of nodes) {
+        const nameAttr = (n.getAttribute('name') || '').toLowerCase();
+        if (nameAttr === t) return n;
+    }
+    return null;
+}
+
 function ensureSearchInput(el) {
     // Try to find existing dedicated search input
     let input = el.querySelector('input[name="gplaces_search"]');
     if (input) return input;
     // Insert a new input above the street field
-    const streetInput = el.querySelector('input[name="street"], textarea[name="street"]');
+    const streetInput = findInputCI(el, 'street');
     if (!streetInput) return null;
     const group = streetInput.closest('div, .o_field_widget') || streetInput.parentElement;
     input = document.createElement('input');
@@ -100,11 +120,11 @@ async function bindPOSAutocomplete(component) {
         const street2 = street2Parts.join(", ");
 
         // Fill simple inputs directly
-        const streetInput = el.querySelector('input[name="street"], textarea[name="street"]');
+        const streetInput = findInputCI(el, 'street');
         setInputValue(streetInput, street);
-        setInputValue(el.querySelector('input[name="street2"], textarea[name="street2"]'), street2);
-        setInputValue(el.querySelector('input[name="city"], textarea[name="city"]'), city);
-        setInputValue(el.querySelector('input[name="zip"], textarea[name="zip"]'), zip);
+        setInputValue(findInputCI(el, 'street2'), street2);
+        setInputValue(findInputCI(el, 'city'), city);
+        setInputValue(findInputCI(el, 'zip'), zip);
 
         // Resolve country/state by RPC then set select inputs if present
         const countryName = comp["country"]?.long_name;
@@ -127,7 +147,7 @@ async function bindPOSAutocomplete(component) {
                 if (countries?.length) countryId = countries[0].id;
             }
             if (countryId) {
-                const countrySelect = el.querySelector('select[name="country_id"]');
+                const countrySelect = findSelectCI(el, 'country_id');
                 if (countrySelect) {
                     countrySelect.value = String(countryId);
                     countrySelect.dispatchEvent(new Event("change", { bubbles: true }));
@@ -145,7 +165,7 @@ async function bindPOSAutocomplete(component) {
                         kwargs: { fields: ["id", "name", "code", "country_id"] },
                     });
                     if (states?.length) {
-                        const stateSelect = el.querySelector('select[name="state_id"]');
+                        const stateSelect = findSelectCI(el, 'state_id');
                         if (stateSelect) {
                             stateSelect.value = String(states[0].id);
                             stateSelect.dispatchEvent(new Event("change", { bubbles: true }));
