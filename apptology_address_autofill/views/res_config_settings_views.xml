@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="res_config_settings_view_form_partner_autofill" model="ir.ui.view">
-        <field name="name">res.config.settings.view.form.partner.autofill</field>
+    <record id="view_res_config_settings_pos_places" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.apptology_pos_places</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="(//div[contains(@class,'o_settings_container')])[1]" position="inside">
-                <div class="col-12 col-lg-6 o_setting_box">
-                    <div class="o_setting_left_pane">
-                        <field name="google_places_api_key" password="True"/>
-                    </div>
-                    <div class="o_setting_right_pane">
-                        <label for="google_places_api_key"/>
-                        <div class="text-muted">
-                            Set your Google Places API Key. The key must have Places and Maps JavaScript API enabled.
+            <xpath expr="//block[@id='pos_payment_terminals_section']" position="after">
+                <block string="Address Autofill (Google Places)" id="pos_google_places_section">
+                    <setting string="Google Places Autocomplete" help="Enable address autocomplete in POS customer editor using Google Places.">
+                        <field name="apptology_google_places_autocomplete_enabled"/>
+                    </setting>
+                    <div class="mt16" attrs="{'invisible': [('apptology_google_places_autocomplete_enabled', '=', False)]}">
+                        <label for="apptology_google_places_api_key" string="Google Places API Key"/>
+                        <div class="o_row">
+                            <field name="apptology_google_places_api_key" placeholder="AIza..."/>
                         </div>
+                        <p class="text-muted">
+                            Ensure the key has the Places API enabled and is allowed for your POS domain(s).
+                        </p>
                     </div>
-                </div>
+                </block>
             </xpath>
         </field>
     </record>
 </odoo>
+
