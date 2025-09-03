@@ -93,17 +93,7 @@
                                         </ul>
 
 
-      <!-- Footer -->
-      <footer t-if="showActions" class="order-card__footer card-footer">
-        <div class="order-card__actions d-flex gap-3">
-          <button class="btn btn-primary flex-grow-1" t-on-click="(ev) => this.done_order(order.id)">
-            <i class="fa fa-check" aria-hidden="true"></i> Accept
-          </button>
-          <button class="btn btn-outline-danger" t-on-click="(ev) => this.showCancelConfirm(order.id)">
-            <i class="fa fa-times" aria-hidden="true"></i> Cancel
-          </button>
-        </div>
-      </footer>
+      <!-- Clover-style: no footer actions; tap header to complete, tap items to toggle -->
     </article>
   </t>
 
@@ -138,11 +128,57 @@
             <div t-if="orderInProgress.length" class="row g-4">
               <t t-foreach="orderInProgress" t-as="order" t-key="order.id">
                 <div class="col-12 col-md-4 fade-in">
-                  <t t-call="KitchenOrderCard">
-                    <t t-set="order" t-value="order"/>
-                    <t t-set="status" t-value="'inprogress'"/>
-                    <t t-set="showActions" t-value="true"/>
-                  </t>
+                  <!-- Order Card with interactive header and items -->
+                  <article class="order-card order-card--inprogress"
+                           t-att-class="{'is-online': order.is_online_order, 'is-pickup': order.order_type == '1', 'is-delivery': order.order_type == '2'}"
+                           t-att-data-order-id="order.id">
+                    <!-- Header (tap to mark whole order complete) -->
+                    <header class="order-card__header"
+                            t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white"
+                            t-on-click="() => this.done_order(order.id)">
+                      <span class="order-card__type-badge"
+                            t-att-title="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')"
+                            t-att-aria-label="order.order_type == '1' ? 'Pick Up' : 'Delivery'">
+                        <t t-if="order.order_type == '1'"><i class="fa fa-shopping-basket" aria-hidden="true"></i></t>
+                        <t t-elif="order.order_type == '2'"><i class="fa fa-truck" aria-hidden="true"></i></t>
+                        <t t-else=""><i class="fa fa-cutlery" aria-hidden="true"></i></t>
+                      </span>
+                      <div class="order-card__meta">
+                        <h4 class="order-card__code">
+                          <t t-if="order.is_online_order"><t t-esc="order.channel_order_reference"/></t>
+                          <t t-else=""><t t-esc="order.tracking_number"/></t>
+                        </h4>
+                        <div class="order-card__partner" t-esc="order.partner_id[1]"></div>
+                        <div class="order-card__posref" t-esc="order.pos_reference"></div>
+                        <div t-if="order.floor &amp;&amp; order.floor !== 'false'" class="order-card__floor">
+                          <i class="fa fa-building" aria-hidden="true"></i>
+                          <span>Floor <t t-esc="order.floor"/></span>
+                        </div>
+                      </div>
+                    </header>
+
+                    <!-- Lines (tap item to toggle ready) -->
+                    <ul class="list-group list-group-flush order-card__items">
+                      <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
+                        <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
+                        <li t-if="line" class="list-group-item order-card__item"
+                            t-att-class="{'completed': line.order_status === 'ready'}"
+                            t-on-click="() => this.accept_order_line(line.id)">
+                          <div class="order-card__qty">
+                            <t t-if="!line.is_modifier"><t t-esc="line.qty"/>x</t>
+                          </div>
+                          <div class="order-card__product">
+                            <t t-if="!line.is_modifier"><t t-esc="line.full_product_name"/></t>
+                            <t t-else=""><span class="modifier-info" style="padding-left:20px; font-size:0.9em; color:#bbb;"><t t-esc="line.full_product_name"/></span></t>
+                          </div>
+                          <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                          <i class="fa"
+                             t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'"
+                             aria-hidden="true"></i>
+                        </li>
+                      </t>
+                    </ul>
+                  </article>
                 </div>
               </t>
             </div>

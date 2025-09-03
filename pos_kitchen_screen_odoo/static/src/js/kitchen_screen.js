@@ -307,29 +307,27 @@ export class KitchenScreenDashboard extends Component {
     }
 
     /**
-     * Update order line status
-     * @param {Event} e - Event object
+     * Toggle a line item readiness by id
+     * @param {number} lineId
      */
-    async accept_order_line(e) {
-        const lineId = Number(e.target.value);
-
+    async accept_order_line(lineId) {
         try {
-            await this.orm.call("pos.order.line", "order_progress_change", [lineId]);
+            await this.orm.call("pos.order.line", "order_progress_change", [Number(lineId)]);
 
-            const line = this.state.lines.find(l => l.id === lineId);
+            const line = this.state.lines.find(l => l.id === Number(lineId));
             if (line) {
                 line.order_status = line.order_status === ORDER_STATUSES.READY
                     ? ORDER_STATUSES.WAITING
                     : ORDER_STATUSES.READY;
             }
 
-            this.notification.add("Order line updated successfully", {
+            this.notification.add("Order item updated", {
                 title: "Success",
                 type: "success"
             });
         } catch (error) {
             console.error("Error updating order line:", error);
-            this.notification.add("Failed to update order line", {
+            this.notification.add("Failed to update item", {
                 title: "Error",
                 type: "danger"
             });
