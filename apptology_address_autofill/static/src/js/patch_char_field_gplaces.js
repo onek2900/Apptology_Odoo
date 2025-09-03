@@ -175,9 +175,6 @@ async function attachPlacesAutocomplete(component, input) {
 
         try {
             await component.props.record.update(values);
-            if (street) {
-                await component.props.update(street);
-            }
             dbg("updated values", values);
         } catch (e) {
             console.error("Failed updating record from Places selection", e);
