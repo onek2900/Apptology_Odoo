@@ -176,7 +176,7 @@ patch(CharField.prototype, {
                     return;
                 }
                 const input = this.el?.querySelector?.("input, textarea");
-                if (input) {
+                if (input && (input.getAttribute("name") === "street")) {
                     await attachPlacesAutocomplete(this, input);
                 }
             } catch (e) {
