@@ -162,6 +162,18 @@ $space: var(--k-spacing);
   @include safe-areas;
 }
 
+/* Grid layout for order cards with fixed tile size */
+.kitchen-dashboard .dashboard-section .row.g-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, var(--k-card-w, 360px));
+  gap: 1rem;
+  justify-content: start;
+  align-content: start;
+  align-items: start;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
 .section-header .section-title,
 .section-header h3 {
   @include fluid(1.25rem, 3vw, 2.5rem);
@@ -201,6 +213,8 @@ $space: var(--k-spacing);
   display: flex;
   flex-direction: column;
   transition: transform .2s ease, box-shadow .2s ease;
+  width: var(--k-card-w, 360px);
+  height: var(--k-card-h, 520px);
 }
 .order-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(0,0,0,0.18); }
 
@@ -287,7 +301,18 @@ $space: var(--k-spacing);
   display: flex;
   align-items: center;
   gap: .75rem;
+  cursor: pointer;
+  /* subtle entrance for each row */
+  animation: k-row-in .25s ease both;
 }
+/* Make lines scroll within fixed card */
+.order-card .list-group,
+.order-card__items {
+  flex: 1 1 auto;
+  min-height: 0; /* allow flex child to shrink for overflow */
+  overflow-y: auto;
+}
+.order-card__items .list-group-item { min-height: 44px; }
 /* On completed cards, let rows inherit the green surface */
 .order-card--completed .order-card__item,
 .order-card--completed .order-card__items .list-group-item {
@@ -311,6 +336,36 @@ $space: var(--k-spacing);
 .order-card__product { flex: 1 1 auto; font-weight: 600; }
 .order-card__note { display: block; color: var(--k-muted); margin-left: auto; }
 .order-card__note i { margin-right: .35rem; }
+/* row icon subtle pop on completion */
+.order-card__item i.fa { transition: transform .18s ease; }
+
+/* Per-item completion visuals */
+.order-card__item.completed .order-card__product { text-decoration: line-through; opacity: .7; }
+.order-card__item.completed .order-card__qty { background: rgba(40,167,69,.9); color: #fff; }
+.order-card__item.completed i.fa { transform: scale(1.05); }
+/* brief background highlight when an item completes */
+.order-card__item.completed {
+  animation: k-row-in .25s ease both, k-line-complete .32s ease-out;
+}
+
+/* Modifiers are non-interactive, keep full readability */
+.order-card__item.modifier { cursor: default; opacity: 1; }
+/* Darker topping text for clarity */
+.modifier-info { color: var(--k-line-color) !important; }
+
+/* Divider between pending and completed item groups */
+.order-card__divider {
+  background: transparent !important;
+  color: var(--k-muted) !important;
+  border-top: 1px dashed var(--k-line-border) !important;
+  border-bottom: 0 !important;
+  padding: .5rem 1rem;
+  font-size: .85rem;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  cursor: default;
+}
 
 /* footer / actions */
 /* footer / actions (responsive + compact) */
@@ -377,23 +432,7 @@ $space: var(--k-spacing);
 /* ─────────────────────────────────────────────────────────
    Confirmation popup / animations / responsive / RTL
    ───────────────────────────────────────────────────────── */
-.confirmation-popup {
-  display: none; position: fixed; inset: 0; z-index: 1040;
-  background: rgba(0,0,0,0.58); backdrop-filter: blur(3px);
-  align-items: center; justify-content: center;
-}
-.confirmation-popup.show { display: flex; }
-.confirmation-popup .popup-content {
-  width: 90%; max-width: 420px; background: $surface; color: $text;
-  border-radius: 14px; padding: 2rem; box-shadow: $shadow; animation: popupIn .25s ease-out;
-}
-.confirmation-popup h4 { margin: 0 0 .75rem 0; font-weight: 800; color: $text; }
-.confirmation-popup p { margin: 0 0 1.25rem 0; color: $muted; }
-.confirmation-popup .popup-actions { display: flex; gap: .75rem; justify-content: center; }
-.confirmation-popup .btn.btn-secondary { background: $header-offline; border-color: $header-offline; color: #ffffff; }
-.confirmation-popup .btn.btn-secondary:hover { background: transparent; color: $header-offline; }
-.confirmation-popup .btn.btn-danger { background: $btn-danger-bg; border-color: $btn-danger-bg; color: $btn-danger-ink; }
-.confirmation-popup .btn.btn-danger:hover { background: transparent; color: $btn-danger-bg; }
+/* confirmation-popup removed with cancel flow */
 
 @keyframes popupIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .fade-in { animation: fadeIn .4s ease-out; }
@@ -410,3 +449,42 @@ $space: var(--k-spacing);
 
 [dir="rtl"] .order-card__type-badge { left: auto; right: .75rem; }
 [dir="rtl"] .order-card__meta { padding-left: 0; padding-right: 2.6rem; }
+
+/* Keyframes and subtle stagger */
+@keyframes k-row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes k-line-complete {
+  0%   { background-color: rgba(193, 217, 99, 0.35); }
+  100% { background-color: transparent; }
+}
+
+/* Stagger first rows for a gentle cascade */
+.order-card__items .list-group-item:nth-child(1) { animation-delay: .00s; }
+.order-card__items .list-group-item:nth-child(2) { animation-delay: .03s; }
+.order-card__items .list-group-item:nth-child(3) { animation-delay: .06s; }
+.order-card__items .list-group-item:nth-child(4) { animation-delay: .09s; }
+.order-card__items .list-group-item:nth-child(5) { animation-delay: .12s; }
+.order-card__items .list-group-item:nth-child(6) { animation-delay: .15s; }
+.order-card__items .list-group-item:nth-child(7) { animation-delay: .18s; }
+.order-card__items .list-group-item:nth-child(8) { animation-delay: .21s; }
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .kitchen-dashboard * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Completed card subtle flash when moved */
+.section--completed .order-card {
+  animation: k-card-pulse .42s ease-out;
+}
+@keyframes k-card-pulse {
+  0%   { transform: scale(0.985); box-shadow: 0 0 0 rgba(193,217,99,0.0); }
+  60%  { transform: scale(1.005); box-shadow: 0 0 0 rgba(193,217,99,0.0); }
+  100% { transform: scale(1.0); box-shadow: var(--k-shadow); }
+}

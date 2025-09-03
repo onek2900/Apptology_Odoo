@@ -133,8 +133,6 @@ export class KitchenScreenDashboard extends Component {
             lines: [],
             loading: false,
             error: null,
-            showCancelConfirm: false,
-            orderToCancel: null,
         });
 
         this.orderManagement = useOrderManagement(this.rpc, shopId);
@@ -272,27 +270,7 @@ export class KitchenScreenDashboard extends Component {
     }
 
 
-    /**
-     * Cancel order
-     * @param {Integer} orderId - Integer object
-     */
-    async showCancelConfirm(orderId) {
-        this.state.showCancelConfirm = true;
-        this.state.orderToCancel = orderId;
-    };
-    async closeCancelConfirm() {
-        this.state.showCancelConfirm = false;
-        this.state.orderToCancel = null;
-    }
-    async cancel_order(orderId) {
-        this.state.showCancelConfirm = false;
-        this.state.orderToCancel = null;
-        await this.updateOrderStatus(
-            orderId,
-            ORDER_STATUSES.CANCEL,
-            "order_progress_cancel"
-        );
-    }
+    // Cancel flow removed: Clover-style UX has no cancel popup
 
     /**
      * Complete order
@@ -307,33 +285,132 @@ export class KitchenScreenDashboard extends Component {
     }
 
     /**
-     * Update order line status
-     * @param {Event} e - Event object
+     * Toggle a line item readiness by id
+     * @param {number} lineId
      */
-    async accept_order_line(e) {
-        const lineId = Number(e.target.value);
-
+    async accept_order_line(lineId) {
         try {
-            await this.orm.call("pos.order.line", "order_progress_change", [lineId]);
+            const id = Number(lineId);
+            const line = this.state.lines.find((l) => l.id === id);
+            if (!line) return;
+            // Do not toggle toppings/modifiers
+            if (line.is_modifier) return;
 
-            const line = this.state.lines.find(l => l.id === lineId);
-            if (line) {
-                line.order_status = line.order_status === ORDER_STATUSES.READY
-                    ? ORDER_STATUSES.WAITING
-                    : ORDER_STATUSES.READY;
+            await this.orm.call("pos.order.line", "order_progress_change", [id]);
+
+            // Local UI update
+            line.order_status = line.order_status === ORDER_STATUSES.READY
+                ? ORDER_STATUSES.WAITING
+                : ORDER_STATUSES.READY;
+
+            // If all main items are ready, mark the order as ready
+            const order = this.getOrderByLineId(id);
+            if (order && this.areAllMainItemsReady(order)) {
+                await this.done_order(order.id);
             }
 
-            this.notification.add("Order line updated successfully", {
-                title: "Success",
-                type: "success"
-            });
+            this.notification.add("Item status updated", { title: "Success", type: "success" });
         } catch (error) {
             console.error("Error updating order line:", error);
-            this.notification.add("Failed to update order line", {
-                title: "Error",
-                type: "danger"
-            });
+            this.notification.add("Failed to update item", { title: "Error", type: "danger" });
         }
+    }
+
+    /**
+     * Find order containing given line id
+     */
+    getOrderByLineId(lineId) {
+        return this.state.order_details.find((o) => Array.isArray(o.lines) && o.lines.includes(lineId)) || null;
+    }
+
+    /**
+     * True if all non-modifier lines are ready for a given order
+     */
+    areAllMainItemsReady(order) {
+        const ids = Array.isArray(order.lines) ? order.lines : [];
+        const mains = ids
+            .map((id) => this.state.lines.find((l) => l.id === id))
+            .filter(Boolean)
+            .filter((l) => !l.is_modifier);
+        return mains.length > 0 && mains.every((l) => l.order_status === ORDER_STATUSES.READY);
+    }
+
+    /**
+     * Return line ids grouped by parent+modifiers with completed groups at the end
+     */
+    sortedLineIds(order) {
+        const ids = Array.isArray(order.lines) ? order.lines.slice() : [];
+        const getLine = (id) => this.state.lines.find((l) => l.id === id);
+        const groups = [];
+        let current = [];
+        for (const id of ids) {
+            const line = getLine(id);
+            if (!line) continue;
+            if (!line.is_modifier) {
+                if (current.length) groups.push(current);
+                current = [id];
+            } else {
+                if (current.length) current.push(id);
+                else current = [id];
+            }
+        }
+        if (current.length) groups.push(current);
+
+        const isGroupReady = (g) => {
+            const parent = getLine(g[0]);
+            return parent && parent.order_status === ORDER_STATUSES.READY;
+        };
+
+        const pending = [];
+        const completed = [];
+        for (const g of groups) {
+            (isGroupReady(g) ? completed : pending).push(g);
+        }
+        return pending.concat(completed).flat();
+    }
+    // Removed auto-completion and custom sorting; using original order
+
+    /**
+     * Return a mixed sequence of entries for template rendering:
+     * - { t: 'line', id }
+     * - { t: 'divider' } inserted between pending and completed groups
+     */
+    linesWithDivider(order) {
+        const ids = Array.isArray(order.lines) ? order.lines.slice() : [];
+        const getLine = (id) => this.state.lines.find((l) => l.id === id);
+
+        // Build groups: [parent, ...modifiers]
+        const groups = [];
+        let current = [];
+        for (const id of ids) {
+            const line = getLine(id);
+            if (!line) continue;
+            if (!line.is_modifier) {
+                if (current.length) groups.push(current);
+                current = [id];
+            } else {
+                if (current.length) current.push(id);
+                else current = [id];
+            }
+        }
+        if (current.length) groups.push(current);
+
+        const isGroupReady = (g) => {
+            const parent = getLine(g[0]);
+            return parent && parent.order_status === ORDER_STATUSES.READY;
+        };
+
+        const pending = [];
+        const completed = [];
+        for (const g of groups) {
+            (isGroupReady(g) ? completed : pending).push(g);
+        }
+
+        const out = [];
+        for (const g of pending) for (const id of g) out.push({ t: 'line', id });
+        if (pending.length && completed.length) out.push({ t: 'divider' });
+        for (const g of completed) for (const id of g) out.push({ t: 'line', id });
+        return out;
     }
 
     /**
