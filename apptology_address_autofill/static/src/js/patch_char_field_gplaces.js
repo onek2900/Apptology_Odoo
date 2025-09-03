@@ -26,6 +26,24 @@ function findFieldInput(root, targetName) {
     return null;
 }
 
+function ensureSearchInput(el) {
+    // Create or reuse a dedicated search input above the street field to avoid
+    // ever binding to the name/company field.
+    let input = el?.querySelector?.('input[name="gplaces_search_backend"]');
+    if (input) return input;
+    const street = findFieldInput(el, 'street');
+    if (!street) return null;
+    const group = street.closest('div, .o_field_widget') || street.parentElement;
+    input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'gplaces_search_backend';
+    input.placeholder = 'Search address...';
+    input.className = street.className || 'o_input';
+    input.style.marginBottom = '6px';
+    group?.parentElement?.insertBefore(input, group);
+    return input;
+}
+
 async function loadGooglePlaces(rpc) {
     if (window.google && window.google.maps && window.google.maps.places) {
         return;
@@ -185,9 +203,9 @@ patch(CharField.prototype, {
                 if (!(window.google && window.google.maps && window.google.maps.places)) {
                     return;
                 }
-                const input = findFieldInput(this.el, "street");
-                if (input) {
-                    await attachPlacesAutocomplete(this, input);
+                const search = ensureSearchInput(this.el);
+                if (search) {
+                    await attachPlacesAutocomplete(this, search);
                 }
             } catch (e) {
                 console.warn("GPlaces attach error", e);
