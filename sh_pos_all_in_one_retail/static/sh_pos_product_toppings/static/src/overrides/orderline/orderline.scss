@@ -12,6 +12,9 @@
                                 font-size: 84%;
                                 font-weight: 500;
                                 margin-left: 10px;
+                                // Make topping text readable on all backgrounds
+                                color: #2f2f2f;
+                                * { color: inherit; }
 
                                 .sh_toppings_description {
                                     display: flex;
