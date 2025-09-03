@@ -5,8 +5,9 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='street']" position="before">
-                <field name="gmap_autocomplete" widget="google_places_address" placeholder="Search address..."/>
+            <xpath expr="//field[@name='street']" position="attributes">
+                <attribute name="widget">google_places_address</attribute>
+                <attribute name="placeholder">Search address...</attribute>
             </xpath>
         </field>
     </record>
