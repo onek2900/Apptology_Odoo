@@ -320,7 +320,19 @@ $space: var(--k-spacing);
 /* Modifiers are non-interactive */
 .order-card__item.modifier { cursor: default; opacity: .95; }
 
-/* Divider removed */
+/* Divider between pending and completed item groups */
+.order-card__divider {
+  background: transparent !important;
+  color: var(--k-muted) !important;
+  border-top: 1px dashed var(--k-line-border) !important;
+  border-bottom: 0 !important;
+  padding: .5rem 1rem;
+  font-size: .85rem;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  cursor: default;
+}
 
 /* footer / actions */
 /* footer / actions (responsive + compact) */
