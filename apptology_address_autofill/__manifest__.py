@@ -1,5 +1,5 @@
 {
-    "name": "Partner Address Autofill (Google Places)",
+    "name": "Apptology Address Autofill (Google Places)",
     "summary": "Auto-fill partner address using Google Places Autocomplete",
     "version": "17.0.1.0.0",
     "category": "Contacts",
