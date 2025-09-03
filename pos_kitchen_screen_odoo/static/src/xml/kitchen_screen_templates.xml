@@ -106,7 +106,7 @@
       <div class="row g-4">
 
         <!-- In Progress -->
-        <section class="col-12 col-lg-6 section section--inprogress">
+        <section class="col-12 section section--inprogress">
           <div class="text-center section-header section-inprogress">
             <h3 class="section-title">
               In Progress
@@ -182,7 +182,7 @@
         </section>
 
         <!-- Completed -->
-        <section class="col-12 col-lg-6 section section--completed">
+        <section class="col-12 section section--completed">
           <div class="text-center section-header">
             <h3 class="section-title">
               Completed
