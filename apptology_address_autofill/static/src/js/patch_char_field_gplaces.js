@@ -1,6 +1,7 @@
 /** @odoo-module **/
 
 import { CharField } from "@web/views/fields/char/char_field";
+import { FormRenderer } from "@web/views/form/form_renderer";
 import { loadJS } from "@web/core/assets";
 import { patch } from "@web/core/utils/patch";
 import { useService } from "@web/core/utils/hooks";
@@ -200,12 +201,39 @@ patch(CharField.prototype, {
                 if (!(window.google && window.google.maps && window.google.maps.places)) {
                     return;
                 }
-                const search = ensureSearchInput(this.el);
-                if (search) {
-                    await attachPlacesAutocomplete(this, search);
+                // Prefer binding to the actual street input; fallback to injected search box
+                const input = findFieldInput(this.el, "street") || ensureSearchInput(this.el);
+                if (input) {
+                    await attachPlacesAutocomplete(this, input);
                 }
             } catch (e) {
                 console.warn("GPlaces attach error", e);
+            }
+        };
+        onMounted(bind);
+        onPatched(bind);
+    },
+});
+
+// Fallback: ensure binding even if field widgets change layout
+const superFRSetup = FormRenderer.prototype.setup;
+patch(FormRenderer.prototype, {
+    setup() {
+        superFRSetup && superFRSetup.apply(this, arguments);
+        this.rpc = useService("rpc");
+        const bind = async () => {
+            try {
+                const record = this.props?.record;
+                if (!record || record.resModel !== "res.partner") return;
+                await loadGooglePlaces(this.rpc);
+                if (!(window.google && window.google.maps && window.google.maps.places)) return;
+                const input = findFieldInput(this.el, "street") || ensureSearchInput(this.el);
+                if (input) {
+                    await attachPlacesAutocomplete({ rpc: this.rpc, props: { record } }, input);
+                }
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.warn("GPlaces FormRenderer bind error", e);
             }
         };
         onMounted(bind);
