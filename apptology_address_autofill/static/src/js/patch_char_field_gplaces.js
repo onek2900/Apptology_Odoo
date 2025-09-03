@@ -67,8 +67,22 @@ async function attachPlacesAutocomplete(component, input) {
         const route = comp["route"]?.long_name || "";
         const street = [streetNumber, route].filter(Boolean).join(" ");
         if (street) values["street"] = street;
-        if (comp["locality"]) values["city"] = comp["locality"].long_name;
+        // City fallbacks: locality -> postal_town -> administrative_area_level_2
+        values["city"] = (
+            comp["locality"]?.long_name ||
+            comp["postal_town"]?.long_name ||
+            comp["administrative_area_level_2"]?.long_name ||
+            undefined
+        );
         if (comp["postal_code"]) values["zip"] = comp["postal_code"].long_name;
+        // Optional street2 from sublocality/premise/neighborhood
+        const street2Parts = [
+            comp["sublocality"]?.long_name,
+            comp["sublocality_level_1"]?.long_name,
+            comp["premise"]?.long_name,
+            comp["neighborhood"]?.long_name,
+        ].filter(Boolean);
+        if (street2Parts.length) values["street2"] = street2Parts.join(", ");
 
         const canSet = (name) =>
             component.props.record && component.props.record.activeFields &&
@@ -123,15 +137,9 @@ async function attachPlacesAutocomplete(component, input) {
         }
 
         try {
-            const active = (component.props.record && component.props.record.activeFields) || {};
-            const filtered = {};
-            for (const [k, v] of Object.entries(values)) {
-                if (Object.prototype.hasOwnProperty.call(active, k)) {
-                    filtered[k] = v;
-                }
-            }
-            if (Object.keys(filtered).length) {
-                await component.props.record.update(filtered);
+            await component.props.record.update(values);
+            if (street) {
+                await component.props.update(street);
             }
         } catch (e) {
             console.error("Failed updating record from Places selection", e);
