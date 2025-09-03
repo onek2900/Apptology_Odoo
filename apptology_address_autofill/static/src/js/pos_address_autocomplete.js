@@ -54,7 +54,7 @@ function setInputValue(selector, value) {
 }
 
 function parseAddress(place) {
-    const out = { street: "", street2: "", city: "", state_name: "", country_name: "", zip: "" };
+    const out = { street: "", street2: "", city: "", state_name: "", country_name: "", zip: "", state_code: "", country_code: "" };
     if (!place || !place.address_components) return out;
     const comps = place.address_components;
     const get = (type) => comps.find((c) => c.types.includes(type));
@@ -64,8 +64,12 @@ function parseAddress(place) {
     out.street = [streetNumber, route].filter(Boolean).join(" ");
     out.street2 = subpremise;
     out.city = get("locality")?.long_name || get("sublocality")?.long_name || "";
-    out.state_name = get("administrative_area_level_1")?.long_name || "";
-    out.country_name = get("country")?.long_name || "";
+    const stateComp = get("administrative_area_level_1");
+    out.state_name = stateComp?.long_name || "";
+    out.state_code = stateComp?.short_name || "";
+    const countryComp = get("country");
+    out.country_name = countryComp?.long_name || "";
+    out.country_code = countryComp?.short_name || "";
     out.zip = get("postal_code")?.long_name || "";
     return out;
 }
@@ -90,7 +94,12 @@ function attachAutocompleteToStreet() {
         // Best-effort: set text fields for state/country if present as inputs.
         setInputValue('input[name="state_name"], input[data-name="state_name"]', addr.state_name);
         setInputValue('input[name="country_name"], input[data-name="country_name"]', addr.country_name);
+        // Resolve and set real Odoo many2one for country/state when possible
+        resolveAndApplyCountryState(addr);
     });
+
+    // Compliance badge
+    ensurePoweredByGoogleBadge(streetInput);
 }
 
 function initObserver() {
@@ -108,6 +117,7 @@ registry.category("services").add(
         dependencies: ["rpc"],
         start: async (env, { rpc }) => {
             console.info("[POS Places] Service starting");
+            window.__apptology_pos_places_rpc__ = rpc; // expose for helper usage
             const { enabled, api_key } = await fetchPlacesKey(rpc);
             console.info("[POS Places] Settings", { enabled, hasKey: Boolean(api_key) });
             if (!enabled || !api_key) return;
@@ -127,3 +137,94 @@ registry.category("services").add(
         },
     }
 );
+
+async function resolveAndApplyCountryState(addr) {
+    const rpc = window.__apptology_pos_places_rpc__;
+    if (!rpc) return;
+    try {
+        let countryId = null;
+        if (addr.country_code) {
+            const res = await rpc('/web/dataset/call_kw', {
+                model: 'res.country',
+                method: 'search_read',
+                args: [[['code', '=', addr.country_code]]],
+                kwargs: { fields: ['id', 'name', 'code'], limit: 1 },
+            });
+            if (res && res.length) countryId = res[0].id;
+        }
+        if (!countryId && addr.country_name) {
+            const res = await rpc('/web/dataset/call_kw', {
+                model: 'res.country',
+                method: 'search_read',
+                args: [[['name', 'ilike', addr.country_name]]],
+                kwargs: { fields: ['id', 'name', 'code'], limit: 1 },
+            });
+            if (res && res.length) countryId = res[0].id;
+        }
+
+        if (countryId) {
+            applyMany2OneSelection('country_id', countryId, addr.country_name || addr.country_code);
+        }
+
+        let stateId = null;
+        if (addr.state_code) {
+            const res = await rpc('/web/dataset/call_kw', {
+                model: 'res.country.state',
+                method: 'search_read',
+                args: [[['code', '=', addr.state_code], ['country_id', '=', countryId]]],
+                kwargs: { fields: ['id', 'name', 'code', 'country_id'], limit: 1 },
+            });
+            if (res && res.length) stateId = res[0].id;
+        }
+        if (!stateId && addr.state_name) {
+            const res = await rpc('/web/dataset/call_kw', {
+                model: 'res.country.state',
+                method: 'search_read',
+                args: [[['name', 'ilike', addr.state_name], ['country_id', '=', countryId]]],
+                kwargs: { fields: ['id', 'name', 'code', 'country_id'], limit: 1 },
+            });
+            if (res && res.length) stateId = res[0].id;
+        }
+
+        if (stateId) {
+            applyMany2OneSelection('state_id', stateId, addr.state_name || addr.state_code);
+        }
+    } catch (e) {
+        console.warn('[POS Places] Failed to resolve country/state', e);
+    }
+}
+
+function applyMany2OneSelection(fieldName, id, displayText) {
+    // Try select first (some POS themes render selects)
+    const select = findInput(`select[name="${fieldName}"]`);
+    if (select) {
+        select.value = String(id);
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        return;
+    }
+    // Fallback: set text into many2one input
+    const m2oInput = findInput(`input[name="${fieldName}"], input[data-name="${fieldName}"]`);
+    if (m2oInput) {
+        m2oInput.value = displayText || '';
+        m2oInput.dispatchEvent(new Event('input', { bubbles: true }));
+        m2oInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+function ensurePoweredByGoogleBadge(streetInput) {
+    try {
+        const id = 'apptology-gplaces-badge';
+        if (document.getElementById(id)) return;
+        const badge = document.createElement('div');
+        badge.id = id;
+        badge.style.fontSize = '11px';
+        badge.style.color = '#5f6368';
+        badge.style.marginTop = '4px';
+        badge.style.display = 'flex';
+        badge.style.alignItems = 'center';
+        badge.innerHTML = 'Powered by Google';
+        const container = streetInput.closest('.o_form_view, .o_form_renderer, form') || streetInput.parentElement;
+        // insert after the input
+        (streetInput.parentElement || container).appendChild(badge);
+    } catch (_) {}
+}
