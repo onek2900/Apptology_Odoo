@@ -9,8 +9,8 @@ msgstr ""
 "POT-Creation-Date: 2025-09-04 00:00+0000\n"
 "PO-Revision-Date: 2025-09-04 00:00+0000\n"
 "Last-Translator: \n"
-"Language-Team: Arabic\n"
-"Language: ar\n"
+"Language-Team: French\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -18,70 +18,70 @@ msgstr ""
 #. module: pos_kitchen_screen_odoo
 #: code:/pos_kitchen_screen_odoo/static/src/xml/navbar.xml:0
 msgid "Open Kitchen Screen"
-msgstr "فتح شاشة المطبخ"
+msgstr "Ouvrir l'écran de cuisine"
 
 #. module: pos_kitchen_screen_odoo
 #: code:/pos_kitchen_screen_odoo/static/src/xml/navbar.xml:0
 msgid "Open Order Screen"
-msgstr "فتح شاشة الطلبات"
+msgstr "Ouvrir l'écran des commandes"
 
 #. module: pos_kitchen_screen_odoo
 #: model_terms:ir.actions.act_window,name:pos_kitchen_screen_odoo.kitchen_screen_action
 msgid "Kitchen screen Main Action"
-msgstr "الإجراء الرئيسي لشاشة المطبخ"
+msgstr "Action principale de l'écran cuisine"
 
 #. module: pos_kitchen_screen_odoo
 #: model_terms:ir.ui.view,arch_db:pos_kitchen_screen_odoo.kitchen_screen_view_form
 msgid "Kitchen Screen"
-msgstr "شاشة المطبخ"
+msgstr "Écran cuisine"
 
 #. module: pos_kitchen_screen_odoo
 #: model_terms:ir.ui.view,arch_db:pos_kitchen_screen_odoo.kitchen_screen_view_form
 msgid "Order Screen"
-msgstr "شاشة الطلبات"
+msgstr "Écran des commandes"
 
 #. module: pos_kitchen_screen_odoo
 #: model_terms:ir.ui.view,arch_db:pos_kitchen_screen_odoo.kitchen_screen_view_form
 msgid "This will be the Allowed POS for this pos\n                                    Kitchen"
-msgstr "سيكون هذا هو نقطة البيع المسموح بها لشاشة المطبخ"
+msgstr "Ceci sera le point de vente autorisé pour cet écran cuisine"
 
 #. module: pos_kitchen_screen_odoo
 #: model_terms:ir.ui.view,arch_db:pos_kitchen_screen_odoo.kitchen_screen_view_form
 msgid "This will be the Allowed POS category for\n                                    this pos Kitchen"
-msgstr "ستكون هذه فئة نقاط البيع المسموح بها لشاشة المطبخ"
+msgstr "Ceci sera la catégorie PDV autorisée pour cet écran cuisine"
 
 #. module: pos_kitchen_screen_odoo
 #: model_terms:ir.ui.view,arch_db:pos_kitchen_screen_odoo.kitchen_screen_view_form
 msgid "Click Here to See the kitchen Orders"
-msgstr "انقر هنا لعرض طلبات المطبخ"
+msgstr "Cliquez ici pour voir les commandes cuisine"
 
 #. module: pos_kitchen_screen_odoo
 #: model_terms:ir.ui.view,arch_db:pos_kitchen_screen_odoo.kitchen_screen_view_form
 msgid "Click Here to See the Order Screen"
-msgstr "انقر هنا لعرض شاشة الطلبات"
+msgstr "Cliquez ici pour voir l'écran des commandes"
 
 #. module: pos_kitchen_screen_odoo
 #: code:/pos_kitchen_screen_odoo/static/src/js/kitchen_screen.js:0
 msgid "No orders !"
-msgstr "لا توجد طلبات!"
+msgstr "Aucune commande !"
 
 #. module: pos_kitchen_screen_odoo
 #: code:/pos_kitchen_screen_odoo/static/src/xml/kitchen_screen_templates.xml:0
 msgid "Completed"
-msgstr "مكتمل"
+msgstr "Terminé"
 
 #. module: pos_kitchen_screen_odoo
 #: code:/pos_kitchen_screen_odoo/static/src/xml/kitchen_screen_templates.xml:0
 msgid "Floor "
-msgstr "الطابق "
+msgstr "Étage "
 
 #. module: pos_kitchen_screen_odoo
 #: code:/pos_kitchen_screen_odoo/views/order_index.xml:0
 msgid "Pos Kitchen Screen"
-msgstr "شاشة مطبخ نقاط البيع"
+msgstr "Écran cuisine POS"
 
 #. module: pos_kitchen_screen_odoo
 #: code:/pos_kitchen_screen_odoo/views/order_index.xml:0
 msgid "Pos Order Tracking"
-msgstr "تتبع طلبات نقاط البيع"
+msgstr "Suivi des commandes POS"
 
