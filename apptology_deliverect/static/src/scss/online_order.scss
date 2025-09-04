@@ -72,15 +72,27 @@
                     padding: 8px 10px;
                     box-sizing: border-box;
                 }
+                // Remove any zebra striping from upstream styles
+                tbody tr,
+                tbody tr:nth-child(odd),
+                tbody tr:nth-child(even) {
+                    background-color: #ffffff !important;
+                    background-image: none !important;
+                }
+                // Strong header colors for clarity
+                thead tr {
+                    background-color: var(--gray-700);
+                    color: #ffffff;
+                }
             }
             .order-row {
                 cursor: pointer;
 
-                &:hover {
-                    background: var(--gray-100);
-                }
+                &:hover { background: var(--gray-100); }
 
                 .col {
+                    border-bottom: 1px solid var(--gray-200);
+                    box-shadow: none !important;
                     &.wide {
                         min-width: 140px;
                     }
