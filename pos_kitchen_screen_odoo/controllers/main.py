@@ -30,10 +30,7 @@ class OrderScreen(http.Controller):
              ("online_order_status", "=", 'approved')] + cat_domain,
             order="date_order")
         combined_orders = pos_orders | approved_deliverect_orders
-        values = {
-            "orders": combined_orders.sudo().read(),
-            "max_lines_per_card": int(kitchen_screen.max_lines_per_card or 0),
-        }
+        values = {"orders": combined_orders.sudo().read()}
         return values
 
     @http.route("/apptology_order_screen", auth="public", type="http", website=True)
@@ -82,11 +79,7 @@ class OrderScreen(http.Controller):
             order="date_order")
 
         combined_orders = pos_orders | approved_deliverect_orders
-        values = {
-            "orders": combined_orders.read(),
-            "order_lines": combined_orders.lines.read(),
-            "max_lines_per_card": int(kitchen_screen.max_lines_per_card or 0),
-        }
+        values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
         # print(values,"values")
         return values
 

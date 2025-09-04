@@ -65,7 +65,6 @@ const useOrderManagement = (rpc, shopId) => {
             return {
                 order_details: result.orders,
                 lines: result.order_lines,
-                max_lines_per_card: result.max_lines_per_card || 0,
                 ...calculateOrderCounts(result.orders, shopId)
             };
         } catch (error) {
@@ -73,7 +72,6 @@ const useOrderManagement = (rpc, shopId) => {
             return {
                 order_details: [],
                 lines: [],
-                max_lines_per_card: 0,
                 draft_count: 0,
                 waiting_count: 0,
                 ready_count: 0
@@ -128,7 +126,6 @@ export class KitchenScreenDashboard extends Component {
         this.state = useState({
             order_details: [],
             shop_id: shopId,
-            max_lines_per_card: 0,
             stages: ORDER_STATUSES.DRAFT,
             draft_count: 0,
             waiting_count: 0,
@@ -344,7 +341,20 @@ export class KitchenScreenDashboard extends Component {
     sortedLineIds(order) {
         const ids = Array.isArray(order.lines) ? order.lines.slice() : [];
         const getLine = (id) => this.state.lines.find((l) => l.id === id);
-        const groups = this.groupedLineIds(ids, getLine);
+        const groups = [];
+        let current = [];
+        for (const id of ids) {
+            const line = getLine(id);
+            if (!line) continue;
+            if (!line.is_modifier) {
+                if (current.length) groups.push(current);
+                current = [id];
+            } else {
+                if (current.length) current.push(id);
+                else current = [id];
+            }
+        }
+        if (current.length) groups.push(current);
 
         const isGroupReady = (g) => {
             const parent = getLine(g[0]);
@@ -363,47 +373,7 @@ export class KitchenScreenDashboard extends Component {
     /**
      * Group line ids into [parent, ...modifiers] sequences
      */
-    groupedLineIds(ids, getLine) {
-        const groups = [];
-        let current = [];
-        for (const id of ids) {
-            const line = getLine(id);
-            if (!line) continue;
-            if (!line.is_modifier) {
-                if (current.length) groups.push(current);
-                current = [id];
-            } else {
-                if (current.length) current.push(id);
-                else current = [id];
-            }
-        }
-        if (current.length) groups.push(current);
-        return groups;
-    }
-
-    /**
-     * Like sortedLineIds(order) but limited to max parent groups if configured.
-     */
-    limitedSortedLineIds(order) {
-        const ids = Array.isArray(order.lines) ? order.lines.slice() : [];
-        const getLine = (id) => this.state.lines.find((l) => l.id === id);
-        const groups = this.groupedLineIds(ids, getLine);
-
-        const isGroupReady = (g) => {
-            const parent = getLine(g[0]);
-            return parent && parent.order_status === ORDER_STATUSES.READY;
-        };
-        const pending = [];
-        const completed = [];
-        for (const g of groups) {
-            (isGroupReady(g) ? completed : pending).push(g);
-        }
-        const orderedGroups = pending.concat(completed);
-
-        const limit = parseInt(this.state.max_lines_per_card || 0, 10);
-        const limitedGroups = limit > 0 ? orderedGroups.slice(0, limit) : orderedGroups;
-        return limitedGroups.flat();
-    }
+    
 
     /**
      * Return a mixed sequence of entries for template rendering:
