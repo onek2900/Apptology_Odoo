@@ -71,6 +71,7 @@
                 th, td {
                     padding: 8px 10px;
                     box-sizing: border-box;
+                    border: none !important;
                 }
                 // Remove any zebra striping from upstream styles
                 tbody tr,
@@ -93,11 +94,13 @@
                 thead th::before,
                 thead th::after { background: transparent !important; box-shadow: none !important; }
                 // Body cell cleanup
-                tbody td { background: #ffffff !important; color: #2B2B2B; }
+                tbody td { background: #ffffff !important; color: #2B2B2B; border: none !important; }
                 tbody td::before,
                 tbody td::after { content: none !important; }
-                // Single continuous row separators
-                tbody tr { border-bottom: 1px solid var(--gray-200); }
+                // Remove row separators (no borders around text)
+                tbody tr { border: none !important; }
+                // Override Bootstrap table default bottom borders
+                &.table > :not(caption) > * > * { border-bottom-width: 0 !important; }
             }
             .order-row {
                 cursor: pointer;
