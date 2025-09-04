@@ -80,9 +80,10 @@
                     background-image: none !important;
                 }
                 // Strong header colors for clarity
-                thead tr {
-                    background-color: var(--gray-700);
-                    color: #ffffff;
+                thead tr { background-color: var(--gray-700); }
+                thead th {
+                    background-color: var(--gray-700) !important;
+                    color: #ffffff !important;
                 }
             }
             .order-row {
