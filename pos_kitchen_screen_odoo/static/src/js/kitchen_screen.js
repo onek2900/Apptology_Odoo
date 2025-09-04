@@ -371,6 +371,11 @@ export class KitchenScreenDashboard extends Component {
     // Removed auto-completion and custom sorting; using original order
 
     /**
+     * Group line ids into [parent, ...modifiers] sequences
+     */
+    
+
+    /**
      * Return a mixed sequence of entries for template rendering:
      * - { t: 'line', id }
      * - { t: 'divider' } inserted between pending and completed groups

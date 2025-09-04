@@ -75,8 +75,7 @@
                                                                 <t t-esc="line.full_product_name"/>
                                                             </t>
                                                             <t t-else="">
-                                                                <span class="modifier-info"
-                                                                     style="padding-left:20px; font-size:0.9em;">
+                                                                <span class="modifier-info">
                                                                     →
                                                                     <t t-esc="line.full_product_name"/>
                                                                 </span>
@@ -163,7 +162,7 @@
                         <li t-elif="line" class="list-group-item order-card__item modifier">
                           <div class="order-card__qty"></div>
                           <div class="order-card__product">
-                            <span class="modifier-info" style="padding-left:20px; font-size:0.9em;">
+                            <span class="modifier-info">
                               <t t-esc="line.full_product_name"/>
                             </span>
                           </div>
