@@ -44,6 +44,7 @@
 
 .order-number, .order-date {
     font-size: 14px;
+    font-weight: 700;
     /* Handle overflow for order numbers and dates */
     word-break: break-all;
 }
@@ -88,6 +89,11 @@
     max-width: 70%;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Emphasize order type value */
+.detail-value.order-type {
+    font-weight: 700;
 }
 
 /* For very long values that need to wrap to next line */
@@ -138,6 +144,11 @@
 .item-row td {
     padding: 5px 0;
     vertical-align: top; /* Align content to top for multiline descriptions */
+}
+
+/* Prevent header repetition across printed pages */
+@media print {
+    .items-table thead.no-repeat { display: table-row-group; }
 }
 
 /* Added style for item-remark with overflow handling */
