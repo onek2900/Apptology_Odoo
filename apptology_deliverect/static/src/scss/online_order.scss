@@ -84,7 +84,20 @@
                 thead th {
                     background-color: var(--gray-700) !important;
                     color: #ffffff !important;
+                    border-bottom: 0 !important;
+                    box-shadow: none !important;
+                    background-clip: padding-box;
                 }
+                // Ensure header backgrounds apply to the cell not text
+                thead th *,
+                thead th::before,
+                thead th::after { background: transparent !important; box-shadow: none !important; }
+                // Body cell cleanup
+                tbody td { background: #ffffff !important; color: #2B2B2B; }
+                tbody td::before,
+                tbody td::after { content: none !important; }
+                // Single continuous row separators
+                tbody tr { border-bottom: 1px solid var(--gray-200); }
             }
             .order-row {
                 cursor: pointer;
@@ -92,7 +105,6 @@
                 &:hover { background: var(--gray-100); }
 
                 .col {
-                    border-bottom: 1px solid var(--gray-200);
                     box-shadow: none !important;
                     &.wide {
                         min-width: 140px;
