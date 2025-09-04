@@ -60,7 +60,7 @@
 
         <!-- Lines -->
                                         <ul class="list-group list-group-flush">
-                                            <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
+                                            <t t-foreach="this.limitedSortedLineIds(order)" t-as="lineId" t-key="lineId">
                                                 <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
                                                 <li t-if="line" class="list-group-item">
                                                     <div class="qty">
@@ -147,7 +147,7 @@
 
                     <!-- Lines: main item clickable, toppings not clickable; completed groups sink to bottom -->
                     <ul class="list-group list-group-flush order-card__items">
-                      <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + lineId">
+                      <t t-foreach="this.limitedSortedLineIds(order)" t-as="lineId" t-key="'line-' + lineId">
                         <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
                         <!-- Main item: clickable to toggle readiness -->
                         <li t-if="line and !line.is_modifier" class="list-group-item order-card__item"

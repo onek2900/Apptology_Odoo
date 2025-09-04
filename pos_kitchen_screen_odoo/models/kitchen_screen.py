@@ -29,6 +29,11 @@ class KitchenScreen(models.Model):
                                      string='Allowed POS Category',
                                      help="Allowed POS Category"
                                           "for the corresponding Pos")
+    max_lines_per_card = fields.Integer(
+        string='Max Lines per Card',
+        default=0,
+        help='Limit how many line items are displayed on each order card. 0 shows all.'
+    )
     shop_number = fields.Integer(related='pos_config_id.id', string='Customer',
                                  help="Id of the POS")
 

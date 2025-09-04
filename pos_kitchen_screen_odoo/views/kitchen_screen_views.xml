@@ -49,6 +49,20 @@
                             </div>
                         </div>
 
+                        <div class="col-12 col-lg-6 o_setting_box" id="max_lines_per_card">
+                            <div class="o_setting_left_pane">
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="max_lines_per_card"/>
+                                <div class="text-muted">
+                                    <div>
+                                        <field name="max_lines_per_card"/>
+                                    </div>
+                                    Choose how many line items to display per card (0 = show all)
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="row o_setting_box"
                              id="kitchen_screen">
                             <div class="col-md-6 ">
@@ -100,6 +114,7 @@
                 <field name="sequence"/>
                 <field name="pos_config_id"/>
                 <field name="pos_categ_ids"/>
+                <field name="max_lines_per_card"/>
             </tree>
         </field>
     </record>
