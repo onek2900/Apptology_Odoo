@@ -54,6 +54,25 @@
 
     .rightpane {
         .orders {
+            // Align header and body rows using a consistent grid
+            .order_head {
+                thead, tbody {
+                    display: block;
+                    width: 100%;
+                }
+                thead tr,
+                tbody tr {
+                    display: grid;
+                    /* Columns: Time | ChannelID | Customer | Kitchen | Type | Payment | Total | Actions */
+                    grid-template-columns: 1.2fr 1.1fr 1fr 1fr 1fr 1fr 0.8fr 160px;
+                    align-items: center;
+                    width: 100%;
+                }
+                th, td {
+                    padding: 8px 10px;
+                    box-sizing: border-box;
+                }
+            }
             .order-row {
                 cursor: pointer;
 
@@ -106,7 +125,7 @@
                     }
 
                     &.action-buttons {
-                        width: 120px;
+                        width: 160px;
                         display: flex;
                         justify-content: flex-start;
                         gap: 8px;
@@ -172,9 +191,7 @@
                         }
                     }
 
-                    &.end {
-                        text-align: left;
-                    }
+                    &.end { text-align: left; }
                 }
             }
         }
