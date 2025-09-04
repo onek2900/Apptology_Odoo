@@ -121,7 +121,8 @@
     table-layout: fixed; /* Fixed table layout to control column widths */
 }
 
-.items-table th {
+/* Header row now lives inside tbody to avoid page-repeat */
+.items-header td {
     text-align: left;
     font-weight: bold;
     padding: 5px;
@@ -146,10 +147,7 @@
     vertical-align: top; /* Align content to top for multiline descriptions */
 }
 
-/* Prevent header repetition across printed pages */
-@media print {
-    .items-table thead.no-repeat { display: table-row-group; }
-}
+/* No special print handling needed as header is in tbody */
 
 /* Added style for item-remark with overflow handling */
 .item-remark {

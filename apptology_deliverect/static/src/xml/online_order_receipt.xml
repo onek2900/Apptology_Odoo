@@ -144,13 +144,11 @@
             <!-- Order Items -->
             <div class="order-items">
                 <table class="items-table">
-                    <thead class="no-repeat">
-                        <tr>
-                            <th class="item-description">Description</th>
-                            <th class="item-quantity">Qty</th>
-                        </tr>
-                    </thead>
                     <tbody>
+                        <tr class="items-header">
+                            <td class="item-description">Description</td>
+                            <td class="item-quantity">Qty</td>
+                        </tr>
                         <t t-foreach="props.data.orderLineData" t-as="orderLine" t-key="orderLine.lineId">
                             <t t-if="orderLine.is_topping">
                                 <tr class="item-row modifier-row">
