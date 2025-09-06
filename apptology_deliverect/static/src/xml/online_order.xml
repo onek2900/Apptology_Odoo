@@ -13,7 +13,7 @@
                     <div class="orders overflow-y-auto flex-grow-1">
                         <table class="table order_head w-100">
                             <thead>
-                                <tr class="d-flex order text-bg-700 fw-bolder">
+                                <tr class="order fw-bolder">
                                     <th class="col">Time</th>
                                     <th class="col">Channel Order ID</th>
                                     <th class="col p-2">Customer</th>

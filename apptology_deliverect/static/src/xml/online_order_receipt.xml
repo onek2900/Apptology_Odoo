@@ -55,7 +55,7 @@
                 </div>
                 <div class="detail-row" t-if="props.data.orderData.order_type">
                     <div class="detail-label">Type:</div>
-                    <div class="detail-value">
+                    <div class="detail-value order-type">
                         <t t-if="props.data.orderData.order_type=='1'">Pickup</t>
                         <t t-elif="props.data.orderData.order_type=='2'">Delivery</t>
                         <t t-elif="props.data.orderData.order_type=='3'">Eat In</t>
@@ -144,13 +144,11 @@
             <!-- Order Items -->
             <div class="order-items">
                 <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th class="item-description">Description</th>
-                            <th class="item-quantity">Qty</th>
-                        </tr>
-                    </thead>
                     <tbody>
+                        <tr class="items-header">
+                            <td class="item-description">Description</td>
+                            <td class="item-quantity">Qty</td>
+                        </tr>
                         <t t-foreach="props.data.orderLineData" t-as="orderLine" t-key="orderLine.lineId">
                             <t t-if="orderLine.is_topping">
                                 <tr class="item-row modifier-row">

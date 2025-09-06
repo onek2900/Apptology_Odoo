@@ -54,14 +54,61 @@
 
     .rightpane {
         .orders {
+            // Align header and body rows using a consistent grid
+            .order_head {
+                thead, tbody {
+                    display: block;
+                    width: 100%;
+                }
+                thead tr,
+                tbody tr {
+                    display: grid;
+                    /* Columns: Time | ChannelID | Customer | Kitchen | Type | Payment | Total | Actions */
+                    grid-template-columns: 1.2fr 1.1fr 1fr 1fr 1fr 1fr 0.8fr 160px;
+                    align-items: center;
+                    width: 100%;
+                }
+                th, td {
+                    padding: 8px 10px;
+                    box-sizing: border-box;
+                    border: none !important;
+                }
+                // Remove any zebra striping from upstream styles
+                tbody tr,
+                tbody tr:nth-child(odd),
+                tbody tr:nth-child(even) {
+                    background-color: #ffffff !important;
+                    background-image: none !important;
+                }
+                // Strong header colors for clarity
+                thead tr { background-color: var(--gray-700); }
+                thead th {
+                    background-color: var(--gray-700) !important;
+                    color: #ffffff !important;
+                    border-bottom: 0 !important;
+                    box-shadow: none !important;
+                    background-clip: padding-box;
+                }
+                // Ensure header backgrounds apply to the cell not text
+                thead th *,
+                thead th::before,
+                thead th::after { background: transparent !important; box-shadow: none !important; }
+                // Body cell cleanup
+                tbody td { background: #ffffff !important; color: #2B2B2B; border: none !important; }
+                tbody td::before,
+                tbody td::after { content: none !important; }
+                // Remove row separators (no borders around text)
+                tbody tr { border: none !important; }
+                // Override Bootstrap table default bottom borders
+                &.table > :not(caption) > * > * { border-bottom-width: 0 !important; }
+            }
             .order-row {
                 cursor: pointer;
 
-                &:hover {
-                    background: var(--gray-100);
-                }
+                &:hover { background: var(--gray-100); }
 
                 .col {
+                    box-shadow: none !important;
                     &.wide {
                         min-width: 140px;
                     }
@@ -106,7 +153,7 @@
                     }
 
                     &.action-buttons {
-                        width: 120px;
+                        width: 160px;
                         display: flex;
                         justify-content: flex-start;
                         gap: 8px;
@@ -172,9 +219,7 @@
                         }
                     }
 
-                    &.end {
-                        text-align: left;
-                    }
+                    &.end { text-align: left; }
                 }
             }
         }

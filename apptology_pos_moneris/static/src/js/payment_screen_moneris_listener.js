@@ -45,23 +45,30 @@ patch(PaymentScreen.prototype, {
         const order = this.currentOrder;
         if (!order) return;
 
-        // Match order id; adapt if your orderId mapping differs
+        // Ignore sync messages on the payment screen; navbar handles them.
+        if (msg.type === 'sync_success' || msg.type === 'sync_failed' || msg.action === 'sync') {
+            return;
+        }
+
+        // Require orderId to match this order to affect payment lines
+        if (!msg.orderId) return;
         const candidates = [order.name, order.uid, order.server_id];
-        if (msg.orderId && !candidates.includes(msg.orderId)) {
+        if (!candidates.includes(msg.orderId)) {
             return;
         }
 
         const pl = order.paymentlines?.find(
-            l => l.payment_method?.use_payment_terminal === "moneris" && !l.is_done()
+            (l) => l.payment_method?.use_payment_terminal === "moneris" && !l.is_done()
         );
         if (!pl) return;
 
+        // Only act on purchase outcomes
         if (msg.type === 'terminal_error' || (msg.status && String(msg.status).toLowerCase().includes('error'))) {
             const ed = Array.isArray(msg.errorDetails) && msg.errorDetails.length ? `: ${msg.errorDetails[0].issue || msg.errorDetails[0].errorCode}` : '';
             const code = msg.statusCode ? ` (code ${msg.statusCode})` : '';
             this.notification.add(_t("Moneris terminal error") + ed + code, { type: "danger", sticky: true });
             return;
-        } else if (msg.approved) {
+        } else if (msg.type === 'purchase' && msg.approved) {
             pl.set_payment_status("done");
             const term = pl.payment_method?.payment_terminal;
             if (term?.paymentNotificationResolver) {
@@ -70,9 +77,8 @@ patch(PaymentScreen.prototype, {
                 term.paymentNotificationResolver = null;
             }
             try { delete pl.moneris_started_at; } catch (e) {}
-            // Avoid re-entrant order validation while POS is flushing
             this.notification.add(_t("Moneris payment approved."), { type: "info" });
-        } else if (msg.completed) {
+        } else if (msg.type === 'purchase' && msg.completed) {
             pl.set_payment_status("rejected");
             const term = pl.payment_method?.payment_terminal;
             if (term?.paymentNotificationResolver) {

@@ -44,6 +44,7 @@
 
 .order-number, .order-date {
     font-size: 14px;
+    font-weight: 700;
     /* Handle overflow for order numbers and dates */
     word-break: break-all;
 }
@@ -90,6 +91,11 @@
     text-overflow: ellipsis;
 }
 
+/* Emphasize order type value */
+.detail-value.order-type {
+    font-weight: 700;
+}
+
 /* For very long values that need to wrap to next line */
 @media (max-width: 300px) {
     .detail-row {
@@ -115,7 +121,8 @@
     table-layout: fixed; /* Fixed table layout to control column widths */
 }
 
-.items-table th {
+/* Header row now lives inside tbody to avoid page-repeat */
+.items-header td {
     text-align: left;
     font-weight: bold;
     padding: 5px;
@@ -139,6 +146,8 @@
     padding: 5px 0;
     vertical-align: top; /* Align content to top for multiline descriptions */
 }
+
+/* No special print handling needed as header is in tbody */
 
 /* Added style for item-remark with overflow handling */
 .item-remark {

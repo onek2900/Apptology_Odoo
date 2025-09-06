@@ -60,7 +60,8 @@ class MonerisPostbackController(http.Controller):
             r = responses[0]
             action         = r.get("action")
             terminal_id    = r.get("terminalId")
-            order_id       = r.get("orderId")
+            # Some Moneris responses omit orderId in response item; fallback to receipt.dataId
+            order_id       = r.get("orderId") or receipt.get("dataId")
             status         = r.get("status")
             status_code    = str(r.get("statusCode", "") or "")
             response_code  = str(r.get("responseCode", "") or "")
@@ -84,8 +85,17 @@ class MonerisPostbackController(http.Controller):
                     "errorDetails": error_details,
                 }
             elif action == "purchase":
-                # Purchase or other action
-                approved = completed and response_code == "000"
+                # Purchase: consider Moneris status text/code, not only responseCode
+                status_text = (status or "").strip().lower()
+                approved_codes = {"000", "027"}  # common approved response codes
+                ok_status_codes = {"5207", "5209"}  # Moneris Approved / Completed
+                approved = (
+                    completed and (
+                        status_text in {"approved", "success", "completed"}
+                        or status_code in ok_status_codes
+                        or response_code in approved_codes
+                    )
+                )
                 bus_msg = {
                     "type": "purchase",
                     "approved": approved,
