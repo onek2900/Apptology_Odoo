@@ -67,28 +67,39 @@ export class OnlineOrderScreen extends Component {
         const cashierName = exportedOrder.headerData?.cashier || "N/A";
         const orderNumber = exportedOrder.headerData?.trackingNumber || "N/A";
 
-        console.log("Order Start:");
-
-        // Loop through printers
+        // Emit one structured JSON log per printer
         for (const printer of this.pos.unwatched.printers) {
             const printerName = printer.config.name;
-            console.log(`Printer: ${printerName}`);
-            console.log(`Cashier: ${cashierName}`);
-            console.log(`Order Number: ${orderNumber}`);
-            console.log("Category\t\tOrder\t\tQuantity");
-
-            // Order lines
-            exportedOrder.lines.forEach(lineArr => {
+            const jsonLog = {
+                type: "deliverect_kitchen_log",
+                printer: printerName,
+                cashier: cashierName,
+                order_number: orderNumber,
+                lines: [],
+            };
+            exportedOrder.lines.forEach((lineArr) => {
                 const line = lineArr[2];
-                if (line) {
-                    console.log(
-                        `OrderlinesQTY: ${line.full_product_name}:${line.qty}:${line.note || ""}`
-                    );
-                }
+                if (!line) return;
+                const rawTop = line.sh_is_topping;
+                const isTopping = Array.isArray(rawTop)
+                    ? !!rawTop[0]
+                    : !!rawTop || !!line.is_topping;
+                const rawHas = line.sh_is_has_topping;
+                const isHasTopping = Array.isArray(rawHas) ? !!rawHas[0] : !!rawHas || !!line.is_has_topping;
+                jsonLog.lines.push({
+                    name: line.full_product_name,
+                    qty: line.qty,
+                    note: line.note || "",
+                    is_topping: isTopping,
+                    has_topping: isHasTopping,
+                });
             });
+            try {
+                console.log(JSON.stringify(jsonLog));
+            } catch (e) {
+                console.warn("Failed to stringify deliverect log", e);
+            }
         }
-
-        console.log("Order Completed");
     }
         const currentOrder = this.pos.pos_orders.find(o => o.id === order);
         const orderLines = [];

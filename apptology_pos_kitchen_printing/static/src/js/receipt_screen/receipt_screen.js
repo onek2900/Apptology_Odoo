@@ -17,12 +17,18 @@ patch(ReceiptScreen.prototype, {
         const order = this.pos.get_order();
         console.log( "orderPrinting");
         const lines = order.orderlines.map((orderline) => ({
-            name:orderline.full_product_name,
+            name: orderline.full_product_name,
             note: orderline.note,
             product_id: orderline.product.id,
             quantity: orderline.quantity,
             category_ids: this.pos.db.get_category_by_id(orderline.product.pos_categ_ids),
             customerNote: orderline.customerNote,
+            // flags and parent linkage (when available from toppings module)
+            is_topping: !!(orderline.is_topping || orderline.sh_is_topping),
+            is_has_topping: !!(orderline.is_has_topping || orderline.sh_is_has_topping),
+            parent_line_id: orderline.sh_topping_parent ? orderline.sh_topping_parent.id : null,
+            parent_name: orderline.sh_topping_parent ? orderline.sh_topping_parent.full_product_name : null,
+            toppings_count: Array.isArray(orderline.Toppings) ? orderline.Toppings.length : (orderline.Toppings ? 1 : 0),
         }))
 
         for (const printer of this.pos.unwatched.printers) {
@@ -31,30 +37,33 @@ patch(ReceiptScreen.prototype, {
                 lines,
             );
             if (data.length > 0) {
-
                 const printerName = printer.config.name;
-
                 const cashierName = order.export_for_printing().headerData.cashier;
-
                 const orderNumber = order.export_for_printing().headerData.trackingNumber;
 
-                console.log(`Order Start:`);
-
-                console.log(`Printer: ${printerName}`);
-                console.log(`Cashier: ${cashierName}`);
-                console.log(`Order Number: ${orderNumber}`);
-                console.log(`Category\t\tOrder\t\tQuantity`);
-
-                data.forEach(item => {
-                    const category = item.category_ids.map(cat => cat.name).join(",");
-                    const productName = item.name;
-                    const productQty = item.quantity;
-                    const customerNote = item.customerNote;
-                    console.log(`OrderlinesQTY:${productName}:${productQty}:${customerNote}`);
-
-                })
-                console.log(`Order Completed`);
-
+                // Build a single structured JSON log per printer
+                const jsonLog = {
+                    type: "kitchen_printer_log",
+                    printer: printerName,
+                    cashier: cashierName,
+                    order_number: orderNumber,
+                    lines: data.map((item) => ({
+                        categories: item.category_ids.map((cat) => cat.name),
+                        name: item.name,
+                        qty: item.quantity,
+                        note: item.customerNote,
+                        is_topping: !!item.is_topping,
+                        has_topping: !!item.is_has_topping,
+                        parent_line_id: item.parent_line_id || null,
+                        parent_name: item.parent_name || null,
+                        toppings_count: item.toppings_count || 0,
+                    })),
+                };
+                try {
+                    console.log(JSON.stringify(jsonLog));
+                } catch (e) {
+                    console.warn("Failed to stringify kitchen printer log", e);
+                }
             }
         }
 
