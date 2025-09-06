@@ -39,6 +39,21 @@ patch(PaymentScreen.prototype, {
         });
     },
 
+    async validateOrder(isForceValidate) {
+        // Block validation while a Moneris payment is awaiting terminal result
+        const pending = this.currentOrder?.paymentlines?.find(
+            (l) =>
+                l.payment_method?.use_payment_terminal === 'moneris' &&
+                !l.is_done() &&
+                ['waitingCard', 'waitingCapture', 'pending'].includes(l.get_payment_status && l.get_payment_status())
+        );
+        if (pending) {
+            this.notification.add(_t('Awaiting Moneris terminal response. Please complete or cancel on the terminal.'), { type: 'warning' });
+            return;
+        }
+        return await super.validateOrder(isForceValidate);
+    },
+
     get controlButtons() {
         const buttons = [...(super.controlButtons || [])];
         // Contextual Cancel button (appears after 5s of waiting)

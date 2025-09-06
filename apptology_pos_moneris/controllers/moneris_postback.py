@@ -60,7 +60,8 @@ class MonerisPostbackController(http.Controller):
             r = responses[0]
             action         = r.get("action")
             terminal_id    = r.get("terminalId")
-            order_id       = r.get("orderId")
+            # Some Moneris responses omit orderId in response item; fallback to receipt.dataId
+            order_id       = r.get("orderId") or receipt.get("dataId")
             status         = r.get("status")
             status_code    = str(r.get("statusCode", "") or "")
             response_code  = str(r.get("responseCode", "") or "")
