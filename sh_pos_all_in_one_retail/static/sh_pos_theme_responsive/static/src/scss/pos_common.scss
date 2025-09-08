@@ -642,6 +642,11 @@
     }
 }
 
+/* Make orderline quantity darker for clarity */
+.pos .sh_order_line_detail .sh_info_list li .qty {
+  color: #1f2937 !important; /* dark slate */
+}
+
 // Landscape // 
 @if $sh_action_button_position =="right_side" or $sh_action_button_position =="left_side" {
     @media only screen and (max-device-height: 991.98px) and (orientation: landscape) {
