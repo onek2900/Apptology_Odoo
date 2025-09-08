@@ -9,7 +9,13 @@ class PosSessionInherit(models.Model):
 
     def _loader_params_product_product(self):
         result = super(PosSessionInherit,self)._loader_params_product_product()
-        result['search_params']['fields'].extend(['sh_topping_ids','sh_is_global_topping','sh_topping_group_ids'])
+        result['search_params']['fields'].extend([
+            'sh_topping_ids',
+            'sh_is_global_topping',
+            'sh_topping_group_ids',
+            'sh_topping_sequence',
+            'is_modifier',
+        ])
         return result
     
     def _loader_params_pos_category(self):
@@ -25,7 +31,7 @@ class PosSessionInherit(models.Model):
         return result
 
     def _loader_params_sh_topping_group(self):
-        fields = ['name', 'toppinds_ids']
+        fields = ['name', 'toppinds_ids', 'sequence']
         # Include optional fields if they exist (e.g., from apptology_deliverect)
         group_model = self.env['sh.topping.group']
         for opt in ['min', 'max', 'multi_max']:

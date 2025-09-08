@@ -7,8 +7,10 @@ from odoo import models, fields, api, _
 class ShToppingGroup(models.Model):
     _name = 'sh.topping.group'
     _description = "Define Toppings products"
+    _order = 'sequence, id'
 
     name = fields.Char(string="Name", required=True)
+    sequence = fields.Integer(string="Sequence", default=10, help="Order of this group in the topping flow.")
     toppinds_ids = fields.Many2many('product.product', string="Toppings", domain="[('available_in_pos', '=', True)]")
     # Moved from apptology_deliverect: limits per topping group
     min = fields.Integer(string="Min", default=0, help="Minimum required toppings to select for this group.")
