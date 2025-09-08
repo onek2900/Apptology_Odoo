@@ -268,10 +268,20 @@ $space: var(--k-spacing);
   position: absolute;
   top: .5rem;
   right: .5rem;
-  padding: .25rem .5rem;
+  padding: .4rem .6rem;
   line-height: 1;
   border-width: 2px;
-  font-weight: 700;
+  font-weight: 800;
+  border-color: var(--k-btn-primary-bg);
+  background: var(--k-btn-primary-bg);
+  color: var(--k-btn-primary-ink);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.order-card__complete-all i { font-size: 16px; }
+.order-card__complete-all:hover,
+.order-card__complete-all:focus {
+  filter: brightness(0.95);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.20);
 }
 .order-card--completed .order-card__complete-all { display: none; }
 

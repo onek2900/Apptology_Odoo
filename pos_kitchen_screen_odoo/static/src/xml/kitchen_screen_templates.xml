@@ -144,7 +144,7 @@
                             t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white">
                       <!-- Mark All Ready button (top-right) -->
                       <button type="button"
-                              class="btn btn-light btn-sm order-card__complete-all"
+                              class="btn btn-success order-card__complete-all"
                               title="Mark all ready"
                               aria-label="Mark all ready"
                               t-on-click="() => this.mark_all_ready(order.id)">
