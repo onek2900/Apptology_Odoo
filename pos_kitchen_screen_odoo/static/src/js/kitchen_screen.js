@@ -133,6 +133,11 @@ export class KitchenScreenDashboard extends Component {
             lines: [],
             loading: false,
             error: null,
+            // Zoom UI state
+            zoomIndex: 1,
+            card_w: 360,
+            card_h: 520,
+            content_scale: 1,
         });
 
         this.orderManagement = useOrderManagement(this.rpc, shopId);
@@ -160,6 +165,7 @@ export class KitchenScreenDashboard extends Component {
         onWillStart(async () => {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
             await this.refreshOrderDetails();
+            this.initZoomFromStorage();
         });
 
         onMounted(() => {
@@ -269,6 +275,54 @@ export class KitchenScreenDashboard extends Component {
         });
     }
 
+    // ===== Zoom controls =====
+    initZoomFromStorage() {
+        try {
+            const stored = window.localStorage.getItem('kitchen_zoom_index');
+            if (stored !== null) {
+                this.state.zoomIndex = Number(stored);
+            }
+        } catch (_) { /* ignore */ }
+        this.applyZoom();
+    }
+
+    zoomLevels() {
+        // width, height, and content scale factor
+        return [
+            { w: 300, h: 460, s: 0.90 }, // compact
+            { w: 360, h: 520, s: 1.00 }, // default
+            { w: 420, h: 580, s: 1.10 }, // large
+            { w: 500, h: 640, s: 1.20 }, // xlarge
+        ];
+    }
+
+    applyZoom() {
+        const levels = this.zoomLevels();
+        const idx = Math.min(Math.max(this.state.zoomIndex, 0), levels.length - 1);
+        const { w, h, s } = levels[idx];
+        this.state.card_w = w;
+        this.state.card_h = h;
+        this.state.content_scale = s;
+        try {
+            window.localStorage.setItem('kitchen_zoom_index', String(idx));
+        } catch (_) { /* ignore */ }
+    }
+
+    zoomIn() {
+        this.state.zoomIndex = Math.min(this.state.zoomIndex + 1, this.zoomLevels().length - 1);
+        this.applyZoom();
+    }
+
+    zoomOut() {
+        this.state.zoomIndex = Math.max(this.state.zoomIndex - 1, 0);
+        this.applyZoom();
+    }
+
+    zoomReset() {
+        this.state.zoomIndex = 1; // default preset
+        this.applyZoom();
+    }
+
 
     // Cancel flow removed: Clover-style UX has no cancel popup
 
@@ -313,6 +367,40 @@ export class KitchenScreenDashboard extends Component {
         } catch (error) {
             console.error("Error updating order line:", error);
             this.notification.add("Failed to update item", { title: "Error", type: "danger" });
+        }
+    }
+
+    /**
+     * Mark all main items in an order as ready and complete the order
+     * @param {number} orderId
+     */
+    async mark_all_ready(orderId) {
+        try {
+            const id = Number(orderId);
+            const order = this.state.order_details.find((o) => o.id === id);
+            if (!order) return;
+
+            const lineIds = Array.isArray(order.lines) ? order.lines : [];
+            const lines = lineIds
+                .map((lid) => this.state.lines.find((l) => l.id === lid))
+                .filter(Boolean)
+                .filter((l) => !l.is_modifier)
+                .filter((l) => l.order_status !== ORDER_STATUSES.READY);
+
+            // Toggle only lines that are not yet ready
+            for (const line of lines) {
+                await this.orm.call("pos.order.line", "order_progress_change", [Number(line.id)]);
+                line.order_status = ORDER_STATUSES.READY;
+            }
+
+            // Complete the order if all mains are now ready
+            await this.done_order(id);
+            await this.refreshOrderDetails();
+
+            this.notification.add("Order marked as ready", { title: "Success", type: "success" });
+        } catch (error) {
+            console.error("Error marking all lines ready:", error);
+            this.notification.add("Failed to mark all ready", { title: "Error", type: "danger" });
         }
     }
 
