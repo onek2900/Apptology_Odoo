@@ -643,8 +643,30 @@
 }
 
 /* Make orderline quantity darker for clarity */
-.pos .sh_order_line_detail .sh_info_list li .qty {
-  color: #1f2937 !important; /* dark slate */
+.pos .sh_order_line_detail .sh_info_list {
+  color: #1f2937;   /* dark slate for light theme (base text) */
+  font-weight: 700; /* slightly bolder across the block */
+  font-size: 1.05em;/* subtle size bump */
+}
+
+/* Dark mode overrides: ensure strong contrast on dark backgrounds */
+html[data-theme="dark"],
+html[data-bs-theme="dark"],
+body[data-theme="dark"],
+body[data-bs-theme="dark"],
+.o_web_client.o_dark,
+.o_web_client[data-bs-theme="dark"] {
+  .pos .sh_order_line_detail .sh_info_list {
+    color: #e5e7eb; /* light gray for dark backgrounds */
+  }
+}
+
+/* OS-level dark mode fallback when app theme attribute not set */
+@media (prefers-color-scheme: dark) {
+  .o_web_client:not([data-theme]):not([data-bs-theme]) .pos .sh_order_line_detail .sh_info_list,
+  body:not([data-theme]):not([data-bs-theme]) .pos .sh_order_line_detail .sh_info_list {
+    color: #e5e7eb;
+  }
 }
 
 // Landscape // 
