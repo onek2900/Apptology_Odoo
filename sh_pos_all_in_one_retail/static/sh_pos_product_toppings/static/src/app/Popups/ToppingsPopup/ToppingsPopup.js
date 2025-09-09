@@ -23,7 +23,15 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         // Resolve groups for the base product (if provided)
         const groupIds = (this.baseProduct && this.baseProduct.sh_topping_group_ids) || [];
         const groupsById = (this.pos.db && this.pos.db.topping_groups_by_id) || {};
-        this.groups = groupIds.map((gid) => groupsById[gid]).filter((g) => !!g);
+        this.groups = groupIds
+            .map((gid) => groupsById[gid])
+            .filter((g) => !!g)
+            .sort((a, b) => {
+                const sa = typeof a.sequence === 'number' ? a.sequence : 9999;
+                const sb = typeof b.sequence === 'number' ? b.sequence : 9999;
+                if (sa !== sb) return sa - sb;
+                return String(a.name || '').localeCompare(String(b.name || ''));
+            });
     }
     ClickOk(){ 
         if (this.hasGroups && !this.canFinish()) {
@@ -109,7 +117,15 @@ export class ToppingsPopup extends AbstractAwaitablePopup {
         if (!group) return [];
         // Intersect provided topping products with the group's topping ids
         const allowedIds = new Set(group.toppinds_ids || []);
-        return (this.toppingProducts || []).filter((p) => allowedIds.has(p.id));
+        const items = (this.toppingProducts || []).filter((p) => allowedIds.has(p.id));
+        // Sort toppings by explicit topping sequence, then by name
+        items.sort((a, b) => {
+            const sa = typeof a.sh_topping_sequence === 'number' ? a.sh_topping_sequence : 9999;
+            const sb = typeof b.sh_topping_sequence === 'number' ? b.sh_topping_sequence : 9999;
+            if (sa !== sb) return sa - sb;
+            return String(a.display_name || a.name || '').localeCompare(String(b.display_name || b.name || ''));
+        });
+        return items;
     }
     groupAllowedIdSet() {
         const g = this.currentGroup;

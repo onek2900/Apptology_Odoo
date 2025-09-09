@@ -9,11 +9,12 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="name"></field>
+                            <field name="name"/>
+                            <field name="sequence"/>
                             <field name="min"/>
                             <field name="max"/>
                             <field name="multi_max"/>
-                            <field name="toppinds_ids" widget="many2many_tags"></field>
+                            <field name="toppinds_ids" widget="many2many_tags"/>
                         </group>
                     </group>
                 </sheet>
@@ -27,7 +28,8 @@
         <field name="model">sh.topping.group</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="name" />
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
             </tree>
         </field>
     </record>

@@ -9,6 +9,7 @@ class PosProductInherit(models.Model):
     _inherit = "product.product"
 
     sh_is_global_topping = fields.Boolean(string="Global Topping")
+    sh_topping_sequence = fields.Integer(string="Topping Sequence", default=10, help="Order of this product within topping lists.")
     sh_topping_ids = fields.Many2many('product.product', 'product_pos_toppings', 'name', string="Toppings", domain="[('available_in_pos', '=', True)]")
     sh_topping_group_ids = fields.Many2many('sh.topping.group', 'product_topping_group', string="Topping Group")
 

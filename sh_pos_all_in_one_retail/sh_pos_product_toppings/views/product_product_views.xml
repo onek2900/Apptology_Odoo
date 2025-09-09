@@ -13,6 +13,7 @@
                 <page id="Toppings" string="Toppings">
                     <group>
                         <group>
+                            <field name="sh_topping_sequence"/>
                             <field name="sh_topping_group_ids" widget="many2many_tags" ></field>
                             <field name="sh_topping_ids" widget="many2many_tags"></field>
                         </group>

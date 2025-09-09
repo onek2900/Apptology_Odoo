@@ -642,6 +642,51 @@
     }
 }
 
+/* Make orderline quantity darker for clarity */
+.pos .sh_order_line_detail .sh_info_list {
+  color: #1f2937;   /* dark slate for light theme (base text) */
+  font-weight: 700; /* slightly bolder across the block */
+  font-size: 1.05em;/* subtle size bump */
+}
+
+/* Stronger override to beat theme_style_4 inherited white text */
+.pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list,
+.pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list li:not(.customer-note):not(.internal-note),
+.pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list li:not(.customer-note):not(.internal-note) span,
+.pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list li:not(.customer-note):not(.internal-note) em {
+  color: #1f2937 !important;
+  opacity: 1 !important;
+}
+
+/* Dark mode overrides: ensure strong contrast on dark backgrounds */
+html[data-theme="dark"],
+html[data-bs-theme="dark"],
+body[data-theme="dark"],
+body[data-bs-theme="dark"],
+.o_web_client.o_dark,
+.o_web_client[data-bs-theme="dark"] {
+  .pos .sh_order_line_detail .sh_info_list {
+    color: #e5e7eb; /* light gray for dark backgrounds */
+  }
+
+  /* Stronger dark-mode override */
+  .pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list,
+  .pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list li:not(.customer-note):not(.internal-note),
+  .pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list li:not(.customer-note):not(.internal-note) span,
+  .pos .order-container .orderline .product-name .sh_order_line_detail .sh_info_list li:not(.customer-note):not(.internal-note) em {
+    color: #e5e7eb !important;
+    opacity: 1 !important;
+  }
+}
+
+/* OS-level dark mode fallback when app theme attribute not set */
+@media (prefers-color-scheme: dark) {
+  .o_web_client:not([data-theme]):not([data-bs-theme]) .pos .sh_order_line_detail .sh_info_list,
+  body:not([data-theme]):not([data-bs-theme]) .pos .sh_order_line_detail .sh_info_list {
+    color: #e5e7eb;
+  }
+}
+
 // Landscape // 
 @if $sh_action_button_position =="right_side" or $sh_action_button_position =="left_side" {
     @media only screen and (max-device-height: 991.98px) and (orientation: landscape) {
