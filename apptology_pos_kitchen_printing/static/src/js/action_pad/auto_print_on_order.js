@@ -190,12 +190,19 @@ patch(ActionpadWidget.prototype, {
                     console.log(JSON.stringify(jsonLog));
                 } catch (_) {}
 
-                // Actual print
-                printerService?.print?.(
-                    PrinterReceipt,
-                    { data, headerData: exported.headerData, printer },
-                    { webPrintFallback: true }
-                );
+                // Optional physical print: disabled by default to avoid popping the browser print dialog.
+                // Enable by setting localStorage AUTO_KITCHEN_PRINT_ON_ORDER=1
+                let doAutoPrint = false;
+                try {
+                    doAutoPrint = window?.localStorage?.getItem('AUTO_KITCHEN_PRINT_ON_ORDER') === '1';
+                } catch (_) {}
+                if (doAutoPrint) {
+                    printerService?.print?.(
+                        PrinterReceipt,
+                        { data, headerData: exported.headerData, printer },
+                        { webPrintFallback: false }
+                    );
+                }
             }
         } catch (e) {
             // eslint-disable-next-line no-console
