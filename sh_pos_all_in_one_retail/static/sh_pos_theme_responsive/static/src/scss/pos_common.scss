@@ -642,6 +642,28 @@
     }
 }
 
+/* Place Order Type above numpad and hide duplicates elsewhere */
+.pos .product-screen {
+    /* Hide the control-button instance except the one we inject above numpad */
+    .control-buttons:not(.sh_order_type_above_numpad) .order-type-button {
+        display: none;
+    }
+    /* Also hide the button from the bottom carousel action buttons */
+    /* (kept) mobile product-screen containers handled above */
+}
+
+/* Hide bottom carousel instance (inserted outside .product-screen) */
+.pos .sh_action_button .order-type-button,
+.pos .owl-carousel.sh_action_button .order-type-button {
+    display: none !important;
+}
+
+/* Spacing for the injected container above the numpad */
+.pos .product-screen .sh_order_type_above_numpad {
+    padding: 0;
+    margin-bottom: 6px;
+}
+
 /* Make orderline quantity darker for clarity */
 .pos .sh_order_line_detail .sh_info_list {
   color: #1f2937;   /* dark slate for light theme (base text) */

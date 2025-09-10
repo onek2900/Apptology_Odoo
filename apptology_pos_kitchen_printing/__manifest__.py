@@ -5,7 +5,9 @@
     'version': '1.0.0',
     'category': 'Sales/Point of Sale',
     'summary': 'Apptology Pos Kitchen Printing',
-    'depends': ['pos_restaurant'],
+    # Ensure we patch after the kitchen screen module so our
+    # submitOrder chaining runs after its override.
+    'depends': ['pos_restaurant', 'pos_kitchen_screen_odoo'],
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",

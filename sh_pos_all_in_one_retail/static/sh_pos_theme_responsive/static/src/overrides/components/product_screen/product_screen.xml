@@ -36,9 +36,11 @@
             <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_action_button_position and env.services.pos.pos_theme_settings_data[0].sh_action_button_position == 'bottom'">
                 <div id="owl-demo" class="owl-carousel owl-theme sh_action_button">
                     <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
-                        <div class="item">
-                            <t t-component="cb.component" t-key="cb.name"/>
-                        </div>
+                        <t t-if="!(cb.component and cb.component.template === 'sh_pos_order_type.OrderTypeButton')">
+                            <div class="item">
+                                <t t-component="cb.component" t-key="cb.name"/>
+                            </div>
+                        </t>
                     </t>
                 </div>
             </t>
