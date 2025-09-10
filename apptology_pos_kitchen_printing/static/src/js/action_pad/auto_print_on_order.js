@@ -5,7 +5,8 @@ import { ActionpadWidget } from "@point_of_sale/app/screens/product_screen/actio
 import { useService } from "@web/core/utils/hooks";
 import { PrinterReceipt } from "../printer_receipt/printer_receipt";
 
-// Keep a reference to any previously patched submitOrder so we can chain it.
+// Keep references to previously patched methods so we can chain them.
+const PreviousSetup_KitchenPrinting = ActionpadWidget.prototype.setup;
 const PreviousSubmitOrder = ActionpadWidget.prototype.submitOrder;
 
 function getPrintingCategoriesChanges(pos, categories, currentOrderChange) {
@@ -16,10 +17,11 @@ function getPrintingCategoriesChanges(pos, categories, currentOrderChange) {
 }
 
 patch(ActionpadWidget.prototype, {
-    setup() {
-        const res = this._super ? this._super(...arguments) : undefined;
+    setup(...args) {
+        if (typeof PreviousSetup_KitchenPrinting === "function") {
+            PreviousSetup_KitchenPrinting.apply(this, args);
+        }
         this.printer = useService("printer");
-        return res;
     },
 
     async submitOrder() {
@@ -120,4 +122,3 @@ patch(ActionpadWidget.prototype, {
         return result;
     },
 });
-

@@ -10,12 +10,16 @@ import { _t } from "@web/core/l10n/translation";
  * @props partner
  */
 
+// Keep a reference to any existing setup so we can chain correctly
+const PreviousSetup_OrderButton = ActionpadWidget.prototype.setup;
+
 patch(ActionpadWidget.prototype, {
-    setup() {
-        super.setup();
-        // Ensure POS store is available on this component
-        this.pos = this.env?.services?.pos;
-        // Ensure ui service is available for templates using ui.isSmall
+    setup(...args) {
+        if (typeof PreviousSetup_OrderButton === "function") {
+            PreviousSetup_OrderButton.apply(this, args);
+        }
+        // Ensure POS and UI services are available (defensive guards)
+        this.pos = this.pos || this.env?.services?.pos;
         this.ui = this.ui || this.env?.services?.ui;
         this.orm = useService("orm");
         this.popup = useService("popup");
