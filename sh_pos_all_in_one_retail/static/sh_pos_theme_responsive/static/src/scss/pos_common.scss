@@ -648,6 +648,11 @@
     .control-buttons:not(.sh_order_type_above_numpad) .order-type-button {
         display: none;
     }
+    /* Also hide the button from the bottom carousel action buttons */
+    .sh_action_button .order-type-button,
+    .owl-carousel.sh_action_button .order-type-button {
+        display: none;
+    }
 }
 
 /* Spacing for the injected container above the numpad */
