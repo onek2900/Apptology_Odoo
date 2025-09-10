@@ -5,6 +5,16 @@ import { ActionpadWidget } from "@point_of_sale/app/screens/product_screen/actio
 import { useService } from "@web/core/utils/hooks";
 import { PrinterReceipt } from "../printer_receipt/printer_receipt";
 
+// Lightweight debug helper gated by localStorage flag
+function dbg(...args) {
+    try {
+        if (window?.localStorage?.getItem('POS_DEBUG_KITCHEN') === '1') {
+            // eslint-disable-next-line no-console
+            console.log(...args);
+        }
+    } catch (_) {}
+}
+
 // Keep references to previously patched methods so we can chain them.
 const PreviousSetup_KitchenPrinting = ActionpadWidget.prototype.setup;
 const PreviousSubmitOrder = ActionpadWidget.prototype.submitOrder;
@@ -22,8 +32,7 @@ patch(ActionpadWidget.prototype, {
             PreviousSetup_KitchenPrinting.apply(this, args);
         }
         this.printer = useService("printer");
-        // eslint-disable-next-line no-console
-        console.log("[kitchen-print] auto_print_on_order setup loaded");
+        dbg("[kitchen-print] auto_print_on_order setup loaded");
     },
 
     async submitOrder() {
@@ -34,9 +43,8 @@ patch(ActionpadWidget.prototype, {
         }
 
         try {
-            // Baseline debug to confirm our hook runs
-            // eslint-disable-next-line no-console
-            console.log("[kitchen-print] Order button pressed");
+            // Baseline debug to confirm our hook runs (gated)
+            dbg("[kitchen-print] Order button pressed");
             // Auto-log/print for restaurant POS when pressing Order
             const order = this.pos.get_order();
             if (!order || !this.pos.config?.module_pos_restaurant) return result;
@@ -111,8 +119,7 @@ patch(ActionpadWidget.prototype, {
                             toppings_count: item.toppings_count || 0,
                         })),
                     };
-                    // eslint-disable-next-line no-console
-                    console.log(JSON.stringify(jsonLog));
+                    dbg(JSON.stringify(jsonLog));
                 } catch (_) {}
 
                 // Actual print
