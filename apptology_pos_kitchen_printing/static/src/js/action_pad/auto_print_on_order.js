@@ -95,11 +95,22 @@ patch(ActionpadWidget.prototype, {
             // Tracking number may already exist on the order even before export
             const orderNumber = order.trackingNumber || exported.headerData?.trackingNumber;
 
-            // Print for each configured kitchen printer with matching categories
+            // Determine printers list across possible locations in POS store
             const printerService = this.printer || this.env?.services?.printer;
-            for (const printer of this.pos.unwatched.printers || []) {
+            const printers = (this.pos.unwatched && this.pos.unwatched.printers) || this.pos.printers || [];
+            if (!Array.isArray(printers) || printers.length === 0) {
+                dbg("[kitchen-print] No kitchen printers configured or loaded");
+            } else {
+                dbg("[kitchen-print] Found printers:", printers.map(p => p?.config?.name));
+            }
+
+            // Print for each configured kitchen printer with matching categories
+            for (const printer of printers) {
                 const data = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, changeLines);
-                if (!data.length) continue;
+                if (!data.length) {
+                    dbg(`[kitchen-print] No matching lines for printer ${printer.config.name}`);
+                    continue;
+                }
                 // Optional structured log for debugging
                 try {
                     const jsonLog = {
