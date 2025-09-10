@@ -2,6 +2,7 @@
 import { patch } from "@web/core/utils/patch";
 import { ActionpadWidget } from "@point_of_sale/app/screens/product_screen/action_pad/action_pad";
 import { useService } from "@web/core/utils/hooks";
+import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { ErrorPopup } from "@point_of_sale/app/errors/popups/error_popup";
 import { _t } from "@web/core/l10n/translation";
 
@@ -13,6 +14,8 @@ import { _t } from "@web/core/l10n/translation";
 patch(ActionpadWidget.prototype, {
 setup() {
         super.setup();
+        // Ensure POS store is available on this component
+        this.pos = usePos();
         this.orm = useService("orm");
         this.popup = useService("popup");
     },
