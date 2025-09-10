@@ -32,10 +32,12 @@ patch(ActionpadWidget.prototype, {
         }
 
         try {
-            // Only auto-print for restaurant POS and when there are changes to print
+            // Baseline debug to confirm our hook runs
+            // eslint-disable-next-line no-console
+            console.log("[kitchen-print] Order button pressed");
+            // Auto-log/print for restaurant POS when pressing Order
             const order = this.pos.get_order();
-            if (!this.pos.config.module_pos_restaurant || !order) return result;
-            if (order.hasChangesToPrint && !order.hasChangesToPrint()) return result;
+            if (!order || !this.pos.config?.module_pos_restaurant) return result;
 
             // Build a lightweight change set from the order changes when available,
             // otherwise fall back to all orderlines.
@@ -62,7 +64,7 @@ patch(ActionpadWidget.prototype, {
                     });
                 }
             } else {
-                // Fallback: include all orderlines
+                // Fallback: include all orderlines (ensures logging even when no diff is built)
                 changeLines = order.orderlines.map((orderline) => ({
                     name: orderline.full_product_name,
                     note: orderline.note,
@@ -84,6 +86,7 @@ patch(ActionpadWidget.prototype, {
             const orderNumber = order.trackingNumber || exported.headerData?.trackingNumber;
 
             // Print for each configured kitchen printer with matching categories
+            const printerService = this.printer || this.env?.services?.printer;
             for (const printer of this.pos.unwatched.printers || []) {
                 const data = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, changeLines);
                 if (!data.length) continue;
@@ -111,7 +114,7 @@ patch(ActionpadWidget.prototype, {
                 } catch (_) {}
 
                 // Actual print
-                this.printer.print(
+                printerService?.print?.(
                     PrinterReceipt,
                     { data, headerData: exported.headerData, printer },
                     { webPrintFallback: true }
