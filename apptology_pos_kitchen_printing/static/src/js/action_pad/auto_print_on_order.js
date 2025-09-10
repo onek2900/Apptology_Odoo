@@ -22,6 +22,8 @@ patch(ActionpadWidget.prototype, {
             PreviousSetup_KitchenPrinting.apply(this, args);
         }
         this.printer = useService("printer");
+        // eslint-disable-next-line no-console
+        console.log("[kitchen-print] auto_print_on_order setup loaded");
     },
 
     async submitOrder() {
