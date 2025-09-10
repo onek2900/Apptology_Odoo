@@ -92,13 +92,21 @@ patch(ReceiptScreen.prototype, {
         const printerCatIds = normalizeCategoryIds(categories);
         if (!printerCatIds.length) return [];
         const printerCatSet = new Set(printerCatIds);
+        function toId(v) {
+            if (v == null) return null;
+            if (typeof v === "number") return v;
+            if (Array.isArray(v)) return toId(v[0]);
+            if (typeof v === "object") return toId(v.id ?? v.ID ?? v["_id"]);
+            const n = Number(v);
+            return Number.isFinite(n) ? n : null;
+        }
         function isMatchWithAncestors(catIds) {
             for (const cid of catIds) {
-                let cur = cid;
+                let cur = toId(cid);
                 while (cur) {
                     if (printerCatSet.has(cur)) return true;
                     const node = this.pos?.db?.category_by_id?.[cur];
-                    cur = node?.parent_id || null;
+                    cur = toId(node?.parent_id);
                 }
             }
             return false;

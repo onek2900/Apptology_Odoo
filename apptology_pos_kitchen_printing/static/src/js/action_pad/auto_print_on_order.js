@@ -29,13 +29,21 @@ function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange
     if (!printerCatIds.length) return [];
     const printerCatSet = new Set(printerCatIds);
 
+    function toId(v) {
+        if (v == null) return null;
+        if (typeof v === "number") return v;
+        if (Array.isArray(v)) return toId(v[0]);
+        if (typeof v === "object") return toId(v.id ?? v.ID ?? v["_id"]);
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+    }
     function isMatchWithAncestors(catIds) {
         for (const cid of catIds) {
-            let cur = cid;
+            let cur = toId(cid);
             while (cur) {
                 if (printerCatSet.has(cur)) return true;
                 const node = pos?.db?.category_by_id?.[cur];
-                cur = node?.parent_id || null;
+                cur = toId(node?.parent_id);
             }
         }
         return false;
@@ -101,7 +109,8 @@ patch(ActionpadWidget.prototype, {
                         toppings_count: Array.isArray(line.Toppings) ? line.Toppings.length : (line.Toppings ? 1 : 0),
                     });
                 }
-            } else {
+            }
+            if (!changeLines.length) {
                 // Fallback: include all orderlines (ensures logging even when no diff is built)
                 changeLines = order.orderlines.map((orderline) => ({
                     name: orderline.full_product_name,
@@ -136,6 +145,22 @@ patch(ActionpadWidget.prototype, {
 
             // Print for each configured kitchen printer with matching categories
             for (const printer of printers) {
+                // Verbose dump of categories involved
+                try {
+                    const pCatIds = normalizeCategoryIds(printer.config.product_categories_ids);
+                    const pCatNames = (printer.config.product_categories_ids || [])
+                        .map((c) => (typeof c === 'object' && c ? c.name : null))
+                        .filter(Boolean);
+                    // eslint-disable-next-line no-console
+                    console.log(`[kitchen-print] Printer ${printer.config.name} categories`, { ids: pCatIds, names: pCatNames });
+                    for (const l of changeLines) {
+                        const lIds = normalizeCategoryIds(l.category_ids);
+                        const lNames = (l.category_ids || []).map((c) => (c && c.name) || null).filter(Boolean);
+                        // eslint-disable-next-line no-console
+                        console.log('[kitchen-print] Line categories', { name: l.name, product_id: l.product_id, ids: lIds, names: lNames });
+                    }
+                } catch (_) {}
+
                 const data = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, changeLines);
                 if (!data.length) {
                     // eslint-disable-next-line no-console
