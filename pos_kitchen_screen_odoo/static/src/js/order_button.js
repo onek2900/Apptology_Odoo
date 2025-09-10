@@ -11,10 +11,12 @@ import { _t } from "@web/core/l10n/translation";
  */
 
 patch(ActionpadWidget.prototype, {
-setup() {
+    setup() {
         super.setup();
         // Ensure POS store is available on this component
         this.pos = this.env?.services?.pos;
+        // Ensure ui service is available for templates using ui.isSmall
+        this.ui = this.ui || this.env?.services?.ui;
         this.orm = useService("orm");
         this.popup = useService("popup");
     },
