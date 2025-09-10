@@ -80,6 +80,8 @@ patch(ActionpadWidget.prototype, {
 
             // Prepare shared header data
             const exported = order.export_for_printing ? order.export_for_printing() : { headerData: {} };
+            // Tracking number may already exist on the order even before export
+            const orderNumber = order.trackingNumber || exported.headerData?.trackingNumber;
 
             // Print for each configured kitchen printer with matching categories
             for (const printer of this.pos.unwatched.printers || []) {
@@ -91,7 +93,7 @@ patch(ActionpadWidget.prototype, {
                         type: "kitchen_printer_log",
                         printer: printer.config.name,
                         cashier: exported.headerData?.cashier,
-                        order_number: exported.headerData?.trackingNumber,
+                        order_number: orderNumber,
                         lines: data.map((item) => ({
                             categories: (item.category_ids || []).map((c) => c.name),
                             name: item.name,
