@@ -76,8 +76,39 @@ patch(ReceiptScreen.prototype, {
         }
     },
     _getPrintingCategoriesChanges(categories, currentOrderChange) {
-        return currentOrderChange.filter((line) =>
-            this.pos.db.is_product_in_category(categories, line["product_id"])
-        )
+        function normalizeCategoryIds(cats) {
+            if (!cats) return [];
+            if (cats instanceof Set) return Array.from(cats);
+            if (!Array.isArray(cats)) return [];
+            return cats
+                .map((c) => {
+                    if (typeof c === "number") return c;
+                    if (Array.isArray(c)) return c[0];
+                    if (c && typeof c === "object") return c.id ?? c.ID ?? c["_id"] ?? null;
+                    return null;
+                })
+                .filter((x) => typeof x === "number" && !Number.isNaN(x));
+        }
+        const printerCatIds = normalizeCategoryIds(categories);
+        if (!printerCatIds.length) return [];
+        const printerCatSet = new Set(printerCatIds);
+        function isMatchWithAncestors(catIds) {
+            for (const cid of catIds) {
+                let cur = cid;
+                while (cur) {
+                    if (printerCatSet.has(cur)) return true;
+                    const node = this.pos?.db?.category_by_id?.[cur];
+                    cur = node?.parent_id || null;
+                }
+            }
+            return false;
+        }
+        return currentOrderChange.filter((line) => {
+            const lineCatIds = normalizeCategoryIds(line.category_ids);
+            if (lineCatIds.length) return isMatchWithAncestors.call(this, lineCatIds);
+            const product = this.pos?.db?.product_by_id?.[line.product_id];
+            const prodCats = normalizeCategoryIds(product?.pos_categ_ids);
+            return isMatchWithAncestors.call(this, prodCats);
+        });
     }
 })

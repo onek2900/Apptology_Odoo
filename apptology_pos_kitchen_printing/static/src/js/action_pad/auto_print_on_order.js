@@ -9,11 +9,47 @@ import { PrinterReceipt } from "../printer_receipt/printer_receipt";
 const PreviousSetup_KitchenPrinting = ActionpadWidget.prototype.setup;
 const PreviousSubmitOrder = ActionpadWidget.prototype.submitOrder;
 
-function getPrintingCategoriesChanges(pos, categories, currentOrderChange) {
-    // Filter order lines by printer categories
-    return currentOrderChange.filter((line) =>
-        pos.db.is_product_in_category(categories, line["product_id"])
-    );
+function normalizeCategoryIds(cats) {
+    if (!cats) return [];
+    if (cats instanceof Set) return Array.from(cats);
+    if (!Array.isArray(cats)) return [];
+    return cats
+        .map((c) => {
+            if (typeof c === "number") return c;
+            if (Array.isArray(c)) return c[0];
+            if (c && typeof c === "object") return c.id ?? c.ID ?? c["_id"] ?? null;
+            return null;
+        })
+        .filter((x) => typeof x === "number" && !Number.isNaN(x));
+}
+
+function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange) {
+    // Filter order lines by matching category ids (robust to shapes)
+    const printerCatIds = normalizeCategoryIds(printerCategories);
+    if (!printerCatIds.length) return [];
+    const printerCatSet = new Set(printerCatIds);
+
+    function isMatchWithAncestors(catIds) {
+        for (const cid of catIds) {
+            let cur = cid;
+            while (cur) {
+                if (printerCatSet.has(cur)) return true;
+                const node = pos?.db?.category_by_id?.[cur];
+                cur = node?.parent_id || null;
+            }
+        }
+        return false;
+    }
+
+    return currentOrderChange.filter((line) => {
+        // Prefer matching against line.category_ids that we computed
+        const lineCatIds = normalizeCategoryIds(line.category_ids);
+        if (lineCatIds.length) return isMatchWithAncestors(lineCatIds);
+        // Fallback: derive from product_id via pos.db
+        const product = pos?.db?.product_by_id?.[line.product_id];
+        const prodCats = normalizeCategoryIds(product?.pos_categ_ids);
+        return isMatchWithAncestors(prodCats);
+    });
 }
 
 patch(ActionpadWidget.prototype, {
