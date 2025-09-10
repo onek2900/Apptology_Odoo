@@ -2,15 +2,6 @@
 import { ReceiptScreen } from "@point_of_sale/app/screens/receipt_screen/receipt_screen";
 import { patch } from "@web/core/utils/patch";
 import { PrinterReceipt } from "../printer_receipt/printer_receipt"
-// Debug helper gated by localStorage flag
-function dbg(...args) {
-    try {
-        if (window?.localStorage?.getItem('POS_DEBUG_KITCHEN') === '1') {
-            // eslint-disable-next-line no-console
-            console.log(...args);
-        }
-    } catch (_) {}
-}
 import { useRef } from "@odoo/owl";
 
 
@@ -24,7 +15,8 @@ patch(ReceiptScreen.prototype, {
     async handleOrderPrinting(event) {
         this.buttonOrderPrinting.el.className = "fa fa-fw fa-spin fa-circle-o-notch";
         const order = this.pos.get_order();
-        dbg("orderPrinting");
+        // eslint-disable-next-line no-console
+        console.log("orderPrinting");
         const lines = order.orderlines.map((orderline) => ({
             name: orderline.full_product_name,
             note: orderline.note,
@@ -69,7 +61,8 @@ patch(ReceiptScreen.prototype, {
                     })),
                 };
                 try {
-                    dbg(JSON.stringify(jsonLog));
+                    // eslint-disable-next-line no-console
+                    console.log(JSON.stringify(jsonLog));
                 } catch (e) {
                     // keep a single warning for actual stringify failures
                     // eslint-disable-next-line no-console
