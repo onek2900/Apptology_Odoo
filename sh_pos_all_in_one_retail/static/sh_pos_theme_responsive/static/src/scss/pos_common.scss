@@ -649,10 +649,13 @@
         display: none;
     }
     /* Also hide the button from the bottom carousel action buttons */
-    .sh_action_button .order-type-button,
-    .owl-carousel.sh_action_button .order-type-button {
-        display: none;
-    }
+    /* (kept) mobile product-screen containers handled above */
+}
+
+/* Hide bottom carousel instance (inserted outside .product-screen) */
+.pos .sh_action_button .order-type-button,
+.pos .owl-carousel.sh_action_button .order-type-button {
+    display: none !important;
 }
 
 /* Spacing for the injected container above the numpad */
