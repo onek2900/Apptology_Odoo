@@ -10,7 +10,6 @@
 
 import { DateTime } from "luxon";
 import { patch } from "@web/core/utils/patch";
-import { registry } from "@web/core/registry";
 import { openSpecificDateDialog } from "./specific_date_dialog";
 
 // --- Replace these 2 imports once you identify the component/store ---
@@ -46,7 +45,7 @@ function attachDomEnhancementOnce() {
             applyCustomRange(ev.target, from, to);
         } else if (el.value === "apptology_specific_date") {
             try {
-                const [from, to] = await openSpecificDateDialog(registry); // env not available here; the helper uses dialog service or prompt
+                const [from, to] = await openSpecificDateDialog();
                 applyCustomRange(ev.target, from, to);
             } catch (_) {
                 // cancelled
@@ -150,4 +149,3 @@ attachDomEnhancementOnce();
 //         return super.onChangePeriod ? super.onChangePeriod(evOrKey) : undefined;
 //     },
 // });
-

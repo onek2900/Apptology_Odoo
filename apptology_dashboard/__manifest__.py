@@ -8,10 +8,12 @@
         "web",
         "spreadsheet_dashboard",
     ],
-    "data": [
-        "views/assets.xml",
-    ],
-    "assets": {},
+    "data": [],
+    "assets": {
+        "web.assets_backend": [
+            "apptology_dashboard/static/src/js/period_presets_patch.js",
+            "apptology_dashboard/static/src/js/specific_date_dialog.js",
+        ],
+    },
     "installable": True,
 }
-
