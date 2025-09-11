@@ -2,21 +2,13 @@
  * Apptology: extend Spreadsheet Dashboard period presets with
  * Today, Yesterday, and Specific Date (single-day range).
  *
- * NOTE: This file patches the Spreadsheet Dashboard once we locate
- * the period selector component and the method that applies a range.
- * See README for how to find those identifiers; then replace the
- * placeholder imports and method names below.
+ * This file uses a DOM enhancement fallback with no ESM imports
+ * to avoid asset pipeline issues. A proper component patch is
+ * provided in comments below once the exact imports are known.
  */
 
-import { DateTime } from "luxon";
-import { patch } from "@web/core/utils/patch";
-import { openSpecificDateDialog } from "./specific_date_dialog";
-
-// --- Replace these 2 imports once you identify the component/store ---
-// The period selector component that owns the <select class="date_filter_values" ...>
-// import { PeriodSelector } from "@spreadsheet_dashboard/components/period_selector/period_selector";
-// The store/service method used to apply a custom date range to the dashboard
-// import { dashboardStore } from "@spreadsheet_dashboard/../stores/dashboard_store";
+// Access luxon from global to avoid ESM
+const DateTime = (window.luxon && window.luxon.DateTime) || null;
 
 // Utility: compute [start, end] as ISO strings in user tz for convenience
 function isoRangeFor(day) {
@@ -38,14 +30,33 @@ function attachDomEnhancementOnce() {
         if (!el.classList.contains("date_filter_values")) return;
 
         if (el.value === "apptology_today") {
-            const [from, to] = isoRangeFor(DateTime.local());
+            let from, to;
+            if (DateTime) {
+                [from, to] = isoRangeFor(DateTime.local());
+            } else {
+                const d = new Date();
+                const y = d.toISOString().slice(0, 10);
+                from = new Date(`${y}T00:00:00`).toISOString();
+                to = new Date(`${y}T23:59:59`).toISOString();
+            }
             applyCustomRange(ev.target, from, to);
         } else if (el.value === "apptology_yesterday") {
-            const [from, to] = isoRangeFor(DateTime.local().minus({ days: 1 }));
+            let from, to;
+            if (DateTime) {
+                [from, to] = isoRangeFor(DateTime.local().minus({ days: 1 }));
+            } else {
+                const d = new Date();
+                d.setDate(d.getDate() - 1);
+                const y = d.toISOString().slice(0, 10);
+                from = new Date(`${y}T00:00:00`).toISOString();
+                to = new Date(`${y}T23:59:59`).toISOString();
+            }
             applyCustomRange(ev.target, from, to);
         } else if (el.value === "apptology_specific_date") {
             try {
-                const [from, to] = await openSpecificDateDialog();
+                const [from, to] = await (window.apptologyOpenSpecificDateDialog
+                    ? window.apptologyOpenSpecificDateDialog()
+                    : Promise.reject(new Error("dialog unavailable")));
                 applyCustomRange(ev.target, from, to);
             } catch (_) {
                 // cancelled
@@ -87,23 +98,24 @@ function attachDomEnhancementOnce() {
 // This is a best-effort fallback until we patch the actual component method below.
 function applyCustomRange(selectEl, dateFromISO, dateToISO) {
     // If a component instance is bound on the select, try common method names.
-    const comp = selectEl.__owl__ && selectEl.__owl__.parent || null;
+    const comp = (selectEl.__owl__ && selectEl.__owl__.parent) || null;
     if (comp) {
-        for (const meth of [
-            "setDateRange",
-            "onChangePeriod",
-            "applyPeriod",
-            "setPeriod",
-        ]) {
+        for (const meth of ["setDateRange", "onChangePeriod", "applyPeriod", "setPeriod"]) {
             if (typeof comp[meth] === "function") {
-                try { comp[meth]({ dateFrom: dateFromISO, dateTo: dateToISO, key: "apptology_custom_day" }); return; } catch (_) {}
+                try {
+                    comp[meth]({ dateFrom: dateFromISO, dateTo: dateToISO, key: "apptology_custom_day" });
+                    return;
+                } catch (_) {}
             }
         }
         // Look for a store on the component env
-        const maybeStore = comp.env && (comp.env.dashboardStore || comp.env.store || comp.env.services && comp.env.services.dashboard);
+        const maybeStore = comp.env && (comp.env.dashboardStore || comp.env.store || (comp.env.services && comp.env.services.dashboard));
         for (const meth of ["setDateRange", "setDateFilter", "applyDateFilter"]) {
             if (maybeStore && typeof maybeStore[meth] === "function") {
-                try { maybeStore[meth]({ dateFrom: dateFromISO, dateTo: dateToISO }); return; } catch (_) {}
+                try {
+                    maybeStore[meth]({ dateFrom: dateFromISO, dateTo: dateToISO });
+                    return;
+                } catch (_) {}
             }
         }
     }
@@ -121,6 +133,8 @@ attachDomEnhancementOnce();
 // Example of how to patch a discovered PeriodSelector component that maps keys
 // to ranges. Replace the import above and the class name below, then uncomment.
 //
+// import { patch } from "@web/core/utils/patch";
+// import { PeriodSelector } from "@spreadsheet_dashboard/components/period_selector/period_selector";
 // patch(PeriodSelector.prototype, "apptology_dashboard.period_presets", {
 //     get presets() {
 //         const base = super.presets ? super.presets : [];
@@ -143,9 +157,10 @@ attachDomEnhancementOnce();
 //             return this.env.dashboardStore.setDateRange({ dateFrom: from, dateTo: to });
 //         }
 //         if (key === "apptology_specific_date") {
-//             const [from, to] = await openSpecificDateDialog(this.env);
+//             const [from, to] = await window.apptologyOpenSpecificDateDialog();
 //             return this.env.dashboardStore.setDateRange({ dateFrom: from, dateTo: to });
 //         }
 //         return super.onChangePeriod ? super.onChangePeriod(evOrKey) : undefined;
 //     },
 // });
+

@@ -11,8 +11,8 @@
     "data": [],
     "assets": {
         "web.assets_backend": [
-            "apptology_dashboard/static/src/js/period_presets_patch.js",
             "apptology_dashboard/static/src/js/specific_date_dialog.js",
+            "apptology_dashboard/static/src/js/period_presets_patch.js",
         ],
     },
     "installable": True,
