@@ -21,18 +21,15 @@ patch(Order.prototype, {
     async pay() {
         var order_name = this.pos.selectedOrder.name;
         var self = this;
-        await this.orm.call("pos.order", "check_order", ["", order_name]).then(function (result) {
-            if (result.category) {
-                var title = "No category found for your current order in the kitchen.(" + result.category + ')';
-                self.kitchen = false;
-                self.popup.add(ErrorPopup, {
-                    title: _t(title),
-                    body: _t("No food items found for the specified category for this kitchen. Kindly remove the selected food and update the order by clicking the 'Order' button. Following that, proceed with the payment."),
-                });
-            } else {
-                self.kitchen = true;
-            }
-        });
+        // Do not block payment when the product category is not configured
+        // on the kitchen screen. Previously this showed an error popup.
+        // Per request, always allow payment to proceed.
+        try {
+            await this.orm.call("pos.order", "check_order", ["", order_name]);
+        } catch (e) {
+            // Ignore backend check failures for kitchen category validation
+        }
+        self.kitchen = true;
 
         if (!this.orderlines.length) {
             return;
