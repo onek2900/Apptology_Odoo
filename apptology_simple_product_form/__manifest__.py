@@ -1,7 +1,7 @@
 {
     "name": "Apptology Simple Product Form",
     "summary": "Simplified one-page product form with toppings",
-    "version": "16.0.1.0.0",
+    "version": "17.0.1.0.0",
     "author": "Apptology",
     "license": "LGPL-3",
     "depends": [
