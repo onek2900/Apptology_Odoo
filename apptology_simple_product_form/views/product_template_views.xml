@@ -24,24 +24,44 @@
         </field>
     </record>
 
-    <!-- POS Products action that uses the simple form -->
+    <!-- Action: open simplified create form directly (no list) -->
     <record id="action_pos_products_simple" model="ir.actions.act_window">
-        <field name="name">Products</field>
+        <field name="name">Add Product</field>
         <field name="res_model">product.template</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">form</field>
         <field name="view_id" ref="view_product_template_simple_form"/>
         <field name="context">{
-            'search_default_available_in_pos': 1,
             'default_available_in_pos': 1
         }</field>
-        <field name="domain">[("available_in_pos", "=", True)]</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Create POS Products.</p>
-        </field>
+        <field name="target">current</field>
     </record>
 
-    <!-- Redirect the POS Products menu to our simple action -->
-    <record id="point_of_sale.menu_pos_products" model="ir.ui.menu">
-        <field name="action" ref="action_pos_products_simple"/>
+    <!-- New menu under POS Catalog to add a product using the simplified form -->
+    <menuitem id="menu_pos_add_product_simple"
+              name="Add Product"
+              parent="point_of_sale.pos_config_menu_catalog"
+              action="action_pos_products_simple"
+              sequence="25"/>
+
+    <!-- Server Action on product list: Action menu entry to open simple create -->
+    <record id="action_server_open_simple_product_create" model="ir.actions.server">
+        <field name="name">Add Product (Simple)</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Add Product (Simple)',
+    'res_model': 'product.template',
+    'view_mode': 'form',
+    'views': [(env.ref('apptology_simple_product_form.view_product_template_simple_form').id, 'form')],
+    'target': 'current',
+    'context': {
+        'default_available_in_pos': 1,
+    },
+}
+        </field>
     </record>
 </odoo>
