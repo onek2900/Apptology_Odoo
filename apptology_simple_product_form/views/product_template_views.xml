@@ -12,28 +12,31 @@
                     <group>
                         <!-- Left column: main details -->
                         <group>
-                            <field name="name" required="1"/>
-                            <field name="description_sale" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements." required="1"/>
-                            <field name="pos_categ_ids" widget="many2many_tags" string="POS Category"/>
+                            <label class="o_form_label">Name</label>
+                            <field name="name" required="1" nolabel="1"/>
+
+                            <label class="o_form_label">Description</label>
+                            <field name="description_sale" nolabel="1" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements." required="1"/>
+
+                            <label class="o_form_label">POS Category</label>
+                            <field name="pos_categ_ids" nolabel="1" widget="many2many_tags" string="POS Category"/>
 
                             <!-- Collapsible Modifier groups section -->
-                            <div class="o_accordion my-2 app-simple-modifier-accordion">
-                                <div class="o_accordion_values mt-2">
-                                    <!-- Select groups using standard field -->
-                                    <field name="tmpl_sh_topping_group_ids" widget="many2many_tags"/>
-                                    <!-- Show modifiers grouped by the selected groups; clicking pills updates toppings -->
-                                    <field name="tmpl_sh_topping_ids"
-                                           widget="modifier_groups"
-                                           options="{'groups_field': 'tmpl_sh_topping_group_ids'}"
-                                           nolabel="1"/>
-                                </div>
-                            </div>
+                            <label class="o_form_label">Modifier groups</label>
+                            <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
+                            <field name="tmpl_sh_topping_ids"
+                                   widget="modifier_groups"
+                                   options="{'groups_field': 'tmpl_sh_topping_group_ids'}"
+                                   nolabel="1"/>
                         </group>
 
                         <!-- Right column: image and price -->
                         <group>
-                            <field name="image_1920" widget="image"/>
-                            <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <label class="o_form_label">Image</label>
+                            <field name="image_1920" widget="image" nolabel="1"/>
+
+                            <label class="o_form_label">Sale Price</label>
+                            <field name="list_price" nolabel="1" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                     </group>
                 </sheet>

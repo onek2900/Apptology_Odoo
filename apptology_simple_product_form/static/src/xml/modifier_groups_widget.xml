@@ -2,9 +2,6 @@
 <templates xml:space="preserve">
     <t t-name="apptology_simple_product_form.ModifierGroupsField">
         <div class="app-modifier-groups-widget">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-                <div class="group-header fw-bold">Modifier groups</div>
-            </div>
             <t t-if="state.loading">
                 <span class="text-muted">Loading…</span>
             </t>
