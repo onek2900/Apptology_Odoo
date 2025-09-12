@@ -90,6 +90,18 @@ class ModifierGroupsField extends Component {
         await this.props.record.update({ [this.props.name]: [[6, 0, newIds]] });
         await this.loadData();
     }
+
+    // Template-safe handlers to preserve component context
+    onGroupChipClick(groupId) {
+        return this.toggleGroupPick(groupId);
+    }
+
+    onToppingClick(toppingId) {
+        if (this.props.readonly) {
+            return;
+        }
+        return this.toggleTopping(toppingId);
+    }
 }
 
 ModifierGroupsField.template = "apptology_simple_product_form.ModifierGroupsField";
