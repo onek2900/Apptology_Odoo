@@ -10,7 +10,8 @@ class ModifierGroupsField extends Component {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
-        useEffect(() => this.loadData(), () => [this.props.value]);
+        // Ensure we don't return the promise from loadData (which Owl would treat as a cleanup)
+        useEffect(() => { this.loadData(); }, () => [this.props.value]);
     }
 
     get toppingsField() {
