@@ -14,8 +14,8 @@ patch(ProductsWidget.prototype, {
         this.final_suggest_prodcuts = [];
 
         var results =  super.productsToDisplay;
-        // Hide modifier-only products from the product grid
-        results = results.filter((p) => !(p && p.is_modifier === true));
+        // Hide topping-only products from the product grid
+        results = results.filter((p) => !(p && p.sh_is_topping === true));
 
         if (this.searchWord !== '') {
             if (results.length > 0) {

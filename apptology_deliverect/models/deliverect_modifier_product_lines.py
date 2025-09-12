@@ -8,7 +8,7 @@ class DeliverectModifierProductLines(models.Model):
 
     product_id = fields.Many2one(
         "product.product",
-        domain=[('is_modifier', '=', True)],
+        domain=[('sh_is_topping', '=', True)],
         string="Modifier Product",
         help="Name of the modifier"
     )

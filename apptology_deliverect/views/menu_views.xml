@@ -3,8 +3,8 @@
     <record id="deliverect_modifier_action" model="ir.actions.act_window">
         <field name="name">Modifier</field>
         <field name="res_model">product.product</field>
-        <field name="domain">[('is_modifier', '=','True')]</field>
-        <field name="context">{'default_is_modifier': True}</field>
+        <field name="domain">[('sh_is_topping', '=','True')]</field>
+        <field name="context">{'default_sh_is_topping': True}</field>
         <field name="view_mode">kanban,form</field>
     </record>
 <!--    <menuitem id="menu_pos_modifier"-->
