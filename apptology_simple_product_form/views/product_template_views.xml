@@ -19,18 +19,11 @@
                             <!-- Collapsible Modifier groups section -->
                             <div class="o_accordion my-2 app-simple-modifier-accordion">
                                 <div class="o_accordion_values mt-2">
-                                    <div class="modifiers-row">
-                                        <div class="text-muted section-desc modifiers-desc">
-                                            Add modifier groups to allow customers to modify this product.
-                                        </div>
-                                        <div class="modifiers-fields">
-                                            <field name="tmpl_sh_topping_group_ids"
-                                                   widget="modifier_groups"
-                                                   options="{'toppings_field': 'tmpl_sh_topping_ids'}"
-                                                   nolabel="1"/>
-                                            <field name="tmpl_sh_topping_ids" invisible="1"/>
-                                        </div>
-                                    </div>
+                                    <field name="tmpl_sh_topping_group_ids"
+                                           widget="modifier_groups"
+                                           options="{'toppings_field': 'tmpl_sh_topping_ids'}"
+                                           nolabel="1"/>
+                                    <field name="tmpl_sh_topping_ids" invisible="1"/>
                                 </div>
                             </div>
                         </group>
