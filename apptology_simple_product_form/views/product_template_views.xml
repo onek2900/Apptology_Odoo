@@ -18,26 +18,17 @@
 
                             <!-- Collapsible Modifier groups section -->
                             <div class="o_accordion my-2 app-simple-modifier-accordion">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <a role="button"
-                                       class="accordion-toggle d-flex align-items-center fw-bold text-decoration-none"
-                                       data-bs-toggle="collapse"
-                                       href="#modifier_groups_collapse"
-                                       aria-expanded="false"
-                                       aria-controls="modifier_groups_collapse">
-                                        <span>Modifier groups</span>
-                                        <i class="fa fa-chevron-down chevron ms-2" aria-hidden="true"></i>
-                                    </a>
-                                    <span class="sort-items">Sort items</span>
-                                </div>
-                                <div id="modifier_groups_collapse" class="collapse o_accordion_values mt-2">
+                                <div class="o_accordion_values mt-2">
                                     <div class="modifiers-row">
                                         <div class="text-muted section-desc modifiers-desc">
                                             Add modifier groups to allow customers to modify this product.
                                         </div>
                                         <div class="modifiers-fields">
-                                            <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
-                                            <field name="tmpl_sh_topping_ids" widget="many2many_tags" nolabel="1"/>
+                                            <field name="tmpl_sh_topping_group_ids"
+                                                   widget="modifier_groups"
+                                                   options="{'toppings_field': 'tmpl_sh_topping_ids'}"
+                                                   nolabel="1"/>
+                                            <field name="tmpl_sh_topping_ids" invisible="1"/>
                                         </div>
                                     </div>
                                 </div>

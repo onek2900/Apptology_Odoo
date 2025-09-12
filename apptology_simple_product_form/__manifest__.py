@@ -15,6 +15,8 @@
     "assets": {
         "web.assets_backend": [
             "apptology_simple_product_form/static/src/css/simple_form.scss",
+            "apptology_simple_product_form/static/src/js/modifier_groups_widget.js",
+            "apptology_simple_product_form/static/src/xml/modifier_groups_widget.xml",
         ],
     },
     "application": False,

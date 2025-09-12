@@ -1,0 +1,101 @@
+/** @odoo-module */
+import { registry } from "@web/core/registry";
+import { standardFieldProps } from "@web/views/fields/standard_field_props";
+import { useService } from "@web/core/utils/hooks";
+import { Component, useEffect, useState } from "owl";
+import { selectCreate } from "@web/views/relational_utils";
+
+class ModifierGroupsField extends Component {
+    setup() {
+        this.orm = useService("orm");
+        this.notification = useService("notification");
+        this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
+        useEffect(() => this.loadData(), () => [this.props.value]);
+    }
+
+    get toppingsField() {
+        return (this.props.options && this.props.options.toppings_field) || "tmpl_sh_topping_ids";
+    }
+
+    async loadData() {
+        const groupIds = (this.props.value || []).map((rec) => rec.id || rec);
+        this.state.loading = true;
+        let groups = [];
+        let toppingsById = {};
+        if (groupIds.length) {
+            groups = await this.orm.searchRead("sh.topping.group", [["id", "in", groupIds]], ["name", "sequence", "toppinds_ids"]);
+            const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
+            if (toppingIds.length) {
+                const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
+                toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
+            }
+        }
+        // order groups by sequence then name
+        groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
+        // preserve expanded states; default collapsed
+        const prevExpanded = this.state.expanded || {};
+        const expanded = {};
+        for (const g of groups) {
+            expanded[g.id] = Object.prototype.hasOwnProperty.call(prevExpanded, g.id)
+                ? prevExpanded[g.id]
+                : false;
+        }
+        this.state.groups = groups;
+        this.state.toppingsById = toppingsById;
+        this.state.expanded = expanded;
+        this.state.loading = false;
+    }
+
+    get selectedToppingIds() {
+        const field = this.toppingsField;
+        const val = this.props.record.data[field];
+        return new Set((val || []).map((r) => r.id || r));
+    }
+
+    isSelected(id) {
+        return this.selectedToppingIds.has(id);
+    }
+
+    async toggleTopping(toppingId) {
+        const selected = this.selectedToppingIds;
+        if (selected.has(toppingId)) selected.delete(toppingId);
+        else selected.add(toppingId);
+        const ids = Array.from(selected);
+        try {
+            await this.props.record.update({ [this.toppingsField]: [[6, 0, ids]] });
+        } catch (e) {
+            this.notification.add(String(e.message || e), { type: "danger" });
+        }
+        this.render();
+    }
+
+    toggleGroup(id) {
+        this.state.expanded[id] = !this.state.expanded[id];
+        this.render(true);
+    }
+
+    async openEditGroupsDialog() {
+        const currentIds = (this.props.value || []).map((rec) => rec.id || rec);
+        const result = await selectCreate(this, {
+            resModel: "sh.topping.group",
+            resIds: currentIds,
+            domain: [],
+            context: this.props.record.context,
+            title: this.env._t("Edit Groups"),
+            noCreateEdit: false,
+            allowCreate: true,
+            multiSelect: true,
+        });
+        if (result && result.resIds) {
+            await this.props.record.update({ [this.props.name]: [[6, 0, result.resIds]] });
+            await this.loadData();
+        }
+    }
+}
+
+ModifierGroupsField.template = "apptology_simple_product_form.ModifierGroupsField";
+ModifierGroupsField.props = {
+    ...standardFieldProps,
+};
+
+registry.category("fields").add("modifier_groups", ModifierGroupsField);
