@@ -31,7 +31,7 @@
                                     <span class="text-muted">Sort items</span>
                                 </div>
                                 <div id="modifier_groups_collapse" class="collapse o_accordion_values mt-2">
-                                    <label class="text-muted mb-2" string="Add modifier groups to allow customers to modify this product."/>
+                                    <div class="text-muted mb-2 o_form_label">Add modifier groups to allow customers to modify this product.</div>
                                     <field name="tmpl_sh_topping_group_ids" widget="many2many_tags"/>
                                     <field name="tmpl_sh_topping_ids" widget="many2many_tags"/>
                                 </div>
