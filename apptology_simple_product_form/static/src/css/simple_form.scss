@@ -6,3 +6,22 @@
   transform: rotate(180deg);
 }
 
+.app-simple-modifier-accordion .accordion-toggle {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.app-simple-modifier-accordion .sort-items {
+  color: var(--o-gray-600);
+  font-size: 0.875rem;
+}
+
+.app-simple-modifier-accordion .section-desc {
+  font-size: 0.875rem;
+}
+
+.app-simple-modifier-accordion .o_field_many2manytags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
