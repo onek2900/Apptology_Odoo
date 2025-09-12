@@ -22,9 +22,19 @@ class ModifierGroupsField extends Component {
         return (this.props.options && this.props.options.groups_field) || "tmpl_sh_topping_group_ids";
     }
 
+    // Normalize many2many values into an array of ids regardless of shape
+    asIds(val) {
+        if (!val) return [];
+        if (Array.isArray(val)) return val.map((r) => (typeof r === "object" ? r.id : r)).filter((x) => !!x);
+        if (val.resIds) return val.resIds;
+        if (val.records) return val.records.map((r) => r.id);
+        if (typeof val === "object" && "id" in val) return [val.id];
+        return [];
+    }
+
     async loadData() {
         const groupsVal = this.props.record.data[this.groupsField] || [];
-        const groupIds = groupsVal.map((rec) => rec.id || rec);
+        const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
         let groups = [];
         let toppingsById = {};
@@ -59,7 +69,7 @@ class ModifierGroupsField extends Component {
     get selectedToppingIds() {
         const field = this.toppingsField;
         const val = this.props.record.data[field];
-        return new Set((val || []).map((r) => r.id || r));
+        return new Set(this.asIds(val));
     }
 
     isSelected(id) {
