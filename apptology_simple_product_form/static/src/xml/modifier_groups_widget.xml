@@ -5,15 +5,6 @@
             <div class="d-flex align-items-center justify-content-between mb-2">
                 <div class="group-header fw-bold">Modifier groups</div>
             </div>
-            <!-- Group picker: choose from existing topping groups -->
-            <div class="group-picker mb-3">
-                <t t-foreach="state.allGroups" t-as="g" t-key="g.id">
-                    <span t-attf-class="group-pill #{(props.value || []).map(r=>r.id||r).includes(g.id) ? 'selected' : ''}"
-                          t-on-click.stop.prevent="() => component.onGroupChipClick(g.id)">
-                        <t t-esc="g.name"/>
-                    </span>
-                </t>
-            </div>
             <t t-if="state.loading">
                 <span class="text-muted">Loading…</span>
             </t>

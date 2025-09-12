@@ -8,29 +8,33 @@ class ModifierGroupsField extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
-        this.state = useState({ groups: [], allGroups: [], toppingsById: {}, loading: false, expanded: {} });
+        this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
         // Ensure we don't return the promise from loadData (which Owl would treat as a cleanup)
         useEffect(() => { this.loadData(); }, () => [this.props.value]);
     }
 
     get toppingsField() {
-        return (this.props.options && this.props.options.toppings_field) || "tmpl_sh_topping_ids";
+        // operate on the field this widget is bound to (default)
+        return (this.props.options && this.props.options.toppings_field) || this.props.name;
+    }
+
+    get groupsField() {
+        return (this.props.options && this.props.options.groups_field) || "tmpl_sh_topping_group_ids";
     }
 
     async loadData() {
-        const groupIds = (this.props.value || []).map((rec) => rec.id || rec);
+        const groupsVal = this.props.record.data[this.groupsField] || [];
+        const groupIds = groupsVal.map((rec) => rec.id || rec);
         this.state.loading = true;
         let groups = [];
         let toppingsById = {};
-        // Load all groups (limited) for selection chips
-        const allGroups = await this.orm.searchRead(
-            "sh.topping.group",
-            [],
-            ["name", "sequence", "toppinds_ids"],
-            { limit: 200, order: "sequence,name" }
-        );
-        // Selected groups are a subset of allGroups
-        groups = allGroups.filter((g) => groupIds.includes(g.id));
+        if (groupIds.length) {
+            groups = await this.orm.searchRead(
+                "sh.topping.group",
+                [["id", "in", groupIds]],
+                ["name", "sequence", "toppinds_ids"]
+            );
+        }
         const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
         if (toppingIds.length) {
             const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
@@ -46,7 +50,6 @@ class ModifierGroupsField extends Component {
                 ? prevExpanded[g.id]
                 : false;
         }
-        this.state.allGroups = allGroups;
         this.state.groups = groups;
         this.state.toppingsById = toppingsById;
         this.state.expanded = expanded;
@@ -81,21 +84,8 @@ class ModifierGroupsField extends Component {
         this.render(true);
     }
 
-    async toggleGroupPick(groupId) {
-        const currentIds = (this.props.value || []).map((rec) => rec.id || rec);
-        const set = new Set(currentIds);
-        if (set.has(groupId)) set.delete(groupId);
-        else set.add(groupId);
-        const newIds = Array.from(set);
-        await this.props.record.update({ [this.props.name]: [[6, 0, newIds]] });
-        await this.loadData();
-    }
-
     // Template-safe handlers to preserve component context
-    onGroupChipClick(groupId) {
-        return this.toggleGroupPick(groupId);
-    }
-
+    
     onToppingClick(toppingId) {
         if (this.props.readonly) {
             return;
