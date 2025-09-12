@@ -198,6 +198,7 @@ class PosConfig(models.Model):
         """create product with modifier in deliverect"""
         domain = [('active', '=', True),
                   ('detailed_type', '!=', 'combo'),
+                  ('is_modifier', '=', False),
                   ('sh_topping_group_ids', '!=', False),
                   ('available_in_pos', '=', True)]
         if self.iface_available_categ_ids:
