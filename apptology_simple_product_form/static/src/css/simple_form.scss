@@ -1,0 +1,8 @@
+.app-simple-modifier-accordion .accordion-toggle .chevron {
+  transition: transform 0.2s ease;
+}
+
+.app-simple-modifier-accordion .accordion-toggle[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+

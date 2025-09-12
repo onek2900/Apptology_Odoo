@@ -12,5 +12,10 @@
     "data": [
         "views/product_template_views.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "apptology_simple_product_form/static/src/css/simple_form.scss",
+        ],
+    },
     "application": False,
 }
