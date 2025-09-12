@@ -89,3 +89,22 @@
 .app-modifier-groups-widget .topping-pill.readonly {
   cursor: default;
 }
+
+.app-modifier-groups-widget .group-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-modifier-groups-widget .group-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  background: #f1f1f1;
+  cursor: pointer;
+}
+
+.app-modifier-groups-widget .group-pill.selected {
+  background: #e0ebff;
+  border: 1px solid #80aaff;
+}

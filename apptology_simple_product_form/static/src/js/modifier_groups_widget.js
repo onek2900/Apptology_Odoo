@@ -3,13 +3,12 @@ import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { useService } from "@web/core/utils/hooks";
 import { Component, useEffect, useState } from "@odoo/owl";
-import { selectCreate } from "@web/views/fields/relational_utils";
 
 class ModifierGroupsField extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
-        this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
+        this.state = useState({ groups: [], allGroups: [], toppingsById: {}, loading: false, expanded: {} });
         // Ensure we don't return the promise from loadData (which Owl would treat as a cleanup)
         useEffect(() => { this.loadData(); }, () => [this.props.value]);
     }
@@ -23,13 +22,19 @@ class ModifierGroupsField extends Component {
         this.state.loading = true;
         let groups = [];
         let toppingsById = {};
-        if (groupIds.length) {
-            groups = await this.orm.searchRead("sh.topping.group", [["id", "in", groupIds]], ["name", "sequence", "toppinds_ids"]);
-            const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
-            if (toppingIds.length) {
-                const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
-                toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
-            }
+        // Load all groups (limited) for selection chips
+        const allGroups = await this.orm.searchRead(
+            "sh.topping.group",
+            [],
+            ["name", "sequence", "toppinds_ids"],
+            { limit: 200, order: "sequence,name" }
+        );
+        // Selected groups are a subset of allGroups
+        groups = allGroups.filter((g) => groupIds.includes(g.id));
+        const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
+        if (toppingIds.length) {
+            const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
+            toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
         }
         // order groups by sequence then name
         groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
@@ -41,6 +46,7 @@ class ModifierGroupsField extends Component {
                 ? prevExpanded[g.id]
                 : false;
         }
+        this.state.allGroups = allGroups;
         this.state.groups = groups;
         this.state.toppingsById = toppingsById;
         this.state.expanded = expanded;
@@ -75,22 +81,14 @@ class ModifierGroupsField extends Component {
         this.render(true);
     }
 
-    async openEditGroupsDialog() {
+    async toggleGroupPick(groupId) {
         const currentIds = (this.props.value || []).map((rec) => rec.id || rec);
-        const result = await selectCreate(this, {
-            resModel: "sh.topping.group",
-            resIds: currentIds,
-            domain: [],
-            context: this.props.record.context,
-            title: this.env._t("Edit Groups"),
-            noCreateEdit: false,
-            allowCreate: true,
-            multiSelect: true,
-        });
-        if (result && result.resIds) {
-            await this.props.record.update({ [this.props.name]: [[6, 0, result.resIds]] });
-            await this.loadData();
-        }
+        const set = new Set(currentIds);
+        if (set.has(groupId)) set.delete(groupId);
+        else set.add(groupId);
+        const newIds = Array.from(set);
+        await this.props.record.update({ [this.props.name]: [[6, 0, newIds]] });
+        await this.loadData();
     }
 }
 
