@@ -25,3 +25,20 @@
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* Layout: description left, fields right */
+.app-simple-modifier-accordion .modifiers-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.app-simple-modifier-accordion .modifiers-desc {
+  flex: 0 0 260px; /* keep text narrow like sample */
+  max-width: 320px;
+}
+
+.app-simple-modifier-accordion .modifiers-fields {
+  flex: 1 1 auto;
+  min-width: 240px;
+}

@@ -31,9 +31,15 @@
                                     <span class="sort-items">Sort items</span>
                                 </div>
                                 <div id="modifier_groups_collapse" class="collapse o_accordion_values mt-2">
-                                    <div class="text-muted mb-2 section-desc">Add modifier groups to allow customers to modify this product.</div>
-                                    <field name="tmpl_sh_topping_group_ids" widget="many2many_tags"/>
-                                    <field name="tmpl_sh_topping_ids" widget="many2many_tags"/>
+                                    <div class="modifiers-row">
+                                        <div class="text-muted section-desc modifiers-desc">
+                                            Add modifier groups to allow customers to modify this product.
+                                        </div>
+                                        <div class="modifiers-fields">
+                                            <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
+                                            <field name="tmpl_sh_topping_ids" widget="many2many_tags" nolabel="1"/>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </group>
