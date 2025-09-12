@@ -98,4 +98,7 @@ ModifierGroupsField.props = {
     ...standardFieldProps,
 };
 
-registry.category("fields").add("modifier_groups", ModifierGroupsField);
+registry.category("fields").add("modifier_groups", {
+    component: ModifierGroupsField,
+    supportedTypes: ["many2many"],
+});
