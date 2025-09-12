@@ -94,7 +94,7 @@ class PosPaymentMethod(models.Model):
             }
         }
 
-        endpoint_url = "https://ippostest.moneris.com/v3/terminal"
+        endpoint_url = "https://ippos.moneris.com/v3/terminal"
         headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
@@ -171,7 +171,7 @@ class PosPaymentMethod(models.Model):
             }
 
             # Endpoint: default to test; allow optional custom field if you add it later
-            endpoint_url = getattr(pm, 'moneris_endpoint_url', False) or "https://ippostest.moneris.com/v3/terminal"
+            endpoint_url = getattr(pm, 'moneris_endpoint_url', False) or "https://ippos.moneris.com/v3/terminal"
             headers = {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
