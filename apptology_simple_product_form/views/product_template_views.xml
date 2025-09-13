@@ -16,7 +16,7 @@
                             <field name="name" required="1" nolabel="1"/>
 
                             <label for="description_sale"/>
-                            <field name="description_sale" nolabel="1" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements." required="1"/>
+                            <field name="description_sale" nolabel="1" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements."/>
 
                             <label for="pos_categ_ids"/>
                             <field name="pos_categ_ids" nolabel="1" widget="many2many_tags" string="POS Category"/>
@@ -24,10 +24,12 @@
                             <!-- Collapsible Modifier groups section -->
                             <label for="tmpl_sh_topping_group_ids"/>
                             <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
-                            <field name="tmpl_sh_topping_ids"
+                            <!-- Render grouped toppings view bound to the same groups field so it always sees current selection -->
+                            <field name="tmpl_sh_topping_group_ids"
                                    widget="modifier_groups"
-                                   options="{'groups_field': 'tmpl_sh_topping_group_ids'}"
+                                   options="{'toppings_field': 'tmpl_sh_topping_ids'}"
                                    nolabel="1"/>
+                            <field name="tmpl_sh_topping_ids" invisible="1"/>
                         </group>
 
                         <!-- Right column: image and price -->

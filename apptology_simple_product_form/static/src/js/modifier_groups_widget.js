@@ -10,8 +10,7 @@ class ModifierGroupsField extends Component {
         this.notification = useService("notification");
         this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
         // Ensure we don't return the promise from loadData (which Owl would treat as a cleanup)
-        // No deps: reload on each render so changes in groups reflect immediately
-        useEffect(() => { this.loadData(); });
+        useEffect(() => { this.loadData(); }, () => [this.props.value, this.props.record && this.props.record.data && this.props.record.data[this.groupsField]]);
     }
 
     get toppingsField() {
@@ -34,7 +33,8 @@ class ModifierGroupsField extends Component {
     }
 
     async loadData() {
-        const groupsVal = this.props.record.data[this.groupsField] || [];
+        // Prefer the bound field's live value (when this widget is on the groups field)
+        const groupsVal = this.props.value || this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
         let groups = [];
