@@ -12,17 +12,17 @@
                     <group>
                         <!-- Left column: main details -->
                         <group>
-                            <label class="o_form_label">Name</label>
+                            <label for="name"/>
                             <field name="name" required="1" nolabel="1"/>
 
-                            <label class="o_form_label">Description</label>
+                            <label for="description_sale"/>
                             <field name="description_sale" nolabel="1" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements." required="1"/>
 
-                            <label class="o_form_label">POS Category</label>
+                            <label for="pos_categ_ids"/>
                             <field name="pos_categ_ids" nolabel="1" widget="many2many_tags" string="POS Category"/>
 
                             <!-- Collapsible Modifier groups section -->
-                            <label class="o_form_label">Modifier groups</label>
+                            <label for="tmpl_sh_topping_group_ids"/>
                             <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
                             <field name="tmpl_sh_topping_ids"
                                    widget="modifier_groups"
@@ -32,10 +32,10 @@
 
                         <!-- Right column: image and price -->
                         <group>
-                            <label class="o_form_label">Image</label>
+                            <label for="image_1920"/>
                             <field name="image_1920" widget="image" nolabel="1"/>
 
-                            <label class="o_form_label">Sale Price</label>
+                            <label for="list_price"/>
                             <field name="list_price" nolabel="1" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                     </group>
