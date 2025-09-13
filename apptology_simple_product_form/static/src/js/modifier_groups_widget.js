@@ -15,12 +15,12 @@ class ModifierGroupsField extends Component {
     }
 
     get toppingsField() {
-        return (this.props.options && this.props.options.toppings_field) || this.props.name || "tmpl_sh_topping_ids";
+        return (this.props.options && this.props.options.toppings_field) || this.props.name || "sh_topping_ids";
     }
 
     get groupsField() {
         // groups are provided via options or default field on template
-        return (this.props.options && this.props.options.groups_field) || "tmpl_sh_topping_group_ids";
+        return (this.props.options && this.props.options.groups_field) || "sh_topping_group_ids";
     }
 
     // Normalize many2many values into an array of ids regardless of shape
