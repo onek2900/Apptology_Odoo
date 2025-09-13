@@ -10,16 +10,17 @@ class ModifierGroupsField extends Component {
         this.notification = useService("notification");
         this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
         // Ensure we don't return the promise from loadData (which Owl would treat as a cleanup)
-        useEffect(() => { this.loadData(); }, () => [this.props.value]);
+        // No deps: reload on each render so changes in groups reflect immediately
+        useEffect(() => { this.loadData(); });
     }
 
     get toppingsField() {
-        return (this.props.options && this.props.options.toppings_field) || "tmpl_sh_topping_ids";
+        return (this.props.options && this.props.options.toppings_field) || this.props.name || "tmpl_sh_topping_ids";
     }
 
     get groupsField() {
-        // bound field is the groups field
-        return (this.props.options && this.props.options.groups_field) || this.props.name || "tmpl_sh_topping_group_ids";
+        // groups are provided via options or default field on template
+        return (this.props.options && this.props.options.groups_field) || "tmpl_sh_topping_group_ids";
     }
 
     // Normalize many2many values into an array of ids regardless of shape
@@ -33,7 +34,7 @@ class ModifierGroupsField extends Component {
     }
 
     async loadData() {
-        const groupsVal = this.props.value || this.props.record.data[this.groupsField] || [];
+        const groupsVal = this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
         let groups = [];
