@@ -3,7 +3,6 @@ import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { useService } from "@web/core/utils/hooks";
 import { Component, useEffect, useState } from "@odoo/owl";
-// no dialogs used; selection is handled by the native many2many tags field
 
 class ModifierGroupsField extends Component {
     setup() {
@@ -126,7 +125,6 @@ class ModifierGroupsField extends Component {
     }
 
     // Template-safe handlers to preserve component context
-    
     onToppingClick(toppingId) {
         if (this.props.readonly) {
             return;
@@ -155,8 +153,6 @@ class ModifierGroupsField extends Component {
             await this.loadData();
         }
     }
-
-    // openAddToppingDialog removed: manage toppings from the group form or via backend views
 
     countSelectedInGroup(grp) {
         const selected = this.selectedToppingIds;
@@ -192,8 +188,6 @@ class ModifierGroupsField extends Component {
         await this.loadData(true);
     }
 
-    // openAddGroupDialog removed: use the many2many tags field above the widget
-
     async _ensureAutoPopulate(groups) {
         try {
             // Union currently selected toppings with all toppings from groups
@@ -222,3 +216,4 @@ registry.category("fields").add("modifier_groups", {
     component: ModifierGroupsField,
     supportedTypes: ["many2many"],
 });
+
