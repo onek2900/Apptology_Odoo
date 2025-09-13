@@ -14,12 +14,12 @@ class ModifierGroupsField extends Component {
     }
 
     get toppingsField() {
-        // operate on the field this widget is bound to (default)
-        return (this.props.options && this.props.options.toppings_field) || this.props.name;
+        return (this.props.options && this.props.options.toppings_field) || "tmpl_sh_topping_ids";
     }
 
     get groupsField() {
-        return (this.props.options && this.props.options.groups_field) || "tmpl_sh_topping_group_ids";
+        // bound field is the groups field
+        return (this.props.options && this.props.options.groups_field) || this.props.name || "tmpl_sh_topping_group_ids";
     }
 
     // Normalize many2many values into an array of ids regardless of shape
@@ -33,7 +33,7 @@ class ModifierGroupsField extends Component {
     }
 
     async loadData() {
-        const groupsVal = this.props.record.data[this.groupsField] || [];
+        const groupsVal = this.props.value || this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
         let groups = [];
