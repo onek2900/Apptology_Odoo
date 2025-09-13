@@ -3,14 +3,12 @@ import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { useService } from "@web/core/utils/hooks";
 import { Component, useEffect, useState } from "@odoo/owl";
-import { _t } from "@web/core/l10n/translation";
-import { useSelectCreateDialog } from "@web/views/fields/relational_utils";
+// no dialogs used; selection is handled by the native many2many tags field
 
 class ModifierGroupsField extends Component {
     setup() {
         this.orm = useService("orm");
         this.notification = useService("notification");
-        this.selectCreate = useSelectCreateDialog();
         this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
         this._lastGroupKey = null; // track last applied group set to avoid loops
         this._cache = new Map(); // cache by groupKey -> { groups, toppingsById }
@@ -158,27 +156,7 @@ class ModifierGroupsField extends Component {
         }
     }
 
-    async openAddToppingDialog(groupId) {
-        if (this.props.readonly) return;
-        const grp = (this.state.groups || []).find((g) => g.id === groupId);
-        const existing = new Set(grp ? grp.toppinds_ids : []);
-        const domain = [["available_in_pos", "=", true]];
-        const result = await this.selectCreate("product.product", {
-            resIds: Array.from(existing),
-            domain,
-            context: this.props.record.context,
-            title: _t("Add Toppings"),
-            multiple: true,
-        });
-        const resIds = Array.isArray(result)
-            ? result
-            : result && (result.resIds || (result.records && result.records.map((r) => r.id)));
-        if (resIds) {
-            const newIds = Array.from(new Set([...(resIds || [])]));
-            await this.orm.write("sh.topping.group", [groupId], { toppinds_ids: [[6, 0, newIds]] });
-            await this.loadData(true);
-        }
-    }
+    // openAddToppingDialog removed: manage toppings from the group form or via backend views
 
     countSelectedInGroup(grp) {
         const selected = this.selectedToppingIds;
@@ -214,25 +192,7 @@ class ModifierGroupsField extends Component {
         await this.loadData(true);
     }
 
-    async openAddGroupDialog() {
-        if (this.props.readonly) return;
-        const current = new Set(this.asIds(this.props.record.data[this.groupsField] || []));
-        const result = await this.selectCreate("sh.topping.group", {
-            resIds: Array.from(current),
-            domain: [],
-            context: this.props.record.context,
-            title: _t("Select Topping Groups"),
-            multiple: true,
-        });
-        const resIds = Array.isArray(result)
-            ? result
-            : result && (result.resIds || (result.records && result.records.map((r) => r.id)));
-        if (resIds) {
-            const newIds = Array.from(new Set([...(resIds || [])]));
-            await this.props.record.update({ [this.groupsField]: [[6, 0, newIds]] });
-            await this.loadData(true);
-        }
-    }
+    // openAddGroupDialog removed: use the many2many tags field above the widget
 
     async _ensureAutoPopulate(groups) {
         try {

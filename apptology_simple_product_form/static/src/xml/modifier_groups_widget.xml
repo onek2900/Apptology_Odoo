@@ -8,10 +8,7 @@
             <t t-else="">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span class="fw-bold">Modifier Groups</span>
-                    <div>
-                        <a t-if="!props.readonly" href="#" class="btn btn-sm btn-outline-secondary me-2" t-on-click.prevent.stop="openAddGroupDialog()">Add group</a>
-                        <a t-if="!props.readonly" href="#" class="btn btn-sm btn-outline-danger" t-on-click.prevent.stop="clearAllGroups()">Clear all</a>
-                    </div>
+                    <a t-if="!props.readonly" href="#" class="btn btn-sm btn-outline-danger" t-on-click.prevent.stop="clearAllGroups()">Clear all</a>
                 </div>
                 <t t-if="state.groups.length">
                     <t t-foreach="state.groups" t-as="grp" t-key="grp.id">
@@ -40,9 +37,7 @@
                                         <span><t t-esc="top.name"/></span>
                                     </div>
                                 </t>
-                                <div class="add-topping">
-                                    <a t-if="!props.readonly" href="#" t-on-click.prevent.stop="openAddToppingDialog(grp.id)">Add another topping</a>
-                                </div>
+                                <!-- Toppings can be managed in the group form; no inline add dialog here -->
                             </div>
                         </div>
                     </t>
