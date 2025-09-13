@@ -23,31 +23,11 @@ class ProductTemplate(models.Model):
         domain="[('available_in_pos', '=', True)]",
     )
 
-    # Backward-compatible aliases (deprecated): keep existing template field names so older views/options keep working
-    tmpl_sh_topping_group_ids = fields.Many2many(
-        comodel_name='sh.topping.group',
-        string='Topping Groups',
-        related='sh_topping_group_ids',
-        readonly=False,
-    )
-    tmpl_sh_topping_ids = fields.Many2many(
-        comodel_name='product.product',
-        string='Toppings',
-        related='sh_topping_ids',
-        readonly=False,
-        domain="[('available_in_pos', '=', True)]",
-    )
-
-    @api.onchange('sh_topping_group_ids', 'tmpl_sh_topping_group_ids')
-    def _onchange_tmpl_sh_topping_group_ids(self):
+    @api.onchange('sh_topping_group_ids')
+    def _onchange_sh_topping_group_ids(self):
         # Auto-fill toppings from selected groups to mirror product.product behavior
         for template in self:
             topping_ids = []
-            # Prefer new canonical field, fallback to deprecated alias
-            groups = template.sh_topping_group_ids or template.tmpl_sh_topping_group_ids
-            for grp in groups:
+            for grp in template.sh_topping_group_ids:
                 topping_ids.extend(grp.toppinds_ids.ids)
-            # Write to both new and alias fields (both are related to the same target)
-            ids_list = [(6, 0, list(set(topping_ids)))]
-            template.sh_topping_ids = ids_list
-            template.tmpl_sh_topping_ids = ids_list
+            template.sh_topping_ids = [(6, 0, list(set(topping_ids)))]
