@@ -25,8 +25,12 @@
                             <label for="tmpl_sh_topping_group_ids"/>
                             <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
 
-                            <label for="tmpl_sh_topping_ids"/>
-                            <field name="tmpl_sh_topping_ids" widget="many2many_tags" nolabel="1"/>
+                            <!-- Grouped toppings view under the selected groups -->
+                            <field name="tmpl_sh_topping_group_ids"
+                                   widget="modifier_groups"
+                                   options="{'toppings_field': 'tmpl_sh_topping_ids'}"
+                                   nolabel="1"/>
+                            <field name="tmpl_sh_topping_ids" invisible="1"/>
                         </group>
                         <!-- Right column: image and price -->
                         <group>
