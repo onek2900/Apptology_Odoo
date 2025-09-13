@@ -24,8 +24,8 @@
                             <!-- Collapsible Modifier groups section -->
                             <label for="tmpl_sh_topping_group_ids"/>
                             <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
-                            <field name="tmpl_sh_topping_ids" widget="many2many_tags" nolabel="1"/>
                         </group>
+                            <field name="tmpl_sh_topping_ids" widget="many2many_tags" nolabel="1"/>
 
                         <!-- Right column: image and price -->
                         <group>
