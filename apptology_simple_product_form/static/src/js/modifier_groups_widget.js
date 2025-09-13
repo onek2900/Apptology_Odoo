@@ -10,6 +10,7 @@ class ModifierGroupsField extends Component {
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
+        this._lastGroupKey = null; // track last applied group set to avoid loops
         // Ensure we don't return the promise from loadData (which Owl would treat as a cleanup)
         useEffect(() => { this.loadData(); }, () => [this.props.value, this.props.record && this.props.record.data && this.props.record.data[this.groupsField]]);
     }
@@ -66,6 +67,13 @@ class ModifierGroupsField extends Component {
         this.state.toppingsById = toppingsById;
         this.state.expanded = expanded;
         this.state.loading = false;
+
+        // Auto-populate toppings from selected groups if missing
+        const groupKey = groupIds.slice().sort((a,b)=>a-b).join(",");
+        if (!this.props.readonly && groupKey !== this._lastGroupKey) {
+            await this._ensureAutoPopulate(groups);
+            this._lastGroupKey = groupKey;
+        }
     }
 
     get selectedToppingIds() {
@@ -145,6 +153,24 @@ class ModifierGroupsField extends Component {
             const newIds = Array.from(new Set([...(result.resIds || [])]));
             await this.orm.write("sh.topping.group", [groupId], { toppinds_ids: [[6, 0, newIds]] });
             await this.loadData();
+        }
+    }
+
+    async _ensureAutoPopulate(groups) {
+        try {
+            // Union currently selected toppings with all toppings from groups
+            const selected = this.selectedToppingIds;
+            const beforeCount = selected.size;
+            for (const g of groups || []) {
+                for (const tid of g.toppinds_ids || []) {
+                    selected.add(tid);
+                }
+            }
+            if (selected.size > beforeCount) {
+                await this.props.record.update({ [this.toppingsField]: [[6, 0, Array.from(selected)]] });
+            }
+        } catch (e) {
+            this.notification.add(String(e.message || e), { type: "danger" });
         }
     }
 }
