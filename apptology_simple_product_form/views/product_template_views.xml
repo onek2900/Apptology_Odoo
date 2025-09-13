@@ -24,12 +24,7 @@
                             <!-- Collapsible Modifier groups section -->
                             <label for="tmpl_sh_topping_group_ids"/>
                             <field name="tmpl_sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
-                            <!-- Render grouped toppings view bound to the same groups field so it always sees current selection -->
-                            <field name="tmpl_sh_topping_group_ids"
-                                   widget="modifier_groups"
-                                   options="{'toppings_field': 'tmpl_sh_topping_ids'}"
-                                   nolabel="1"/>
-                            <field name="tmpl_sh_topping_ids" invisible="1"/>
+                            <field name="tmpl_sh_topping_ids" widget="many2many_tags" nolabel="1"/>
                         </group>
 
                         <!-- Right column: image and price -->
