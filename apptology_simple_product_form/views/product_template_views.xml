@@ -28,7 +28,6 @@
                             <!-- Grouped toppings view under the selected groups -->
                             <field name="sh_topping_ids"
                                    widget="handle"
-                                   options="{'groups_field': 'sh_topping_group_ids'}"
                                    />
                         </group>
                         <!-- Right column: image and price -->
