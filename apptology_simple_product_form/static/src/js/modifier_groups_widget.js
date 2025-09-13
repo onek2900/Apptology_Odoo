@@ -3,6 +3,7 @@ import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { useService } from "@web/core/utils/hooks";
 import { Component, useEffect, useState } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 import { selectCreate } from "@web/views/fields/relational_utils";
 
 class ModifierGroupsField extends Component {
@@ -65,7 +66,7 @@ class ModifierGroupsField extends Component {
                 groups = await this.orm.searchRead(
                     "sh.topping.group",
                     [["id", "in", groupIds]],
-                    ["name", "sequence", "toppinds_ids"]
+                    ["name", "sequence", "toppinds_ids", "min", "max", "multi_max"]
                 );
                 const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
                 if (toppingIds.length) {
@@ -166,7 +167,7 @@ class ModifierGroupsField extends Component {
             resIds: Array.from(existing),
             domain,
             context: this.props.record.context,
-            title: this.env._t("Add Toppings"),
+            title: _t("Add Toppings"),
             allowCreate: true,
             multiSelect: true,
         });
@@ -177,6 +178,40 @@ class ModifierGroupsField extends Component {
         }
     }
 
+    countSelectedInGroup(grp) {
+        const selected = this.selectedToppingIds;
+        let c = 0;
+        for (const tid of grp.toppinds_ids || []) if (selected.has(tid)) c++;
+        return c;
+    }
+
+    async selectAllInGroup(groupId) {
+        if (this.props.readonly) return;
+        const grp = (this.state.groups || []).find((g) => g.id === groupId);
+        if (!grp) return;
+        const selected = this.selectedToppingIds;
+        for (const tid of grp.toppinds_ids || []) selected.add(tid);
+        await this.props.record.update({ [this.toppingsField]: [[6, 0, Array.from(selected)]] });
+    }
+
+    async clearGroup(groupId) {
+        if (this.props.readonly) return;
+        const grp = (this.state.groups || []).find((g) => g.id === groupId);
+        if (!grp) return;
+        const selected = this.selectedToppingIds;
+        for (const tid of grp.toppinds_ids || []) selected.delete(tid);
+        await this.props.record.update({ [this.toppingsField]: [[6, 0, Array.from(selected)]] });
+    }
+
+    async clearAllGroups() {
+        if (this.props.readonly) return;
+        await this.props.record.update({
+            [this.groupsField]: [[6, 0, []]],
+            [this.toppingsField]: [[6, 0, []]],
+        });
+        await this.loadData(true);
+    }
+
     async openAddGroupDialog() {
         if (this.props.readonly) return;
         const current = new Set(this.asIds(this.props.record.data[this.groupsField] || []));
@@ -185,7 +220,7 @@ class ModifierGroupsField extends Component {
             resIds: Array.from(current),
             domain: [],
             context: this.props.record.context,
-            title: this.env._t("Select Topping Groups"),
+            title: _t("Select Topping Groups"),
             allowCreate: true,
             multiSelect: true,
         });
