@@ -11,16 +11,16 @@ class ModifierGroupsField extends Component {
         this.notification = useService("notification");
         this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
         this._lastGroupKey = null; // track last applied group set to avoid loops
-        // React whenever toppings value or groups resIds change
-        // Use primitives in deps to avoid stale identity issues of relational wrappers
+        this._cache = new Map(); // cache by groupKey -> { groups, toppingsById }
+        this._debounce = null;
+        // React only when groups change; avoid RPC on every toppings toggle
         useEffect(
-            () => { this.loadData(); },
-            () => [
-                // toppings (bound field)
-                (this.props.value && (this.props.value.resIds ? this.props.value.resIds.join(',') : this.asIds(this.props.value).join(','))) || '',
-                // groups (sibling field)
-                (this.props.record && this.props.record.data && this.props.record.data[this.groupsField] && (this.props.record.data[this.groupsField].resIds ? this.props.record.data[this.groupsField].resIds.join(',') : this.asIds(this.props.record.data[this.groupsField]).join(','))) || '',
-            ]
+            () => {
+                if (this._debounce) clearTimeout(this._debounce);
+                this._debounce = setTimeout(() => this.loadData(), 120);
+                return () => this._debounce && clearTimeout(this._debounce);
+            },
+            () => [this._groupKey()]
         );
     }
 
@@ -43,27 +43,39 @@ class ModifierGroupsField extends Component {
         return [];
     }
 
-    async loadData() {
-        // Prefer the bound field's live value (when this widget is on the groups field)
-        const groupsVal = this.props.value || this.props.record.data[this.groupsField] || [];
+    _groupKey() {
+        const groupsVal = (this.props.record && this.props.record.data && this.props.record.data[this.groupsField]) || [];
+        const ids = this.asIds(groupsVal).slice().sort((a, b) => a - b);
+        return ids.join(",");
+    }
+
+    async loadData(force = false) {
+        const groupsVal = (this.props.record && this.props.record.data && this.props.record.data[this.groupsField]) || [];
         const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
         let groups = [];
         let toppingsById = {};
-        if (groupIds.length) {
-            groups = await this.orm.searchRead(
-                "sh.topping.group",
-                [["id", "in", groupIds]],
-                ["name", "sequence", "toppinds_ids"]
-            );
+        const cacheKey = groupIds.slice().sort((a, b) => a - b).join(",");
+        const cached = this._cache.get(cacheKey);
+        if (cached && !force) {
+            ({ groups, toppingsById } = cached);
+        } else {
+            if (groupIds.length) {
+                groups = await this.orm.searchRead(
+                    "sh.topping.group",
+                    [["id", "in", groupIds]],
+                    ["name", "sequence", "toppinds_ids"]
+                );
+                const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
+                if (toppingIds.length) {
+                    const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
+                    toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
+                }
+                // order groups by sequence then name
+                groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
+            }
+            this._cache.set(cacheKey, { groups, toppingsById });
         }
-        const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
-        if (toppingIds.length) {
-            const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
-            toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
-        }
-        // order groups by sequence then name
-        groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
         // preserve expanded states; default collapsed
         const prevExpanded = this.state.expanded || {};
         const expanded = {};
@@ -78,7 +90,7 @@ class ModifierGroupsField extends Component {
         this.state.loading = false;
 
         // Auto-populate toppings from selected groups if missing
-        const groupKey = groupIds.slice().sort((a,b)=>a-b).join(",");
+        const groupKey = cacheKey;
         if (!this.props.readonly && groupKey !== this._lastGroupKey) {
             await this._ensureAutoPopulate(groups);
             this._lastGroupKey = groupKey;
@@ -105,7 +117,6 @@ class ModifierGroupsField extends Component {
         } catch (e) {
             this.notification.add(String(e.message || e), { type: "danger" });
         }
-        this.render();
     }
 
     toggleGroup(id) {
@@ -161,7 +172,7 @@ class ModifierGroupsField extends Component {
         if (result && result.resIds) {
             const newIds = Array.from(new Set([...(result.resIds || [])]));
             await this.orm.write("sh.topping.group", [groupId], { toppinds_ids: [[6, 0, newIds]] });
-            await this.loadData();
+            await this.loadData(true);
         }
     }
 
