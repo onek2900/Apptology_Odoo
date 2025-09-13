@@ -6,6 +6,10 @@
                 <span class="text-muted">Loading…</span>
             </t>
             <t t-else="">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold">Modifier Groups</span>
+                    <a t-if="!props.readonly" href="#" class="btn btn-sm btn-outline-secondary" t-on-click.prevent.stop="openAddGroupDialog()">Add group</a>
+                </div>
                 <t t-if="state.groups.length">
                     <t t-foreach="state.groups" t-as="grp" t-key="grp.id">
                         <div class="modifier-group-block">

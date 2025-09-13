@@ -21,14 +21,13 @@
                             <label for="pos_categ_ids"/>
                             <field name="pos_categ_ids" nolabel="1" widget="many2many_tags" string="POS Category"/>
 
-                            <!-- Collapsible Modifier groups section -->
+                            <!-- Collapsible Modifier groups section: widget manages groups and toppings -->
                             <label for="sh_topping_group_ids"/>
-                            <field name="sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
-
-                            <!-- Grouped toppings view under the selected groups -->
-                            <field name="sh_topping_ids"
-                                   widget="handle"
-                                   />
+                            <field name="sh_topping_group_ids"
+                                   widget="modifier_groups"
+                                   options="{'toppings_field': 'sh_topping_ids'}"
+                                   nolabel="1"/>
+                            <field name="sh_topping_ids" invisible="1"/>
                         </group>
                         <!-- Right column: image and price -->
                         <group>

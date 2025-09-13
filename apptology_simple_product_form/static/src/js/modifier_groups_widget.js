@@ -25,12 +25,13 @@ class ModifierGroupsField extends Component {
     }
 
     get toppingsField() {
-        return (this.props.options && this.props.options.toppings_field) || this.props.name || "sh_topping_ids";
+        // The toppings field can be passed via options; otherwise use canonical field
+        return (this.props.options && this.props.options.toppings_field) || "sh_topping_ids";
     }
 
     get groupsField() {
-        // groups are provided via options or default field on template
-        return (this.props.options && this.props.options.groups_field) || "sh_topping_group_ids";
+        // If not passed via options, assume the bound field is the groups field
+        return (this.props.options && this.props.options.groups_field) || this.props.name || "sh_topping_group_ids";
     }
 
     // Normalize many2many values into an array of ids regardless of shape
@@ -172,6 +173,25 @@ class ModifierGroupsField extends Component {
         if (result && result.resIds) {
             const newIds = Array.from(new Set([...(result.resIds || [])]));
             await this.orm.write("sh.topping.group", [groupId], { toppinds_ids: [[6, 0, newIds]] });
+            await this.loadData(true);
+        }
+    }
+
+    async openAddGroupDialog() {
+        if (this.props.readonly) return;
+        const current = new Set(this.asIds(this.props.record.data[this.groupsField] || []));
+        const result = await selectCreate(this, {
+            resModel: "sh.topping.group",
+            resIds: Array.from(current),
+            domain: [],
+            context: this.props.record.context,
+            title: this.env._t("Select Topping Groups"),
+            allowCreate: true,
+            multiSelect: true,
+        });
+        if (result && result.resIds) {
+            const newIds = Array.from(new Set([...(result.resIds || [])]));
+            await this.props.record.update({ [this.groupsField]: [[6, 0, newIds]] });
             await this.loadData(true);
         }
     }
