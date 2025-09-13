@@ -73,6 +73,26 @@
   transition: transform 0.2s ease;
 }
 
+.app-modifier-groups-widget .topping-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.app-modifier-groups-widget .topping-row:hover {
+  background: #fafafa;
+}
+
+.app-modifier-groups-widget .add-topping {
+  margin-top: 6px;
+}
+.app-modifier-groups-widget .add-topping a {
+  font-size: 0.875rem;
+}
+
 .app-modifier-groups-widget .topping-pill {
   display: inline-block;
   padding: 4px 10px;

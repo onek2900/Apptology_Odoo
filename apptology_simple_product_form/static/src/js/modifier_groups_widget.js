@@ -3,6 +3,7 @@ import { registry } from "@web/core/registry";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { useService } from "@web/core/utils/hooks";
 import { Component, useEffect, useState } from "@odoo/owl";
+import { selectCreate } from "@web/views/fields/relational_utils";
 
 class ModifierGroupsField extends Component {
     setup() {
@@ -102,6 +103,49 @@ class ModifierGroupsField extends Component {
             return;
         }
         return this.toggleTopping(toppingId);
+    }
+
+    async onRemoveGroup(groupId) {
+        if (this.props.readonly) return;
+        const groupsField = this.groupsField;
+        const current = new Set(this.asIds(this.props.record.data[groupsField] || []));
+        if (current.has(groupId)) {
+            current.delete(groupId);
+            // Also remove this group's toppings from selection
+            const grp = (this.state.groups || []).find((g) => g.id === groupId);
+            const selectedToppings = this.selectedToppingIds;
+            if (grp) {
+                for (const tid of grp.toppinds_ids) {
+                    selectedToppings.delete(tid);
+                }
+            }
+            await this.props.record.update({
+                [groupsField]: [[6, 0, Array.from(current)]],
+                [this.toppingsField]: [[6, 0, Array.from(selectedToppings)]],
+            });
+            await this.loadData();
+        }
+    }
+
+    async openAddToppingDialog(groupId) {
+        if (this.props.readonly) return;
+        const grp = (this.state.groups || []).find((g) => g.id === groupId);
+        const existing = new Set(grp ? grp.toppinds_ids : []);
+        const domain = [["available_in_pos", "=", true]];
+        const result = await selectCreate(this, {
+            resModel: "product.product",
+            resIds: Array.from(existing),
+            domain,
+            context: this.props.record.context,
+            title: this.env._t("Add Toppings"),
+            allowCreate: true,
+            multiSelect: true,
+        });
+        if (result && result.resIds) {
+            const newIds = Array.from(new Set([...(result.resIds || [])]));
+            await this.orm.write("sh.topping.group", [groupId], { toppinds_ids: [[6, 0, newIds]] });
+            await this.loadData();
+        }
     }
 }
 
