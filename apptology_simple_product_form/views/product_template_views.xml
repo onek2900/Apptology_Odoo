@@ -27,7 +27,7 @@
 
                             <!-- Grouped toppings view under the selected groups -->
                             <field name="sh_topping_ids"
-                                   widget="modifier_groups"
+                                   widget="many2many_tags"
                                    options="{'groups_field': 'sh_topping_group_ids'}"
                                    nolabel="1"/>
                         </group>
