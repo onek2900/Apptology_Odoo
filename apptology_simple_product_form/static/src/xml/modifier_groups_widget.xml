@@ -12,25 +12,25 @@
                             <div class="group-title d-flex align-items-center justify-content-between">
                                 <div class="d-flex align-items-center" role="button"
                                      t-att-aria-expanded="state.expanded[grp.id] ? 'true' : 'false'"
-                                     t-on-click.stop="() => component.toggleGroup(grp.id)">
+                                     t-on-click.stop="toggleGroup(grp.id)">
                                     <i class="fa fa-chevron-down chevron me-2" aria-hidden="true"></i>
                                     <span><t t-esc="grp.name"/></span>
                                 </div>
                                 <a t-if="!props.readonly" href="#" class="text-danger small" title="Remove group"
-                                   t-on-click.prevent.stop="() => component.onRemoveGroup(grp.id)">
+                                   t-on-click.prevent.stop="onRemoveGroup(grp.id)">
                                     <i class="fa fa-trash-o" aria-hidden="true"></i>
                                 </a>
                             </div>
                             <div t-attf-class="group-toppings #{state.expanded[grp.id] ? 'open' : 'closed'}">
                                 <t t-foreach="grp.toppinds_ids" t-as="tid" t-key="tid">
                                     <t t-set="top" t-value="state.toppingsById[tid]"/>
-                                    <div t-if="top" class="topping-row" t-on-click.stop.prevent="() => component.onToppingClick(tid)">
+                                    <div t-if="top" class="topping-row" t-on-click.stop.prevent="onToppingClick(tid)">
                                         <i t-att-class="isSelected(tid) ? 'fa fa-check-square-o me-2' : 'fa fa-square-o me-2'" aria-hidden="true"></i>
                                         <span><t t-esc="top.name"/></span>
                                     </div>
                                 </t>
                                 <div class="add-topping">
-                                    <a t-if="!props.readonly" href="#" t-on-click.prevent.stop="() => component.openAddToppingDialog(grp.id)">Add another topping</a>
+                                    <a t-if="!props.readonly" href="#" t-on-click.prevent.stop="openAddToppingDialog(grp.id)">Add another topping</a>
                                 </div>
                             </div>
                         </div>
