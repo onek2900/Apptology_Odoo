@@ -11,8 +11,17 @@ class ModifierGroupsField extends Component {
         this.notification = useService("notification");
         this.state = useState({ groups: [], toppingsById: {}, loading: false, expanded: {} });
         this._lastGroupKey = null; // track last applied group set to avoid loops
-        // Ensure we don't return the promise from loadData (which Owl would treat as a cleanup)
-        useEffect(() => { this.loadData(); }, () => [this.props.value, this.props.record && this.props.record.data && this.props.record.data[this.groupsField]]);
+        // React whenever toppings value or groups resIds change
+        // Use primitives in deps to avoid stale identity issues of relational wrappers
+        useEffect(
+            () => { this.loadData(); },
+            () => [
+                // toppings (bound field)
+                (this.props.value && (this.props.value.resIds ? this.props.value.resIds.join(',') : this.asIds(this.props.value).join(','))) || '',
+                // groups (sibling field)
+                (this.props.record && this.props.record.data && this.props.record.data[this.groupsField] && (this.props.record.data[this.groupsField].resIds ? this.props.record.data[this.groupsField].resIds.join(',') : this.asIds(this.props.record.data[this.groupsField]).join(','))) || '',
+            ]
+        );
     }
 
     get toppingsField() {
