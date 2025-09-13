@@ -29,7 +29,7 @@
                             <field name="sh_topping_ids"
                                    widget="many2many_tags"
                                    options="{'groups_field': 'sh_topping_group_ids'}"
-                                   nolabel="1"/>
+                                   />
                         </group>
                         <!-- Right column: image and price -->
                         <group>
