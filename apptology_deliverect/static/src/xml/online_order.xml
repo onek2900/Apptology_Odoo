@@ -62,10 +62,7 @@
                                         </td>
                                         <td class="col">
                                             <t t-if="order.channel_icon">
-                                                <img t-att-src="order.channel_icon" alt="ch" style="height:18px;width:18px;object-fit:contain;" class="me-1"/>
-                                            </t>
-                                            <t t-elif="order.channel_name">
-                                                <span class="badge text-bg-light me-1"><t t-esc="order.channel_name[0]"/></span>
+                                                <img t-att-src="order.channel_icon" alt="" style="height:18px;width:18px;object-fit:contain;" class="me-1"/>
                                             </t>
                                             <t t-esc="order.partner_id and order.partner_id[1] or ' - '"/>
                                         </td>
