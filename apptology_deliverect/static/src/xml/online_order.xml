@@ -41,7 +41,7 @@
                                     <th class="col">Time</th>
                                     <th class="col">Channel/Receipt</th>
                                     <th class="col p-2">Customer</th>
-                                    <th class="col">Kitchen Status</th>
+                                    <th class="col">Order Status</th>
                                     <th class="col">Order Type</th>
                                     <th class="col">Payment Status</th>
                                     <th class="col">Total</th>
@@ -60,7 +60,15 @@
                                         <td class="col">
                                             <t t-esc="order.channel_display"/>
                                         </td>
-                                        <td class="col"><t t-esc="order.partner_id and order.partner_id[1] or ' - '"/></td>
+                                        <td class="col">
+                                            <t t-if="order.channel_icon">
+                                                <img t-att-src="order.channel_icon" alt="ch" style="height:18px;width:18px;object-fit:contain;" class="me-1"/>
+                                            </t>
+                                            <t t-elif="order.channel_name">
+                                                <span class="badge text-bg-light me-1"><t t-esc="order.channel_name[0]"/></span>
+                                            </t>
+                                            <t t-esc="order.partner_id and order.partner_id[1] or ' - '"/>
+                                        </td>
                                         <td class="col end">
                                             <div class="status-pill" t-att-class="{
                                                 'status-waiting': order.order_status == 'draft',

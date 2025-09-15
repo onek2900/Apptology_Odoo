@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import requests
+import re
 from datetime import timedelta
 from odoo import api, fields, models
 
@@ -334,6 +335,7 @@ class PosOrder(models.Model):
             # Optional/custom fields below; included only if present
             'online_order_status', 'order_status', 'order_type', 'online_order_paid', 'channel_order_reference',
             'tracking_number', 'is_online_order', 'sh_order_type_id', 'order_type_id', 'current_order_type',
+            'channel_name',
         ]
         fields_list = [f for f in candidate_fields if f in self._fields]
 
@@ -347,6 +349,42 @@ class PosOrder(models.Model):
             if not o.get('is_online_order'):
                 channel_disp = o.get('pos_reference') or o.get('tracking_number') or o.get('name') or ''
             o['channel_display'] = channel_disp or ' - '
+            # Channel icon mapping (known channels -> slug)
+            name = (o.get('channel_name') or '').strip()
+            slug = None
+            if name:
+                lookup = {
+                    'uber eats': 'uber_eats',
+                    'doordash': 'doordash',
+                    'flipdish': 'flipdish',
+                    'hungrypanda': 'hungrypanda',
+                    'fantuan': 'fantuan',
+                    'skipthedishes': 'skip_the_dishes',
+                    'ritual': 'ritual',
+                    'ordering': 'ordering',
+                    'foodhub': 'foodhub',
+                    'dood': 'dood',
+                    'popmenu': 'popmenu',
+                    'horego': 'horego',
+                    'relayy digital services': 'relayy',
+                    'b bot': 'bbot',
+                    'bbot': 'bbot',
+                    'arch2order': 'arch2order',
+                    'plento': 'plento',
+                    'tablevibe': 'tablevibe',
+                    'jetsontech': 'jetson',
+                    'qikserve': 'qikserve',
+                }
+                key = re.sub(r"\s+", " ", name).strip().lower()
+                slug = lookup.get(key)
+                if not slug:
+                    # generic slugify
+                    slug = re.sub(r"[^a-z0-9]+", "_", key).strip('_')
+            o['channel_slug'] = slug or ''
+            if slug:
+                o['channel_icon'] = f"/apptology_deliverect/static/src/img/channels/{slug}.svg"
+            else:
+                o['channel_icon'] = ''
             # Order type display from SH order type if present, else fallback to deliverect mapping or '-'
             ot_name = None
             if o.get('sh_order_type_id'):
