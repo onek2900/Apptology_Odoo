@@ -1,0 +1,21 @@
+<svg version="1.1" id="Calque_1" xmlns:x="ns_extend;" xmlns:i="ns_ai;" xmlns:graph="ns_graphs;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 57.3 57.3" style="enable-background:new 0 0 57.3 57.3;" xml:space="preserve">
+ <style type="text/css">
+  .st0{fill:#00D369;}
+ </style>
+ <metadata>
+  <sfw xmlns="ns_sfw;">
+   <slices>
+   </slices>
+   <sliceSourceBounds bottomLeftOrigin="true" height="57.3" width="57.3" x="28.4" y="46.5">
+   </sliceSourceBounds>
+  </sfw>
+ </metadata>
+ <g>
+  <path class="st0" d="M48.3,7.8v19.7c0,0.5-0.1,1.8-0.1,2.3V30C47.5,41.2,39.8,48.1,28,48.1c-5.2,0.1-10.2-1.9-13.8-5.6
+		c-3.4-3.7-5.2-8.6-4.9-13.6c0.4-9.4,8.5-16.3,18.7-16.3l0,0c2-0.1,4.1,0.2,6,0.9v9.6l-0.5-0.2c-1.4-0.6-3-0.9-4.5-0.8
+		c-3.2-0.1-6.1,1-7.7,2.9c-1.2,1.5-1.9,3.4-1.9,5.3c0,2,0.7,3.9,1.9,5.4c2,2.1,4.8,3.1,7.7,2.9c6.8-0.3,8.6-5.8,9.1-9.1
+		c0.2-1.6,0.3-4.8,0.3-5.2V1.7c-3-1.1-6.3-1.7-9.5-1.7C13.1-0.2,0.2,12.5,0,28.4s12.5,28.8,28.4,28.9s28.8-12.5,28.9-28.4
+		C57.4,21,54.1,13.3,48.3,7.8z">
+  </path>
+ </g>
+</svg>
