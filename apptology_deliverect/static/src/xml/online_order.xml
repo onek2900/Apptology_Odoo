@@ -5,7 +5,7 @@
             <div class="screen-full-width d-flex w-100 h-100">
                 <div class="rightpane pane-border d-flex flex-column flex-grow-1 w-100 h-100 h-lg-100 bg-300 overflow-y-auto">
                     <div class="d-flex justify-content-between align-items-center p-2 bg-white border-bottom">
-                        <div class="fs-4 fw-bold">Orders</div>
+                        <div class="fs-4 fw-bold">All Orders</div>
                         <button class="btn btn-lg btn-secondary" t-on-click="closeOnlineOrderScreen">
                             <i class="fa fa-arrow-left me-2"/> Back
                         </button>
@@ -39,7 +39,7 @@
                             <thead>
                                 <tr class="order fw-bolder">
                                     <th class="col">Time</th>
-                                    <th class="col">Channel Order ID</th>
+                                    <th class="col">Channel/Receipt</th>
                                     <th class="col p-2">Customer</th>
                                     <th class="col">Kitchen Status</th>
                                     <th class="col">Order Type</th>
@@ -58,26 +58,22 @@
   (<t t-esc="formatTime(order.date_order).date"/>)
 </td>
                                         <td class="col">
-                                            <t t-esc="order.channel_order_reference"/>
+                                            <t t-esc="order.channel_display"/>
                                         </td>
-                                        <td class="col"><t t-esc="order.partner_id[1]"/></td>
+                                        <td class="col"><t t-esc="order.partner_id and order.partner_id[1] or ' - '"/></td>
                                         <td class="col end">
                                             <div class="status-pill" t-att-class="{
-                                                'status-draft': order.order_status == 'draft' and order.online_order_status == 'open',
-                                                'status-waiting': order.order_status == 'draft' and order.online_order_status == 'approved',
+                                                'status-waiting': order.order_status == 'draft',
                                                 'status-ready': order.order_status == 'ready',
                                                 'status-cancel': order.order_status == 'cancel'
                                             }">
-                                                <t t-if="order.order_status == 'draft' and order.online_order_status == 'open'">Open</t>
-                                                <t t-elif="order.order_status == 'draft' and order.online_order_status == 'approved'">Cooking</t>
+                                                <t t-if="order.order_status == 'draft'">Waiting</t>
                                                 <t t-elif="order.order_status=='ready'">Ready</t>
-                                                <t t-elif="order.order_status=='cancel'">Cancel</t>
+                                                <t t-elif="order.order_status=='cancel'">Cancelled</t>
                                             </div>
                                         </td>
                                         <td class="col end">
-                                            <t t-if="order.order_type == '1'"><div>Pick Up</div></t>
-                                            <t t-elif="order.order_type == '2'"><div>Delivery</div></t>
-                                            <t t-elif="order.order_type == '3'"><div>Eat In</div></t>
+                                            <div><t t-esc="order.order_type_display"/></div>
                                         </td>
                                         <td class="col end">
                                             <t t-if="order.state=='paid'"><div>Paid</div></t>
