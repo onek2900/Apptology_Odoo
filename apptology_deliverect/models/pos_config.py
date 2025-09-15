@@ -25,11 +25,22 @@ class PosConfig(models.Model):
             ('is_deliverect_pricelist', '=', True)
         ], limit=1)
 
-    def _get_deliverect_price(self, product):
+    def _get_deliverect_price(self, product, qty=1.0, partner=None):
+        """Compute product price using the Deliverect pricelist if available.
+
+        Falls back safely to list price if pricelist methods are unavailable.
+        """
         pricelist = self._get_deliverect_pricelist()
         if pricelist:
-            # Use the pricelist context to compute price
-            return product.with_context(pricelist=pricelist.id).price
+            # Try common pricelist APIs across Odoo versions
+            try:
+                return pricelist.get_product_price(product, qty, partner or False)
+            except Exception:
+                try:
+                    # Some versions expose a private helper
+                    return pricelist._get_product_price(product, qty, partner=partner or False)
+                except Exception:
+                    pass
         return product.lst_price
 
     def toggle_approve(self):

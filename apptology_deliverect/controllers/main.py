@@ -98,12 +98,8 @@ class DeliverectWebhooks(http.Controller):
             [('id', '=', product_id)],
             limit=1)
         if product:
-            # Use Deliverect pricelist if available for this POS/company
-            deliverect_pricelist = request.env['product.pricelist'].sudo().search([
-                ('company_id', '=', pos_config.company_id.id),
-                ('is_deliverect_pricelist', '=', True)
-            ], limit=1)
-            unit_price = product.with_context(pricelist=deliverect_pricelist.id).price if deliverect_pricelist else product.lst_price
+            # Use Deliverect pricelist helper from POS config
+            unit_price = pos_config._get_deliverect_price(product)
 
             product_data = product.taxes_id.compute_all(
                 unit_price,
