@@ -2,8 +2,10 @@
 import logging
 import requests
 import re
+import os
 from datetime import timedelta
 from odoo import api, fields, models
+from odoo.modules.module import get_resource_path
 
 _logger = logging.getLogger(__name__)
 
@@ -388,9 +390,12 @@ class PosOrder(models.Model):
                     slug = re.sub(r"[^a-z0-9]+", "_", key).strip('_')
             o['channel_slug'] = slug or ''
             if slug:
-                o['channel_icon'] = f"/apptology_deliverect/static/src/img/channels/{slug}.svg"
-            else:
-                o['channel_icon'] = ''
+                filename = f"{slug}.svg"
+                res_path = get_resource_path('apptology_deliverect', 'static', 'src', 'img', 'channels', filename)
+                if res_path and os.path.exists(res_path):
+                    o['channel_icon'] = f"/apptology_deliverect/static/src/img/channels/{filename}"
+                else:
+                    o['channel_icon'] = ''
             # Order type display from SH order type if present, else fallback to deliverect mapping or '-'
             ot_name = None
             if o.get('sh_order_type_id'):
