@@ -17,10 +17,20 @@ export class OnlineOrderScreen extends Component {
         this.popup = useService("popup");
         this.printer = useService("printer");
         this.state = useState({
-            clickedOrder:{},
-            openOrders:[],
-            currency_symbol:this.env.services.pos.currency.symbol,
-            isAutoApprove:this.pos.config.auto_approve
+            clickedOrder: {},
+            orders: [],
+            currency_symbol: this.env.services.pos.currency.symbol,
+            isAutoApprove: this.pos.config.auto_approve,
+            // Filters and paging
+            filters: {
+                datePreset: 'today', // today | yesterday | 7d | month
+                status: 'all', // all | open | paid | refunded | cancelled
+                source: 'all', // all | online | pos
+                query: '',
+            },
+            page: 1,
+            hasMore: false,
+            loading: false,
         });
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService = this.env.services.bus_service;
@@ -28,8 +38,8 @@ export class OnlineOrderScreen extends Component {
         this.busService.addEventListener('notification', ({detail: notifications})=>{
             notifications = notifications.filter(item => item.payload.channel === this.channel)
             notifications.forEach(item => {
-                    this.fetchOpenOrders();
-                })
+                this.reloadOrders();
+            })
         });
         this.initiateServices();
         onWillUnmount(()=>clearInterval(this.pollingInterval))
@@ -38,7 +48,7 @@ export class OnlineOrderScreen extends Component {
      * Initiates services by fetching open orders and starting polling.
      */
     async initiateServices(){
-        this.fetchOpenOrders();
+        this.reloadOrders();
         this.startPollingOrders();
     }
     /**
@@ -137,22 +147,51 @@ export class OnlineOrderScreen extends Component {
     }
 }
     /**
-     * Fetches open online orders.
+     * Fetch orders with current filters and page.
      */
-    async fetchOpenOrders(){
+    async fetchOrders(page = 1){
+        this.state.loading = true;
         try {
-            const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
-            const unpaidOrders = await this.pos.get_order_list().filter(order => order.name.includes("Online-Order"));
-            this.state.openOrders = openOrders;
+            const payload = {
+                config_id: this.pos.config.id,
+                filters: {
+                    date_preset: this.state.filters.datePreset,
+                    status: this.state.filters.status,
+                    source: this.state.filters.source,
+                    query: this.state.filters.query,
+                },
+                page: page,
+                page_size: 50,
+            }
+            const result = await this.orm.call("pos.order", "get_orders", [], payload);
+            if (page === 1){
+                this.state.orders = result.orders;
+            } else {
+                this.state.orders = this.state.orders.concat(result.orders);
+            }
+            this.state.page = page;
+            this.state.hasMore = !!result.has_more;
         } catch (error) {
-            console.error("Error fetching open orders:", error);
+            console.error("Error fetching orders:", error);
+        } finally {
+            this.state.loading = false;
+        }
+    }
+
+    async reloadOrders(){
+        await this.fetchOrders(1);
+    }
+
+    async loadMore(){
+        if (this.state.hasMore && !this.state.loading){
+            await this.fetchOrders(this.state.page + 1);
         }
     }
     /**
      * Starts polling for open orders every 10 seconds.
      */
     async startPollingOrders() {
-        this.pollingInterval = setInterval(async () => this.fetchOpenOrders(), 10000);
+        this.pollingInterval = setInterval(async () => this.reloadOrders(), 10000);
     }
     /**
      * Approves an online order.
@@ -168,7 +207,7 @@ export class OnlineOrderScreen extends Component {
             { status: 'approved'},
         );
         this.env.bus.trigger('online_order_state_update');
-        this.fetchOpenOrders();
+        this.reloadOrders();
     }
     /**
      * Declines an online order after confirmation.
@@ -190,7 +229,7 @@ export class OnlineOrderScreen extends Component {
                         { status: 'declined'},
                         )
                 this.env.bus.trigger('online_order_state_update');
-                this.fetchOpenOrders();
+                this.reloadOrders();
             }
     }
     /**
@@ -227,7 +266,7 @@ export class OnlineOrderScreen extends Component {
     async finalizeOrder(order){
         await this.orm.call("pos.order", "update_order_status", [order.id],{status:'finalized'});
         this.state.clickedOrder = {};
-        this.fetchOpenOrders();
+        this.reloadOrders();
     }
     /**
      * Redirects to the ticket screen when an order is double-clicked.

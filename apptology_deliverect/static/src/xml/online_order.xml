@@ -5,12 +5,36 @@
             <div class="screen-full-width d-flex w-100 h-100">
                 <div class="rightpane pane-border d-flex flex-column flex-grow-1 w-100 h-100 h-lg-100 bg-300 overflow-y-auto">
                     <div class="d-flex justify-content-between align-items-center p-2 bg-white border-bottom">
-                        <div class="fs-4 fw-bold">Online Orders</div>
+                        <div class="fs-4 fw-bold">Orders</div>
                         <button class="btn btn-lg btn-secondary" t-on-click="closeOnlineOrderScreen">
                             <i class="fa fa-arrow-left me-2"/> Back
                         </button>
                     </div>
                     <div class="orders overflow-y-auto flex-grow-1">
+                        <!-- Filters toolbar -->
+                        <div class="p-2 bg-white border-bottom d-flex gap-2 align-items-center flex-wrap">
+                            <div class="btn-group" role="group">
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='today', 'btn-outline-primary': state.filters.datePreset!=='today'}" t-on-click="() => { state.filters.datePreset='today'; reloadOrders(); }">Today</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='yesterday', 'btn-outline-primary': state.filters.datePreset!=='yesterday'}" t-on-click="() => { state.filters.datePreset='yesterday'; reloadOrders(); }">Yesterday</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='7d', 'btn-outline-primary': state.filters.datePreset!=='7d'}" t-on-click="() => { state.filters.datePreset='7d'; reloadOrders(); }">Last 7 Days</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='month', 'btn-outline-primary': state.filters.datePreset!=='month'}" t-on-click="() => { state.filters.datePreset='month'; reloadOrders(); }">This Month</button>
+                            </div>
+                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.status = ev.target.value; reloadOrders(); }">
+                                <option value="all">All Statuses</option>
+                                <option value="open">Open</option>
+                                <option value="paid">Paid</option>
+                                <option value="refunded">Refunded</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.source = ev.target.value; reloadOrders(); }">
+                                <option value="all">All Sources</option>
+                                <option value="pos">POS</option>
+                                <option value="online">Online</option>
+                            </select>
+                            <div class="ms-auto d-flex align-items-center gap-2">
+                                <input class="form-control form-control-sm" placeholder="Search receipt, channel or customer" t-on-keyup="(ev)=>{ state.filters.query = ev.target.value; reloadOrders(); }"/>
+                            </div>
+                        </div>
                         <table class="table order_head w-100">
                             <thead>
                                 <tr class="order fw-bolder">
@@ -25,7 +49,7 @@
                                 </tr>
                             </thead>
                             <tbody style="display: block;">
-                                <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
+                                <t t-foreach="state.orders" t-as="order" t-key="order.id">
                                     <tr class="order-row" t-att-data-id="order.id"
                                         t-on-click="() => this.onClickOrder(order)"
                                         t-on-dblclick="() => this.onDoubleClick(order)">
@@ -99,6 +123,12 @@
                                 </t>
                             </tbody>
                         </table>
+                        <div class="p-2 text-center" t-if="state.hasMore">
+                            <button class="btn btn-outline-primary" t-on-click="loadMore" t-att-disabled="state.loading">
+                                <t t-if="state.loading">Loading…</t>
+                                <t t-elif="!state.loading">Load more</t>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="leftpane d-flex flex-column h-100">
@@ -137,14 +167,14 @@
                             </div>
                         </div>
                         <div class="pads border-top">
-                            <t t-if="state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
+                            <t t-if="state.clickedOrder.is_online_order && state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
                                 <button
                                         class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
                                         t-on-click.stop="() => this.finalizeOrder(state.clickedOrder)">
                                     <span class="fs-1 d-block">Finalize</span>
                                 </button>
                             </t>
-                            <t t-if="state.clickedOrder.order_status=='draft' and state.clickedOrder.online_order_status=='approved'">
+                            <t t-if="state.clickedOrder.is_online_order && state.clickedOrder.order_status=='draft' and state.clickedOrder.online_order_status=='approved'">
                                  <button class="button ready load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
             t-on-click="() => this.done_order(state.clickedOrder)">
         <i class="fa fa-check me-2"/> Ready

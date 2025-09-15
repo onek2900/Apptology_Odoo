@@ -172,25 +172,50 @@ class PosOrder(models.Model):
 
     @api.model
     def get_open_orders(self, config_id):
-        """function to get the open orders in pos"""
-        session_id = self.env['pos.config'].browse(config_id).current_session_id.id
+        """Return orders for the screen: include online and POS orders for current session.
+
+        - Online orders: still filtered by decline window and status as before.
+        - Offline POS orders: include draft/paid orders from current session.
+        """
+        session = self.env['pos.config'].browse(config_id).current_session_id
+        session_id = session.id
         now = fields.Datetime.now()
         expiration_time = now - timedelta(minutes=1)
-        orders = self.search_read(
+
+        fields_list = ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type',
+                       'online_order_paid', 'state', 'amount_total', 'amount_tax', 'channel_order_reference',
+                       'date_order', 'tracking_number', 'partner_id', 'user_id', 'lines', 'is_online_order']
+
+        # Online orders (recent or not declined long ago), any monetary amount > 0
+        online_orders = self.search_read(
             ['|',
              ('declined_time', '=', False),
              ('declined_time', '>', expiration_time),
              ('is_online_order', '=', True),
              ('amount_total', '>', 0),
              ('config_id', '=', config_id),
-             ('session_id', '=', session_id)
-             ],
-            ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type', 'online_order_paid', 'state',
-             'amount_total', 'amount_tax','channel_order_reference',
-             'date_order', 'tracking_number',
-             'partner_id',
-             'user_id', 'lines'], order="order_priority, date_order DESC"
+             ('session_id', '=', session_id)],
+            fields_list, order="order_priority, date_order DESC"
         )
+
+        # Offline POS orders from current session (draft or paid)
+        offline_orders = []
+        if session_id:
+            offline_orders = self.search_read(
+                [
+                    ('is_online_order', '=', False),
+                    ('amount_total', '>', 0),
+                    ('config_id', '=', config_id),
+                    ('session_id', '=', session_id),
+                    ('state', 'in', ['draft', 'paid'])
+                ],
+                fields_list, order="date_order DESC"
+            )
+            # Normalize for UI: treat offline orders as 'approved' for display logic, but do not add online actions
+            for o in offline_orders:
+                o['online_order_status'] = o.get('online_order_status') or 'approved'
+
+        orders = online_orders + offline_orders
         for order in orders:
             order['amount_total'] = "{:.2f}".format(order['amount_total'])
             order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
@@ -221,3 +246,114 @@ class PosOrder(models.Model):
             ('online_order_status', 'in', ['approved', 'finalized'])])
         orders = offline_orders | online_orders
         return orders.export_for_ui()
+
+    @api.model
+    def get_orders(self, config_id, filters=None, page=1, page_size=50):
+        """Return combined orders (online + POS) with filters and pagination.
+
+        :param int config_id: current POS config
+        :param dict filters: optional filters: {
+            'date_preset': 'today'|'yesterday'|'7d'|'month'|None,
+            'date_from': iso str,
+            'date_to': iso str,
+            'status': 'all'|'open'|'paid'|'refunded'|'cancelled',
+            'source': 'all'|'online'|'pos',
+            'query': str
+        }
+        :param int page: 1-based page index
+        :param int page_size: page size
+        :return: dict with 'orders' list and 'has_more' boolean
+        """
+        filters = filters or {}
+        domain = [('config_id', '=', config_id)]
+
+        # Source filter
+        source = filters.get('source', 'all')
+        if source == 'online':
+            domain.append(('is_online_order', '=', True))
+        elif source == 'pos':
+            domain.append(('is_online_order', '=', False))
+
+        # Date preset or explicit range
+        date_from = filters.get('date_from')
+        date_to = filters.get('date_to')
+        preset = filters.get('date_preset')
+        if not (date_from and date_to) and preset:
+            now = fields.Datetime.now()
+            if preset == 'today':
+                # start of day to end of day
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=0, minute=0, second=0, microsecond=0))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=23, minute=59, second=59, microsecond=999999))
+            elif preset == 'yesterday':
+                y = now - timedelta(days=1)
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, y).replace(hour=0, minute=0, second=0, microsecond=0))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, y).replace(hour=23, minute=59, second=59, microsecond=999999))
+            elif preset == '7d':
+                d = now - timedelta(days=6)
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, d).replace(hour=0, minute=0, second=0, microsecond=0))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=23, minute=59, second=59, microsecond=999999))
+            elif preset == 'month':
+                first = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, first))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=23, minute=59, second=59, microsecond=999999))
+        if date_from:
+            domain.append(('date_order', '>=', date_from))
+        if date_to:
+            domain.append(('date_order', '<=', date_to))
+
+        # Status filter
+        status = filters.get('status', 'all')
+        status_domain = []
+        if status and status != 'all':
+            if status == 'open':
+                status_domain = [('state', '=', 'draft')]
+            elif status == 'paid':
+                status_domain = [('state', '=', 'paid')]
+            elif status == 'refunded':
+                status_domain = [('amount_total', '<', 0)]
+            elif status == 'cancelled':
+                status_domain = ['|', ('order_status', '=', 'cancel'), ('state', '=', 'cancel')]
+        # Query filter
+        query = filters.get('query')
+        if query:
+            qd = ['|', '|',
+                  ('pos_reference', 'ilike', query),
+                  ('channel_order_reference', 'ilike', query),
+                  ('partner_id.name', 'ilike', query)]
+            domain = ['&'] + domain + [qd]
+
+        complete_domain = domain
+        if status_domain:
+            complete_domain = ['&'] + domain + [status_domain]
+
+        fields_list = ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type',
+                       'online_order_paid', 'state', 'amount_total', 'amount_tax', 'channel_order_reference',
+                       'date_order', 'tracking_number', 'partner_id', 'user_id', 'lines', 'is_online_order']
+
+        offset = max(0, (page - 1) * page_size)
+        orders = self.search_read(complete_domain, fields_list, offset=offset, limit=page_size, order="date_order DESC")
+
+        for order in orders:
+            # normalize display values
+            order['amount_total'] = "{:.2f}".format(order['amount_total'])
+            order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
+
+        # Lines foldout
+        all_line_ids = [line_id for order in orders for line_id in order['lines']]
+        lines = self.env['pos.order.line'].search_read(
+            [('id', 'in', all_line_ids)],
+            ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl']
+        )
+        for line in lines:
+            line['price_unit'] = "{:.2f}".format(line['price_unit'])
+            line['price_subtotal'] = "{:.2f}".format(line['price_subtotal'])
+            line['price_subtotal_incl'] = "{:.2f}".format(line['price_subtotal_incl'])
+        line_mapping = {line['id']: line for line in lines}
+        for order in orders:
+            order['lines'] = [line_mapping.get(line_id) for line_id in order['lines'] if line_id in line_mapping]
+
+        has_more = len(orders) == page_size
+        return {
+            'orders': orders,
+            'has_more': has_more,
+        }
