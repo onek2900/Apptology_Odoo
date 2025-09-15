@@ -184,7 +184,8 @@ class PosOrder(models.Model):
 
         fields_list = ['id', 'name', 'online_order_status', 'pos_reference', 'order_status', 'order_type',
                        'online_order_paid', 'state', 'amount_total', 'amount_tax', 'channel_order_reference',
-                       'date_order', 'tracking_number', 'partner_id', 'user_id', 'lines', 'is_online_order']
+                       'date_order', 'tracking_number', 'partner_id', 'user_id', 'lines', 'is_online_order',
+                       'order_type_id', 'current_order_type']
 
         # Online orders (recent or not declined long ago), any monetary amount > 0
         online_orders = self.search_read(
@@ -334,24 +335,19 @@ class PosOrder(models.Model):
         orders = self.search_read(complete_domain, fields_list, offset=offset, limit=page_size, order="date_order DESC")
 
         # Enrich with display fields without breaking if external modules absent
-        order_by_id = {o['id']: o for o in orders}
-        recs = self.browse(list(order_by_id.keys()))
-        for rec in recs:
-            o = order_by_id.get(rec.id)
+        for o in orders:
             # Channel/receipt display: if online, use channel ref; else show POS receipt/name
             channel_disp = o.get('channel_order_reference') or ''
-            if not rec.is_online_order:
-                channel_disp = rec.pos_reference or rec.tracking_number or rec.name or ''
+            if not o.get('is_online_order'):
+                channel_disp = o.get('pos_reference') or o.get('tracking_number') or o.get('name') or ''
             o['channel_display'] = channel_disp or ' - '
             # Order type display from SH order type if present, else fallback to deliverect mapping or '-'
             ot_name = None
-            try:
-                if 'current_order_type' in rec._fields and rec.current_order_type:
-                    ot_name = rec.current_order_type.name
-                elif 'order_type_id' in rec._fields and rec.order_type_id:
-                    ot_name = rec.order_type_id.name
-            except Exception:
-                pass
+            if o.get('order_type_id'):
+                # Many2one return [id, name]
+                ot_name = (o['order_type_id'][1] if isinstance(o['order_type_id'], (list, tuple)) and len(o['order_type_id']) > 1 else None)
+            elif o.get('current_order_type'):
+                ot_name = (o['current_order_type'][1] if isinstance(o['current_order_type'], (list, tuple)) and len(o['current_order_type']) > 1 else None)
             if not ot_name:
                 code = o.get('order_type')
                 mapping = {'1': 'Pick Up', '2': 'Delivery', '3': 'Eat In'}

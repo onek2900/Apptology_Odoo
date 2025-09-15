@@ -76,8 +76,10 @@
                                             <div><t t-esc="order.order_type_display"/></div>
                                         </td>
                                         <td class="col end">
-                                            <t t-if="order.state=='paid'"><div>Paid</div></t>
-                                            <t t-elif="order.state=='draft'"><div>Unpaid</div></t>
+                                            <t t-if="order.state=='draft'"><div>Unpaid</div></t>
+                                            <t t-elif="['paid','done','invoiced'].includes(order.state)"><div>Paid</div></t>
+                                            <t t-elif="order.state=='cancel'"><div>Cancelled</div></t>
+                                            <t t-else=""><div><t t-esc="order.state"/></div></t>
                                         </td>
                                         <td class="col end p-2"><t t-esc="order.amount_total"/></td>
                                         <td class="col action-buttons p-2">
