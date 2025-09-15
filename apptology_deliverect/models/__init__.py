@@ -13,3 +13,4 @@ from . import deliverect_modifier_group
 from . import deliverect_modifier_product_lines
 from . import product_template
 from . import toping_group_limit
+from . import product_pricelist

@@ -87,7 +87,7 @@ class DeliverectWebhooks(http.Controller):
         pos_reference = f"Online-Order {digits[:5]}-{digits[5:8]}-{digits[8:]}"
         return pos_reference
 
-    def create_order_line(self, product_id, qty, note):
+    def create_order_line(self, product_id, qty, note, pos_config):
         """Create an order line for a given product.
 
         :param int product_id: The ID of the product.
@@ -98,8 +98,15 @@ class DeliverectWebhooks(http.Controller):
             [('id', '=', product_id)],
             limit=1)
         if product:
+            # Use Deliverect pricelist if available for this POS/company
+            deliverect_pricelist = request.env['product.pricelist'].sudo().search([
+                ('company_id', '=', pos_config.company_id.id),
+                ('is_deliverect_pricelist', '=', True)
+            ], limit=1)
+            unit_price = product.with_context(pricelist=deliverect_pricelist.id).price if deliverect_pricelist else product.lst_price
+
             product_data = product.taxes_id.compute_all(
-                product.lst_price,
+                unit_price,
                 currency=product.currency_id,
                 quantity=qty,
                 product=product,
@@ -108,7 +115,7 @@ class DeliverectWebhooks(http.Controller):
             line_vals = {
                 'full_product_name': product.name,
                 'product_id': product.id,
-                'price_unit': product.lst_price,
+                'price_unit': unit_price,
                 'qty': qty,
                 'price_subtotal': product_data.get('total_excluded'),
                 'price_subtotal_incl': product_data.get('total_included'),
@@ -170,7 +177,8 @@ class DeliverectWebhooks(http.Controller):
                             sub_item_line_vals = self.create_order_line(
                                 int(sub_item.get('plu').split('-')[1]),
                                 item.get('quantity'),
-                                item.get('remark', "")
+                                item.get('remark', ""),
+                                pos_config
                             )
                             # mark variant sub-items as toppings for receipt grouping
                             sub_item_line_vals['sh_is_topping'] = True
@@ -181,7 +189,8 @@ class DeliverectWebhooks(http.Controller):
                     line_vals = self.create_order_line(
                         int(item.get('plu').split('-')[1]),
                         item.get('quantity'),
-                        item.get('remark', "")
+                        item.get('remark', ""),
+                        pos_config
                     )
                     # flag parent if it has modifiers/toppings
                     if item.get('subItems'):
@@ -194,7 +203,8 @@ class DeliverectWebhooks(http.Controller):
                             sub_item_line_vals = self.create_order_line(
                                 int(sub_item.get('plu').split('-')[1]),
                                 item.get('quantity'),
-                                sub_item.get('remark', "")
+                                sub_item.get('remark', ""),
+                                pos_config
                             )
                             # mark sub-items of a normal product as toppings
                             sub_item_line_vals['sh_is_topping'] = True
@@ -210,7 +220,10 @@ class DeliverectWebhooks(http.Controller):
                 'amount_tax': total_taxed - total_untaxed,
                 'amount_total': total_taxed,
                 'fiscal_position_id': False,
-                'pricelist_id': pos_config.pricelist_id.id,
+                'pricelist_id': (request.env['product.pricelist'].sudo().search([
+                    ('company_id', '=', pos_config.company_id.id),
+                    ('is_deliverect_pricelist', '=', True)
+                ], limit=1).id) or pos_config.pricelist_id.id,
                 'lines': order_lines,
                 'name': pos_reference,
                 'pos_reference': pos_reference,

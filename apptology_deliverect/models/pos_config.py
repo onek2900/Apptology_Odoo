@@ -18,6 +18,20 @@ class PosConfig(models.Model):
     status_message = fields.Char(string="Registration Status Message", help="Registration Status Message")
     order_status_message = fields.Char(string="Order Status Message", help="Order Status Message")
 
+    # Helper: fetch price from dedicated Deliverect pricelist if available
+    def _get_deliverect_pricelist(self):
+        return self.env['product.pricelist'].sudo().search([
+            ('company_id', '=', self.company_id.id),
+            ('is_deliverect_pricelist', '=', True)
+        ], limit=1)
+
+    def _get_deliverect_price(self, product):
+        pricelist = self._get_deliverect_pricelist()
+        if pricelist:
+            # Use the pricelist context to compute price
+            return product.with_context(pricelist=pricelist.id).price
+        return product.lst_price
+
     def toggle_approve(self):
         """Toggle the approval button."""
         self.auto_approve = not self.auto_approve
@@ -174,7 +188,7 @@ class PosConfig(models.Model):
             arabicname = product.with_context(lang=lang_code).name
         if product.product_note_arabic:
             description_arabic = product.product_note_arabic or product.with_context(lang=lang_code).product_note
-        return {
+        data = {
             "productType": product_type,
             "plu": plu,
             "price": product_price * 100,
@@ -191,8 +205,10 @@ class PosConfig(models.Model):
             "deliveryTax": product_tax * 1000,
             "takeawayTax": product_tax * 1000,
             "eatInTax": product_tax * 1000,
-            "posCategoryIds": product_category_ids
         }
+        # Do not send category for modifiers (productType == 2)
+        data["posCategoryIds"] = [] if product_type == 2 else product_category_ids
+        return data
 
     def create_product_with_modifier(self):
         """create product with modifier in deliverect"""
@@ -206,7 +222,7 @@ class PosConfig(models.Model):
                            self.iface_available_categ_ids.ids))
         products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
-            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
+            **self.create_product_json(1, f"PRD-{prod.id}", self._get_deliverect_price(prod), prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
             "subProducts": [f"MOD_GRP-{group.id}" for group in prod.sh_topping_group_ids],
@@ -226,7 +242,7 @@ class PosConfig(models.Model):
 
         modifier_groups = self.env['sh.topping.group'].sudo().search([])
         modifiers_data = modifiers.mapped(lambda prod: {
-            **self.create_product_json(2, f"MOD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
+            **self.create_product_json(2, f"MOD-{prod.id}", self._get_deliverect_price(prod), prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if prod.taxes_id else 0.0,
                                        prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
@@ -263,7 +279,7 @@ class PosConfig(models.Model):
                            self.iface_available_categ_ids.ids))
         products = self.env['product.product'].sudo().search(domain)
         return products.mapped(lambda prod: {
-            **self.create_product_json(1, f"PRD-{prod.id}", prod.lst_price, prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
+            **self.create_product_json(1, f"PRD-{prod.id}", self._get_deliverect_price(prod), prod.name, prod.product_arabicname, prod.product_tmpl_id.id,
                                        prod.product_note, prod.product_note_arabic, prod.taxes_id[0].amount if
                                        prod.taxes_id else 0.0, prod.pos_categ_ids.ids),
             "productTags": [allergen.allergen_id for allergen in
