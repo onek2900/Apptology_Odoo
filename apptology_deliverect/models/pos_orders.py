@@ -327,7 +327,7 @@ class PosOrder(models.Model):
         if status_domain:
             complete_domain = ['&'] + domain + [status_domain]
 
-        fields_list = ['id', 'name', 'online_order_status', 'pos_reference', 'order_status', 'order_type',
+        fields_list = ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type',
                        'online_order_paid', 'state', 'amount_total', 'amount_tax', 'channel_order_reference',
                        'date_order', 'tracking_number', 'partner_id', 'user_id', 'lines', 'is_online_order',
                        'sh_order_type_id', 'order_type_id', 'current_order_type']
