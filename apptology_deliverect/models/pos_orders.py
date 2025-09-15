@@ -350,7 +350,10 @@ class PosOrder(models.Model):
                 channel_disp = o.get('pos_reference') or o.get('tracking_number') or o.get('name') or ''
             o['channel_display'] = channel_disp or ' - '
             # Channel icon mapping (known channels -> slug)
-            name = (o.get('channel_name') or '').strip()
+            partner_name = ''
+            if o.get('partner_id') and isinstance(o.get('partner_id'), (list, tuple)) and len(o.get('partner_id')) > 1:
+                partner_name = (o['partner_id'][1] or '').strip()
+            name = (o.get('channel_name') or partner_name or '').strip()
             slug = None
             if name:
                 lookup = {
@@ -365,7 +368,8 @@ class PosOrder(models.Model):
                     'foodhub': 'foodhub',
                     'dood': 'dood',
                     'popmenu': 'popmenu',
-                    'horego': 'horego',
+                    'horago': 'horago',
+                    'horego': 'horago',
                     'relayy digital services': 'relayy',
                     'b bot': 'bbot',
                     'bbot': 'bbot',
@@ -374,6 +378,8 @@ class PosOrder(models.Model):
                     'tablevibe': 'tablevibe',
                     'jetsontech': 'jetson',
                     'qikserve': 'qikserve',
+                    'deliverect': 'deliverect',
+                    'deliverect kds': 'deliverect',
                 }
                 key = re.sub(r"\s+", " ", name).strip().lower()
                 slug = lookup.get(key)
