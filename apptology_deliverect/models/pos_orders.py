@@ -185,7 +185,7 @@ class PosOrder(models.Model):
         fields_list = ['id', 'name', 'online_order_status', 'pos_reference', 'order_status', 'order_type',
                        'online_order_paid', 'state', 'amount_total', 'amount_tax', 'channel_order_reference',
                        'date_order', 'tracking_number', 'partner_id', 'user_id', 'lines', 'is_online_order',
-                       'order_type_id', 'current_order_type']
+                       'order_type_id', 'current_order_type', 'sh_order_type_id']
 
         # Online orders (recent or not declined long ago), any monetary amount > 0
         online_orders = self.search_read(
@@ -343,7 +343,9 @@ class PosOrder(models.Model):
             o['channel_display'] = channel_disp or ' - '
             # Order type display from SH order type if present, else fallback to deliverect mapping or '-'
             ot_name = None
-            if o.get('order_type_id'):
+            if o.get('sh_order_type_id'):
+                ot_name = (o['sh_order_type_id'][1] if isinstance(o['sh_order_type_id'], (list, tuple)) and len(o['sh_order_type_id']) > 1 else None)
+            elif o.get('order_type_id'):
                 # Many2one return [id, name]
                 ot_name = (o['order_type_id'][1] if isinstance(o['order_type_id'], (list, tuple)) and len(o['order_type_id']) > 1 else None)
             elif o.get('current_order_type'):
