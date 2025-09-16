@@ -336,7 +336,7 @@ class PosOrder(models.Model):
             'partner_id', 'user_id', 'lines',
             # Optional/custom fields below; included only if present
             'online_order_status', 'order_status', 'order_type', 'online_order_paid', 'channel_order_reference',
-            'tracking_number', 'is_online_order', 'sh_order_type_id', 'order_type_id', 'current_order_type',
+            'tracking_number', 'is_online_order', 'is_cooking', 'sh_order_type_id', 'order_type_id', 'current_order_type',
             'channel_name',
         ]
         fields_list = [f for f in candidate_fields if f in self._fields]
@@ -410,6 +410,28 @@ class PosOrder(models.Model):
                 mapping = {'1': 'Pick Up', '2': 'Delivery', '3': 'Eat In'}
                 ot_name = mapping.get(code) if code else None
             o['order_type_display'] = ot_name or ' - '
+
+            # Kitchen status display logic
+            ks = ''
+            order_status = o.get('order_status')
+            online_status = o.get('online_order_status')
+            is_online = bool(o.get('is_online_order'))
+            is_cooking = bool(o.get('is_cooking')) if 'is_cooking' in o else False
+
+            if order_status == 'cancel':
+                ks = 'Cancelled'
+            elif order_status == 'ready':
+                ks = 'Ready'
+            else:
+                if is_online:
+                    if online_status not in ('approved', 'finalized'):
+                        ks = 'Draft'
+                    else:
+                        ks = 'In Progress' if is_cooking else 'Right Away'
+                else:
+                    # In-store orders: infer from cooking flag or order_status
+                    ks = 'In Progress' if (is_cooking or order_status == 'draft') else 'Right Away'
+            o['kitchen_status_display'] = ks
 
         for order in orders:
             # normalize display values
