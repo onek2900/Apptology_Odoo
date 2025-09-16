@@ -88,7 +88,7 @@
                                         </td>
                                         <td class="col end p-2"><t t-esc="order.amount_total"/></td>
                                         <td class="col action-buttons p-2">
-                                            <t t-if="order.online_order_status=='open'">
+                                            <t t-if="order.is_online_order and order.online_order_status=='open'">
                                                 <t t-if="state.isAutoApprove">
                                                     <div class="status-badge approved">Approved</div>
                                                 </t>
@@ -103,20 +103,20 @@
                                                     </button>
                                                 </t>
                                             </t>
-                                            <t t-elif="order.online_order_status=='approved'">
+                                            <t t-elif="order.is_online_order and order.online_order_status=='approved'">
                                                 <div class="status-badge approved">Approved</div>
                                             </t>
-                                            <t t-elif="order.online_order_status=='rejected'">
+                                            <t t-elif="order.is_online_order and order.online_order_status=='rejected'">
                                                 <div class="status-badge rejected">Rejected</div>
                                             </t>
-                                            <t t-elif="order.online_order_status=='finalized'">
+                                            <t t-elif="order.is_online_order and order.online_order_status=='finalized'">
                                                 <div class="status-badge approved">Finalized</div>
                                             </t>
-                                            <t t-else="">
+                                            <t t-elif="order.is_online_order">
                                                 <div class="status-badge rejected">Cancelled</div>
                                             </t>
                                             <!-- Print online order receipt -->
-                                            <t t-if="['open','approved','finalized'].includes(order.online_order_status)">
+                                            <t t-if="order.is_online_order and ['open','approved','finalized'].includes(order.online_order_status)">
                                                 <button class="btn-action print" t-on-click.stop="() => this.printReceipt(order.id)">
                                                     <i class="fa fa-print" aria-hidden="true"/>
                                                 </button>
