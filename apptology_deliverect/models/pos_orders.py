@@ -333,7 +333,7 @@ class PosOrder(models.Model):
         # Build fields list dynamically to avoid crashes if optional modules are absent
         candidate_fields = [
             'id', 'name', 'pos_reference', 'state', 'amount_total', 'amount_tax', 'date_order',
-            'partner_id', 'user_id', 'lines',
+            'partner_id', 'user_id', 'lines', 'config_id',
             # Optional/custom fields below; included only if present
             'online_order_status', 'order_status', 'order_type', 'online_order_paid', 'channel_order_reference',
             'tracking_number', 'is_online_order', 'is_cooking', 'sh_order_type_id', 'order_type_id', 'current_order_type',
@@ -343,6 +343,29 @@ class PosOrder(models.Model):
 
         offset = max(0, (page - 1) * page_size)
         orders = self.search_read(complete_domain, fields_list, offset=offset, limit=page_size, order="date_order DESC")
+
+        # Determine per-order whether it falls under kitchen screen categories
+        in_kitchen_map = {}
+        try:
+            # Build mapping from config -> kitchen category ids
+            config_ids = {o.get('config_id')[0] for o in orders if isinstance(o.get('config_id'), (list, tuple)) and o.get('config_id')}
+            ks_by_config = {}
+            if config_ids:
+                screens = self.env['kitchen.screen'].sudo().search([('pos_config_id', 'in', list(config_ids))])
+                for screen in screens:
+                    ks_by_config[screen.pos_config_id.id] = set(screen.pos_categ_ids.ids or [])
+            # Browse orders to inspect line categories
+            recs = self.browse([o['id'] for o in orders])
+            for rec in recs:
+                kset = ks_by_config.get(rec.config_id.id, set())
+                if not kset:
+                    in_kitchen_map[rec.id] = False
+                else:
+                    line_categs = set(rec.lines.mapped('product_id').mapped('pos_categ_ids').ids)
+                    in_kitchen_map[rec.id] = bool(line_categs & kset)
+        except Exception:
+            # If kitchen app not installed or any error, assume not in kitchen
+            in_kitchen_map = {o['id']: False for o in orders}
 
         # Enrich with display fields without breaking if external modules absent
         for o in orders:
@@ -416,7 +439,9 @@ class PosOrder(models.Model):
             order_status = o.get('order_status')
             online_status = o.get('online_order_status')
             is_online = bool(o.get('is_online_order'))
-            is_cooking = bool(o.get('is_cooking')) if 'is_cooking' in o else False
+            # Respect kitchen categories: only treat as in-progress if order is in kitchen categories
+            in_kitchen = in_kitchen_map.get(o['id'], False)
+            is_cooking = (bool(o.get('is_cooking')) if 'is_cooking' in o else False) and in_kitchen
 
             if order_status == 'cancel':
                 ks = 'Cancelled'
@@ -430,7 +455,7 @@ class PosOrder(models.Model):
                         ks = 'In Progress' if is_cooking else 'Right Away'
                 else:
                     # In-store orders: infer from cooking flag or order_status
-                    ks = 'In Progress' if (is_cooking or order_status == 'draft') else 'Right Away'
+                    ks = 'In Progress' if ((is_cooking and in_kitchen) or order_status == 'draft') else 'Right Away'
             o['kitchen_status_display'] = ks
 
         for order in orders:
