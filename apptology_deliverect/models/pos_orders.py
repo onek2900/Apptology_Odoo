@@ -443,19 +443,28 @@ class PosOrder(models.Model):
             in_kitchen = in_kitchen_map.get(o['id'], False)
             is_cooking = (bool(o.get('is_cooking')) if 'is_cooking' in o else False) and in_kitchen
 
-            if order_status == 'cancel':
-                ks = 'Cancelled'
-            elif order_status == 'ready':
+            # Normalize to Draft / In Progress / Ready only
+            if order_status == 'ready':
                 ks = 'Ready'
             else:
                 if is_online:
                     if online_status not in ('approved', 'finalized'):
                         ks = 'Draft'
                     else:
-                        ks = 'In Progress' if is_cooking else 'Right Away'
+                        # If not configured for kitchen, consider it Ready immediately
+                        if not in_kitchen:
+                            ks = 'Ready'
+                        else:
+                            ks = 'In Progress' if is_cooking else 'Draft'
                 else:
                     # In-store orders: infer from cooking flag or order_status
-                    ks = 'In Progress' if ((is_cooking and in_kitchen) or order_status == 'draft') else 'Right Away'
+                    if not in_kitchen:
+                        ks = 'Ready'
+                    else:
+                        ks = 'In Progress' if (is_cooking or order_status == 'draft') else 'Draft'
+            # Map any cancel state to Draft for display consistency
+            if order_status == 'cancel':
+                ks = 'Draft'
             o['kitchen_status_display'] = ks
 
         for order in orders:
