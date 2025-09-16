@@ -68,9 +68,9 @@
                                         </td>
                                         <td class="col end">
                                             <div class="status-pill" t-att-class="{
-                                                'status-ready': order.kitchen_status_display === 'Ready',
-                                                'status-cancel': order.kitchen_status_display === 'Cancelled',
-                                                'status-waiting': order.kitchen_status_display !== 'Ready' && order.kitchen_status_display !== 'Cancelled'
+                                                'status-ready': order.kitchen_status_display == 'Ready',
+                                                'status-cancel': order.kitchen_status_display == 'Cancelled',
+                                                'status-waiting': order.kitchen_status_display != 'Ready' and order.kitchen_status_display != 'Cancelled'
                                             }">
                                                 <t t-esc="order.kitchen_status_display or ''"/>
                                             </div>
