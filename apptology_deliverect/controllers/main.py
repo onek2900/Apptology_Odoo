@@ -326,6 +326,23 @@ class DeliverectWebhooks(http.Controller):
                             'payment_method_id': deliverect_payment_method.id,
                         })
                         order_payment.with_context(**payment_context).check()
+                    # If the order is approved online and not configured for kitchen categories,
+                    # mark it ready immediately and notify Deliverect as Ready (status 70).
+                    try:
+                        kitchen_screen = request.env['kitchen.screen'].sudo().search([
+                            ('pos_config_id', '=', pos_configuration.id)
+                        ], limit=1)
+                        in_kitchen = False
+                        if kitchen_screen and kitchen_screen.pos_categ_ids:
+                            order_categ_ids = set(order.lines.mapped('product_id').mapped('pos_categ_ids').ids)
+                            in_kitchen = bool(order_categ_ids & set(kitchen_screen.pos_categ_ids.ids))
+                        # If no kitchen screen or no intersection with its categories -> not in kitchen
+                        if not in_kitchen and order.is_online_order and order.online_order_status == 'approved':
+                            order.write({'order_status': 'ready', 'is_cooking': False})
+                            # Send Ready to Deliverect (70)
+                            order.update_order_status_in_deliverect(70)
+                    except Exception as _e:
+                        _logger.info(f"Kitchen auto-ready check skipped: {_e}")
                     self.generate_order_notification(pos_configuration.id, 'success')
                     return Response(
                         json.dumps({'status': 'success', 'message': 'Order created',
