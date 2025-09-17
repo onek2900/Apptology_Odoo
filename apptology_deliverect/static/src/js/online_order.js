@@ -77,26 +77,65 @@ export class OnlineOrderScreen extends Component {
         const cashierName = exportedOrder.headerData?.cashier || "N/A";
         const orderNumber = exportedOrder.headerData?.trackingNumber || "N/A";
 
-        // Emit one structured JSON log per printer
+        // Helper utilities for category filtering (mirror kitchen printing logic)
+        const normalizeCategoryIds = (cats) => {
+            if (!cats) return [];
+            if (cats instanceof Set) return Array.from(cats);
+            if (!Array.isArray(cats)) return [];
+            return cats
+                .map((c) => {
+                    if (typeof c === "number") return c;
+                    if (Array.isArray(c)) return c[0];
+                    if (c && typeof c === "object") return c.id ?? c.ID ?? c["_id"] ?? null;
+                    return null;
+                })
+                .filter((x) => typeof x === "number" && !Number.isNaN(x));
+        };
+        const toId = (v) => {
+            if (v == null) return null;
+            if (typeof v === "number") return v;
+            if (Array.isArray(v)) return toId(v[0]);
+            if (typeof v === "object") return toId(v.id ?? v.ID ?? v["_id"]);
+            const n = Number(v);
+            return Number.isFinite(n) ? n : null;
+        };
+        const productMatchesPrinter = (product, printerCatsSet) => {
+            if (!product) return false;
+            const cats = normalizeCategoryIds(product.pos_categ_ids);
+            for (const cid of cats) {
+                let cur = toId(cid);
+                while (cur) {
+                    if (printerCatsSet.has(cur)) return true;
+                    const node = this.pos?.db?.category_by_id?.[cur];
+                    cur = toId(node?.parent_id);
+                }
+            }
+            return false;
+        };
+
+        // Emit one structured JSON log per printer (unified type + source)
         for (const printer of this.pos.unwatched.printers) {
             const printerName = printer.config.name;
-            const jsonLog = {
-                type: "deliverect_kitchen_log",
-                printer: printerName,
-                cashier: cashierName,
-                order_number: orderNumber,
-                lines: [],
-            };
+            const pCatIds = normalizeCategoryIds(printer.config.product_categories_ids);
+            const pCatSet = new Set(pCatIds);
+
+            // Build per-printer lines filtered by product categories
+            const linesForPrinter = [];
             exportedOrder.lines.forEach((lineArr) => {
-                const line = lineArr[2];
+                const line = lineArr && lineArr[2];
                 if (!line) return;
+                const pid = toId(line.product_id);
+                const product = pid ? this.pos.db.product_by_id?.[pid] : null;
+                if (!productMatchesPrinter(product, pCatSet)) return;
                 const rawTop = line.sh_is_topping;
-                const isTopping = Array.isArray(rawTop)
-                    ? !!rawTop[0]
-                    : !!rawTop || !!line.is_topping;
+                const isTopping = Array.isArray(rawTop) ? !!rawTop[0] : !!rawTop || !!line.is_topping;
                 const rawHas = line.sh_is_has_topping;
                 const isHasTopping = Array.isArray(rawHas) ? !!rawHas[0] : !!rawHas || !!line.is_has_topping;
-                jsonLog.lines.push({
+                // Build categories names for convenience
+                const catObjs = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
+                const catNames = (catObjs || []).map((c) => c && c.name).filter(Boolean);
+                linesForPrinter.push({
+                    categories: catNames,
                     name: line.full_product_name,
                     qty: line.qty,
                     note: line.note || "",
@@ -104,10 +143,23 @@ export class OnlineOrderScreen extends Component {
                     has_topping: isHasTopping,
                 });
             });
+
+            if (linesForPrinter.length === 0) continue;
+
+            const jsonLog = {
+                type: "kitchen_printer_log",
+                source: "online",
+                printer: printerName,
+                cashier: cashierName,
+                order_number: orderNumber,
+                table_id: null,
+                floor: null,
+                lines: linesForPrinter,
+            };
             try {
                 console.log(JSON.stringify(jsonLog));
             } catch (e) {
-                console.warn("Failed to stringify deliverect log", e);
+                console.warn("Failed to stringify kitchen printer log (online)", e);
             }
         }
     }

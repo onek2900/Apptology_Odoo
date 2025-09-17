@@ -17,20 +17,28 @@ patch(ReceiptScreen.prototype, {
         const order = this.pos.get_order();
         // eslint-disable-next-line no-console
         console.log("orderPrinting");
-        const lines = order.orderlines.map((orderline) => ({
-            name: orderline.full_product_name,
-            note: orderline.note,
-            product_id: orderline.product.id,
-            quantity: orderline.quantity,
-            category_ids: this.pos.db.get_category_by_id(orderline.product.pos_categ_ids),
-            customerNote: orderline.customerNote,
-            // flags and parent linkage (when available from toppings module)
-            is_topping: !!(orderline.is_topping || orderline.sh_is_topping),
-            is_has_topping: !!(orderline.is_has_topping || orderline.sh_is_has_topping),
-            parent_line_id: orderline.sh_topping_parent ? orderline.sh_topping_parent.id : null,
-            parent_name: orderline.sh_topping_parent ? orderline.sh_topping_parent.full_product_name : null,
-            toppings_count: Array.isArray(orderline.Toppings) ? orderline.Toppings.length : (orderline.Toppings ? 1 : 0),
-        }))
+        // Only include newly added/changed lines (not the whole order)
+        const changes = order.getOrderChanges ? order.getOrderChanges() : null;
+        let lines = [];
+        if (changes && changes.orderlines) {
+            for (const ch of Object.values(changes.orderlines)) {
+                const product = this.pos.db.product_by_id?.[ch.product_id];
+                lines.push({
+                    name: product ? (product.display_name || product.name) : (ch.name || ""),
+                    note: ch.customerNote || ch.note,
+                    product_id: ch.product_id,
+                    quantity: ch.quantity,
+                    category_ids: product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [],
+                    customerNote: ch.customerNote,
+                    // flags and parent linkage (when available from toppings module)
+                    is_topping: !!(ch.is_topping || ch.sh_is_topping),
+                    is_has_topping: !!(ch.is_has_topping || ch.sh_is_has_topping),
+                    parent_line_id: ch.sh_topping_parent ? ch.sh_topping_parent.id : null,
+                    parent_name: ch.sh_topping_parent ? ch.sh_topping_parent.full_product_name : null,
+                    toppings_count: Array.isArray(ch.Toppings) ? ch.Toppings.length : (ch.Toppings ? 1 : 0),
+                });
+            }
+        }
 
         for (const printer of this.pos.unwatched.printers) {
             const data = this._getPrintingCategoriesChanges(
@@ -39,15 +47,21 @@ patch(ReceiptScreen.prototype, {
             );
             if (data.length > 0) {
                 const printerName = printer.config.name;
-                const cashierName = order.export_for_printing().headerData.cashier;
-                const orderNumber = order.export_for_printing().headerData.trackingNumber;
+                const exported = order.export_for_printing();
+                const cashierName = exported.headerData?.cashier;
+                const orderNumber = exported.headerData?.trackingNumber;
+                const tableId = (order.table && order.table.id) || (order.pos?.table && order.pos.table.id) || null;
+                const floorName = (order.pos?.currentFloor && order.pos.currentFloor.name) || null;
 
                 // Build a single structured JSON log per printer
                 const jsonLog = {
                     type: "kitchen_printer_log",
+                    source: "pos",
                     printer: printerName,
                     cashier: cashierName,
                     order_number: orderNumber,
+                    table_id: tableId,
+                    floor: floorName,
                     lines: data.map((item) => ({
                         categories: item.category_ids.map((cat) => cat.name),
                         name: item.name,

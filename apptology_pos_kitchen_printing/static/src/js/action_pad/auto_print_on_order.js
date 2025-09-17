@@ -131,6 +131,8 @@ patch(ActionpadWidget.prototype, {
             const exported = order.export_for_printing ? order.export_for_printing() : { headerData: {} };
             // Tracking number may already exist on the order even before export
             const orderNumber = order.trackingNumber || exported.headerData?.trackingNumber;
+            const tableId = (order.table && order.table.id) || (order.pos?.table && order.pos.table.id) || null;
+            const floorName = (order.pos?.currentFloor && order.pos.currentFloor.name) || null;
 
             // Determine printers list across possible locations in POS store
             const printerService = this.printer || this.env?.services?.printer;
@@ -169,11 +171,16 @@ patch(ActionpadWidget.prototype, {
                 }
                 // Optional structured log for debugging
                 try {
+                    const tableId = (order.table && order.table.id) || (order.pos?.table && order.pos.table.id) || null;
+                    const floorName = (order.pos?.currentFloor && order.pos.currentFloor.name) || null;
                     const jsonLog = {
                         type: "kitchen_printer_log",
+                        source: "pos",
                         printer: printer.config.name,
                         cashier: exported.headerData?.cashier,
                         order_number: orderNumber,
+                        table_id: tableId,
+                        floor: floorName,
                         lines: data.map((item) => ({
                             categories: (item.category_ids || []).map((c) => c.name),
                             name: item.name,
@@ -199,7 +206,7 @@ patch(ActionpadWidget.prototype, {
                 if (doAutoPrint) {
                     printerService?.print?.(
                         PrinterReceipt,
-                        { data, headerData: exported.headerData, printer },
+                        { data, headerData: { ...exported.headerData, table_id: tableId, floor: floorName }, printer },
                         { webPrintFallback: false }
                     );
                 }
