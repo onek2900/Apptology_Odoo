@@ -137,8 +137,24 @@ class PosOrder(models.Model):
     def update_order_status(self, status):
         """function to update the status of the order"""
         if status == 'approved':
-            self.write({'online_order_status': 'approved', 'is_cooking': True})
-            self.lines.write({'is_cooking': True})
+            self.write({'online_order_status': 'approved'})
+            # Apply kitchen flags selectively: only lines in kitchen categories should be cooking
+            try:
+                for order in self:
+                    in_kitchen_any = False
+                    kitchen_screen = self.env['kitchen.screen'].sudo().search([
+                        ('pos_config_id', '=', order.config_id.id)
+                    ], limit=1)
+                    kset = set(kitchen_screen.pos_categ_ids.ids) if kitchen_screen and kitchen_screen.pos_categ_ids else set()
+                    for line in order.lines:
+                        line_categs = set(line.product_id.pos_categ_ids.ids)
+                        flag = bool(kset and (line_categs & kset))
+                        line.is_cooking = flag
+                        in_kitchen_any = in_kitchen_any or flag
+                    order.is_cooking = in_kitchen_any
+            except Exception:
+                # Fallback: if kitchen app not present, do not set cooking flags
+                pass
             self.update_order_status_in_deliverect(20)
             self.update_order_status_in_deliverect(50)
         elif status == 'finalized':
@@ -466,6 +482,8 @@ class PosOrder(models.Model):
             if order_status == 'cancel':
                 ks = 'Draft'
             o['kitchen_status_display'] = ks
+
+        # Also expose per-line selective cooking flags in the payload if needed later
 
         for order in orders:
             # normalize display values

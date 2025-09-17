@@ -326,6 +326,21 @@ class DeliverectWebhooks(http.Controller):
                             'payment_method_id': deliverect_payment_method.id,
                         })
                         order_payment.with_context(**payment_context).check()
+                        # After payment, ensure only kitchen-category lines are marked for cooking
+                        try:
+                            kitchen_screen = request.env['kitchen.screen'].sudo().search([
+                                ('pos_config_id', '=', pos_configuration.id)
+                            ], limit=1)
+                            kset = set(kitchen_screen.pos_categ_ids.ids) if kitchen_screen and kitchen_screen.pos_categ_ids else set()
+                            in_kitchen_any = False
+                            for line in order.lines:
+                                line_categs = set(line.product_id.pos_categ_ids.ids)
+                                flag = bool(kset and (line_categs & kset))
+                                line.is_cooking = flag
+                                in_kitchen_any = in_kitchen_any or flag
+                            order.is_cooking = in_kitchen_any
+                        except Exception as _e:
+                            _logger.info(f"Post-payment kitchen flagging skipped: {_e}")
                     # If the order is approved online and not configured for kitchen categories,
                     # mark it ready immediately and notify Deliverect as Ready (status 70).
                     try:
