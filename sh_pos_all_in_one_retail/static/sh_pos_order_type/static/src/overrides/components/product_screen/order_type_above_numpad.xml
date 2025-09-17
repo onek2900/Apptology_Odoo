@@ -6,7 +6,7 @@
         <!-- Desktop: inject above numpad -->
         <xpath expr="//div[hasclass('subpads')]" position="before">
             <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_order_type_above_numpad" t-if="!ui.isSmall">
-                <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component && cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
+                <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component &amp;&amp; cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
                 <t t-if="orderTypeControl">
                     <t t-component="orderTypeControl.component" t-key="orderTypeControl.name || 'order-type-btn-desktop'"/>
                 </t>
@@ -16,7 +16,7 @@
         <!-- Mobile: inject above numpad like desktop -->
         <xpath expr="//div[hasclass('subpads')]" position="before">
             <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_order_type_above_numpad" t-if="ui.isSmall">
-                <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component && cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
+                <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component &amp;&amp; cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
                 <t t-if="orderTypeControl">
                     <t t-component="orderTypeControl.component" t-key="orderTypeControl.name || 'order-type-btn-mobile'"/>
                 </t>
