@@ -199,23 +199,29 @@ class PosConfig(models.Model):
             arabicname = product.with_context(lang=lang_code).name
         if product.product_note_arabic:
             description_arabic = product.product_note_arabic or product.with_context(lang=lang_code).product_note
+        # Normalize values for Deliverect API
+        price_cents = int(round((product_price or 0.0) * 100))
+        tax_milli = int(round((product_tax or 0.0) * 1000))
+        desc_en = product_note or ""
+        img_url = self.image_upload(product_tmpl_id) or ""
+
         data = {
             "productType": product_type,
             "plu": plu,
-            "price": product_price * 100,
+            "price": price_cents,
             "name": product_name,
             "nameTranslations": {
                "en": product_name,
                 "ar": product_arabicname or arabicname
                 },
-            "imageUrl": self.image_upload(product_tmpl_id),
-            "description": product_note or "",
+            "imageUrl": img_url,
+            "description": desc_en,
             "descriptionTranslations": {
                 "ar": product.product_note_arabic or description_arabic  ,
-                "en": product_note},
-            "deliveryTax": product_tax * 1000,
-            "takeawayTax": product_tax * 1000,
-            "eatInTax": product_tax * 1000,
+                "en": desc_en},
+            "deliveryTax": tax_milli,
+            "takeawayTax": tax_milli,
+            "eatInTax": tax_milli,
         }
         # Do not send category for modifiers (productType == 2)
         data["posCategoryIds"] = [] if product_type == 2 else product_category_ids
