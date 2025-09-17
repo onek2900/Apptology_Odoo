@@ -90,11 +90,12 @@ patch(ActionpadWidget.prototype, {
             const changes = order.getOrderChanges ? order.getOrderChanges() : null;
             let changeLines = [];
             if (changes && changes.orderlines) {
-                // values() because POS returns an object keyed by line uid
-                for (const line of Object.values(changes.orderlines)) {
+                // entries() to capture the line uid (key)
+                for (const [uid, line] of Object.entries(changes.orderlines)) {
                     const product = (this.pos.db.product_by_id && this.pos.db.product_by_id[line.product_id]) || null;
                     const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
                     changeLines.push({
+                        uid: line.uid || uid,
                         name: product ? (product.display_name || product.name) : (line.name || ""),
                         note: line.customerNote || line.note,
                         product_id: line.product_id,
@@ -163,7 +164,24 @@ patch(ActionpadWidget.prototype, {
                     }
                 } catch (_) {}
 
-                const data = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, changeLines);
+                // Per-printer already-emitted tracker on the order to avoid duplicates
+                const printerKey = printer.config?.id || printer.config?.name || "__unknown";
+                order.__kitchenPrintedByPrinter = order.__kitchenPrintedByPrinter || {};
+                const printedMap = (order.__kitchenPrintedByPrinter[printerKey] = order.__kitchenPrintedByPrinter[printerKey] || {});
+
+                // First, filter by printer categories
+                const candidate = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, changeLines);
+                // Then, only emit the delta quantity over what we already sent to this printer
+                const data = [];
+                for (const item of candidate) {
+                    const uid = item.uid || `${item.product_id}:${item.name}:${item.note || ""}`;
+                    const already = Number(printedMap[uid] || 0);
+                    const qty = Number(item.quantity || 0);
+                    const diff = qty - already;
+                    if (diff > 0) {
+                        data.push({ ...item, quantity: diff });
+                    }
+                }
                 if (!data.length) {
                     // eslint-disable-next-line no-console
                     console.log(`[kitchen-print] No matching lines for printer ${printer.config.name}`);
@@ -209,6 +227,14 @@ patch(ActionpadWidget.prototype, {
                         { data, headerData: { ...exported.headerData, table_id: tableId, floor: floorName }, printer },
                         { webPrintFallback: false }
                     );
+                }
+
+                // Mark emitted quantities as printed for this printer
+                for (const item of data) {
+                    const uid = item.uid || `${item.product_id}:${item.name}:${item.note || ""}`;
+                    const prev = Number(printedMap[uid] || 0);
+                    const inc = Number(item.quantity || 0);
+                    printedMap[uid] = prev + inc;
                 }
             }
         } catch (e) {
