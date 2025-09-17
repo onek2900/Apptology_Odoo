@@ -21,13 +21,12 @@
     
     "license": "OPL-1",
     
-    "depends": ['point_of_sale', 'pos_restaurant', 'pos_hr', 'sh_pos_kitchen_screen', 'sh_pos_all_in_one_retail'],
+    "depends": ['point_of_sale', 'pos_restaurant', 'pos_hr', 'sh_pos_all_in_one_retail'],
 
     "data": [],
 
     "assets": {
         'point_of_sale._assets_pos': [
-            'sh_pos_all_in_one_restaurant/static/src/apps/kitchen_order_line/*',
             'sh_pos_all_in_one_restaurant/static/src/overrides/models/model.js',
         ],
     },
