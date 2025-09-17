@@ -64,7 +64,9 @@
                 <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300"
                     t-if="!ui.isSmall">
                     <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
-                        <t t-component="cb.component" t-key="cb.name"/>
+                        <t t-if="!(cb.component and cb.component.template === 'sh_pos_order_type.OrderTypeButton')">
+                            <t t-component="cb.component" t-key="cb.name"/>
+                        </t>
                     </t>
                 </div>
             </t>
