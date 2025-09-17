@@ -97,7 +97,7 @@ patch(ActionpadWidget.prototype, {
                     const product = (this.pos.db.product_by_id && this.pos.db.product_by_id[line.product_id]) || null;
                     const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
                     changeLines.push({
-                        uid: line.uid || uid,
+                        uid: line.uid || line.uuid || uid,
                         name: product ? (product.display_name || product.name) : (line.name || ""),
                         note: line.customerNote || line.note,
                         product_id: line.product_id,
@@ -120,9 +120,10 @@ patch(ActionpadWidget.prototype, {
                 for (const ol of order.orderlines) {
                     const product = ol.product || (this.pos.db.product_by_id && this.pos.db.product_by_id[ol.product?.id]);
                     const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
-                    const key = (ol.uid) || `${ol.product?.id}:${ol.full_product_name || ol.product?.display_name || ol.product?.name}:${ol.note || ol.customerNote || ""}`;
+                    const lineUid = ol.uid || ol.cid || `${ol.product?.id || ''}|${ol.full_product_name || ol.product?.display_name || ol.product?.name || ''}|${ol.note || ol.customerNote || ''}|${ol.sh_topping_parent ? ol.sh_topping_parent.id : ''}`;
+                    const key = lineUid;
                     curLinesMap.set(key, {
-                        uid: ol.uid || key,
+                        uid: lineUid,
                         name: ol.full_product_name || (product ? (product.display_name || product.name) : (ol.name || "")),
                         note: ol.customerNote || ol.note,
                         product_id: ol.product?.id,
@@ -146,6 +147,7 @@ patch(ActionpadWidget.prototype, {
                     quantity: orderline.quantity,
                     category_ids: this.pos.db.get_category_by_id(orderline.product.pos_categ_ids),
                     customerNote: orderline.customerNote,
+                    uid: orderline.uid || orderline.cid || `${orderline.product?.id || ''}|${orderline.full_product_name || orderline.product?.display_name || orderline.product?.name || ''}|${orderline.note || orderline.customerNote || ''}|${orderline.sh_topping_parent ? orderline.sh_topping_parent.id : ''}`,
                     is_topping: !!(orderline.is_topping || orderline.sh_is_topping),
                     is_has_topping: !!(orderline.is_has_topping || orderline.sh_is_has_topping),
                     parent_line_id: orderline.sh_topping_parent ? orderline.sh_topping_parent.id : null,
