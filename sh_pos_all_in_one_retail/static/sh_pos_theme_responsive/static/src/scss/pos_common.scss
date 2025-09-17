@@ -645,7 +645,7 @@
 /* Place Order Type above numpad and hide duplicates elsewhere */
 .pos .product-screen {
     /* Hide the control-button instance except the one we inject above numpad */
-    .control-buttons:not(.sh_order_type_above_numpad) .order-type-button {
+    .control-buttons:not(.sh_order_type_above_numpad):not(.sh_mobile_control_button) .order-type-button {
         display: none;
     }
     /* Also hide the button from the bottom carousel action buttons */
@@ -853,3 +853,4 @@ body[data-bs-theme="dark"],
 		}
 	}
 }
+
