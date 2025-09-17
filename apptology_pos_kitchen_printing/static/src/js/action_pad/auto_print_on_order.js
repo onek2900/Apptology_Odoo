@@ -85,8 +85,10 @@ patch(ActionpadWidget.prototype, {
             const order = this.pos.get_order();
             if (!order || !this.pos.config?.module_pos_restaurant) return result;
 
-            // Build a lightweight change set from the order changes when available,
-            // otherwise fall back to all orderlines.
+            // Build a lightweight change set from the order changes when available.
+            // Additionally, prepare a snapshot of current orderlines so we can
+            // detect quantity increments even if another module reset the
+            // 'last change' baseline before our hook runs.
             const changes = order.getOrderChanges ? order.getOrderChanges() : null;
             let changeLines = [];
             if (changes && changes.orderlines) {
@@ -111,6 +113,30 @@ patch(ActionpadWidget.prototype, {
                     });
                 }
             }
+
+            // Snapshot of current order lines keyed for stable tracking
+            const curLinesMap = new Map();
+            try {
+                for (const ol of order.orderlines) {
+                    const product = ol.product || (this.pos.db.product_by_id && this.pos.db.product_by_id[ol.product?.id]);
+                    const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
+                    const key = (ol.uid) || `${ol.product?.id}:${ol.full_product_name || ol.product?.display_name || ol.product?.name}:${ol.note || ol.customerNote || ""}`;
+                    curLinesMap.set(key, {
+                        uid: ol.uid || key,
+                        name: ol.full_product_name || (product ? (product.display_name || product.name) : (ol.name || "")),
+                        note: ol.customerNote || ol.note,
+                        product_id: ol.product?.id,
+                        quantity: ol.quantity,
+                        category_ids: categories,
+                        customerNote: ol.customerNote,
+                        is_topping: !!(ol.is_topping || ol.sh_is_topping),
+                        is_has_topping: !!(ol.is_has_topping || ol.sh_is_has_topping),
+                        parent_line_id: ol.sh_topping_parent ? ol.sh_topping_parent.id : null,
+                        parent_name: ol.sh_topping_parent ? ol.sh_topping_parent.full_product_name : null,
+                        toppings_count: Array.isArray(ol.Toppings) ? ol.Toppings.length : (ol.Toppings ? 1 : 0),
+                    });
+                }
+            } catch (_) {}
             if (!changeLines.length) {
                 // Fallback: include all orderlines (ensures logging even when no diff is built)
                 changeLines = order.orderlines.map((orderline) => ({
@@ -169,8 +195,23 @@ patch(ActionpadWidget.prototype, {
                 order.__kitchenPrintedByPrinter = order.__kitchenPrintedByPrinter || {};
                 const printedMap = (order.__kitchenPrintedByPrinter[printerKey] = order.__kitchenPrintedByPrinter[printerKey] || {});
 
-                // First, filter by printer categories
-                const candidate = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, changeLines);
+                // First, create a combined list of candidates: use any changed lines we saw
+                // and also any current lines (to catch qty increments missed by getOrderChanges())
+                const combined = [];
+                const seenKeys = new Set();
+                for (const item of changeLines) {
+                    const key = item.uid || `${item.product_id}:${item.name}:${item.note || ""}`;
+                    seenKeys.add(key);
+                    // if we have a fresher snapshot for this key, prefer it for accurate qty
+                    combined.push(curLinesMap.get(key) || item);
+                }
+                // Also include current lines not in changeLines (for safety with baseline resets)
+                for (const [key, val] of curLinesMap.entries()) {
+                    if (!seenKeys.has(key)) combined.push(val);
+                }
+
+                // Filter by printer categories
+                const candidate = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, combined);
                 // Then, only emit the delta quantity over what we already sent to this printer
                 const data = [];
                 for (const item of candidate) {

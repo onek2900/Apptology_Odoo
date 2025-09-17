@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="KitchenOrderlines" t-inherit="sh_pos_kitchen_screen.KitchenOrderlines" t-inherit-mode="extension">
+        <t t-if="line and !line.combo_parent_id" position="attributes">
+            <attribute name="t-if">line and !line.combo_parent_id and !line.sh_is_topping </attribute>
+        </t>
+        <xpath expr="//tr[hasclass('sh_combo_lines')]" position="after"  >
+            <tr class="sh_combo_lines" t-foreach="get_topping_lines(line.topping_uuids)" t-as="line" t-key="line.id" >
+                <td>-</td>
+                <td class="sh_product_table_td_second">
+                    <div class="sh_product_name_div">
+                        <span class="sh_lbl_value" style="padding-right: 5px;">
+                            <t t-esc="line.qty"></t>
+                        </span>
+                        <span class="sh_lbl_value">
+                            <t t-esc="line.full_product_name"></t>
+                        </span>
+                    </div>
+                    <div t-if="line.customer_note" class="sh_product_line_note">
+                        <span >
+                            <span class="sh_line_note_text">
+                                <t t-esc="line.customer_note"></t>
+                            </span>
+                        </span>
+                    </div>
+                </td>
+                <td></td>
+            </tr>
+        </xpath>
+    </t>
+
+</templates>
