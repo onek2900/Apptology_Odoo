@@ -26,7 +26,6 @@
             const session_detail = await self.pos.orm.silent.call("pos.session", "get_session_detail", [
                 self.pos.pos_session.id
             ]);
-            console.log("session_detail >> ",session_detail)
             if(session_detail){
                 self.pos.is_z_report_receipt = true
                 self.pos.session_data = session_detail

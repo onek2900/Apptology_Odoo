@@ -17,7 +17,6 @@ patch(PartnerLine.prototype, {
         if (this.env.services.pos.user.sign) {
             message += "%0A%0A%0A" + this.env.services.pos.user.sign;
         }
-        console.log("event >>> ",event)
         const partner = this.props.partner;
         if(partner.mobile){
             

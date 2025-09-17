@@ -30,7 +30,6 @@ patch(PosStore.prototype, {
     },
     async removelineClick(line) {
         var self = this;
-        console.log("self.get_order()", self.get_order() , line);
         self.get_order().select_orderline(line);
         // this.trigger('select-line', { orderline: line });
 

@@ -69,7 +69,6 @@ patch(Order.prototype, {
         let res = await super.add_product(...arguments)
         if(res && options && options.sh_uom_id){
             let uom = this.pos.units_by_id[options.sh_uom_id]
-            console.log("=============>", res);
             
             res.set_custom_uom(uom)
         }
@@ -80,14 +79,12 @@ patch(Order.prototype, {
 patch(Orderline.prototype, {
     // setup() {
     //     super.setup(...arguments);
-    //     console.log("this.sh_uom_id ", this.sh_uom_id, this);
     //     this.sh_uom_id = this.sh_uom_id || false
         
     // },
     init_from_JSON (json) {
         super.init_from_JSON(...arguments);
         if(json.sh_uom_id){
-            console.log("json.sh_uom_id", json.sh_uom_id);
             
         }
         this.sh_uom_id = json.sh_uom_id || false
@@ -98,23 +95,18 @@ patch(Orderline.prototype, {
         if (this.get_custom_uom() && this.get_custom_uom() != this.get_unit()) {
             vals.sh_uom_id = this.get_custom_uom().id;
         }
-        console.log("vals", vals);
         
         return vals;
     },
     getDisplayData() {
         let result = super.getDisplayData()
-        console.log("this.get_custom_uom() 11111",this, this.get_custom_uom());
         if(this.get_custom_uom()){
-            console.log("this.get_custom_uom()",this, this.get_custom_uom());
             result["unit"] = this.get_custom_uom().name ? this.get_custom_uom().name : this.pos.units_by_id[this.get_custom_uom()]?.name
         }
-        console.log("result ==>", result);
         
         return result
     },
     set_custom_uom(uom_name){
-        console.log("uom_name", uom_name);
         if(uom_name.uom_id){
             let uom = this.pos.units_by_id[uom_name.uom_id]
             this.sh_uom_id = uom

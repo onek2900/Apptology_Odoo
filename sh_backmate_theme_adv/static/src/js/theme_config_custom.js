@@ -366,7 +366,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -377,7 +376,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     },
                                     error: function (e) {
 
-                                        console.log("ERROR : ", e);
 
                                     }
                                 });
@@ -395,7 +393,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
                                         
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -426,7 +423,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -453,7 +449,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -481,7 +476,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -509,7 +503,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -537,7 +530,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -565,7 +557,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();
@@ -593,7 +584,6 @@ export class ThemeConfigurationTemplate extends Component {
                                     timeout: 600000,
                                     success: function (data) {
 
-                                        console.log("SUCCESS : ", data);
                                         if(data){
                                             setTimeout(function () {
                                                 location.reload();

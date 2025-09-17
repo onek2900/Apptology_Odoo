@@ -69,7 +69,6 @@ patch(ReceiptScreen.prototype, {
         var message = "";
         var self = this;
         const partner = this.currentOrder.get_partner();
-        console.log("partner >>> ",partner)
         if (partner && partner.mobile) {
             var mobile = partner.mobile;
             var receipt = this.currentOrder.export_for_printing();
@@ -92,7 +91,6 @@ patch(ReceiptScreen.prototype, {
                 "%0A%0A";
             if (receipt.orderlines.length > 0) {
                 message += "Following is your order details." + "%0A";
-                console.log("receipt.ordelrines >>> ",receipt.orderlines)
                 for (const orderline of receipt.orderlines) {
                     message += "%0A" + "*" + orderline.productName + "*" + "%0A" + "*Qty:* " + orderline.qty + "%0A" + "*Price:* " + orderline.price +  "%0A";
                     if (orderline.discount > 0) {
@@ -102,7 +100,6 @@ patch(ReceiptScreen.prototype, {
                 message += "________________________" + "%0A";
             }
             message += "*" + "Total Amount:" + "*" + "%20" + self.env.utils.formatCurrency(parseFloat(receipt.amount_total.toFixed(2)));
-            console.log("this.pos.user.sign >>> ",this.pos.user)
             if (this.pos.user.sign) {
                 message += "%0A%0A%0A" + this.pos.user.sign;
             }
