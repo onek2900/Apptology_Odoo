@@ -8,18 +8,8 @@
     'data': [
     ],
     'assets': {
-        # JS/CSS (runtime) assets for POS
-        'point_of_sale.assets': [
-            'pos_product_detail/static/src/**/*.js',
-            'pos_product_detail/static/src/**/*.scss',
-        ],
         'point_of_sale.assets_prod': [
-            'pos_product_detail/static/src/**/*.js',
-            'pos_product_detail/static/src/**/*.scss',
-        ],
-        # QWeb templates must be in the qweb bundle in Odoo 16
-        'point_of_sale.assets_qweb': [
-            'pos_product_detail/static/src/**/*.xml',
+            'pos_product_detail/static/src/**/*'
         ],
     },
     'installable': True,
