@@ -5,23 +5,11 @@ import { patch } from "@web/core/utils/patch";
 
 patch(TicketScreen.prototype, {
     /**
-     * Avoid full reloads that duplicate orders in memory.
-     * For online orders, prefer a lightweight sync if available.
+     * Load server data before loading online-orders to product screen
      */
     async _setOrder(order) {
-        if (order && order.name && order.name.includes("Online-Order")) {
-            try {
-                if (typeof this.pos._syncTableOrdersFromServer === "function") {
-                    await this.pos._syncTableOrdersFromServer();
-                } else if (typeof this.pos.syncTableOrdersFromServer === "function") {
-                    // fallback name in some deployments
-                    await this.pos.syncTableOrdersFromServer();
-                } else {
-                    // Intentionally skip load_server_data() to prevent duplicates
-                }
-            } catch (e) {
-                console.warn("Lightweight POS order sync failed", e);
-            }
+        if (order.name.includes("Online-Order")) {
+            await this.pos.load_server_data();
         }
         return super._setOrder(...arguments)
     }
