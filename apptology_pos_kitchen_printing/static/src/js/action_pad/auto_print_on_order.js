@@ -195,32 +195,40 @@ patch(ActionpadWidget.prototype, {
                 order.__kitchenPrintedByPrinter = order.__kitchenPrintedByPrinter || {};
                 const printedMap = (order.__kitchenPrintedByPrinter[printerKey] = order.__kitchenPrintedByPrinter[printerKey] || {});
 
-                // First, create a combined list of candidates: use any changed lines we saw
-                // and also any current lines (to catch qty increments missed by getOrderChanges())
-                const combined = [];
-                const seenKeys = new Set();
-                for (const item of changeLines) {
-                    const key = item.uid || `${item.product_id}:${item.name}:${item.note || ""}`;
-                    seenKeys.add(key);
-                    // if we have a fresher snapshot for this key, prefer it for accurate qty
-                    combined.push(curLinesMap.get(key) || item);
-                }
-                // Also include current lines not in changeLines (for safety with baseline resets)
-                for (const [key, val] of curLinesMap.entries()) {
-                    if (!seenKeys.has(key)) combined.push(val);
+                // Compute per-product totals for current orderlines (robust to uid merges/resets)
+                // Filter by printer categories first using the full current snapshot
+                const currentForPrinter = getPrintingCategoriesChanges(
+                    this.pos,
+                    printer.config.product_categories_ids,
+                    Array.from(curLinesMap.values())
+                );
+
+                // Group by stable key: product + note + parent link
+                const groupTotals = new Map();
+                const groupSample = new Map();
+                for (const item of currentForPrinter) {
+                    const key = `${item.product_id || ''}|${item.note || ''}|${item.parent_line_id || ''}`;
+                    const prev = groupTotals.get(key) || 0;
+                    groupTotals.set(key, prev + Number(item.quantity || 0));
+                    if (!groupSample.has(key)) groupSample.set(key, item);
                 }
 
-                // Filter by printer categories
-                const candidate = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, combined);
-                // Then, only emit the delta quantity over what we already sent to this printer
+                // Per-printer total tracker map (by stable key)
+                order.__kitchenPrintedTotalsByPrinter = order.__kitchenPrintedTotalsByPrinter || {};
+                const totalsMap = (order.__kitchenPrintedTotalsByPrinter[printerKey] =
+                    order.__kitchenPrintedTotalsByPrinter[printerKey] || {});
+
+                // Build delta data
                 const data = [];
-                for (const item of candidate) {
-                    const uid = item.uid || `${item.product_id}:${item.name}:${item.note || ""}`;
-                    const already = Number(printedMap[uid] || 0);
-                    const qty = Number(item.quantity || 0);
-                    const diff = qty - already;
+                for (const [key, totalQty] of groupTotals.entries()) {
+                    const already = Number(totalsMap[key] || 0);
+                    const diff = Number(totalQty) - already;
                     if (diff > 0) {
-                        data.push({ ...item, quantity: diff });
+                        const sample = groupSample.get(key) || {};
+                        data.push({
+                            ...sample,
+                            quantity: diff,
+                        });
                     }
                 }
                 if (!data.length) {
@@ -270,12 +278,9 @@ patch(ActionpadWidget.prototype, {
                     );
                 }
 
-                // Mark emitted quantities as printed for this printer
-                for (const item of data) {
-                    const uid = item.uid || `${item.product_id}:${item.name}:${item.note || ""}`;
-                    const prev = Number(printedMap[uid] || 0);
-                    const inc = Number(item.quantity || 0);
-                    printedMap[uid] = prev + inc;
+                // Update totals tracker to current totals (so next run computes fresh deltas)
+                for (const [key, totalQty] of groupTotals.entries()) {
+                    totalsMap[key] = Number(totalQty);
                 }
             }
         } catch (e) {
