@@ -195,40 +195,29 @@ patch(ActionpadWidget.prototype, {
                 order.__kitchenPrintedByPrinter = order.__kitchenPrintedByPrinter || {};
                 const printedMap = (order.__kitchenPrintedByPrinter[printerKey] = order.__kitchenPrintedByPrinter[printerKey] || {});
 
-                // Compute per-product totals for current orderlines (robust to uid merges/resets)
                 // Filter by printer categories first using the full current snapshot
+                // Keep per-line uids so we can emit each new line separately
                 const currentForPrinter = getPrintingCategoriesChanges(
                     this.pos,
                     printer.config.product_categories_ids,
                     Array.from(curLinesMap.values())
                 );
+                // Per-printer, per-line-uid tracker. This ensures identical items on
+                // different lines are emitted separately, while quantity increments
+                // on the same line uid produce a delta quantity.
+                order.__kitchenPrintedUidByPrinter = order.__kitchenPrintedUidByPrinter || {};
+                const printedUidMap = (order.__kitchenPrintedUidByPrinter[printerKey] =
+                    order.__kitchenPrintedUidByPrinter[printerKey] || {});
 
-                // Group by stable key: product + note + parent link
-                const groupTotals = new Map();
-                const groupSample = new Map();
-                for (const item of currentForPrinter) {
-                    const key = `${item.product_id || ''}|${item.note || ''}|${item.parent_line_id || ''}`;
-                    const prev = groupTotals.get(key) || 0;
-                    groupTotals.set(key, prev + Number(item.quantity || 0));
-                    if (!groupSample.has(key)) groupSample.set(key, item);
-                }
-
-                // Per-printer total tracker map (by stable key)
-                order.__kitchenPrintedTotalsByPrinter = order.__kitchenPrintedTotalsByPrinter || {};
-                const totalsMap = (order.__kitchenPrintedTotalsByPrinter[printerKey] =
-                    order.__kitchenPrintedTotalsByPrinter[printerKey] || {});
-
-                // Build delta data
+                // Build delta per line uid
                 const data = [];
-                for (const [key, totalQty] of groupTotals.entries()) {
-                    const already = Number(totalsMap[key] || 0);
-                    const diff = Number(totalQty) - already;
+                for (const item of currentForPrinter) {
+                    const uid = item.uid || `${item.product_id || ''}|${item.name || ''}|${item.note || ''}|${item.parent_line_id || ''}`;
+                    const already = Number(printedUidMap[uid] || 0);
+                    const qty = Number(item.quantity || 0);
+                    const diff = qty - already;
                     if (diff > 0) {
-                        const sample = groupSample.get(key) || {};
-                        data.push({
-                            ...sample,
-                            quantity: diff,
-                        });
+                        data.push({ ...item, quantity: diff });
                     }
                 }
                 if (!data.length) {
@@ -278,9 +267,10 @@ patch(ActionpadWidget.prototype, {
                     );
                 }
 
-                // Update totals tracker to current totals (so next run computes fresh deltas)
-                for (const [key, totalQty] of groupTotals.entries()) {
-                    totalsMap[key] = Number(totalQty);
+                // Update per-uid tracker to current quantities
+                for (const item of currentForPrinter) {
+                    const uid = item.uid || `${item.product_id || ''}|${item.name || ''}|${item.note || ''}|${item.parent_line_id || ''}`;
+                    printedUidMap[uid] = Number(item.quantity || 0);
                 }
             }
         } catch (e) {
