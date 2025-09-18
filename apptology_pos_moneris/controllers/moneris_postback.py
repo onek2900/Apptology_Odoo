@@ -9,6 +9,11 @@ _logger = logging.getLogger(__name__)
 
 class MonerisPostbackController(http.Controller):
 
+    @http.route('/moneris/postback', type='http', auth='public', methods=['GET', 'HEAD'], csrf=False)
+    def moneris_postback_probe(self, **kw):
+        """Endpoint health probe used by Moneris before sending the real POST callback."""
+        return request.make_json_response({"ok": True})
+
     @http.route('/moneris/postback', type='http', auth='public', methods=['POST'], csrf=False)
     def moneris_postback(self, **kw):
         """
