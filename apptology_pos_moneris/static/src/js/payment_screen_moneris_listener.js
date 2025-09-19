@@ -78,6 +78,16 @@ patch(PaymentScreen.prototype, {
             }
             try { delete pl.moneris_started_at; } catch (e) {}
             this.notification.add(_t("Moneris payment approved."), { type: "info" });
+        } else if (msg.type === 'purchase' && String(msg.statusCode || '').trim() === '5220') {
+            pl.set_payment_status("retry");
+            const term = pl.payment_method?.payment_terminal;
+            if (term?.paymentNotificationResolver) {
+                term._clearCancelTimer?.();
+                term.paymentNotificationResolver(false);
+                term.paymentNotificationResolver = null;
+            }
+            try { delete pl.moneris_started_at; } catch (e) {}
+            this.notification.add(_t("Moneris payment cancelled on terminal."), { type: "info" });
         } else if (msg.type === 'purchase' && msg.completed) {
             pl.set_payment_status("rejected");
             const term = pl.payment_method?.payment_terminal;
