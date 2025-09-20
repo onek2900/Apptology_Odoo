@@ -21,6 +21,7 @@ class ModifierGroupsField extends Component {
             },
             () => [this._groupKey()]
         );
+        console.log('modifier_groups: setup props', this.props);
     }
 
     get toppingsField() {
