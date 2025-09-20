@@ -19,13 +19,6 @@
                                 <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='7d', 'btn-outline-primary': state.filters.datePreset!=='7d'}" t-on-click="() => { state.filters.datePreset='7d'; this.reloadOrders(); }">Last 7 Days</button>
                                 <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='month', 'btn-outline-primary': state.filters.datePreset!=='month'}" t-on-click="() => { state.filters.datePreset='month'; this.reloadOrders(); }">This Month</button>
                             </div>
-                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.status = ev.target.value; this.reloadOrders(); }">
-                                <option value="all">All Statuses</option>
-                                <option value="open">Open</option>
-                                <option value="paid">Paid</option>
-                                <option value="refunded">Refunded</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
                             <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.source = ev.target.value; this.reloadOrders(); }">
                                 <option value="all">All Sources</option>
                                 <option value="pos">POS</option>
