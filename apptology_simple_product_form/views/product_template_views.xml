@@ -21,9 +21,9 @@
                             <field name="available_in_pos" string="Available in POS" widget="boolean_toggle"/>
                         </group>
                     </group>
-                    <group string="Modifiers" colspan="2" class="app-modifiers-section">
-                        <field name="sh_topping_group_ids" widget="modifier_groups" options="{'toppings_field': 'sh_topping_ids'}"/>
-                        <field name="sh_topping_ids" invisible="1"/>
+                    <group string="Modifiers" colspan="2" class="app-modifiers-section" col="1">
+                        <field name="sh_topping_group_ids" widget="many2many_tags" string="Modifier Groups" options="{'no_create_edit': False}" placeholder="Select modifier groups..."/>
+                        <field name="sh_topping_ids" widget="modifier_groups" options="{'groups_field': 'sh_topping_group_ids'}" nolabel="1"/>
                     </group>
                 </sheet>
             </form>
