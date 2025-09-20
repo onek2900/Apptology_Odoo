@@ -53,47 +53,50 @@ class ModifierGroupsField extends Component {
         const groupsVal = (this.props.record && this.props.record.data && this.props.record.data[this.groupsField]) || [];
         const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
-        let groups = [];
-        let toppingsById = {};
         const cacheKey = groupIds.slice().sort((a, b) => a - b).join(",");
-        const cached = this._cache.get(cacheKey);
-        if (cached && !force) {
-            ({ groups, toppingsById } = cached);
-        } else {
-            if (groupIds.length) {
-                groups = await this.orm.searchRead(
-                    "sh.topping.group",
-                    [["id", "in", groupIds]],
-                    ["name", "sequence", "toppinds_ids", "min", "max", "multi_max"]
-                );
-                const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
-                if (toppingIds.length) {
-                    const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
-                    toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
+        try {
+            let groups = [];
+            let toppingsById = {};
+            const cached = this._cache.get(cacheKey);
+            if (cached && !force) {
+                ({ groups, toppingsById } = cached);
+            } else {
+                if (groupIds.length) {
+                    groups = await this.orm.searchRead(
+                        "sh.topping.group",
+                        [["id", "in", groupIds]],
+                        ["name", "sequence", "toppinds_ids", "min", "max", "multi_max"]
+                    );
+                    const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
+                    if (toppingIds.length) {
+                        const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
+                        toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
+                    }
+                    // order groups by sequence then name
+                    groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
                 }
-                // order groups by sequence then name
-                groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
+                this._cache.set(cacheKey, { groups, toppingsById });
             }
-            this._cache.set(cacheKey, { groups, toppingsById });
-        }
-        // preserve expanded states; default collapsed
-        const prevExpanded = this.state.expanded || {};
-        const expanded = {};
-        for (const g of groups) {
-            expanded[g.id] = Object.prototype.hasOwnProperty.call(prevExpanded, g.id)
-                ? prevExpanded[g.id]
-                : false;
-        }
-        this.state.groups = groups;
-        this.state.toppingsById = toppingsById;
-        this.state.expanded = expanded;
-        this.state.loading = false;
-
-        // Auto-populate toppings from selected groups if missing
-        const groupKey = cacheKey;
-        if (!this.props.readonly && groupKey !== this._lastGroupKey) {
-            await this._ensureAutoPopulate(groups);
-            this._lastGroupKey = groupKey;
+            // preserve expanded states; default collapsed
+            const prevExpanded = this.state.expanded || {};
+            const expanded = {};
+            for (const g of groups) {
+                expanded[g.id] = Object.prototype.hasOwnProperty.call(prevExpanded, g.id)
+                    ? prevExpanded[g.id]
+                    : false;
+            }
+            this.state.groups = groups;
+            this.state.toppingsById = toppingsById;
+            this.state.expanded = expanded;
+            // Auto-populate toppings from selected groups if missing
+            if (!this.props.readonly && cacheKey !== this._lastGroupKey) {
+                await this._ensureAutoPopulate(groups);
+                this._lastGroupKey = cacheKey;
+            }
+        } catch (e) {
+            this.notification.add(String(e.message || e), { type: "danger" });
+        } finally {
+            this.state.loading = false;
         }
     }
 
