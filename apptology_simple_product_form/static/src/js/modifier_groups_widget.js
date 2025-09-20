@@ -161,6 +161,43 @@ class ModifierGroupsField extends Component {
         return c;
     }
 
+    _normalizedLimit(value) {
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return value;
+        }
+        if (typeof value === 'string' && value.trim() !== '') {
+            const parsed = parseInt(value, 10);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        return 0;
+    }
+
+    groupSelectionMeta(grp) {
+        const selected = this.countSelectedInGroup(grp);
+        const total = (grp.toppinds_ids || []).length;
+        const min = this._normalizedLimit(grp.min);
+        const max = this._normalizedLimit(grp.multi_max || grp.max);
+        const requirementParts = [];
+        if (min) requirementParts.push(`Min ${min}`);
+        if (max) requirementParts.push(`Max ${max}`);
+        let statusClass = 'text-muted';
+        if (min && selected < min) {
+            statusClass = 'text-warning';
+        } else if (max && selected > max) {
+            statusClass = 'text-danger';
+        } else if (min || max) {
+            statusClass = 'text-success';
+        }
+        return {
+            selected,
+            total,
+            min,
+            max,
+            requirementText: requirementParts.join(', '),
+            statusClass,
+        };
+    }
+
     async selectAllInGroup(groupId) {
         if (this.props.readonly) return;
         const grp = (this.state.groups || []).find((g) => g.id === groupId);

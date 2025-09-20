@@ -9,34 +9,21 @@
         <field name="arch" type="xml">
             <form string="Product">
                 <sheet>
-                    <group>
-                        <!-- Left column: main details -->
-                        <group>
-                            <label for="name"/>
-                            <field name="name" required="1" nolabel="1"/>
-
-                            <label for="description_sale"/>
-                            <field name="description_sale" nolabel="1" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements."/>
-
-                            <label for="pos_categ_ids"/>
-                            <field name="pos_categ_ids" nolabel="1" widget="many2many_tags" string="POS Category"/>
-
-                            <!-- Collapsible Modifier groups section: edit groups via tags; widget manages display and toppings -->
-                            <label for="sh_topping_group_ids"/>
-                            <field name="sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
-
-                            <!-- Grouped toppings view under the selected groups -->
-                            <label for="sh_topping_ids"/>
-                            <field name="sh_topping_ids" widget="many2many_tags" nolabel="1"/>
+                    <group col="2">
+                        <group string="Basic Information" col="1">
+                            <field name="name" required="1"/>
+                            <field name="description_sale" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements."/>
+                            <field name="pos_categ_ids" widget="many2many_tags" string="POS Categories"/>
                         </group>
-                        <!-- Right column: image and price -->
-                        <group>
-                            <label for="image_1920"/>
+                        <group string="Pricing &amp; POS" col="1">
                             <field name="image_1920" widget="image" nolabel="1"/>
-
-                            <label for="list_price"/>
-                            <field name="list_price" nolabel="1" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="available_in_pos" string="Available in POS" widget="boolean_toggle"/>
                         </group>
+                    </group>
+                    <group string="Modifiers" colspan="2" class="app-modifiers-section">
+                        <field name="sh_topping_group_ids" widget="modifier_groups" options="{'toppings_field': 'sh_topping_ids'}"/>
+                        <field name="sh_topping_ids" invisible="1"/>
                     </group>
                 </sheet>
             </form>

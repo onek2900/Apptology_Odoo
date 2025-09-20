@@ -72,6 +72,17 @@
 .app-modifier-groups-widget .group-title .chevron {
   transition: transform 0.2s ease;
 }
+.app-modifier-groups-widget .selection-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  font-weight: 600;
+}
+
+.app-modifier-groups-widget .selection-count.text-muted {
+  color: var(--o-gray-600) !important;
+}
 
 .app-modifier-groups-widget .topping-row {
   display: flex;
@@ -110,4 +121,8 @@
   cursor: default;
 }
 
-/* group chips removed; use standard field for group selection */
+/* Additional spacing for modifiers block on the simple form */
+
+.app-modifiers-section {
+  margin-top: 16px;
+}
