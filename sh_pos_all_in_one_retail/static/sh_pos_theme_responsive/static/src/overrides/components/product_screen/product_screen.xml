@@ -94,6 +94,10 @@
             <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_mobile_control_button"
                 t-if="ui.isSmall">
                 <div class="sh_mobile_view_control_button_sub_div">
+                    <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component &amp;&amp; cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
+                    <t t-if="orderTypeControl">
+                        <t t-component="orderTypeControl.component" t-key="orderTypeControl.name || 'order-type-btn-mobile-tray'"/>
+                    </t>
                     <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
                         <t t-if="!(cb.component and cb.component.template === 'sh_pos_order_type.OrderTypeButton')">
                             <t t-component="cb.component" t-key="cb.name"/>

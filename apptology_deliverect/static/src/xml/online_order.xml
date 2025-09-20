@@ -14,25 +14,18 @@
                         <!-- Filters toolbar -->
                         <div class="p-2 bg-white border-bottom d-flex gap-2 align-items-center flex-wrap">
                             <div class="btn-group" role="group">
-                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='today', 'btn-outline-primary': state.filters.datePreset!=='today'}" t-on-click="() => { state.filters.datePreset='today'; reloadOrders(); }">Today</button>
-                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='yesterday', 'btn-outline-primary': state.filters.datePreset!=='yesterday'}" t-on-click="() => { state.filters.datePreset='yesterday'; reloadOrders(); }">Yesterday</button>
-                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='7d', 'btn-outline-primary': state.filters.datePreset!=='7d'}" t-on-click="() => { state.filters.datePreset='7d'; reloadOrders(); }">Last 7 Days</button>
-                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='month', 'btn-outline-primary': state.filters.datePreset!=='month'}" t-on-click="() => { state.filters.datePreset='month'; reloadOrders(); }">This Month</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='today', 'btn-outline-primary': state.filters.datePreset!=='today'}" t-on-click="() => { state.filters.datePreset='today'; this.reloadOrders(); }">Today</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='yesterday', 'btn-outline-primary': state.filters.datePreset!=='yesterday'}" t-on-click="() => { state.filters.datePreset='yesterday'; this.reloadOrders(); }">Yesterday</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='7d', 'btn-outline-primary': state.filters.datePreset!=='7d'}" t-on-click="() => { state.filters.datePreset='7d'; this.reloadOrders(); }">Last 7 Days</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='month', 'btn-outline-primary': state.filters.datePreset!=='month'}" t-on-click="() => { state.filters.datePreset='month'; this.reloadOrders(); }">This Month</button>
                             </div>
-                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.status = ev.target.value; reloadOrders(); }">
-                                <option value="all">All Statuses</option>
-                                <option value="open">Open</option>
-                                <option value="paid">Paid</option>
-                                <option value="refunded">Refunded</option>
-                                <option value="cancelled">Cancelled</option>
-                            </select>
-                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.source = ev.target.value; reloadOrders(); }">
-                                <option value="all">All Sources</option>
-                                <option value="pos">POS</option>
-                                <option value="online">Online</option>
-                            </select>
+                            <div class="btn-group" role="group">
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.source==='all', 'btn-outline-primary': state.filters.source!=='all'}" t-on-click="() => { state.filters.source='all'; this.reloadOrders(); }">All Sources</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.source==='pos', 'btn-outline-primary': state.filters.source!=='pos'}" t-on-click="() => { state.filters.source='pos'; this.reloadOrders(); }">POS</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.source==='online', 'btn-outline-primary': state.filters.source!=='online'}" t-on-click="() => { state.filters.source='online'; this.reloadOrders(); }">Online</button>
+                            </div>
                             <div class="ms-auto d-flex align-items-center gap-2">
-                                <input class="form-control form-control-sm" placeholder="Search receipt, channel or customer" t-on-keyup="(ev)=>{ state.filters.query = ev.target.value; reloadOrders(); }"/>
+                                <input class="form-control form-control-sm" placeholder="Search receipt, channel or customer" t-on-keyup="(ev)=>{ state.filters.query = ev.target.value; this.reloadOrders(); }"/>
                             </div>
                         </div>
                         <table class="table order_head w-100">
@@ -188,3 +181,4 @@
         </div>
     </t>
 </templates>
+

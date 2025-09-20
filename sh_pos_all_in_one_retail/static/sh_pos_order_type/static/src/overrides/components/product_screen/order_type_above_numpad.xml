@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <!-- Render the Order Type button above the subpads (above numpad) for both desktop and mobile, without duplicating other control buttons -->
+    <!-- Render the Order Type button above the subpads (above numpad) on larger screens; mobile keeps it in the control tray -->
     <t t-name="sh_pos_order_type.ProductScreenAboveNumpad" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
         <!-- Desktop: inject above numpad -->
         <xpath expr="//div[hasclass('subpads')]" position="before">
@@ -12,17 +12,6 @@
                 </t>
             </div>
         </xpath>
-
-        <!-- Mobile: inject above numpad like desktop -->
-        <xpath expr="//div[hasclass('subpads')]" position="before">
-            <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_order_type_above_numpad" t-if="ui.isSmall">
-                <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component &amp;&amp; cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
-                <t t-if="orderTypeControl">
-                    <t t-component="orderTypeControl.component" t-key="orderTypeControl.name || 'order-type-btn-mobile'"/>
-                </t>
-            </div>
-        </xpath>
-
     </t>
 
 </templates>
