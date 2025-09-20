@@ -35,20 +35,29 @@ class ModifierGroupsField extends Component {
 
     // Normalize many2many values into an array of ids regardless of shape
     asIds(val) {
+        console.log('modifier_groups: asIds input', val);
         if (!val) {
+            console.log('modifier_groups: asIds output', []);
             return [];
         }
         if (typeof val === "object" && !Array.isArray(val)) {
             if (Array.isArray(val.commands)) {
-                return this.asIds(val.commands);
+                const cmdResult = this.asIds(val.commands);
+                console.log('modifier_groups: asIds output from commands', cmdResult);
+                return cmdResult;
             }
             if (Array.isArray(val.resIds)) {
-                return val.resIds.slice();
+                const res = val.resIds.slice();
+                console.log('modifier_groups: asIds output from resIds', res);
+                return res;
             }
             if (Array.isArray(val.records)) {
-                return val.records.map((r) => r.id);
+                const res = val.records.map((r) => r.id);
+                console.log('modifier_groups: asIds output from records', res);
+                return res;
             }
             if ("id" in val && typeof val.id === "number") {
+                console.log('modifier_groups: asIds output single id', [val.id]);
                 return [val.id];
             }
         }
@@ -70,28 +79,28 @@ class ModifierGroupsField extends Component {
                 if (Array.isArray(entry) && entry.length) {
                     const [command, arg1, arg2] = entry;
                     switch (command) {
-                        case 6: // replace with ids
+                        case 6:
                             ids.length = 0;
                             if (Array.isArray(arg2)) {
                                 for (const id of arg2) ensureUniquePush(id);
                             }
                             break;
-                        case 4: // add existing id
-                        case 1: // update existing id
-                        case 0: // create (id may be in payload)
+                        case 4:
+                        case 1:
+                        case 0:
                             if (typeof arg1 === "number") {
                                 ensureUniquePush(arg1);
                             } else if (arg2 && typeof arg2.id === "number") {
                                 ensureUniquePush(arg2.id);
                             }
                             break;
-                        case 3: // remove single id
+                        case 3:
                             if (typeof arg1 === "number") {
                                 const idx = ids.indexOf(arg1);
                                 if (idx !== -1) ids.splice(idx, 1);
                             }
                             break;
-                        case 5: // remove all
+                        case 5:
                             ids.length = 0;
                             break;
                         default:
@@ -103,8 +112,10 @@ class ModifierGroupsField extends Component {
                     ensureUniquePush(entry.id);
                 }
             }
+            console.log('modifier_groups: asIds output from command list', ids);
             return ids;
         }
+        console.log('modifier_groups: asIds output fallback', []);
         return [];
     }
 
@@ -116,13 +127,25 @@ class ModifierGroupsField extends Component {
 
     async loadData(force = false) {
         if (!this.props.record || !this.props.record.data) {
+            console.log('modifier_groups: loadData skipped - no record yet', {
+                force,
+                hasRecord: !!this.props.record,
+            });
             this.state.loading = false;
             return;
         }
         const groupsVal = this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
-        const cacheKey = groupIds.slice().sort((a, b) => a - b).join(",");
+        const cacheKey = groupIds.slice().sort((a, b) => a - b).join(',');
+        console.log('modifier_groups: loadData start', {
+            force,
+            cacheKey,
+            groupIds,
+            recordId: this.props.record.resId,
+            groupsField: this.groupsField,
+            rawGroupsVal: groupsVal,
+        });
         try {
             let groups = [];
             let toppingsById = {};
@@ -163,8 +186,10 @@ class ModifierGroupsField extends Component {
                 this._lastGroupKey = cacheKey;
             }
         } catch (e) {
+            console.error('modifier_groups: loadData error', e);
             this.notification.add(String(e.message || e), { type: "danger" });
         } finally {
+            console.log('modifier_groups: loadData end', { cacheKey, groupIds, loading: this.state.loading });
             this.state.loading = false;
         }
     }
