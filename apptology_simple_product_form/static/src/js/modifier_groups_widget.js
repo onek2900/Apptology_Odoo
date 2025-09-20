@@ -30,8 +30,16 @@ class ModifierGroupsField extends Component {
     }
 
     get groupsField() {
-        // If not passed via options, assume the bound field is the groups field
-        return (this.props.options && this.props.options.groups_field) || this.props.name || "sh_topping_group_ids";
+        if (this.props.options && this.props.options.groups_field) {
+            return this.props.options.groups_field;
+        }
+        if (this.props.record && this.props.record.fields && this.props.record.fields.sh_topping_group_ids) {
+            return 'sh_topping_group_ids';
+        }
+        if (this.props.name && this.props.name !== 'sh_topping_ids') {
+            return this.props.name;
+        }
+        return 'sh_topping_group_ids';
     }
 
     // Normalize many2many values into an array of ids regardless of shape
