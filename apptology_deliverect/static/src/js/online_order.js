@@ -17,10 +17,20 @@ export class OnlineOrderScreen extends Component {
         this.popup = useService("popup");
         this.printer = useService("printer");
         this.state = useState({
-            clickedOrder:{},
-            openOrders:[],
-            currency_symbol:this.env.services.pos.currency.symbol,
-            isAutoApprove:this.pos.config.auto_approve
+            clickedOrder: {},
+            orders: [],
+            currency_symbol: this.env.services.pos.currency.symbol,
+            isAutoApprove: this.pos.config.auto_approve,
+            // Filters and paging
+            filters: {
+                datePreset: 'today', // today | yesterday | 7d | month
+                status: 'all', // all | open | paid | refunded | cancelled
+                source: 'all', // all | online | pos
+                query: '',
+            },
+            page: 1,
+            hasMore: false,
+            loading: false,
         });
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService = this.env.services.bus_service;
@@ -28,8 +38,8 @@ export class OnlineOrderScreen extends Component {
         this.busService.addEventListener('notification', ({detail: notifications})=>{
             notifications = notifications.filter(item => item.payload.channel === this.channel)
             notifications.forEach(item => {
-                    this.fetchOpenOrders();
-                })
+                this.reloadOrders();
+            })
         });
         this.initiateServices();
         onWillUnmount(()=>clearInterval(this.pollingInterval))
@@ -38,7 +48,7 @@ export class OnlineOrderScreen extends Component {
      * Initiates services by fetching open orders and starting polling.
      */
     async initiateServices(){
-        this.fetchOpenOrders();
+        this.reloadOrders();
         this.startPollingOrders();
     }
     /**
@@ -67,26 +77,65 @@ export class OnlineOrderScreen extends Component {
         const cashierName = exportedOrder.headerData?.cashier || "N/A";
         const orderNumber = exportedOrder.headerData?.trackingNumber || "N/A";
 
-        // Emit one structured JSON log per printer
+        // Helper utilities for category filtering (mirror kitchen printing logic)
+        const normalizeCategoryIds = (cats) => {
+            if (!cats) return [];
+            if (cats instanceof Set) return Array.from(cats);
+            if (!Array.isArray(cats)) return [];
+            return cats
+                .map((c) => {
+                    if (typeof c === "number") return c;
+                    if (Array.isArray(c)) return c[0];
+                    if (c && typeof c === "object") return c.id ?? c.ID ?? c["_id"] ?? null;
+                    return null;
+                })
+                .filter((x) => typeof x === "number" && !Number.isNaN(x));
+        };
+        const toId = (v) => {
+            if (v == null) return null;
+            if (typeof v === "number") return v;
+            if (Array.isArray(v)) return toId(v[0]);
+            if (typeof v === "object") return toId(v.id ?? v.ID ?? v["_id"]);
+            const n = Number(v);
+            return Number.isFinite(n) ? n : null;
+        };
+        const productMatchesPrinter = (product, printerCatsSet) => {
+            if (!product) return false;
+            const cats = normalizeCategoryIds(product.pos_categ_ids);
+            for (const cid of cats) {
+                let cur = toId(cid);
+                while (cur) {
+                    if (printerCatsSet.has(cur)) return true;
+                    const node = this.pos?.db?.category_by_id?.[cur];
+                    cur = toId(node?.parent_id);
+                }
+            }
+            return false;
+        };
+
+        // Emit one structured JSON log per printer (unified type + source)
         for (const printer of this.pos.unwatched.printers) {
             const printerName = printer.config.name;
-            const jsonLog = {
-                type: "deliverect_kitchen_log",
-                printer: printerName,
-                cashier: cashierName,
-                order_number: orderNumber,
-                lines: [],
-            };
+            const pCatIds = normalizeCategoryIds(printer.config.product_categories_ids);
+            const pCatSet = new Set(pCatIds);
+
+            // Build per-printer lines filtered by product categories
+            const linesForPrinter = [];
             exportedOrder.lines.forEach((lineArr) => {
-                const line = lineArr[2];
+                const line = lineArr && lineArr[2];
                 if (!line) return;
+                const pid = toId(line.product_id);
+                const product = pid ? this.pos.db.product_by_id?.[pid] : null;
+                if (!productMatchesPrinter(product, pCatSet)) return;
                 const rawTop = line.sh_is_topping;
-                const isTopping = Array.isArray(rawTop)
-                    ? !!rawTop[0]
-                    : !!rawTop || !!line.is_topping;
+                const isTopping = Array.isArray(rawTop) ? !!rawTop[0] : !!rawTop || !!line.is_topping;
                 const rawHas = line.sh_is_has_topping;
                 const isHasTopping = Array.isArray(rawHas) ? !!rawHas[0] : !!rawHas || !!line.is_has_topping;
-                jsonLog.lines.push({
+                // Build categories names for convenience
+                const catObjs = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
+                const catNames = (catObjs || []).map((c) => c && c.name).filter(Boolean);
+                linesForPrinter.push({
+                    categories: catNames,
                     name: line.full_product_name,
                     qty: line.qty,
                     note: line.note || "",
@@ -94,10 +143,23 @@ export class OnlineOrderScreen extends Component {
                     has_topping: isHasTopping,
                 });
             });
+
+            if (linesForPrinter.length === 0) continue;
+
+            const jsonLog = {
+                type: "kitchen_printer_log",
+                source: "online",
+                printer: printerName,
+                cashier: cashierName,
+                order_number: orderNumber,
+                table_id: null,
+                floor: null,
+                lines: linesForPrinter,
+            };
             try {
                 console.log(JSON.stringify(jsonLog));
             } catch (e) {
-                console.warn("Failed to stringify deliverect log", e);
+                console.warn("Failed to stringify kitchen printer log (online)", e);
             }
         }
     }
@@ -137,22 +199,51 @@ export class OnlineOrderScreen extends Component {
     }
 }
     /**
-     * Fetches open online orders.
+     * Fetch orders with current filters and page.
      */
-    async fetchOpenOrders(){
+    async fetchOrders(page = 1){
+        this.state.loading = true;
         try {
-            const openOrders = await this.orm.call("pos.order", "get_open_orders", [],{config_id:this.pos.config.id});
-            const unpaidOrders = await this.pos.get_order_list().filter(order => order.name.includes("Online-Order"));
-            this.state.openOrders = openOrders;
+            const payload = {
+                config_id: this.pos.config.id,
+                filters: {
+                    date_preset: this.state.filters.datePreset,
+                    status: this.state.filters.status,
+                    source: this.state.filters.source,
+                    query: this.state.filters.query,
+                },
+                page: page,
+                page_size: 50,
+            }
+            const result = await this.orm.call("pos.order", "get_orders", [], payload);
+            if (page === 1){
+                this.state.orders = result.orders;
+            } else {
+                this.state.orders = this.state.orders.concat(result.orders);
+            }
+            this.state.page = page;
+            this.state.hasMore = !!result.has_more;
         } catch (error) {
-            console.error("Error fetching open orders:", error);
+            console.error("Error fetching orders:", error);
+        } finally {
+            this.state.loading = false;
+        }
+    }
+
+    async reloadOrders(){
+        await this.fetchOrders(1);
+    }
+
+    async loadMore(){
+        if (this.state.hasMore && !this.state.loading){
+            await this.fetchOrders(this.state.page + 1);
         }
     }
     /**
      * Starts polling for open orders every 10 seconds.
      */
     async startPollingOrders() {
-        this.pollingInterval = setInterval(async () => this.fetchOpenOrders(), 10000);
+        this.pollingInterval = setInterval(async () => this.reloadOrders(), 10000);
     }
     /**
      * Approves an online order.
@@ -168,7 +259,7 @@ export class OnlineOrderScreen extends Component {
             { status: 'approved'},
         );
         this.env.bus.trigger('online_order_state_update');
-        this.fetchOpenOrders();
+        this.reloadOrders();
     }
     /**
      * Declines an online order after confirmation.
@@ -190,7 +281,7 @@ export class OnlineOrderScreen extends Component {
                         { status: 'declined'},
                         )
                 this.env.bus.trigger('online_order_state_update');
-                this.fetchOpenOrders();
+                this.reloadOrders();
             }
     }
     /**
@@ -227,7 +318,7 @@ export class OnlineOrderScreen extends Component {
     async finalizeOrder(order){
         await this.orm.call("pos.order", "update_order_status", [order.id],{status:'finalized'});
         this.state.clickedOrder = {};
-        this.fetchOpenOrders();
+        this.reloadOrders();
     }
     /**
      * Redirects to the ticket screen when an order is double-clicked.

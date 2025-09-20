@@ -87,7 +87,7 @@ class DeliverectWebhooks(http.Controller):
         pos_reference = f"Online-Order {digits[:5]}-{digits[5:8]}-{digits[8:]}"
         return pos_reference
 
-    def create_order_line(self, product_id, qty, note):
+    def create_order_line(self, product_id, qty, note, pos_config):
         """Create an order line for a given product.
 
         :param int product_id: The ID of the product.
@@ -98,8 +98,11 @@ class DeliverectWebhooks(http.Controller):
             [('id', '=', product_id)],
             limit=1)
         if product:
+            # Use Deliverect pricelist helper from POS config
+            unit_price = pos_config._get_deliverect_price(product)
+
             product_data = product.taxes_id.compute_all(
-                product.lst_price,
+                unit_price,
                 currency=product.currency_id,
                 quantity=qty,
                 product=product,
@@ -108,7 +111,7 @@ class DeliverectWebhooks(http.Controller):
             line_vals = {
                 'full_product_name': product.name,
                 'product_id': product.id,
-                'price_unit': product.lst_price,
+                'price_unit': unit_price,
                 'qty': qty,
                 'price_subtotal': product_data.get('total_excluded'),
                 'price_subtotal_incl': product_data.get('total_included'),
@@ -170,7 +173,8 @@ class DeliverectWebhooks(http.Controller):
                             sub_item_line_vals = self.create_order_line(
                                 int(sub_item.get('plu').split('-')[1]),
                                 item.get('quantity'),
-                                item.get('remark', "")
+                                item.get('remark', ""),
+                                pos_config
                             )
                             # mark variant sub-items as toppings for receipt grouping
                             sub_item_line_vals['sh_is_topping'] = True
@@ -181,7 +185,8 @@ class DeliverectWebhooks(http.Controller):
                     line_vals = self.create_order_line(
                         int(item.get('plu').split('-')[1]),
                         item.get('quantity'),
-                        item.get('remark', "")
+                        item.get('remark', ""),
+                        pos_config
                     )
                     # flag parent if it has modifiers/toppings
                     if item.get('subItems'):
@@ -194,7 +199,8 @@ class DeliverectWebhooks(http.Controller):
                             sub_item_line_vals = self.create_order_line(
                                 int(sub_item.get('plu').split('-')[1]),
                                 item.get('quantity'),
-                                sub_item.get('remark', "")
+                                sub_item.get('remark', ""),
+                                pos_config
                             )
                             # mark sub-items of a normal product as toppings
                             sub_item_line_vals['sh_is_topping'] = True
@@ -210,7 +216,10 @@ class DeliverectWebhooks(http.Controller):
                 'amount_tax': total_taxed - total_untaxed,
                 'amount_total': total_taxed,
                 'fiscal_position_id': False,
-                'pricelist_id': pos_config.pricelist_id.id,
+                'pricelist_id': (request.env['product.pricelist'].sudo().search([
+                    ('company_id', '=', pos_config.company_id.id),
+                    ('is_deliverect_pricelist', '=', True)
+                ], limit=1).id) or pos_config.pricelist_id.id,
                 'lines': order_lines,
                 'name': pos_reference,
                 'pos_reference': pos_reference,
@@ -317,6 +326,38 @@ class DeliverectWebhooks(http.Controller):
                             'payment_method_id': deliverect_payment_method.id,
                         })
                         order_payment.with_context(**payment_context).check()
+                        # After payment, ensure only kitchen-category lines are marked for cooking
+                        try:
+                            kitchen_screen = request.env['kitchen.screen'].sudo().search([
+                                ('pos_config_id', '=', pos_configuration.id)
+                            ], limit=1)
+                            kset = set(kitchen_screen.pos_categ_ids.ids) if kitchen_screen and kitchen_screen.pos_categ_ids else set()
+                            in_kitchen_any = False
+                            for line in order.lines:
+                                line_categs = set(line.product_id.pos_categ_ids.ids)
+                                flag = bool(kset and (line_categs & kset))
+                                line.is_cooking = flag
+                                in_kitchen_any = in_kitchen_any or flag
+                            order.is_cooking = in_kitchen_any
+                        except Exception as _e:
+                            _logger.info(f"Post-payment kitchen flagging skipped: {_e}")
+                    # If the order is approved online and not configured for kitchen categories,
+                    # mark it ready immediately and notify Deliverect as Ready (status 70).
+                    try:
+                        kitchen_screen = request.env['kitchen.screen'].sudo().search([
+                            ('pos_config_id', '=', pos_configuration.id)
+                        ], limit=1)
+                        in_kitchen = False
+                        if kitchen_screen and kitchen_screen.pos_categ_ids:
+                            order_categ_ids = set(order.lines.mapped('product_id').mapped('pos_categ_ids').ids)
+                            in_kitchen = bool(order_categ_ids & set(kitchen_screen.pos_categ_ids.ids))
+                        # If no kitchen screen or no intersection with its categories -> not in kitchen
+                        if not in_kitchen and order.is_online_order and order.online_order_status == 'approved':
+                            order.write({'order_status': 'ready', 'is_cooking': False})
+                            # Send Ready to Deliverect (70)
+                            order.update_order_status_in_deliverect(70)
+                    except Exception as _e:
+                        _logger.info(f"Kitchen auto-ready check skipped: {_e}")
                     self.generate_order_notification(pos_configuration.id, 'success')
                     return Response(
                         json.dumps({'status': 'success', 'message': 'Order created',

@@ -5,19 +5,43 @@
             <div class="screen-full-width d-flex w-100 h-100">
                 <div class="rightpane pane-border d-flex flex-column flex-grow-1 w-100 h-100 h-lg-100 bg-300 overflow-y-auto">
                     <div class="d-flex justify-content-between align-items-center p-2 bg-white border-bottom">
-                        <div class="fs-4 fw-bold">Online Orders</div>
+                        <div class="fs-4 fw-bold">All Orders</div>
                         <button class="btn btn-lg btn-secondary" t-on-click="closeOnlineOrderScreen">
                             <i class="fa fa-arrow-left me-2"/> Back
                         </button>
                     </div>
                     <div class="orders overflow-y-auto flex-grow-1">
+                        <!-- Filters toolbar -->
+                        <div class="p-2 bg-white border-bottom d-flex gap-2 align-items-center flex-wrap">
+                            <div class="btn-group" role="group">
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='today', 'btn-outline-primary': state.filters.datePreset!=='today'}" t-on-click="() => { state.filters.datePreset='today'; reloadOrders(); }">Today</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='yesterday', 'btn-outline-primary': state.filters.datePreset!=='yesterday'}" t-on-click="() => { state.filters.datePreset='yesterday'; reloadOrders(); }">Yesterday</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='7d', 'btn-outline-primary': state.filters.datePreset!=='7d'}" t-on-click="() => { state.filters.datePreset='7d'; reloadOrders(); }">Last 7 Days</button>
+                                <button t-att-class="{'btn btn-sm': true, 'btn-primary': state.filters.datePreset==='month', 'btn-outline-primary': state.filters.datePreset!=='month'}" t-on-click="() => { state.filters.datePreset='month'; reloadOrders(); }">This Month</button>
+                            </div>
+                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.status = ev.target.value; reloadOrders(); }">
+                                <option value="all">All Statuses</option>
+                                <option value="open">Open</option>
+                                <option value="paid">Paid</option>
+                                <option value="refunded">Refunded</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => { state.filters.source = ev.target.value; reloadOrders(); }">
+                                <option value="all">All Sources</option>
+                                <option value="pos">POS</option>
+                                <option value="online">Online</option>
+                            </select>
+                            <div class="ms-auto d-flex align-items-center gap-2">
+                                <input class="form-control form-control-sm" placeholder="Search receipt, channel or customer" t-on-keyup="(ev)=>{ state.filters.query = ev.target.value; reloadOrders(); }"/>
+                            </div>
+                        </div>
                         <table class="table order_head w-100">
                             <thead>
                                 <tr class="order fw-bolder">
                                     <th class="col">Time</th>
-                                    <th class="col">Channel Order ID</th>
+                                    <th class="col">Channel/Receipt</th>
                                     <th class="col p-2">Customer</th>
-                                    <th class="col">Kitchen Status</th>
+                                    <th class="col">Order Status</th>
                                     <th class="col">Order Type</th>
                                     <th class="col">Payment Status</th>
                                     <th class="col">Total</th>
@@ -25,7 +49,7 @@
                                 </tr>
                             </thead>
                             <tbody style="display: block;">
-                                <t t-foreach="state.openOrders" t-as="order" t-key="order.id">
+                                <t t-foreach="state.orders" t-as="order" t-key="order.id">
                                     <tr class="order-row" t-att-data-id="order.id"
                                         t-on-click="() => this.onClickOrder(order)"
                                         t-on-dblclick="() => this.onDoubleClick(order)">
@@ -34,34 +58,35 @@
   (<t t-esc="formatTime(order.date_order).date"/>)
 </td>
                                         <td class="col">
-                                            <t t-esc="order.channel_order_reference"/>
+                                            <t t-esc="order.channel_display"/>
                                         </td>
-                                        <td class="col"><t t-esc="order.partner_id[1]"/></td>
+                                        <td class="col">
+                                            <t t-if="order.channel_icon">
+                                                <img t-att-src="order.channel_icon" alt="" style="height:18px;width:18px;object-fit:contain;" class="me-1"/>
+                                            </t>
+                                            <t t-esc="order.partner_id and order.partner_id[1] or ' - '"/>
+                                        </td>
                                         <td class="col end">
                                             <div class="status-pill" t-att-class="{
-                                                'status-draft': order.order_status == 'draft' and order.online_order_status == 'open',
-                                                'status-waiting': order.order_status == 'draft' and order.online_order_status == 'approved',
-                                                'status-ready': order.order_status == 'ready',
-                                                'status-cancel': order.order_status == 'cancel'
+                                                'status-ready': order.kitchen_status_display == 'Ready',
+                                                'status-draft': order.kitchen_status_display == 'Draft',
+                                                'status-waiting': order.kitchen_status_display == 'In Progress'
                                             }">
-                                                <t t-if="order.order_status == 'draft' and order.online_order_status == 'open'">Open</t>
-                                                <t t-elif="order.order_status == 'draft' and order.online_order_status == 'approved'">Cooking</t>
-                                                <t t-elif="order.order_status=='ready'">Ready</t>
-                                                <t t-elif="order.order_status=='cancel'">Cancel</t>
+                                                <t t-esc="order.kitchen_status_display or ''"/>
                                             </div>
                                         </td>
                                         <td class="col end">
-                                            <t t-if="order.order_type == '1'"><div>Pick Up</div></t>
-                                            <t t-elif="order.order_type == '2'"><div>Delivery</div></t>
-                                            <t t-elif="order.order_type == '3'"><div>Eat In</div></t>
+                                            <div><t t-esc="order.order_type_display"/></div>
                                         </td>
                                         <td class="col end">
-                                            <t t-if="order.state=='paid'"><div>Paid</div></t>
-                                            <t t-elif="order.state=='draft'"><div>Unpaid</div></t>
+                                            <t t-if="order.state=='draft'"><div>Unpaid</div></t>
+                                            <t t-elif="['paid','done','invoiced'].includes(order.state)"><div>Paid</div></t>
+                                            <t t-elif="order.state=='cancel'"><div>Cancelled</div></t>
+                                            <t t-else=""><div><t t-esc="order.state"/></div></t>
                                         </td>
                                         <td class="col end p-2"><t t-esc="order.amount_total"/></td>
                                         <td class="col action-buttons p-2">
-                                            <t t-if="order.online_order_status=='open'">
+                                            <t t-if="order.is_online_order and order.online_order_status=='open'">
                                                 <t t-if="state.isAutoApprove">
                                                     <div class="status-badge approved">Approved</div>
                                                 </t>
@@ -76,20 +101,20 @@
                                                     </button>
                                                 </t>
                                             </t>
-                                            <t t-elif="order.online_order_status=='approved'">
+                                            <t t-elif="order.is_online_order and order.online_order_status=='approved'">
                                                 <div class="status-badge approved">Approved</div>
                                             </t>
-                                            <t t-elif="order.online_order_status=='rejected'">
+                                            <t t-elif="order.is_online_order and order.online_order_status=='rejected'">
                                                 <div class="status-badge rejected">Rejected</div>
                                             </t>
-                                            <t t-elif="order.online_order_status=='finalized'">
+                                            <t t-elif="order.is_online_order and order.online_order_status=='finalized'">
                                                 <div class="status-badge approved">Finalized</div>
                                             </t>
-                                            <t t-else="">
+                                            <t t-elif="order.is_online_order">
                                                 <div class="status-badge rejected">Cancelled</div>
                                             </t>
                                             <!-- Print online order receipt -->
-                                            <t t-if="['open','approved','finalized'].includes(order.online_order_status)">
+                                            <t t-if="order.is_online_order and ['open','approved','finalized'].includes(order.online_order_status)">
                                                 <button class="btn-action print" t-on-click.stop="() => this.printReceipt(order.id)">
                                                     <i class="fa fa-print" aria-hidden="true"/>
                                                 </button>
@@ -99,6 +124,12 @@
                                 </t>
                             </tbody>
                         </table>
+                        <div class="p-2 text-center" t-if="state.hasMore">
+                            <button class="btn btn-outline-primary" t-on-click="loadMore" t-att-disabled="state.loading">
+                                <t t-if="state.loading">Loading…</t>
+                                <t t-elif="!state.loading">Load more</t>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="leftpane d-flex flex-column h-100">
@@ -137,14 +168,14 @@
                             </div>
                         </div>
                         <div class="pads border-top">
-                            <t t-if="state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
+                            <t t-if="state.clickedOrder.is_online_order and state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
                                 <button
                                         class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
                                         t-on-click.stop="() => this.finalizeOrder(state.clickedOrder)">
                                     <span class="fs-1 d-block">Finalize</span>
                                 </button>
                             </t>
-                            <t t-if="state.clickedOrder.order_status=='draft' and state.clickedOrder.online_order_status=='approved'">
+                            <t t-if="state.clickedOrder.is_online_order and state.clickedOrder.order_status=='draft' and state.clickedOrder.online_order_status=='approved'">
                                  <button class="button ready load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
             t-on-click="() => this.done_order(state.clickedOrder)">
         <i class="fa fa-check me-2"/> Ready

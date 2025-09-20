@@ -15,7 +15,7 @@
             </li>
             <li t-on-click="onClickOnlineOrder">
                 <a class="dropdown-item with-badge py-2">
-                    Online Orders
+                    All Orders
                     <span t-if="state.onlineOrderCount>0" class="badge text-bg-info rounded-pill py-1 ms-2"
                           t-esc="state.onlineOrderCount"/>
                 </a>

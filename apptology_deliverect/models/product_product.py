@@ -15,6 +15,5 @@ class ProductProduct(models.Model):
     product_note = fields.Text(string="Product Note",help="Deliverect Note for the product")
     product_note_arabic = fields.Text(string="Product Note Arabic",help="Deliverect Note for the product in Arabic")
     product_arabicname = fields.Text(string="Arabic Name",help="Name in Arabic")
-    modifier_group_ids = fields.Many2many('deliverect.modifier.group', string="Modifier Groups",help="Modifier "
-                                                                                                      "Groups for the product")
-    is_modifier = fields.Boolean(string="Is Modifier",help="Is Modifier for the product",default=False)
+    modifier_group_ids = fields.Many2many('deliverect.modifier.group', string="Modifier Groups", help="Modifier Groups for the product")
+    sh_is_topping = fields.Boolean(string="Is Topping", help="Mark product as a topping/modifier", default=False)

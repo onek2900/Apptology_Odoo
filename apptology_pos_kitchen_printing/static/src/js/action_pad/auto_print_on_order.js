@@ -85,16 +85,19 @@ patch(ActionpadWidget.prototype, {
             const order = this.pos.get_order();
             if (!order || !this.pos.config?.module_pos_restaurant) return result;
 
-            // Build a lightweight change set from the order changes when available,
-            // otherwise fall back to all orderlines.
+            // Build a lightweight change set from the order changes when available.
+            // Additionally, prepare a snapshot of current orderlines so we can
+            // detect quantity increments even if another module reset the
+            // 'last change' baseline before our hook runs.
             const changes = order.getOrderChanges ? order.getOrderChanges() : null;
             let changeLines = [];
             if (changes && changes.orderlines) {
-                // values() because POS returns an object keyed by line uid
-                for (const line of Object.values(changes.orderlines)) {
+                // entries() to capture the line uid (key)
+                for (const [uid, line] of Object.entries(changes.orderlines)) {
                     const product = (this.pos.db.product_by_id && this.pos.db.product_by_id[line.product_id]) || null;
                     const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
                     changeLines.push({
+                        uid: line.uid || line.uuid || uid,
                         name: product ? (product.display_name || product.name) : (line.name || ""),
                         note: line.customerNote || line.note,
                         product_id: line.product_id,
@@ -110,6 +113,31 @@ patch(ActionpadWidget.prototype, {
                     });
                 }
             }
+
+            // Snapshot of current order lines keyed for stable tracking
+            const curLinesMap = new Map();
+            try {
+                for (const ol of order.orderlines) {
+                    const product = ol.product || (this.pos.db.product_by_id && this.pos.db.product_by_id[ol.product?.id]);
+                    const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
+                    const lineUid = ol.uid || ol.cid || `${ol.product?.id || ''}|${ol.full_product_name || ol.product?.display_name || ol.product?.name || ''}|${ol.note || ol.customerNote || ''}|${ol.sh_topping_parent ? ol.sh_topping_parent.id : ''}`;
+                    const key = lineUid;
+                    curLinesMap.set(key, {
+                        uid: lineUid,
+                        name: ol.full_product_name || (product ? (product.display_name || product.name) : (ol.name || "")),
+                        note: ol.customerNote || ol.note,
+                        product_id: ol.product?.id,
+                        quantity: ol.quantity,
+                        category_ids: categories,
+                        customerNote: ol.customerNote,
+                        is_topping: !!(ol.is_topping || ol.sh_is_topping),
+                        is_has_topping: !!(ol.is_has_topping || ol.sh_is_has_topping),
+                        parent_line_id: ol.sh_topping_parent ? ol.sh_topping_parent.id : null,
+                        parent_name: ol.sh_topping_parent ? ol.sh_topping_parent.full_product_name : null,
+                        toppings_count: Array.isArray(ol.Toppings) ? ol.Toppings.length : (ol.Toppings ? 1 : 0),
+                    });
+                }
+            } catch (_) {}
             if (!changeLines.length) {
                 // Fallback: include all orderlines (ensures logging even when no diff is built)
                 changeLines = order.orderlines.map((orderline) => ({
@@ -119,6 +147,7 @@ patch(ActionpadWidget.prototype, {
                     quantity: orderline.quantity,
                     category_ids: this.pos.db.get_category_by_id(orderline.product.pos_categ_ids),
                     customerNote: orderline.customerNote,
+                    uid: orderline.uid || orderline.cid || `${orderline.product?.id || ''}|${orderline.full_product_name || orderline.product?.display_name || orderline.product?.name || ''}|${orderline.note || orderline.customerNote || ''}|${orderline.sh_topping_parent ? orderline.sh_topping_parent.id : ''}`,
                     is_topping: !!(orderline.is_topping || orderline.sh_is_topping),
                     is_has_topping: !!(orderline.is_has_topping || orderline.sh_is_has_topping),
                     parent_line_id: orderline.sh_topping_parent ? orderline.sh_topping_parent.id : null,
@@ -131,6 +160,8 @@ patch(ActionpadWidget.prototype, {
             const exported = order.export_for_printing ? order.export_for_printing() : { headerData: {} };
             // Tracking number may already exist on the order even before export
             const orderNumber = order.trackingNumber || exported.headerData?.trackingNumber;
+            const tableId = (order.table && order.table.id) || (order.pos?.table && order.pos.table.id) || null;
+            const floorName = (order.pos?.currentFloor && order.pos.currentFloor.name) || null;
 
             // Determine printers list across possible locations in POS store
             const printerService = this.printer || this.env?.services?.printer;
@@ -161,7 +192,36 @@ patch(ActionpadWidget.prototype, {
                     }
                 } catch (_) {}
 
-                const data = getPrintingCategoriesChanges(this.pos, printer.config.product_categories_ids, changeLines);
+                // Per-printer already-emitted tracker on the order to avoid duplicates
+                const printerKey = printer.config?.id || printer.config?.name || "__unknown";
+                order.__kitchenPrintedByPrinter = order.__kitchenPrintedByPrinter || {};
+                const printedMap = (order.__kitchenPrintedByPrinter[printerKey] = order.__kitchenPrintedByPrinter[printerKey] || {});
+
+                // Filter by printer categories first using the full current snapshot
+                // Keep per-line uids so we can emit each new line separately
+                const currentForPrinter = getPrintingCategoriesChanges(
+                    this.pos,
+                    printer.config.product_categories_ids,
+                    Array.from(curLinesMap.values())
+                );
+                // Per-printer, per-line-uid tracker. This ensures identical items on
+                // different lines are emitted separately, while quantity increments
+                // on the same line uid produce a delta quantity.
+                order.__kitchenPrintedUidByPrinter = order.__kitchenPrintedUidByPrinter || {};
+                const printedUidMap = (order.__kitchenPrintedUidByPrinter[printerKey] =
+                    order.__kitchenPrintedUidByPrinter[printerKey] || {});
+
+                // Build delta per line uid
+                const data = [];
+                for (const item of currentForPrinter) {
+                    const uid = item.uid || `${item.product_id || ''}|${item.name || ''}|${item.note || ''}|${item.parent_line_id || ''}`;
+                    const already = Number(printedUidMap[uid] || 0);
+                    const qty = Number(item.quantity || 0);
+                    const diff = qty - already;
+                    if (diff > 0) {
+                        data.push({ ...item, quantity: diff });
+                    }
+                }
                 if (!data.length) {
                     // eslint-disable-next-line no-console
                     console.log(`[kitchen-print] No matching lines for printer ${printer.config.name}`);
@@ -169,11 +229,16 @@ patch(ActionpadWidget.prototype, {
                 }
                 // Optional structured log for debugging
                 try {
+                    const tableId = (order.table && order.table.id) || (order.pos?.table && order.pos.table.id) || null;
+                    const floorName = (order.pos?.currentFloor && order.pos.currentFloor.name) || null;
                     const jsonLog = {
                         type: "kitchen_printer_log",
+                        source: "pos",
                         printer: printer.config.name,
                         cashier: exported.headerData?.cashier,
                         order_number: orderNumber,
+                        table_id: tableId,
+                        floor: floorName,
                         lines: data.map((item) => ({
                             categories: (item.category_ids || []).map((c) => c.name),
                             name: item.name,
@@ -199,9 +264,15 @@ patch(ActionpadWidget.prototype, {
                 if (doAutoPrint) {
                     printerService?.print?.(
                         PrinterReceipt,
-                        { data, headerData: exported.headerData, printer },
+                        { data, headerData: { ...exported.headerData, table_id: tableId, floor: floorName }, printer },
                         { webPrintFallback: false }
                     );
+                }
+
+                // Update per-uid tracker to current quantities
+                for (const item of currentForPrinter) {
+                    const uid = item.uid || `${item.product_id || ''}|${item.name || ''}|${item.note || ''}|${item.parent_line_id || ''}`;
+                    printedUidMap[uid] = Number(item.quantity || 0);
                 }
             }
         } catch (e) {

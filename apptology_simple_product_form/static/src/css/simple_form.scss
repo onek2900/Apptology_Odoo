@@ -1,0 +1,113 @@
+.app-simple-modifier-accordion .accordion-toggle .chevron {
+  transition: transform 0.2s ease;
+}
+
+.app-simple-modifier-accordion .accordion-toggle[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+.app-simple-modifier-accordion .accordion-toggle {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+.app-simple-modifier-accordion .sort-items {
+  color: var(--o-gray-600);
+  font-size: 0.875rem;
+}
+
+.app-simple-modifier-accordion .section-desc {
+  font-size: 0.875rem;
+}
+
+.app-simple-modifier-accordion .o_field_many2manytags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Layout: description left, fields right */
+.app-simple-modifier-accordion .modifiers-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.app-simple-modifier-accordion .modifiers-desc {
+  flex: 0 0 260px; /* keep text narrow like sample */
+  max-width: 320px;
+}
+
+.app-simple-modifier-accordion .modifiers-fields {
+  flex: 1 1 auto;
+  min-width: 240px;
+}
+
+/* Widget styles */
+.app-modifier-groups-widget .modifier-group-block {
+  margin-bottom: 12px;
+}
+
+.app-modifier-groups-widget .group-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+.app-modifier-groups-widget .group-toppings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-modifier-groups-widget .group-toppings.closed {
+  display: none;
+}
+
+.app-modifier-groups-widget .group-title[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.app-modifier-groups-widget .group-title .chevron {
+  transition: transform 0.2s ease;
+}
+
+.app-modifier-groups-widget .topping-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.app-modifier-groups-widget .topping-row:hover {
+  background: #fafafa;
+}
+
+.app-modifier-groups-widget .add-topping {
+  margin-top: 6px;
+}
+.app-modifier-groups-widget .add-topping a {
+  font-size: 0.875rem;
+}
+
+.app-modifier-groups-widget .topping-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  background: #f1eeee;
+  cursor: pointer;
+}
+
+.app-modifier-groups-widget .topping-pill.selected {
+  background: #e0ebff;
+  border: 1px solid #80aaff;
+}
+
+.app-modifier-groups-widget .topping-pill.readonly {
+  cursor: default;
+}
+
+/* group chips removed; use standard field for group selection */

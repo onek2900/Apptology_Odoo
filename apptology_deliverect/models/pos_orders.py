@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
 import requests
+import re
+import os
 from datetime import timedelta
 from odoo import api, fields, models
+from odoo.modules.module import get_resource_path
 
 _logger = logging.getLogger(__name__)
 
@@ -134,8 +137,24 @@ class PosOrder(models.Model):
     def update_order_status(self, status):
         """function to update the status of the order"""
         if status == 'approved':
-            self.write({'online_order_status': 'approved', 'is_cooking': True})
-            self.lines.write({'is_cooking': True})
+            self.write({'online_order_status': 'approved'})
+            # Apply kitchen flags selectively: only lines in kitchen categories should be cooking
+            try:
+                for order in self:
+                    in_kitchen_any = False
+                    kitchen_screen = self.env['kitchen.screen'].sudo().search([
+                        ('pos_config_id', '=', order.config_id.id)
+                    ], limit=1)
+                    kset = set(kitchen_screen.pos_categ_ids.ids) if kitchen_screen and kitchen_screen.pos_categ_ids else set()
+                    for line in order.lines:
+                        line_categs = set(line.product_id.pos_categ_ids.ids)
+                        flag = bool(kset and (line_categs & kset))
+                        line.is_cooking = flag
+                        in_kitchen_any = in_kitchen_any or flag
+                    order.is_cooking = in_kitchen_any
+            except Exception:
+                # Fallback: if kitchen app not present, do not set cooking flags
+                pass
             self.update_order_status_in_deliverect(20)
             self.update_order_status_in_deliverect(50)
         elif status == 'finalized':
@@ -172,25 +191,51 @@ class PosOrder(models.Model):
 
     @api.model
     def get_open_orders(self, config_id):
-        """function to get the open orders in pos"""
-        session_id = self.env['pos.config'].browse(config_id).current_session_id.id
+        """Return orders for the screen: include online and POS orders for current session.
+
+        - Online orders: still filtered by decline window and status as before.
+        - Offline POS orders: include draft/paid orders from current session.
+        """
+        session = self.env['pos.config'].browse(config_id).current_session_id
+        session_id = session.id
         now = fields.Datetime.now()
         expiration_time = now - timedelta(minutes=1)
-        orders = self.search_read(
+
+        fields_list = ['id', 'name', 'online_order_status', 'pos_reference', 'order_status', 'order_type',
+                       'online_order_paid', 'state', 'amount_total', 'amount_tax', 'channel_order_reference',
+                       'date_order', 'tracking_number', 'partner_id', 'user_id', 'lines', 'is_online_order',
+                       'order_type_id', 'current_order_type', 'sh_order_type_id']
+
+        # Online orders (recent or not declined long ago), any monetary amount > 0
+        online_orders = self.search_read(
             ['|',
              ('declined_time', '=', False),
              ('declined_time', '>', expiration_time),
              ('is_online_order', '=', True),
              ('amount_total', '>', 0),
              ('config_id', '=', config_id),
-             ('session_id', '=', session_id)
-             ],
-            ['id', 'online_order_status', 'pos_reference', 'order_status', 'order_type', 'online_order_paid', 'state',
-             'amount_total', 'amount_tax','channel_order_reference',
-             'date_order', 'tracking_number',
-             'partner_id',
-             'user_id', 'lines'], order="order_priority, date_order DESC"
+             ('session_id', '=', session_id)],
+            fields_list, order="order_priority, date_order DESC"
         )
+
+        # Offline POS orders from current session (draft or paid)
+        offline_orders = []
+        if session_id:
+            offline_orders = self.search_read(
+                [
+                    ('is_online_order', '=', False),
+                    ('amount_total', '>', 0),
+                    ('config_id', '=', config_id),
+                    ('session_id', '=', session_id),
+                    ('state', 'in', ['draft', 'paid'])
+                ],
+                fields_list, order="date_order DESC"
+            )
+            # Normalize for UI: treat offline orders as 'approved' for display logic, but do not add online actions
+            for o in offline_orders:
+                o['online_order_status'] = o.get('online_order_status') or 'approved'
+
+        orders = online_orders + offline_orders
         for order in orders:
             order['amount_total'] = "{:.2f}".format(order['amount_total'])
             order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
@@ -221,3 +266,246 @@ class PosOrder(models.Model):
             ('online_order_status', 'in', ['approved', 'finalized'])])
         orders = offline_orders | online_orders
         return orders.export_for_ui()
+
+    @api.model
+    def get_orders(self, config_id, filters=None, page=1, page_size=50):
+        """Return combined orders (online + POS) with filters and pagination.
+
+        :param int config_id: current POS config
+        :param dict filters: optional filters: {
+            'date_preset': 'today'|'yesterday'|'7d'|'month'|None,
+            'date_from': iso str,
+            'date_to': iso str,
+            'status': 'all'|'open'|'paid'|'refunded'|'cancelled',
+            'source': 'all'|'online'|'pos',
+            'query': str
+        }
+        :param int page: 1-based page index
+        :param int page_size: page size
+        :return: dict with 'orders' list and 'has_more' boolean
+        """
+        filters = filters or {}
+        domain = [('config_id', '=', config_id)]
+
+        # Source filter
+        source = filters.get('source', 'all')
+        if source == 'online':
+            domain.append(('is_online_order', '=', True))
+        elif source == 'pos':
+            domain.append(('is_online_order', '=', False))
+
+        # Date preset or explicit range
+        date_from = filters.get('date_from')
+        date_to = filters.get('date_to')
+        preset = filters.get('date_preset')
+        if not (date_from and date_to) and preset:
+            now = fields.Datetime.now()
+            if preset == 'today':
+                # start of day to end of day
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=0, minute=0, second=0, microsecond=0))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=23, minute=59, second=59, microsecond=999999))
+            elif preset == 'yesterday':
+                y = now - timedelta(days=1)
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, y).replace(hour=0, minute=0, second=0, microsecond=0))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, y).replace(hour=23, minute=59, second=59, microsecond=999999))
+            elif preset == '7d':
+                d = now - timedelta(days=6)
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, d).replace(hour=0, minute=0, second=0, microsecond=0))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=23, minute=59, second=59, microsecond=999999))
+            elif preset == 'month':
+                first = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                date_from = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, first))
+                date_to = fields.Datetime.to_string(fields.Datetime.context_timestamp(self, now).replace(hour=23, minute=59, second=59, microsecond=999999))
+        if date_from:
+            domain.append(('date_order', '>=', date_from))
+        if date_to:
+            domain.append(('date_order', '<=', date_to))
+
+        # Status filter
+        status = filters.get('status', 'all')
+        status_domain = []
+        if status and status != 'all':
+            if status == 'open':
+                status_domain = [('state', '=', 'draft')]
+            elif status == 'paid':
+                status_domain = [('state', '=', 'paid')]
+            elif status == 'refunded':
+                status_domain = [('amount_total', '<', 0)]
+            elif status == 'cancelled':
+                status_domain = ['|', ('order_status', '=', 'cancel'), ('state', '=', 'cancel')]
+        # Query filter
+        query = filters.get('query')
+        if query:
+            qd = ['|', '|',
+                  ('pos_reference', 'ilike', query),
+                  ('channel_order_reference', 'ilike', query),
+                  ('partner_id.name', 'ilike', query)]
+            domain = ['&'] + domain + [qd]
+
+        complete_domain = domain
+        if status_domain:
+            complete_domain = ['&'] + domain + [status_domain]
+
+        # Build fields list dynamically to avoid crashes if optional modules are absent
+        candidate_fields = [
+            'id', 'name', 'pos_reference', 'state', 'amount_total', 'amount_tax', 'date_order',
+            'partner_id', 'user_id', 'lines', 'config_id',
+            # Optional/custom fields below; included only if present
+            'online_order_status', 'order_status', 'order_type', 'online_order_paid', 'channel_order_reference',
+            'tracking_number', 'is_online_order', 'is_cooking', 'sh_order_type_id', 'order_type_id', 'current_order_type',
+            'channel_name',
+        ]
+        fields_list = [f for f in candidate_fields if f in self._fields]
+
+        offset = max(0, (page - 1) * page_size)
+        orders = self.search_read(complete_domain, fields_list, offset=offset, limit=page_size, order="date_order DESC")
+
+        # Determine per-order whether it falls under kitchen screen categories
+        in_kitchen_map = {}
+        try:
+            # Build mapping from config -> kitchen category ids
+            config_ids = {o.get('config_id')[0] for o in orders if isinstance(o.get('config_id'), (list, tuple)) and o.get('config_id')}
+            ks_by_config = {}
+            if config_ids:
+                screens = self.env['kitchen.screen'].sudo().search([('pos_config_id', 'in', list(config_ids))])
+                for screen in screens:
+                    ks_by_config[screen.pos_config_id.id] = set(screen.pos_categ_ids.ids or [])
+            # Browse orders to inspect line categories
+            recs = self.browse([o['id'] for o in orders])
+            for rec in recs:
+                kset = ks_by_config.get(rec.config_id.id, set())
+                if not kset:
+                    in_kitchen_map[rec.id] = False
+                else:
+                    line_categs = set(rec.lines.mapped('product_id').mapped('pos_categ_ids').ids)
+                    in_kitchen_map[rec.id] = bool(line_categs & kset)
+        except Exception:
+            # If kitchen app not installed or any error, assume not in kitchen
+            in_kitchen_map = {o['id']: False for o in orders}
+
+        # Enrich with display fields without breaking if external modules absent
+        for o in orders:
+            # Channel/receipt display: if online, use channel ref; else show POS receipt/name
+            channel_disp = o.get('channel_order_reference') or ''
+            if not o.get('is_online_order'):
+                channel_disp = o.get('pos_reference') or o.get('tracking_number') or o.get('name') or ''
+            o['channel_display'] = channel_disp or ' - '
+            # Channel icon mapping (known channels -> slug)
+            partner_name = ''
+            if o.get('partner_id') and isinstance(o.get('partner_id'), (list, tuple)) and len(o.get('partner_id')) > 1:
+                partner_name = (o['partner_id'][1] or '').strip()
+            name = (o.get('channel_name') or partner_name or '').strip()
+            slug = None
+            if name:
+                lookup = {
+                    'uber eats': 'uber_eats',
+                    'doordash': 'doordash',
+                    'flipdish': 'flipdish',
+                    'hungrypanda': 'hungrypanda',
+                    'fantuan': 'fantuan',
+                    'skipthedishes': 'skip_the_dishes',
+                    'ritual': 'ritual',
+                    'ordering': 'ordering',
+                    'foodhub': 'foodhub',
+                    'dood': 'dood',
+                    'popmenu': 'popmenu',
+                    'horago': 'horago',
+                    'horego': 'horago',
+                    'relayy digital services': 'relayy',
+                    'b bot': 'bbot',
+                    'bbot': 'bbot',
+                    'arch2order': 'arch2order',
+                    'plento': 'plento',
+                    'tablevibe': 'tablevibe',
+                    'jetsontech': 'jetson',
+                    'qikserve': 'qikserve',
+                    'deliverect': 'deliverect',
+                    'deliverect kds': 'deliverect',
+                }
+                key = re.sub(r"\s+", " ", name).strip().lower()
+                slug = lookup.get(key)
+                if not slug:
+                    # generic slugify
+                    slug = re.sub(r"[^a-z0-9]+", "_", key).strip('_')
+            o['channel_slug'] = slug or ''
+            if slug:
+                filename = f"{slug}.svg"
+                res_path = get_resource_path('apptology_deliverect', 'static', 'src', 'img', 'channels', filename)
+                if res_path and os.path.exists(res_path):
+                    o['channel_icon'] = f"/apptology_deliverect/static/src/img/channels/{filename}"
+                else:
+                    o['channel_icon'] = ''
+            # Order type display from SH order type if present, else fallback to deliverect mapping or '-'
+            ot_name = None
+            if o.get('sh_order_type_id'):
+                ot_name = (o['sh_order_type_id'][1] if isinstance(o['sh_order_type_id'], (list, tuple)) and len(o['sh_order_type_id']) > 1 else None)
+            elif o.get('order_type_id'):
+                # Many2one return [id, name]
+                ot_name = (o['order_type_id'][1] if isinstance(o['order_type_id'], (list, tuple)) and len(o['order_type_id']) > 1 else None)
+            elif o.get('current_order_type'):
+                ot_name = (o['current_order_type'][1] if isinstance(o['current_order_type'], (list, tuple)) and len(o['current_order_type']) > 1 else None)
+            if not ot_name:
+                code = o.get('order_type')
+                mapping = {'1': 'Pick Up', '2': 'Delivery', '3': 'Eat In'}
+                ot_name = mapping.get(code) if code else None
+            o['order_type_display'] = ot_name or ' - '
+
+            # Kitchen status display logic
+            ks = ''
+            order_status = o.get('order_status')
+            online_status = o.get('online_order_status')
+            is_online = bool(o.get('is_online_order'))
+            # Respect kitchen categories: only treat as in-progress if order is in kitchen categories
+            in_kitchen = in_kitchen_map.get(o['id'], False)
+            is_cooking = (bool(o.get('is_cooking')) if 'is_cooking' in o else False) and in_kitchen
+
+            # Normalize to Draft / In Progress / Ready only
+            if order_status == 'ready':
+                ks = 'Ready'
+            else:
+                if is_online:
+                    if online_status not in ('approved', 'finalized'):
+                        ks = 'Draft'
+                    else:
+                        # If not configured for kitchen, consider it Ready immediately
+                        if not in_kitchen:
+                            ks = 'Ready'
+                        else:
+                            ks = 'In Progress' if is_cooking else 'Draft'
+                else:
+                    # In-store orders: infer from cooking flag or order_status
+                    if not in_kitchen:
+                        ks = 'Ready'
+                    else:
+                        ks = 'In Progress' if (is_cooking or order_status == 'draft') else 'Draft'
+            # Map any cancel state to Draft for display consistency
+            if order_status == 'cancel':
+                ks = 'Draft'
+            o['kitchen_status_display'] = ks
+
+        # Also expose per-line selective cooking flags in the payload if needed later
+
+        for order in orders:
+            # normalize display values
+            order['amount_total'] = "{:.2f}".format(order['amount_total'])
+            order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
+
+        # Lines foldout
+        all_line_ids = [line_id for order in orders for line_id in order['lines']]
+        lines = self.env['pos.order.line'].search_read(
+            [('id', 'in', all_line_ids)],
+            ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl']
+        )
+        for line in lines:
+            line['price_unit'] = "{:.2f}".format(line['price_unit'])
+            line['price_subtotal'] = "{:.2f}".format(line['price_subtotal'])
+            line['price_subtotal_incl'] = "{:.2f}".format(line['price_subtotal_incl'])
+        line_mapping = {line['id']: line for line in lines}
+        for order in orders:
+            order['lines'] = [line_mapping.get(line_id) for line_id in order['lines'] if line_id in line_mapping]
+
+        has_more = len(orders) == page_size
+        return {
+            'orders': orders,
+            'has_more': has_more,
+        }

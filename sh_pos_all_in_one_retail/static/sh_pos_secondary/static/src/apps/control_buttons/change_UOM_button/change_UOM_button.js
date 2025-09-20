@@ -47,9 +47,6 @@
                         
                         const priceList = self.pos.getDefaultPricelist();
                         if(priceList){
-                            console.log("priceList", priceList);
-                            console.log("product ====>", product_id);
-                            console.log("product_id.applicablePricelistItems[priceList.id]", product_id.applicablePricelistItems);
                             const date = DateTime.now();
                             
                             let pricelistRule =  !priceList

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Standalone simple form for POS Products -->
+    <record id="view_product_template_simple_form" model="ir.ui.view">
+        <field name="name">product.template.simple.form.apptology</field>
+        <field name="model">product.template</field>
+        <field name="priority" eval="100"/>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Product">
+                <sheet>
+                    <group>
+                        <!-- Left column: main details -->
+                        <group>
+                            <label for="name"/>
+                            <field name="name" required="1" nolabel="1"/>
+
+                            <label for="description_sale"/>
+                            <field name="description_sale" nolabel="1" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements."/>
+
+                            <label for="pos_categ_ids"/>
+                            <field name="pos_categ_ids" nolabel="1" widget="many2many_tags" string="POS Category"/>
+
+                            <!-- Collapsible Modifier groups section: edit groups via tags; widget manages display and toppings -->
+                            <label for="sh_topping_group_ids"/>
+                            <field name="sh_topping_group_ids" widget="many2many_tags" nolabel="1"/>
+
+                            <!-- Grouped toppings view under the selected groups -->
+                            <label for="sh_topping_ids"/>
+                            <field name="sh_topping_ids" widget="many2many_tags" nolabel="1"/>
+                        </group>
+                        <!-- Right column: image and price -->
+                        <group>
+                            <label for="image_1920"/>
+                            <field name="image_1920" widget="image" nolabel="1"/>
+
+                            <label for="list_price"/>
+                            <field name="list_price" nolabel="1" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: open simplified create form directly (no list) -->
+    <record id="action_pos_products_simple" model="ir.actions.act_window">
+        <field name="name">Add Product</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_product_template_simple_form"/>
+        <field name="context">{
+            'default_available_in_pos': 1
+        }</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- New menu under POS Catalog to add a product using the simplified form -->
+    <menuitem id="menu_pos_add_product_simple"
+              name="Add Product"
+              parent="point_of_sale.pos_config_menu_catalog"
+              action="action_pos_products_simple"
+              sequence="25"/>
+
+    <!-- Server Action on product list: Action menu entry to open simple create -->
+    <record id="action_server_open_simple_product_create" model="ir.actions.server">
+        <field name="name">Add Product (Simple)</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="state">code</field>
+        <field name="code">
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Add Product (Simple)',
+    'res_model': 'product.template',
+    'view_mode': 'form',
+    'views': [(env.ref('apptology_simple_product_form.view_product_template_simple_form').id, 'form')],
+    'target': 'current',
+    'context': {
+        'default_available_in_pos': 1,
+    },
+}
+        </field>
+    </record>
+</odoo>

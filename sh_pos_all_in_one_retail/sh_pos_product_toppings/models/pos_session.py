@@ -14,7 +14,7 @@ class PosSessionInherit(models.Model):
             'sh_is_global_topping',
             'sh_topping_group_ids',
             'sh_topping_sequence',
-            'is_modifier',
+            'sh_is_topping',
         ])
         return result
     

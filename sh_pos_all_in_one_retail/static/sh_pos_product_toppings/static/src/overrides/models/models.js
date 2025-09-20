@@ -266,7 +266,6 @@ patch(Order.prototype, {
         return res
     },
     export_as_JSON() {
-        console.log('JSON');
         var self = this;
         const json = super.export_as_JSON(...arguments);
 

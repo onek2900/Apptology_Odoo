@@ -10,7 +10,6 @@ patch(ProductScreen.prototype, {
     async _barcodeProductAction(code) {
         var self = this;
         var scaned_code = code.base_code
-        console.log("self.pos.db.order_by_barcode", self.pos.db.order_by_barcode);
         var barcode_order = await self.pos.db.order_by_barcode[scaned_code]
         if( barcode_order ){
             var order = barcode_order[0];

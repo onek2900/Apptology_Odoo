@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
 
-    <!-- Render only the Order Type button above the subpads (above numpad) on desktop -->
+    <!-- Render the Order Type button above the subpads (above numpad) for both desktop and mobile, without duplicating other control buttons -->
     <t t-name="sh_pos_order_type.ProductScreenAboveNumpad" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension">
         <!-- Desktop: inject above numpad -->
         <xpath expr="//div[hasclass('subpads')]" position="before">
             <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_order_type_above_numpad" t-if="!ui.isSmall">
-                <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
-                    <t t-if="cb.component and cb.component.template === 'sh_pos_order_type.OrderTypeButton'">
-                        <t t-component="cb.component" t-key="cb.name"/>
-                    </t>
+                <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component &amp;&amp; cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
+                <t t-if="orderTypeControl">
+                    <t t-component="orderTypeControl.component" t-key="orderTypeControl.name || 'order-type-btn-desktop'"/>
                 </t>
             </div>
         </xpath>
 
-        <!-- Mobile: also inject above numpad -->
+        <!-- Mobile: inject above numpad like desktop -->
         <xpath expr="//div[hasclass('subpads')]" position="before">
             <div class="control-buttons d-flex flex-wrap border-bottom overflow-hidden bg-300 sh_order_type_above_numpad" t-if="ui.isSmall">
-                <t t-foreach="controlButtons" t-as="cb" t-key="cb.name">
-                    <t t-if="cb.component and cb.component.template === 'sh_pos_order_type.OrderTypeButton'">
-                        <t t-component="cb.component" t-key="cb.name"/>
-                    </t>
+                <t t-set="orderTypeControl" t-value="controlButtons.find((cb) => cb.component &amp;&amp; cb.component.template === 'sh_pos_order_type.OrderTypeButton')"/>
+                <t t-if="orderTypeControl">
+                    <t t-component="orderTypeControl.component" t-key="orderTypeControl.name || 'order-type-btn-mobile'"/>
                 </t>
             </div>
         </xpath>
+
     </t>
 
 </templates>
