@@ -35,11 +35,76 @@ class ModifierGroupsField extends Component {
 
     // Normalize many2many values into an array of ids regardless of shape
     asIds(val) {
-        if (!val) return [];
-        if (Array.isArray(val)) return val.map((r) => (typeof r === "object" ? r.id : r)).filter((x) => !!x);
-        if (val.resIds) return val.resIds;
-        if (val.records) return val.records.map((r) => r.id);
-        if (typeof val === "object" && "id" in val) return [val.id];
+        if (!val) {
+            return [];
+        }
+        if (typeof val === "object" && !Array.isArray(val)) {
+            if (Array.isArray(val.commands)) {
+                return this.asIds(val.commands);
+            }
+            if (Array.isArray(val.resIds)) {
+                return val.resIds.slice();
+            }
+            if (Array.isArray(val.records)) {
+                return val.records.map((r) => r.id);
+            }
+            if ("id" in val && typeof val.id === "number") {
+                return [val.id];
+            }
+        }
+        if (Array.isArray(val)) {
+            const ids = [];
+            const ensureUniquePush = (value) => {
+                if (typeof value === "number" && Number.isFinite(value) && !ids.includes(value)) {
+                    ids.push(value);
+                }
+            };
+            for (const entry of val) {
+                if (entry == null) {
+                    continue;
+                }
+                if (typeof entry === "number") {
+                    ensureUniquePush(entry);
+                    continue;
+                }
+                if (Array.isArray(entry) && entry.length) {
+                    const [command, arg1, arg2] = entry;
+                    switch (command) {
+                        case 6: // replace with ids
+                            ids.length = 0;
+                            if (Array.isArray(arg2)) {
+                                for (const id of arg2) ensureUniquePush(id);
+                            }
+                            break;
+                        case 4: // add existing id
+                        case 1: // update existing id
+                        case 0: // create (id may be in payload)
+                            if (typeof arg1 === "number") {
+                                ensureUniquePush(arg1);
+                            } else if (arg2 && typeof arg2.id === "number") {
+                                ensureUniquePush(arg2.id);
+                            }
+                            break;
+                        case 3: // remove single id
+                            if (typeof arg1 === "number") {
+                                const idx = ids.indexOf(arg1);
+                                if (idx !== -1) ids.splice(idx, 1);
+                            }
+                            break;
+                        case 5: // remove all
+                            ids.length = 0;
+                            break;
+                        default:
+                            break;
+                    }
+                    continue;
+                }
+                if (typeof entry === "object" && typeof entry.id === "number") {
+                    ensureUniquePush(entry.id);
+                }
+            }
+            return ids;
+        }
         return [];
     }
 
@@ -50,7 +115,11 @@ class ModifierGroupsField extends Component {
     }
 
     async loadData(force = false) {
-        const groupsVal = (this.props.record && this.props.record.data && this.props.record.data[this.groupsField]) || [];
+        if (!this.props.record || !this.props.record.data) {
+            this.state.loading = false;
+            return;
+        }
+        const groupsVal = this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
         this.state.loading = true;
         const cacheKey = groupIds.slice().sort((a, b) => a - b).join(",");
@@ -102,7 +171,7 @@ class ModifierGroupsField extends Component {
 
     get selectedToppingIds() {
         const field = this.toppingsField;
-        const val = this.props.record.data[field];
+        const val = (this.props.record && this.props.record.data && this.props.record.data[field]) || [];
         return new Set(this.asIds(val));
     }
 
