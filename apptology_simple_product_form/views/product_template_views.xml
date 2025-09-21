@@ -19,13 +19,13 @@
                                 <div class="o_form_label">Description</div>
                                 <field name="description_sale" nolabel="1" placeholder="Enter a description of this item. Describe details like features, options and measurements." widget="text"/>
                             </group>
-                            <group string="Modifer Group" col="2">
+                        </group>
+                                <group string="Modifer Group" col="2">
                                 <group col="2">
                                     <div class="app-modifier-groups-table">
                                         <field name="sh_topping_group_ids" widget="many2many_table" options="{'create': false, 'no_quick_add': true}"/>
                                     </div>
                                 </group>
-                            </group>
                         </group>
                         <group string="Pricing &amp; POS" col="1">
                             <field name="image_1920" widget="image" nolabel="1"/>
