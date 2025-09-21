@@ -24,9 +24,10 @@ function normalizeCategoryIds(cats) {
 }
 
 function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange) {
-    // Filter order lines by matching category ids (robust to shapes)
     const printerCatIds = normalizeCategoryIds(printerCategories);
-    if (!printerCatIds.length) return [];
+    if (!printerCatIds.length) {
+        return { matched: [], skipped: currentOrderChange };
+    }
     const printerCatSet = new Set(printerCatIds);
 
     function toId(v) {
@@ -37,6 +38,7 @@ function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange
         const n = Number(v);
         return Number.isFinite(n) ? n : null;
     }
+
     function isMatchWithAncestors(catIds) {
         for (const cid of catIds) {
             let cur = toId(cid);
@@ -49,16 +51,26 @@ function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange
         return false;
     }
 
-    return currentOrderChange.filter((line) => {
-        // Prefer matching against line.category_ids that we computed
-        const lineCatIds = normalizeCategoryIds(line.category_ids);
-        if (lineCatIds.length) return isMatchWithAncestors(lineCatIds);
-        // Fallback: derive from product_id via pos.db
-        const product = pos?.db?.product_by_id?.[line.product_id];
-        const prodCats = normalizeCategoryIds(product?.pos_categ_ids);
-        return isMatchWithAncestors(prodCats);
-    });
+    const matched = [];
+    const skipped = [];
+
+    for (const line of currentOrderChange) {
+        let lineCatIds = normalizeCategoryIds(line.category_ids);
+        if (!lineCatIds.length) {
+            const product = pos?.db?.product_by_id?.[line.product_id];
+            lineCatIds = normalizeCategoryIds(product?.pos_categ_ids);
+        }
+
+        if (lineCatIds.length && isMatchWithAncestors(lineCatIds)) {
+            matched.push(line);
+        } else {
+            skipped.push(line);
+        }
+    }
+
+    return { matched, skipped };
 }
+
 
 patch(ActionpadWidget.prototype, {
     setup(...args) {
