@@ -21,6 +21,7 @@ class ModifierGroupsField extends Component {
             },
             () => [this._groupKey()]
         );
+        console.log('modifier_groups: setup props', this.props);
     }
 
     get toppingsField() {
@@ -29,17 +30,101 @@ class ModifierGroupsField extends Component {
     }
 
     get groupsField() {
-        // If not passed via options, assume the bound field is the groups field
-        return (this.props.options && this.props.options.groups_field) || this.props.name || "sh_topping_group_ids";
+        if (this.props.options && this.props.options.groups_field) {
+            return this.props.options.groups_field;
+        }
+        if (this.props.record && this.props.record.fields && this.props.record.fields.sh_topping_group_ids) {
+            return 'sh_topping_group_ids';
+        }
+        if (this.props.name && this.props.name !== 'sh_topping_ids') {
+            return this.props.name;
+        }
+        return 'sh_topping_group_ids';
     }
 
     // Normalize many2many values into an array of ids regardless of shape
     asIds(val) {
-        if (!val) return [];
-        if (Array.isArray(val)) return val.map((r) => (typeof r === "object" ? r.id : r)).filter((x) => !!x);
-        if (val.resIds) return val.resIds;
-        if (val.records) return val.records.map((r) => r.id);
-        if (typeof val === "object" && "id" in val) return [val.id];
+        console.log('modifier_groups: asIds input', val);
+        if (!val) {
+            console.log('modifier_groups: asIds output', []);
+            return [];
+        }
+        if (typeof val === "object" && !Array.isArray(val)) {
+            if (Array.isArray(val.commands)) {
+                const cmdResult = this.asIds(val.commands);
+                console.log('modifier_groups: asIds output from commands', cmdResult);
+                return cmdResult;
+            }
+            if (Array.isArray(val.resIds)) {
+                const res = val.resIds.slice();
+                console.log('modifier_groups: asIds output from resIds', res);
+                return res;
+            }
+            if (Array.isArray(val.records)) {
+                const res = val.records.map((r) => r.id);
+                console.log('modifier_groups: asIds output from records', res);
+                return res;
+            }
+            if ("id" in val && typeof val.id === "number") {
+                console.log('modifier_groups: asIds output single id', [val.id]);
+                return [val.id];
+            }
+        }
+        if (Array.isArray(val)) {
+            const ids = [];
+            const ensureUniquePush = (value) => {
+                if (typeof value === "number" && Number.isFinite(value) && !ids.includes(value)) {
+                    ids.push(value);
+                }
+            };
+            for (const entry of val) {
+                if (entry == null) {
+                    continue;
+                }
+                if (typeof entry === "number") {
+                    ensureUniquePush(entry);
+                    continue;
+                }
+                if (Array.isArray(entry) && entry.length) {
+                    const [command, arg1, arg2] = entry;
+                    switch (command) {
+                        case 6:
+                            ids.length = 0;
+                            if (Array.isArray(arg2)) {
+                                for (const id of arg2) ensureUniquePush(id);
+                            }
+                            break;
+                        case 4:
+                        case 1:
+                        case 0:
+                            if (typeof arg1 === "number") {
+                                ensureUniquePush(arg1);
+                            } else if (arg2 && typeof arg2.id === "number") {
+                                ensureUniquePush(arg2.id);
+                            }
+                            break;
+                        case 3:
+                            if (typeof arg1 === "number") {
+                                const idx = ids.indexOf(arg1);
+                                if (idx !== -1) ids.splice(idx, 1);
+                            }
+                            break;
+                        case 5:
+                            ids.length = 0;
+                            break;
+                        default:
+                            break;
+                    }
+                    continue;
+                }
+                if (typeof entry === "object" && typeof entry.id === "number") {
+                    ensureUniquePush(entry.id);
+                }
+            }
+            console.log('modifier_groups: asIds output from command list', ids);
+            return ids;
+        }
+        console.log('modifier_groups: asIds output fallback', []);
         return [];
     }
 
@@ -50,56 +135,96 @@ class ModifierGroupsField extends Component {
     }
 
     async loadData(force = false) {
-        const groupsVal = (this.props.record && this.props.record.data && this.props.record.data[this.groupsField]) || [];
+        if (!this.props.record || !this.props.record.data) {
+            console.log('modifier_groups: loadData skipped - no record yet', {
+                force,
+                hasRecord: !!this.props.record,
+            });
+            this.state.loading = false;
+            return;
+        }
+        const groupsVal = this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
+        const cacheKey = groupIds.slice().sort((a, b) => a - b).join(',');
+        if (!force && cacheKey === this._lastGroupKey) {
+            console.log('modifier_groups: loadData cached skip', { cacheKey, groupsField: this.groupsField });
+            this.state.loading = false;
+            return;
+        }
+        if (!groupIds.length) {
+            console.log('modifier_groups: loadData skip (no groups)', {
+                force,
+                cacheKey,
+                recordId: this.props.record.resId,
+                groupsField: this.groupsField,
+            });
+            this.state.groups = [];
+            this.state.toppingsById = {};
+            this.state.expanded = {};
+            this.state.loading = false;
+            this._lastGroupKey = cacheKey;
+            return;
+        }
         this.state.loading = true;
-        let groups = [];
-        let toppingsById = {};
-        const cacheKey = groupIds.slice().sort((a, b) => a - b).join(",");
-        const cached = this._cache.get(cacheKey);
-        if (cached && !force) {
-            ({ groups, toppingsById } = cached);
-        } else {
-            if (groupIds.length) {
-                groups = await this.orm.searchRead(
-                    "sh.topping.group",
-                    [["id", "in", groupIds]],
-                    ["name", "sequence", "toppinds_ids", "min", "max", "multi_max"]
-                );
-                const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
-                if (toppingIds.length) {
-                    const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
-                    toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
+        console.log('modifier_groups: loadData start', {
+            force,
+            cacheKey,
+            groupIds,
+            recordId: this.props.record.resId,
+            groupsField: this.groupsField,
+            rawGroupsVal: groupsVal,
+        });
+        try {
+            let groups = [];
+            let toppingsById = {};
+            const cached = this._cache.get(cacheKey);
+            if (cached && !force) {
+                ({ groups, toppingsById } = cached);
+            } else {
+                if (groupIds.length) {
+                    groups = await this.orm.searchRead(
+                        "sh.topping.group",
+                        [["id", "in", groupIds]],
+                        ["name", "sequence", "toppinds_ids", "min", "max", "multi_max"]
+                    );
+                    const toppingIds = [...new Set(groups.flatMap((g) => g.toppinds_ids))];
+                    if (toppingIds.length) {
+                        const toppings = await this.orm.searchRead("product.product", [["id", "in", toppingIds]], ["name"]);
+                        toppingsById = Object.fromEntries(toppings.map((t) => [t.id, t]));
+                    }
+                    // order groups by sequence then name
+                    groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
                 }
-                // order groups by sequence then name
-                groups.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.name.localeCompare(b.name));
+                this._cache.set(cacheKey, { groups, toppingsById });
             }
-            this._cache.set(cacheKey, { groups, toppingsById });
-        }
-        // preserve expanded states; default collapsed
-        const prevExpanded = this.state.expanded || {};
-        const expanded = {};
-        for (const g of groups) {
-            expanded[g.id] = Object.prototype.hasOwnProperty.call(prevExpanded, g.id)
-                ? prevExpanded[g.id]
-                : false;
-        }
-        this.state.groups = groups;
-        this.state.toppingsById = toppingsById;
-        this.state.expanded = expanded;
-        this.state.loading = false;
-
-        // Auto-populate toppings from selected groups if missing
-        const groupKey = cacheKey;
-        if (!this.props.readonly && groupKey !== this._lastGroupKey) {
-            await this._ensureAutoPopulate(groups);
-            this._lastGroupKey = groupKey;
+            // preserve expanded states; default collapsed
+            const prevExpanded = this.state.expanded || {};
+            const expanded = {};
+            for (const g of groups) {
+                expanded[g.id] = Object.prototype.hasOwnProperty.call(prevExpanded, g.id)
+                    ? prevExpanded[g.id]
+                    : false;
+            }
+            this.state.groups = groups;
+            this.state.toppingsById = toppingsById;
+            this.state.expanded = expanded;
+            // Auto-populate toppings from selected groups if missing
+            if (!this.props.readonly && cacheKey !== this._lastGroupKey) {
+                await this._ensureAutoPopulate(groups);
+                this._lastGroupKey = cacheKey;
+            }
+        } catch (e) {
+            console.error('modifier_groups: loadData error', e);
+            this.notification.add(String(e.message || e), { type: "danger" });
+        } finally {
+            console.log('modifier_groups: loadData end', { cacheKey, groupIds, loading: this.state.loading });
+            this.state.loading = false;
         }
     }
 
     get selectedToppingIds() {
         const field = this.toppingsField;
-        const val = this.props.record.data[field];
+        const val = (this.props.record && this.props.record.data && this.props.record.data[field]) || [];
         return new Set(this.asIds(val));
     }
 
@@ -159,6 +284,43 @@ class ModifierGroupsField extends Component {
         let c = 0;
         for (const tid of grp.toppinds_ids || []) if (selected.has(tid)) c++;
         return c;
+    }
+
+    _normalizedLimit(value) {
+        if (typeof value === 'number' && Number.isFinite(value)) {
+            return value;
+        }
+        if (typeof value === 'string' && value.trim() !== '') {
+            const parsed = parseInt(value, 10);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        }
+        return 0;
+    }
+
+    groupSelectionMeta(grp) {
+        const selected = this.countSelectedInGroup(grp);
+        const total = (grp.toppinds_ids || []).length;
+        const min = this._normalizedLimit(grp.min);
+        const max = this._normalizedLimit(grp.multi_max || grp.max);
+        const requirementParts = [];
+        if (min) requirementParts.push(`Min ${min}`);
+        if (max) requirementParts.push(`Max ${max}`);
+        let statusClass = 'text-muted';
+        if (min && selected < min) {
+            statusClass = 'text-warning';
+        } else if (max && selected > max) {
+            statusClass = 'text-danger';
+        } else if (min || max) {
+            statusClass = 'text-success';
+        }
+        return {
+            selected,
+            total,
+            min,
+            max,
+            requirementText: requirementParts.join(', '),
+            statusClass,
+        };
     }
 
     async selectAllInGroup(groupId) {

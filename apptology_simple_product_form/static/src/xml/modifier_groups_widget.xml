@@ -21,7 +21,13 @@
                                     <span><t t-esc="grp.name"/></span>
                                 </div>
                                 <div class="d-flex align-items-center gap-2">
-                                    <span class="text-muted small"><t t-esc="countSelectedInGroup(grp)"/>/<t t-esc="grp.toppinds_ids.length"/></span>
+                                    <t t-set="meta" t-value="groupSelectionMeta(grp)"/>
+                                    <span t-att-class="`small selection-count ${meta.statusClass}`">
+                                        <t t-esc="meta.selected"/>/<t t-esc="meta.total"/>
+                                    </span>
+                                    <span t-if="meta.requirementText" class="text-muted small">
+                                        (<t t-esc="meta.requirementText"/>)
+                                    </span>
                                     <a t-if="!props.readonly" href="#" class="small" t-on-click.prevent.stop="selectAllInGroup(grp.id)">Select all</a>
                                     <a t-if="!props.readonly" href="#" class="small text-warning" t-on-click.prevent.stop="clearGroup(grp.id)">Clear</a>
                                     <a t-if="!props.readonly" href="#" class="text-danger small" title="Remove group" t-on-click.prevent.stop="onRemoveGroup(grp.id)">

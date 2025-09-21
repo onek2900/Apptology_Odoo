@@ -240,14 +240,33 @@ class PosOrder(models.Model):
             order['amount_total'] = "{:.2f}".format(order['amount_total'])
             order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
         all_line_ids = [line_id for order in orders for line_id in order['lines']]
+        base_line_fields = ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl', 'sh_is_topping', 'is_topping']
+        line_fields = [
+            field_name
+            for field_name in base_line_fields
+            if field_name in self.env['pos.order.line']._fields
+        ]
+
         lines = self.env['pos.order.line'].search_read(
             [('id', 'in', all_line_ids)],
-            ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl']
+            line_fields
         )
+
+        def _normalize_bool(value):
+            if isinstance(value, list):
+                return bool(value[0]) if value else False
+            if isinstance(value, str):
+                return value.strip().lower() in ('1', 'true', 'yes')
+            return bool(value)
+
         for line in lines:
             line['price_unit'] = "{:.2f}".format(line['price_unit'])
             line['price_subtotal'] = "{:.2f}".format(line['price_subtotal'])
             line['price_subtotal_incl'] = "{:.2f}".format(line['price_subtotal_incl'])
+            raw_topping = _normalize_bool(line.get('sh_is_topping'))
+            fallback_topping = _normalize_bool(line.get('is_topping'))
+            line['sh_is_topping'] = raw_topping
+            line['is_topping'] = raw_topping or fallback_topping
         line_mapping = {line['id']: line for line in lines}
         for order in orders:
             order['lines'] = [line_mapping[line_id] for line_id in order['lines'] if line_id in line_mapping]
@@ -492,14 +511,33 @@ class PosOrder(models.Model):
 
         # Lines foldout
         all_line_ids = [line_id for order in orders for line_id in order['lines']]
+        base_line_fields = ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl', 'sh_is_topping', 'is_topping']
+        line_fields = [
+            field_name
+            for field_name in base_line_fields
+            if field_name in self.env['pos.order.line']._fields
+        ]
+
         lines = self.env['pos.order.line'].search_read(
             [('id', 'in', all_line_ids)],
-            ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl']
+            line_fields
         )
+
+        def _normalize_bool(value):
+            if isinstance(value, list):
+                return bool(value[0]) if value else False
+            if isinstance(value, str):
+                return value.strip().lower() in ('1', 'true', 'yes')
+            return bool(value)
+
         for line in lines:
             line['price_unit'] = "{:.2f}".format(line['price_unit'])
             line['price_subtotal'] = "{:.2f}".format(line['price_subtotal'])
             line['price_subtotal_incl'] = "{:.2f}".format(line['price_subtotal_incl'])
+            raw_topping = _normalize_bool(line.get('sh_is_topping'))
+            fallback_topping = _normalize_bool(line.get('is_topping'))
+            line['sh_is_topping'] = raw_topping
+            line['is_topping'] = raw_topping or fallback_topping
         line_mapping = {line['id']: line for line in lines}
         for order in orders:
             order['lines'] = [line_mapping.get(line_id) for line_id in order['lines'] if line_id in line_mapping]
@@ -509,3 +547,5 @@ class PosOrder(models.Model):
             'orders': orders,
             'has_more': has_more,
         }
+
+

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="point_of_sale.ClosePosPopup" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('modal-footer-right')]" position="inside">
+            <button class="button icon btn btn-lg btn-secondary" t-on-click="printClosureReport">
+                Print Closure Report
+            </button>
+        </xpath>
+    </t>
+</templates>

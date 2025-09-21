@@ -72,6 +72,17 @@
 .app-modifier-groups-widget .group-title .chevron {
   transition: transform 0.2s ease;
 }
+.app-modifier-groups-widget .selection-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  font-weight: 600;
+}
+
+.app-modifier-groups-widget .selection-count.text-muted {
+  color: var(--o-gray-600) !important;
+}
 
 .app-modifier-groups-widget .topping-row {
   display: flex;
@@ -110,4 +121,64 @@
   cursor: default;
 }
 
-/* group chips removed; use standard field for group selection */
+/* Additional spacing for modifiers block on the simple form */
+
+.app-modifiers-section {
+  margin-top: 16px;
+}
+
+.app-modifier-groups-table {
+  width: 100%;
+}
+
+.app-modifier-groups-table .o_field_many2many_table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.app-modifier-groups-table .o_field_many2many_table table {
+  width: 100%;
+}
+
+.app-modifier-groups-table .o_field_many2many_table thead {
+  display: none;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr {
+  border-bottom: 1px solid var(--o-border-color, #e0e0e0);
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td {
+  border: 0;
+  padding: 8px 12px;
+  vertical-align: middle;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td.o_handle_cell {
+  width: 32px;
+  padding: 8px 6px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td.o_field_cell {
+  padding-left: 28px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td.o_list_record_remove {
+  width: 36px;
+  text-align: right;
+  padding-right: 12px;
+}
+
+.app-modifier-groups-section,
+.app-modifiers-section {
+  margin-top: 16px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table .o_list_button_add {
+  justify-content: flex-start;
+  padding: 8px 12px 8px 28px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table .o_list_button_add > a {
+  margin-left: 0;
+}

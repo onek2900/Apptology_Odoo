@@ -35,3 +35,24 @@ class PosProductInherit(models.Model):
             'target': 'new',
             'type': 'ir.actions.act_window',
         }
+
+    def _ensure_topping_products_hidden(self, products=None):
+        Product = self.env['product.product']
+        if 'sh_is_topping' not in Product._fields:
+            return
+        target = products or self.mapped('sh_topping_ids')
+        if not target:
+            return
+        target.sudo().write({'sh_is_topping': True})
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._ensure_topping_products_hidden()
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'sh_topping_ids' in vals:
+            self._ensure_topping_products_hidden()
+        return res

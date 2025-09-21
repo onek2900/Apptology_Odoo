@@ -130,7 +130,8 @@
                         <t t-if="state.clickedOrder.lines">
                             <div class="product-list flex-grow-1">
                                 <t t-foreach="state.clickedOrder.lines" t-as="order" t-key="order.id">
-                                    <div class="product-header d-flex justify-content-between align-items-start p-3">
+                                    <div class="product-header d-flex justify-content-between align-items-start p-3"
+                                        t-att-class="{'topping-line': order.is_topping}">
                                         <div class="product-info">
                                             <div class="product-name"><t t-esc="order.full_product_name"/></div>
                                             <div class="product-quantity">
@@ -181,4 +182,5 @@
         </div>
     </t>
 </templates>
+
 
