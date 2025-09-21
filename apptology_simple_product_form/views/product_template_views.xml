@@ -30,10 +30,6 @@
                             <field name="sh_topping_group_ids" widget="many2many_table" options="{'create': false, 'no_quick_add': true}" nolabel="1"/>
                         </div>
                     </group>
-                    <group string="Modifiers" class="app-modifiers-section" col="1">
-                        <div class="o_form_label text-muted">No modifier groups selected. Use the field above to pick groups.</div>
-                        <field name="sh_topping_ids" invisible="1"/>
-                    </group>
                 </sheet>
             </form>
         </field>
