@@ -25,7 +25,7 @@
                             <field name="available_in_pos" string="Available in POS" widget="boolean_toggle"/>
                         </group>
                         </group>
-                                <group string="Modifer Group" col="2">
+                                <group string="Modifer Group" col="1">
                                 <group col="2">
                                     <div class="app-modifier-groups-table">
                                         <field name="sh_topping_group_ids" widget="many2many_table" options="{'create': false, 'no_quick_add': true}"/>
