@@ -103,17 +103,9 @@ patch(ReceiptScreen.prototype, {
                 })
                 .filter((x) => typeof x === "number" && !Number.isNaN(x));
         }
-    
         const printerCatIds = normalizeCategoryIds(categories);
-    
-        // ✅ Hybrid behavior:
-        // If printer has NO categories assigned → return ALL orderlines (acts as fallback printer).
-        if (!printerCatIds.length) {
-            return currentOrderChange;
-        }
-    
+        if (!printerCatIds.length) return [];
         const printerCatSet = new Set(printerCatIds);
-    
         function toId(v) {
             if (v == null) return null;
             if (typeof v === "number") return v;
@@ -122,7 +114,6 @@ patch(ReceiptScreen.prototype, {
             const n = Number(v);
             return Number.isFinite(n) ? n : null;
         }
-    
         function isMatchWithAncestors(catIds) {
             for (const cid of catIds) {
                 let cur = toId(cid);
@@ -134,7 +125,6 @@ patch(ReceiptScreen.prototype, {
             }
             return false;
         }
-    
         return currentOrderChange.filter((line) => {
             const lineCatIds = normalizeCategoryIds(line.category_ids);
             if (lineCatIds.length) return isMatchWithAncestors.call(this, lineCatIds);

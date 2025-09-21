@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="apptology_pos_kitchen_printing.ReceiptScreen" 
-       t-inherit="point_of_sale.ReceiptScreen" 
-       t-inherit-mode="extension">
-
+    <t t-name="apptology_pos_kitchen_printing.ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
         <xpath expr="//div[hasclass('buttons')]" position="inside">
-            <!-- ✅ Hybrid fix: button always visible, no t-if -->
-            <button class="button print btn btn-lg btn-secondary w-100 py-3 my-2"
-                    t-on-click="handleOrderPrinting">
-                <i class="fa fa-file-image-o ms-2" t-ref="orderPrintingBtn"/> 
-                Order Printing
+            <button t-if="this.pos.printers_category_ids_set.size" class="button print btn btn-lg btn-secondary w-100 py-3 my-2" t-on-click="handleOrderPrinting">
+                <i class="fa fa-file-image-o ms-2" t-ref="orderPrintingBtn"/> Order Printing
             </button>
         </xpath>
     </t>
