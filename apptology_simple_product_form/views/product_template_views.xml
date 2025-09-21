@@ -19,6 +19,11 @@
                                 <div class="o_form_label">Description</div>
                                 <field name="description_sale" nolabel="1" placeholder="Enter a description of this item. Describe details like features, options and measurements." widget="text"/>
                             </group>
+                        <group string="Pricing &amp; POS" col="1">
+                            <field name="image_1920" widget="image" nolabel="1"/>
+                            <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="available_in_pos" string="Available in POS" widget="boolean_toggle"/>
+                        </group>
                         </group>
                                 <group string="Modifer Group" col="2">
                                 <group col="2">
@@ -26,11 +31,6 @@
                                         <field name="sh_topping_group_ids" widget="many2many_table" options="{'create': false, 'no_quick_add': true}"/>
                                     </div>
                                 </group>
-                        </group>
-                        <group string="Pricing &amp; POS" col="1">
-                            <field name="image_1920" widget="image" nolabel="1"/>
-                            <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="available_in_pos" string="Available in POS" widget="boolean_toggle"/>
                         </group>
                     </group>
                 </sheet>
