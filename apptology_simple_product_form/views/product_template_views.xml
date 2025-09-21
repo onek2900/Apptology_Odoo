@@ -14,7 +14,9 @@
                             <group col="1">
                                 <field name="name" required="1"/>
                                 <field name="pos_categ_ids" widget="many2many_tags" string="POS Categories"/>
-                                <field name="sh_topping_group_ids" widget="one2many" string="Modifier Groups" options="{'create': false, 'no_quick_add': true}" placeholder="Select modifier groups..."/>
+                                <div class="app-modifier-groups-table">
+                                    <field name="sh_topping_group_ids" widget="many2many_table" string="Modifier Groups" options="{'create': false, 'no_quick_add': true}"/>
+                                </div>
                             </group>
                             <group col="1">
                                 <div class="o_form_label">Description</div>
