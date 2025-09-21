@@ -302,13 +302,40 @@ export class OnlineOrderScreen extends Component {
     closeOnlineOrderScreen(){
         this.env.services.pos.showScreen("ProductScreen");
     }
+    // Ensure topping modifiers carry a consistent boolean flag for styling.
+    normalizeOrderLines(lines){
+        if (!Array.isArray(lines)){
+            return [];
+        }
+        return lines.map((line) => {
+            if (!line){
+                return line;
+            }
+            const normalizedLine = { ...line };
+            const rawTopping = normalizedLine.sh_is_topping;
+            const normalizedSh = Array.isArray(rawTopping) ? !!rawTopping[0] : !!rawTopping;
+            const rawFallback = normalizedLine.is_topping;
+            const normalizedFallback = Array.isArray(rawFallback) ? !!rawFallback[0] : !!rawFallback;
+            normalizedLine.is_topping = normalizedSh || normalizedFallback;
+            return normalizedLine;
+        });
+    }
+
     /**
      * Updates the clicked order state to show its details.
      *
      * @param {Object} order - The order object that was clicked.
      */
     onClickOrder(order){
-        this.state.clickedOrder = order
+        if (!order){
+            this.state.clickedOrder = {};
+            return;
+        }
+        const normalizedLines = this.normalizeOrderLines(order.lines);
+        this.state.clickedOrder = {
+            ...order,
+            lines: normalizedLines,
+        };
     }
     /**
      * Finalizes an online order.

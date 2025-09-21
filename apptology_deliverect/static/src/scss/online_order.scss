@@ -26,6 +26,24 @@
                         font-size: 15px;
                         font-weight: 500;
                     }
+                    &.topping-line {
+                        .product-info {
+                            margin-left: 1.5rem;
+
+                            .product-name {
+                                font-size: 13px;
+                                font-weight: 500;
+                            }
+
+                            .product-quantity {
+                                font-size: 12px;
+                            }
+                        }
+
+                        .product-price {
+                            font-size: 13px;
+                        }
+                    }
                 }
             }
 
