@@ -240,9 +240,16 @@ class PosOrder(models.Model):
             order['amount_total'] = "{:.2f}".format(order['amount_total'])
             order['amount_tax'] = "{:.2f}".format(order['amount_tax'])
         all_line_ids = [line_id for order in orders for line_id in order['lines']]
+        base_line_fields = ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl', 'sh_is_topping', 'is_topping']
+        line_fields = [
+            field_name
+            for field_name in base_line_fields
+            if field_name in self.env['pos.order.line']._fields
+        ]
+
         lines = self.env['pos.order.line'].search_read(
             [('id', 'in', all_line_ids)],
-            ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl', 'sh_is_topping', 'is_topping']
+            line_fields
         )
 
         def _normalize_bool(value):
@@ -504,9 +511,16 @@ class PosOrder(models.Model):
 
         # Lines foldout
         all_line_ids = [line_id for order in orders for line_id in order['lines']]
+        base_line_fields = ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl', 'sh_is_topping', 'is_topping']
+        line_fields = [
+            field_name
+            for field_name in base_line_fields
+            if field_name in self.env['pos.order.line']._fields
+        ]
+
         lines = self.env['pos.order.line'].search_read(
             [('id', 'in', all_line_ids)],
-            ['id', 'full_product_name', 'product_id', 'qty', 'price_unit', 'price_subtotal', 'price_subtotal_incl', 'sh_is_topping', 'is_topping']
+            line_fields
         )
 
         def _normalize_bool(value):
