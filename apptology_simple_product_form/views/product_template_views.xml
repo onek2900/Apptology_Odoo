@@ -20,9 +20,9 @@
                                 <field name="description_sale" nolabel="1" placeholder="Enter a description of this item. Describe details like features, options and measurements." widget="text"/>
                             </group>
                         </group>
-                        <group col="1">
+                        <group sting= "Image" col="1">
                             <field name="image_1920" widget="image" nolabel="1"/>
-                            
+
                             <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                     </group>
