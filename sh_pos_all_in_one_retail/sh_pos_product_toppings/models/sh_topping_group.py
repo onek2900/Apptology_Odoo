@@ -17,6 +17,27 @@ class ShToppingGroup(models.Model):
     max = fields.Integer(string="Max", default=0, help="Maximum toppings allowed for this group (0 = no limit).")
     multi_max = fields.Integer(string="Multi Max", default=0, help="Maximum quantity per topping item within this group (0 = no limit).")
 
+    def _ensure_group_products_hidden(self, products=None):
+        Product = self.env['product.product']
+        if 'sh_is_topping' not in Product._fields:
+            return
+        target = products or self.mapped('toppinds_ids')
+        if not target:
+            return
+        target.sudo().write({'sh_is_topping': True})
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._ensure_group_products_hidden()
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'toppinds_ids' in vals:
+            self._ensure_group_products_hidden()
+        return res
+
 class MassUpdateToppings(models.TransientModel):
     _name = 'sh.mass.update.topings'
     _description= 'mass update topping'
@@ -40,3 +61,4 @@ class MassUpdateToppings(models.TransientModel):
         for product in products:
             product.sh_topping_group_ids = self.sh_topping_group_ids
             product.sh_topping_ids = self.sh_topping_product_ids
+            product._ensure_topping_products_hidden(self.sh_topping_product_ids)
