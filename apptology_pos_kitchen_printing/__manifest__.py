@@ -18,6 +18,9 @@
         'point_of_sale._assets_pos': [
                'apptology_pos_kitchen_printing/static/src/js/**/*',
         ],
+        'point_of_sale.assets': [
+        'apptology_pos_kitchen_printing/static/src/xml/kitchen_print_actionpad.xml',
+        ],
     },
     'installable': True,
     'application': False,
