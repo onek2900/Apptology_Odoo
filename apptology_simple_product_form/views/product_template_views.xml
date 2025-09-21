@@ -10,11 +10,16 @@
             <form string="Product">
                 <sheet>
                     <group col="2">
-                        <group string="Basic Information" col="1">
-                            <field name="name" required="1"/>
-                            <field name="description_sale" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements."/>
-                            <field name="pos_categ_ids" widget="many2many_tags" string="POS Categories"/>
-                            <field name="sh_topping_group_ids" widget="many2many_tags" string="Modifier Groups" options="{'no_create_edit': False}" placeholder="Select modifier groups..."/>
+                        <group string="Basic Information" col="2">
+                            <group col="1">
+                                <field name="name" required="1"/>
+                                <field name="pos_categ_ids" widget="many2many_tags" string="POS Categories"/>
+                                <field name="sh_topping_group_ids" widget="many2many_tags" string="Modifier Groups" options="{'no_create_edit': False}" placeholder="Select modifier groups..."/>
+                            </group>
+                            <group col="1">
+                                <div class="o_form_label">Description</div>
+                                <field name="description_sale" nolabel="1" placeholder="Enter a description of this item. Describe details like features, options and measurements." widget="text"/>
+                            </group>
                         </group>
                         <group string="Pricing &amp; POS" col="1">
                             <field name="image_1920" widget="image" nolabel="1"/>
