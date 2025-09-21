@@ -146,6 +146,11 @@ class ModifierGroupsField extends Component {
         const groupsVal = this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
         const cacheKey = groupIds.slice().sort((a, b) => a - b).join(',');
+        if (!force && cacheKey === this._lastGroupKey) {
+            console.log('modifier_groups: loadData cached skip', { cacheKey, groupsField: this.groupsField });
+            this.state.loading = false;
+            return;
+        }
         if (!groupIds.length) {
             console.log('modifier_groups: loadData skip (no groups)', {
                 force,
