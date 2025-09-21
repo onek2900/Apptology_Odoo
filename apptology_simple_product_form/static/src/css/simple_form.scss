@@ -151,7 +151,7 @@
 .app-modifier-groups-table .o_field_many2many_table tbody tr td {
   border: 0;
   padding: 8px 12px;
-  vertical-align: right;
+  vertical-align: middle;
 }
 
 .app-modifier-groups-table .o_field_many2many_table tbody tr td.o_handle_cell {
@@ -172,4 +172,13 @@
 .app-modifier-groups-section,
 .app-modifiers-section {
   margin-top: 16px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table .o_list_button_add {
+  justify-content: flex-start;
+  padding: 8px 12px 8px 28px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table .o_list_button_add > a {
+  margin-left: 0;
 }
