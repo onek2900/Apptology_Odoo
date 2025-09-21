@@ -128,7 +128,7 @@
 }
 
 .app-modifier-groups-table .o_field_many2many_table thead {
-  display: none;
+  display:none;
 }
 
 .app-modifier-groups-table .o_field_many2many_table tbody tr td {
@@ -155,4 +155,11 @@
 
 .app-modifier-groups-section {
   margin-top: 16px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td:first-child {
+  padding-left: 12px;
+}
+.app-modifier-groups-table .o_field_many2many_table tbody tr td:last-child {
+  padding-right: 12px;
 }

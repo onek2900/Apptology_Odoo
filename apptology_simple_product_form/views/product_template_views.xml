@@ -20,10 +20,9 @@
                                 <field name="description_sale" nolabel="1" placeholder="Enter a description of this item. Describe details like features, options and measurements." widget="text"/>
                             </group>
                         </group>
-                        <group string="Pricing &amp; POS" col="1">
+                        <group col="1">
                             <field name="image_1920" widget="image" nolabel="1"/>
                             <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="available_in_pos" string="Available in POS" widget="boolean_toggle"/>
                         </group>
                     </group>
                     <group string="Modifier Groups" colspan="2" class="app-modifier-groups-section" col="1">
