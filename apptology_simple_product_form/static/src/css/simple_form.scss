@@ -163,3 +163,28 @@
 .app-modifier-groups-table .o_field_many2many_table tbody tr td:last-child {
   padding-right: 4px;
 }
+
+.app-modifier-groups-table .o_field_many2many_table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.app-modifier-groups-table .o_field_many2many_table table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td.o_handle_cell {
+  width: 28px;
+  padding: 6px 8px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td.o_field_cell {
+  padding-left: 16px;
+  padding-right: 12px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td.o_list_record_remove {
+  width: 32px;
+  text-align: right;
+}
