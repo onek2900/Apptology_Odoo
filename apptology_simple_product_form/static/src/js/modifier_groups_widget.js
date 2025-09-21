@@ -145,8 +145,22 @@ class ModifierGroupsField extends Component {
         }
         const groupsVal = this.props.record.data[this.groupsField] || [];
         const groupIds = this.asIds(groupsVal);
-        this.state.loading = true;
         const cacheKey = groupIds.slice().sort((a, b) => a - b).join(',');
+        if (!groupIds.length) {
+            console.log('modifier_groups: loadData skip (no groups)', {
+                force,
+                cacheKey,
+                recordId: this.props.record.resId,
+                groupsField: this.groupsField,
+            });
+            this.state.groups = [];
+            this.state.toppingsById = {};
+            this.state.expanded = {};
+            this.state.loading = false;
+            this._lastGroupKey = cacheKey;
+            return;
+        }
+        this.state.loading = true;
         console.log('modifier_groups: loadData start', {
             force,
             cacheKey,
