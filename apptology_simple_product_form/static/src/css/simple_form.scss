@@ -140,3 +140,15 @@
 .app-modifier-groups-table .o_field_many2many_table tbody tr {
   border-bottom: 1px solid var(--o-border-color, #e0e0e0);
 }
+
+.app-modifier-groups-table {
+  width: 100%;
+}
+
+.app-modifier-groups-table .o_field_many2many_table {
+  width: 100%;
+}
+
+.app-modifier-groups-table .o_field_many2many_table table {
+  width: 100%;
+}
