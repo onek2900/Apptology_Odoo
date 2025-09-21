@@ -50,7 +50,7 @@ patch(ReceiptScreen.prototype, {
                 const exported = order.export_for_printing();
                 const cashierName = exported.headerData?.cashier;
                 const orderNumber = exported.headerData?.trackingNumber;
-                const tableId = (order.table && order.table.id) || (order.pos?.table && order.pos.table.id) || null;
+                const tableName = (order.table && order.table.name) || (order.pos?.table && order.pos.table.name) || null;
                 const floorName = (order.pos?.currentFloor && order.pos.currentFloor.name) || null;
 
                 // Build a single structured JSON log per printer
@@ -60,7 +60,7 @@ patch(ReceiptScreen.prototype, {
                     printer: printerName,
                     cashier: cashierName,
                     order_number: orderNumber,
-                    table_id: tableId,
+                    table_name: tableName,
                     floor: floorName,
                     lines: data.map((item) => ({
                         categories: item.category_ids.map((cat) => cat.name),
@@ -134,3 +134,4 @@ patch(ReceiptScreen.prototype, {
         });
     }
 })
+
