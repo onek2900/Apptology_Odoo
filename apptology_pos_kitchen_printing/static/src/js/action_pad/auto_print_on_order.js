@@ -211,22 +211,18 @@ patch(ActionpadWidget.prototype, {
 
                 // Filter by printer categories first using the full current snapshot
                 // Keep per-line uids so we can emit each new line separately
-                const { matched: currentForPrinter, skipped } = getPrintingCategoriesChanges(
+                const currentForPrinter = getPrintingCategoriesChanges(
                     this.pos,
                     printer.config.product_categories_ids,
                     Array.from(curLinesMap.values())
                 );
 
+                // If you want to see which lines were skipped:
+                const skipped = Array.from(curLinesMap.values()).filter(
+                    (l) => !currentForPrinter.includes(l)
+                );
                 if (skipped.length) {
                     console.log(`[kitchen-print] Skipped lines for ${printer.config.name}:`, skipped.map(s => s.name));
-                    // Optional: show a popup to cashier
-                    this.popup.add(ErrorPopup, {
-                        title: this.env._t("Some lines not printed"),
-                        body: this.env._t(
-                            "These products were not sent to the kitchen printer: " +
-                            skipped.map(s => s.name).join(", ")
-                        ),
-                    });
                 }
                 // Per-printer, per-line-uid tracker. This ensures identical items on
                 // different lines are emitted separately, while quantity increments
