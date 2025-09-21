@@ -126,3 +126,17 @@
 .app-modifiers-section {
   margin-top: 16px;
 }
+
+.app-modifier-groups-table .o_field_many2many_table thead {
+  display: none;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr td {
+  border: 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.app-modifier-groups-table .o_field_many2many_table tbody tr {
+  border-bottom: 1px solid var(--o-border-color, #e0e0e0);
+}
