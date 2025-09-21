@@ -14,10 +14,6 @@
                             <group col="1">
                                 <field name="name" required="1"/>
                                 <field name="pos_categ_ids" widget="many2many_tags" string="POS Categories"/>
-                                <div class="o_form_label">Modifier Groups</div>
-                                <div class="app-modifier-groups-table">
-                                    <field name="sh_topping_group_ids" widget="many2many_table" options="{'create': false, 'no_quick_add': true}"/>
-                                </div>
                             </group>
                             <group col="1">
                                 <div class="o_form_label">Description</div>
@@ -29,6 +25,11 @@
                             <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             <field name="available_in_pos" string="Available in POS" widget="boolean_toggle"/>
                         </group>
+                    </group>
+                    <group string="Modifier Groups" colspan="2" class="app-modifier-groups-section" col="1">
+                        <div class="app-modifier-groups-table">
+                            <field name="sh_topping_group_ids" widget="many2many_table" options="{'create': false, 'no_quick_add': true}" nolabel="1"/>
+                        </div>
                     </group>
                     <group string="Modifiers" colspan="2" class="app-modifiers-section" col="1">
                         <div class="o_form_label text-muted">No modifier groups selected. Use the field above to pick groups.</div>
