@@ -22,6 +22,7 @@
                         </group>
                         <group col="1">
                             <field name="image_1920" widget="image" nolabel="1"/>
+                            
                             <field name="list_price" string="Sale Price" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                         </group>
                     </group>
