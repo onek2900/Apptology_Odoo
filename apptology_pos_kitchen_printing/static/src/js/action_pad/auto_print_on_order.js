@@ -204,14 +204,6 @@ patch(ActionpadWidget.prototype, {
                     printer.config.product_categories_ids,
                     Array.from(curLinesMap.values())
                 );
-
-                // If you want to see which lines were skipped:
-                const skipped = Array.from(curLinesMap.values()).filter(
-                    (l) => !currentForPrinter.includes(l)
-                );
-                if (skipped.length) {
-                    console.log(`[kitchen-print] Skipped lines for ${printer.config.name}:`, skipped.map(s => s.name));
-                }
                 // Per-printer, per-line-uid tracker. This ensures identical items on
                 // different lines are emitted separately, while quantity increments
                 // on the same line uid produce a delta quantity.
