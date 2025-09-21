@@ -14,6 +14,7 @@
                             <field name="name" required="1"/>
                             <field name="description_sale" string="Description" placeholder="Enter a description of this item. Describe details like features, options and measurements."/>
                             <field name="pos_categ_ids" widget="many2many_tags" string="POS Categories"/>
+                            <field name="sh_topping_group_ids" widget="many2many_tags" string="Modifier Groups" options="{'no_create_edit': False}" placeholder="Select modifier groups..."/>
                         </group>
                         <group string="Pricing &amp; POS" col="1">
                             <field name="image_1920" widget="image" nolabel="1"/>
@@ -22,8 +23,8 @@
                         </group>
                     </group>
                     <group string="Modifiers" colspan="2" class="app-modifiers-section" col="1">
-                        <field name="sh_topping_group_ids" widget="many2many_tags" string="Modifier Groups" options="{'no_create_edit': False}" placeholder="Select modifier groups..."/>
-                        <field name="sh_topping_ids" widget="modifier_groups" options="{'groups_field': 'sh_topping_group_ids'}" nolabel="1"/>
+                        <label string="No modifier groups selected. Use the field above to pick groups." class="text-muted"/>
+                        <field name="sh_topping_ids" invisible="1"/>
                     </group>
                 </sheet>
             </form>
