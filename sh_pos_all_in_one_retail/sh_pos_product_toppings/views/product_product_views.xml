@@ -10,9 +10,6 @@
                 <field name="sh_is_global_topping"></field>
                 <field name="sh_is_topping"></field>
             </xpath>
-            <xpath expr="//group/field[@name='detailed_type']" position="before">
-                <field name="sh_is_topping"/>
-            </xpath>
             <xpath expr="//sheet//notebook" position="inside">
                 <page id="Toppings" string="Toppings">
                     <group>
