@@ -9,6 +9,9 @@
             <xpath expr="//field[@name='default_code']" position="after">
                 <field name="sh_is_global_topping"></field>
             </xpath>
+            <xpath expr="//group/field[@name='detailed_type']" position="before">
+                <field name="sh_is_topping"/>
+            </xpath>
             <xpath expr="//sheet//notebook" position="inside">
                 <page id="Toppings" string="Toppings">
                     <group>
@@ -21,8 +24,5 @@
                 </page>
             </xpath>
         </field>
-            <xpath expr="//group/field[@name='detailed_type']" position="before">
-                <field name="sh_is_topping"/>
-            </xpath>
     </record>
 </odoo>
