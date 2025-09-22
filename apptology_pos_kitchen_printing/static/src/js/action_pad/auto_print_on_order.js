@@ -8,6 +8,11 @@ import { PrinterReceipt } from "../printer_receipt/printer_receipt";
 // Keep references to previously patched methods so we can chain them.
 const PreviousSetup_KitchenPrinting = ActionpadWidget.prototype.setup;
 const PreviousSubmitOrder = ActionpadWidget.prototype.submitOrder;
+const PreviousDisableOrderDescriptor = Object.getOwnPropertyDescriptor(
+    ActionpadWidget.prototype,
+    "disableOrder"
+);
+const PreviousDisableOrder = PreviousDisableOrderDescriptor?.get;
 
 function normalizeCategoryIds(cats) {
     if (!cats) return [];
@@ -68,6 +73,32 @@ patch(ActionpadWidget.prototype, {
         this.printer = useService("printer");
         // eslint-disable-next-line no-console
         console.log("[kitchen-print] auto_print_on_order setup loaded");
+    },
+
+    get disableOrder() {
+        const previousResult = PreviousDisableOrder
+            ? PreviousDisableOrder.call(this)
+            : !this.currentOrder?.hasChangesToPrint?.();
+
+        if (!previousResult) {
+            return previousResult;
+        }
+
+        const order = this.currentOrder;
+        if (!order) {
+            return previousResult;
+        }
+
+        const hasSkippedChanges =
+            typeof order.hasSkippedChanges === "function"
+                ? order.hasSkippedChanges()
+                : !!order.hasSkippedChanges;
+
+        if (hasSkippedChanges) {
+            return false;
+        }
+
+        return previousResult;
     },
 
     async submitOrder() {
@@ -282,4 +313,3 @@ patch(ActionpadWidget.prototype, {
         return result;
     },
 });
-
