@@ -21,9 +21,6 @@
                     </group>
                 </page>
             </xpath>
-            <xpath expr="//group/field[@name='detailed_type']" position="before">
-                <field name="sh_is_topping"/>
-            </xpath>
         </field>
     </record>
 </odoo>
