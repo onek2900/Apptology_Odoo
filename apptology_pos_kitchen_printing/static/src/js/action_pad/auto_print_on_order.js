@@ -8,6 +8,11 @@ import { PrinterReceipt } from "../printer_receipt/printer_receipt";
 // Keep references to previously patched methods so we can chain them.
 const PreviousSetup_KitchenPrinting = ActionpadWidget.prototype.setup;
 const PreviousSubmitOrder = ActionpadWidget.prototype.submitOrder;
+const PreviousDisableOrderDescriptor = Object.getOwnPropertyDescriptor(
+    ActionpadWidget.prototype,
+    "disableOrder"
+);
+const PreviousDisableOrder = PreviousDisableOrderDescriptor?.get;
 
 function normalizeCategoryIds(cats) {
     if (!cats) return [];
@@ -68,6 +73,82 @@ patch(ActionpadWidget.prototype, {
         this.printer = useService("printer");
         // eslint-disable-next-line no-console
         console.log("[kitchen-print] auto_print_on_order setup loaded");
+    },
+
+    get disableOrder() {
+        const previousResult = PreviousDisableOrder
+            ? PreviousDisableOrder.call(this)
+            : !this.currentOrder?.hasChangesToPrint?.();
+
+        const order = this.currentOrder;
+        if (!order || !this.pos) {
+            return previousResult;
+        }
+
+        const printers =
+            (this.pos.unwatched && this.pos.unwatched.printers) || this.pos.printers || [];
+        const orderlines = Array.isArray(order.orderlines) ? order.orderlines : [];
+
+        const unmatchedLines = [];
+        for (const line of orderlines) {
+            const qty = typeof line.get_quantity === "function" ? line.get_quantity() : line.quantity;
+            if (!qty || Number(qty) <= 0) {
+                continue;
+            }
+
+            const product =
+                line.product ||
+                (this.pos.db?.product_by_id && this.pos.db.product_by_id[line.product?.id || line.product_id]);
+            const categories = product
+                ? this.pos.db?.get_category_by_id?.(product.pos_categ_ids) || []
+                : [];
+
+            const lineData = {
+                uid: line.uid || line.cid,
+                product_id: product?.id ?? line.product_id ?? null,
+                category_ids: categories,
+                quantity: qty,
+            };
+
+            let matched = false;
+            for (const printer of printers) {
+                if (!printer?.config) {
+                    continue;
+                }
+                const matches = getPrintingCategoriesChanges(
+                    this.pos,
+                    printer.config.product_categories_ids,
+                    [lineData]
+                );
+                if (matches.length) {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched) {
+                unmatchedLines.push(lineData);
+            }
+        }
+
+        const hasSkippedChanges = unmatchedLines.length > 0;
+        const previousSkipped = !!order.hasSkippedChanges;
+        if (order.hasSkippedChanges !== hasSkippedChanges) {
+            order.hasSkippedChanges = hasSkippedChanges;
+            if (typeof order.trigger === "function" && previousSkipped !== hasSkippedChanges) {
+                order.trigger("change");
+            }
+        }
+
+        if (!previousResult) {
+            return previousResult;
+        }
+
+        if (hasSkippedChanges) {
+            return false;
+        }
+
+        return previousResult;
     },
 
     async submitOrder() {
@@ -282,4 +363,3 @@ patch(ActionpadWidget.prototype, {
         return result;
     },
 });
-
