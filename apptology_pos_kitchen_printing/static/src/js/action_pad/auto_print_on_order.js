@@ -144,6 +144,17 @@ patch(ActionpadWidget.prototype, {
             return previousResult;
         }
 
+        const order = this.currentOrder;
+        if (!order) {
+            return previousResult;
+        }
+
+        const hasSkippedChanges =
+            typeof order.hasSkippedChanges === "function"
+                ? order.hasSkippedChanges()
+                : !!order.hasSkippedChanges;
+
+
         if (hasSkippedChanges) {
             return false;
         }
