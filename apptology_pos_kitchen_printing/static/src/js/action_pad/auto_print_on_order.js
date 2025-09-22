@@ -80,6 +80,66 @@ patch(ActionpadWidget.prototype, {
             ? PreviousDisableOrder.call(this)
             : !this.currentOrder?.hasChangesToPrint?.();
 
+        const order = this.currentOrder;
+        if (!order || !this.pos) {
+            return previousResult;
+        }
+
+        const printers =
+            (this.pos.unwatched && this.pos.unwatched.printers) || this.pos.printers || [];
+        const orderlines = Array.isArray(order.orderlines) ? order.orderlines : [];
+
+        const unmatchedLines = [];
+        for (const line of orderlines) {
+            const qty = typeof line.get_quantity === "function" ? line.get_quantity() : line.quantity;
+            if (!qty || Number(qty) <= 0) {
+                continue;
+            }
+
+            const product =
+                line.product ||
+                (this.pos.db?.product_by_id && this.pos.db.product_by_id[line.product?.id || line.product_id]);
+            const categories = product
+                ? this.pos.db?.get_category_by_id?.(product.pos_categ_ids) || []
+                : [];
+
+            const lineData = {
+                uid: line.uid || line.cid,
+                product_id: product?.id ?? line.product_id ?? null,
+                category_ids: categories,
+                quantity: qty,
+            };
+
+            let matched = false;
+            for (const printer of printers) {
+                if (!printer?.config) {
+                    continue;
+                }
+                const matches = getPrintingCategoriesChanges(
+                    this.pos,
+                    printer.config.product_categories_ids,
+                    [lineData]
+                );
+                if (matches.length) {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched) {
+                unmatchedLines.push(lineData);
+            }
+        }
+
+        const hasSkippedChanges = unmatchedLines.length > 0;
+        const previousSkipped = !!order.hasSkippedChanges;
+        if (order.hasSkippedChanges !== hasSkippedChanges) {
+            order.hasSkippedChanges = hasSkippedChanges;
+            if (typeof order.trigger === "function" && previousSkipped !== hasSkippedChanges) {
+                order.trigger("change");
+            }
+        }
+
         if (!previousResult) {
             return previousResult;
         }
@@ -93,6 +153,7 @@ patch(ActionpadWidget.prototype, {
             typeof order.hasSkippedChanges === "function"
                 ? order.hasSkippedChanges()
                 : !!order.hasSkippedChanges;
+
 
         if (hasSkippedChanges) {
             return false;
