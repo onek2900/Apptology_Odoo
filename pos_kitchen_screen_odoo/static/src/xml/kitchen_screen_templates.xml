@@ -49,7 +49,8 @@
           <div class="order-card__partner" t-esc="order.partner_id[1]"></div>
           <div class="order-card__posref" t-if="status === 'inprogress'" t-esc="order.pos_reference"></div>
 
-          <!-- Floor: only when present and not the literal 'false' -->
+          <!-- Floor: only when present and not the literal 'false'
+               NOTE: escape ampersands in XML attributes -->
           <div t-if="order.floor &amp;&amp; order.floor !== 'false'" class="order-card__floor">
             <i class="fa fa-building" aria-hidden="true"></i>
             <span>Floor <t t-esc="order.floor"/></span>
@@ -57,46 +58,52 @@
         </div>
       </header>
 
-      <!-- Lines -->
-      <ul class="list-group list-group-flush">
-        <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
-          <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-          <li t-if="line" class="list-group-item">
-            <div class="qty">
-              <t t-if="line and not line.sh_is_topping">
-                <t t-esc="line.qty"/>×
-              </t>
-            </div>
-            <div class="product-info">
-              <div class="product-name">
-                <t t-if="line and not line.sh_is_topping">
-                  <t t-esc="line.full_product_name"/>
-                </t>
-                <t t-elif="line and line.sh_is_topping">
-                  <span class="modifier-info">
-                    → <t t-esc="line.full_product_name"/>
-                  </span>
-                </t>
-              </div>
-              <small t-if="line.note" class="note">
-                <i class="fa fa-tag"/>
-                <t t-esc="line.note"/>
-              </small>
-            </div>
-          </li>
-        </t>
-      </ul>
+        <!-- Lines -->
+                                        <ul class="list-group list-group-flush">
+                                            <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
+                                                <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
+                                                <li t-if="line" class="list-group-item">
+                                                    <div class="qty">
+                                                        <t t-if="!line.sh_is_topping">
 
-      <!-- Clover-style: no footer actions -->
+                                                            <t t-esc="line.qty"/>×
+                                                        </t>
+                                                    </div>
+                                                    <div class="product-info">
+                                                        <div class="product-name">
+                                                            <t t-if="!line.sh_is_topping">
+                                                                <t t-esc="line.full_product_name"/>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <span class="modifier-info">
+                                                                    →
+                                                                    <t t-esc="line.full_product_name"/>
+                                                                </span>
+                                                            </t>
+
+                                                        </div>
+                                                        <small t-if="line.note" class="note">
+                                                            <i class="fa fa-tag"/>
+                                                            <t t-esc="line.note"/>
+                                                        </small>
+                                                    </div>
+                                                </li>
+                                            </t>
+                                        </ul>
+
+
+      <!-- Clover-style: no footer actions; tap header to complete, tap items to toggle -->
       </div>
     </article>
   </t>
 
   <!-- Page -->
   <t t-name="KitchenCustomDashBoard">
+
+    <!-- Cancel confirmation removed (Clover-style UX) -->
+
     <div class="kitchen-dashboard"
          t-att-style="'--k-card-w: ' + state.card_w + 'px; --k-card-h: ' + state.card_h + 'px; --k-content-scale: ' + state.content_scale">
-
       <!-- Zoom toolbar -->
       <div class="k-toolbar" role="toolbar" aria-label="Zoom controls">
         <button type="button" class="btn btn-sm btn-light" title="Zoom out" aria-label="Zoom out"
@@ -112,7 +119,6 @@
           <i class="fa fa-compress"></i>
         </button>
       </div>
-
       <div class="row g-4">
 
         <!-- In Progress -->
@@ -128,70 +134,68 @@
             <div t-if="orderInProgress.length" class="row g-4">
               <t t-foreach="orderInProgress" t-as="order" t-key="order.id">
                 <div class="col-12 col-md-4 fade-in">
+                  <!-- Order Card with interactive header and items -->
                   <article class="order-card order-card--inprogress"
                            t-att-class="{'is-online': order.is_online_order, 'is-pickup': order.order_type == '1', 'is-delivery': order.order_type == '2'}"
                            t-att-data-order-id="order.id">
                     <div class="order-card__scale">
-                      <header class="order-card__header"
-                              t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white">
-                        <button type="button"
-                                class="btn btn-success order-card__complete-all"
-                                title="Mark all ready"
-                                aria-label="Mark all ready"
-                                t-on-click="() => this.mark_all_ready(order.id)">
-                          <i class="fa fa-check"></i>
-                        </button>
-                        <span class="order-card__type-badge"
-                              t-att-title="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')"
-                              t-att-aria-label="order.order_type == '1' ? 'Pick Up' : 'Delivery'">
-                          <t t-if="order.order_type == '1'"><i class="fa fa-shopping-basket"></i></t>
-                          <t t-elif="order.order_type == '2'"><i class="fa fa-truck"></i></t>
-                          <t t-else=""><i class="fa fa-cutlery"></i></t>
-                        </span>
-                        <div class="order-card__meta">
-                          <h4 class="order-card__code">
-                            <t t-if="order.is_online_order"><t t-esc="order.channel_order_reference"/></t>
-                            <t t-else=""><t t-esc="order.tracking_number"/></t>
-                          </h4>
-                          <div class="order-card__partner" t-esc="order.partner_id[1]"></div>
-                          <div class="order-card__posref" t-esc="order.pos_reference"></div>
-                          <div t-if="order.floor &amp;&amp; order.floor !== 'false'" class="order-card__floor">
-                            <i class="fa fa-building"></i>
-                            <span>Floor <t t-esc="order.floor"/></span>
-                          </div>
+                    <!-- Header (no direct complete on tap) -->
+                    <header class="order-card__header"
+                            t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white">
+                      <!-- Mark All Ready button (top-right) -->
+                      <button type="button"
+                              class="btn btn-success order-card__complete-all"
+                              title="Mark all ready"
+                              aria-label="Mark all ready"
+                              t-on-click="() => this.mark_all_ready(order.id)">
+                        <i class="fa fa-check"></i>
+                      </button>
+                      <span class="order-card__type-badge"
+                            t-att-title="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')"
+                            t-att-aria-label="order.order_type == '1' ? 'Pick Up' : 'Delivery'">
+                        <t t-if="order.order_type == '1'"><i class="fa fa-shopping-basket" aria-hidden="true"></i></t>
+                        <t t-elif="order.order_type == '2'"><i class="fa fa-truck" aria-hidden="true"></i></t>
+                        <t t-else=""><i class="fa fa-cutlery" aria-hidden="true"></i></t>
+                      </span>
+                      <div class="order-card__meta">
+                        <h4 class="order-card__code">
+                          <t t-if="order.is_online_order"><t t-esc="order.channel_order_reference"/></t>
+                          <t t-else=""><t t-esc="order.tracking_number"/></t>
+                        </h4>
+                        <div class="order-card__partner" t-esc="order.partner_id[1]"></div>
+                        <div class="order-card__posref" t-esc="order.pos_reference"></div>
+                        <div t-if="order.floor &amp;&amp; order.floor !== 'false'" class="order-card__floor">
+                          <i class="fa fa-building" aria-hidden="true"></i>
+                          <span>Floor <t t-esc="order.floor"/></span>
                         </div>
-                      </header>
+                      </div>
+                    </header>
 
-                      <!-- Lines -->
-                      <ul class="list-group list-group-flush order-card__items">
-                        <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + lineId">
-                          <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-
-                          <!-- Main product -->
-                          <li t-if="line and not line.sh_is_topping"
-                              class="list-group-item order-card__item"
-                              t-att-class="{'completed': line.order_status === 'ready'}"
-                              t-on-click="() => this.accept_order_line(line.id)">
-                            <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
-                            <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
-                            <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                            <i class="fa"
-                               t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'"></i>
-                          </li>
-
-                          <!-- Topping / modifier -->
-                          <li t-elif="line and line.sh_is_topping"
-                              class="list-group-item order-card__item modifier">
-                            <div class="order-card__qty"></div>
-                            <div class="order-card__product">
-                              <span class="modifier-info">
-                                <t t-esc="line.full_product_name"/>
-                              </span>
-                            </div>
-                            <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                          </li>
-                        </t>
-                      </ul>
+                    <!-- Lines: main item clickable, toppings not clickable; completed groups sink to bottom -->
+                    <ul class="list-group list-group-flush order-card__items">
+                      <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + lineId">
+                        <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
+                        <!-- Main item: clickable to toggle readiness -->
+                        <li t-if="line and !line.sh_is_topping" class="list-group-item order-card__item"
+                            t-att-class="{'completed': line.order_status === 'ready'}"
+                            t-on-click="() => this.accept_order_line(line.id)">
+                          <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
+                          <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
+                          <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                          <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
+                        </li>
+                        <!-- Modifier/topping: not clickable, no completion toggle -->
+                        <li t-elif="line" class="list-group-item order-card__item modifier">
+                          <div class="order-card__qty"></div>
+                          <div class="order-card__product">
+                            <span class="modifier-info">
+                              <t t-esc="line.full_product_name"/>
+                            </span>
+                          </div>
+                          <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                        </li>
+                      </t>
+                    </ul>
                     </div>
                   </article>
                 </div>
@@ -234,3 +238,5 @@
     </div>
   </t>
 </templates>
+
+      
