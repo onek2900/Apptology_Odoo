@@ -26,7 +26,7 @@ function normalizeCategoryIds(cats) {
 function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange) {
     // Filter order lines by matching category ids (robust to shapes)
     const printerCatIds = normalizeCategoryIds(printerCategories);
-    if (!printerCatIds.length) return [];
+    if (!printerCatIds.length) return currentOrderChange; // instead of []  
     const printerCatSet = new Set(printerCatIds);
 
     function toId(v) {
