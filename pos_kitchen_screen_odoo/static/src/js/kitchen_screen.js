@@ -274,27 +274,7 @@ const fetchOrderDetails = async () => {
             };
         });
 
-        // Prefer server-provided logs if present, otherwise compute delta-based tickets
-        let tickets = [];
-        const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
-        if (anyLogs) {
-            for (const order of normalizedOrders) {
-                const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
-                if (!logs.length) continue;
-                logs.forEach((log, index) => {
-                    const ticketLineIds = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
-                    tickets.push({
-                        ...order,
-                        ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
-                        ticket_created_at: log.created_at || order.write_date,
-                        lines: ticketLineIds,
-                    });
-                });
-            }
-        } else {
-            tickets = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
-        }
-
+        // Normalize lines before building tickets
         const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
         const normalizedLines = rawLines.map((line) => {
             const flags = extractToppingFlags(line, null);
@@ -324,6 +304,27 @@ const fetchOrderDetails = async () => {
             });
             return normalized;
         });
+
+        // Prefer server-provided logs if present, otherwise compute delta-based tickets
+        let tickets = [];
+        const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
+        if (anyLogs) {
+            for (const order of normalizedOrders) {
+                const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
+                if (!logs.length) continue;
+                logs.forEach((log, index) => {
+                    const ticketLineIds = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
+                    tickets.push({
+                        ...order,
+                        ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
+                        ticket_created_at: log.created_at || order.write_date,
+                        lines: ticketLineIds,
+                    });
+                });
+            }
+        } else {
+            tickets = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
+        }
         return {
             order_details: normalizedOrders,
             tickets,
