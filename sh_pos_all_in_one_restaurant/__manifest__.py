@@ -15,7 +15,7 @@
 
     'version': '0.0.1',
 
-    "summary": ""
+    "summary": "",
     
     "license": "OPL-1",
     
