@@ -132,6 +132,17 @@ patch(ActionpadWidget.prototype, {
                     const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
                     const uidHint = line.uid || line.uuid || uid;
                     const resolvedLine = resolveOrderline(order, line, uidHint);
+                    if (resolvedLine) {
+                        console.debug('[kitchen-print] resolved line', {
+                            uid: resolvedLine.uid || resolvedLine.id,
+                            name: resolvedLine.full_product_name || resolvedLine.product?.display_name || resolvedLine.product?.name,
+                            sh_is_topping: resolvedLine.sh_is_topping,
+                            raw_sh_is_topping: resolvedLine.sh_is_topping,
+                            has_topping: resolvedLine.sh_is_has_topping
+                        });
+                    } else {
+                        console.debug('[kitchen-print] unresolved line', { uid: uidHint, sh_is_topping: line?.sh_is_topping });
+                    }
                     changeLines.push({
                         uid: uidHint,
                         name: resolvedLine ? resolvedLine.full_product_name || resolvedLine.product?.display_name || resolvedLine.product?.name || resolvedLine.name || '' : (product ? (product.display_name || product.name) : (line.name || '')),
