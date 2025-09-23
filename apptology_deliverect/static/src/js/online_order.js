@@ -364,8 +364,8 @@ export class OnlineOrderScreen extends Component {
                 fieldName: "RECEIPT_NUMBER",
                 searchTerm: order.pos_reference,
             };
-            const ticketFilter = order.state=='paid'?"SYNCED":"ACTIVE_ORDERS"
-            await this.pos._syncTableOrdersFromServer();
+            const ticketFilter = order.state=='paid'?"SYNCED":"ACTIVE_ORDERS";
+            // Do not pre-sync here; TicketScreen will handle loading to avoid duplicate fetches
             this.pos.showScreen("TicketScreen", {
                 ui: { filter: ticketFilter, searchDetails },
             });
