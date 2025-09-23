@@ -58,9 +58,8 @@ const computeModifierFlag = (line) => {
         return false;
     }
     const primary = normalizeBooleanFlag(line.sh_is_topping);
-    const fallback = normalizeBooleanFlag(line.is_topping);
     const productFallback = normalizeBooleanFlag(line.product_sh_is_topping);
-    return primary || fallback || productFallback;
+    return primary || productFallback;
 };
 
 /**
@@ -107,7 +106,6 @@ const useOrderManagement = (rpc, shopId) => {
                 const normalized = {
                     ...line,
                     sh_is_topping: normalizeBooleanFlag(line ? line.sh_is_topping : false),
-                    is_topping: normalizeBooleanFlag(line ? (Object.prototype.hasOwnProperty.call(line, 'is_topping') ? line.is_topping : line.sh_is_topping) : false),
                     product_sh_is_topping: normalizeBooleanFlag(line ? line.product_sh_is_topping : false),
                     is_modifier: isModifier,
                 };
@@ -116,10 +114,8 @@ const useOrderManagement = (rpc, shopId) => {
                     product: normalized.full_product_name,
                     qty: normalized.qty,
                     raw_sh_is_topping: line ? line.sh_is_topping : undefined,
-                    raw_is_topping: line ? line.is_topping : undefined,
                     raw_product_sh_is_topping: line ? line.product_sh_is_topping : undefined,
                     normalized_sh_is_topping: normalized.sh_is_topping,
-                    normalized_is_topping: normalized.is_topping,
                     normalized_product_sh_is_topping: normalized.product_sh_is_topping,
                     is_modifier: normalized.is_modifier,
                 });
@@ -272,8 +268,8 @@ export class KitchenScreenDashboard extends Component {
         const flag = computeModifierFlag(line);
         line.is_modifier = flag;
         line.sh_is_topping = normalizeBooleanFlag(line.sh_is_topping);
-        line.is_topping = normalizeBooleanFlag(line.is_topping);
-        console.debug('[Kitchen] computed modifier flag', { id: line.id, product: line.full_product_name, is_modifier: flag, sh_is_topping: line.sh_is_topping, is_topping: line.is_topping });
+        line.product_sh_is_topping = normalizeBooleanFlag(line.product_sh_is_topping);
+        console.debug('[Kitchen] computed modifier flag', { id: line.id, product: line.full_product_name, is_modifier: flag, sh_is_topping: line.sh_is_topping, product_sh_is_topping: line.product_sh_is_topping });
         return flag;
     }
 

@@ -66,7 +66,6 @@ class PosOrder(models.Model):
 
                 candidates = [
                     ui_vals.get('sh_is_topping'),
-                    ui_vals.get('is_topping'),
                     line_vals.get('sh_is_topping'),
                 ]
                 flag = any(self._normalize_bool(val) for val in candidates)
@@ -85,7 +84,6 @@ class PosOrder(models.Model):
 
                 has_candidates = [
                     ui_vals.get('sh_is_has_topping'),
-                    ui_vals.get('is_has_topping'),
                     line_vals.get('sh_is_has_topping'),
                 ]
                 has_flag = any(self._normalize_bool(val) for val in has_candidates)

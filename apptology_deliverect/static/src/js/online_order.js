@@ -128,9 +128,9 @@ export class OnlineOrderScreen extends Component {
                 const product = pid ? this.pos.db.product_by_id?.[pid] : null;
                 if (!productMatchesPrinter(product, pCatSet)) return;
                 const rawTop = line.sh_is_topping;
-                const isTopping = Array.isArray(rawTop) ? !!rawTop[0] : !!rawTop || !!line.is_topping;
+                const isTopping = Array.isArray(rawTop) ? !!rawTop[0] : !!rawTop;
                 const rawHas = line.sh_is_has_topping;
-                const isHasTopping = Array.isArray(rawHas) ? !!rawHas[0] : !!rawHas || !!line.is_has_topping;
+                const isHasTopping = Array.isArray(rawHas) ? !!rawHas[0] : !!rawHas;
                 // Build categories names for convenience
                 const catObjs = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
                 const catNames = (catObjs || []).map((c) => c && c.name).filter(Boolean);
@@ -139,8 +139,8 @@ export class OnlineOrderScreen extends Component {
                     name: line.full_product_name,
                     qty: line.qty,
                     note: line.note || "",
-                    is_topping: isTopping,
-                    has_topping: isHasTopping,
+                    sh_is_topping: isTopping,
+                    sh_is_has_topping: isHasTopping,
                 });
             });
 
@@ -171,13 +171,13 @@ export class OnlineOrderScreen extends Component {
                 const shIsToppingRaw = line.sh_is_topping;
                 const isTopping = Array.isArray(shIsToppingRaw)
                     ? !!shIsToppingRaw[0]
-                    : !!shIsToppingRaw || !!line.is_topping;
+                    : !!shIsToppingRaw;
                 orderLines.push({
                     lineId: line.id,
                     name: line.full_product_name,
                     qty: line.qty,
                     note: line.note,
-                    is_topping: isTopping,
+                    sh_is_topping: isTopping,
                 });
             }
         });
@@ -314,9 +314,7 @@ export class OnlineOrderScreen extends Component {
             const normalizedLine = { ...line };
             const rawTopping = normalizedLine.sh_is_topping;
             const normalizedSh = Array.isArray(rawTopping) ? !!rawTopping[0] : !!rawTopping;
-            const rawFallback = normalizedLine.is_topping;
-            const normalizedFallback = Array.isArray(rawFallback) ? !!rawFallback[0] : !!rawFallback;
-            normalizedLine.is_topping = normalizedSh || normalizedFallback;
+            normalizedLine.sh_is_topping = normalizedSh;
             return normalizedLine;
         });
     }

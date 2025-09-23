@@ -29,7 +29,7 @@ patch(ReceiptScreen.prototype, {
                 name: order.full_product_name,
                 qty: order.quantity,
                 note: order.note,
-                is_topping: !!order.is_topping,
+                sh_is_topping: !!order.sh_is_topping,
             };
         });
         this.buttonOnlineOrderPrintReceipt.el.className = "fa fa-fw fa-spin fa-circle-o-notch";
