@@ -303,6 +303,7 @@ export class KitchenScreenDashboard extends Component {
         this.state = useState({
             order_details: [],
             tickets: [],
+            tickets: [],
             shop_id: shopId,
             stages: ORDER_STATUSES.DRAFT,
             draft_count: 0,
@@ -313,7 +314,7 @@ export class KitchenScreenDashboard extends Component {
             error: null,
             session_error: false,
             // Zoom UI state
-            zoomIndex: 1,
+            zoomIndex: 0,
             card_w: 360,
             card_h: 520,
             content_scale: 1,
@@ -407,6 +408,8 @@ export class KitchenScreenDashboard extends Component {
             const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
+            this.state.tickets = this.buildTickets(this.state.order_details, this.state.lines);
+            this.recomputeTicketCounts();
             this.recomputeTicketCounts();
 
             if (this.state.session_error && !previousSessionError) {
@@ -496,6 +499,35 @@ export class KitchenScreenDashboard extends Component {
     formatNewLineQuantity(quantity) {
         const numeric = Number(quantity) || 0;
         return Math.round(numeric * 100) / 100;
+    }
+
+
+    buildTickets(orders, allLines) {
+        const tickets = [];
+        const getLine = (id) => (allLines || []).find((l) => l.id === Number(id));
+        for (const order of orders || []) {
+            const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
+            if (!logs.length) {
+                const orderLineIds = Array.isArray(order.lines) ? order.lines.slice() : [];
+                tickets.push({
+                    ...order,
+                    ticket_uid: `order-${order.id}`,
+                    ticket_created_at: order.write_date,
+                    lines: orderLineIds,
+                });
+                continue;
+            }
+            logs.forEach((log, index) => {
+                const ids = Array.isArray(log.line_ids) ? log.line_ids.map((x) => Number(x)) : [];
+                tickets.push({
+                    ...order,
+                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
+                    ticket_created_at: log.created_at || order.write_date,
+                    lines: ids,
+                });
+            });
+        }
+        return tickets;
     }
 
 
@@ -589,6 +621,7 @@ recomputeTicketCounts() {
     zoomLevels() {
         // width, height, and content scale factor
         return [
+            { w: 220, h: 380, s: 0.70 }, // xs
             { w: 300, h: 460, s: 0.90 }, // compact
             { w: 360, h: 520, s: 1.00 }, // default
             { w: 420, h: 580, s: 1.10 }, // large
@@ -867,4 +900,5 @@ export async function createKitchenApp() {
     });
     return app.mount(document.body);
 }
+
 
