@@ -174,7 +174,7 @@
                       <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + lineId">
                         <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
                         <!-- Main item: clickable to toggle readiness -->
-                        <t t-set="isTopping" t-value="line &amp&amp (line.sh_is_topping || line.is_topping)"/>
+                        <t t-set="isTopping" t-value="line &amp;&amp; (line.sh_is_topping || line.is_topping)"/>
                         <li t-if="line and !isTopping" class="list-group-item order-card__item"
                             t-att-class="{'completed': line.order_status === 'ready'}"
                             t-on-click="() => this.accept_order_line(line.id)">
