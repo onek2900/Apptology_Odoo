@@ -6,6 +6,7 @@ import { patch } from "@web/core/utils/patch";
 // Keep references to possible originals to wrap safely if present
 const __origSyncA = PosStore.prototype._syncTableOrdersFromServer;
 const __origSyncB = PosStore.prototype.syncTableOrdersFromServer;
+const __origLoadAll = PosStore.prototype.load_server_data;
 
 function dedupeById(array) {
     if (!Array.isArray(array)) return array;
@@ -88,6 +89,17 @@ patch(PosStore.prototype, {
         if (typeof __origSyncA === 'function') {
             return this._withOrdersFetchLock(async () => {
                 const res = await __origSyncA.apply(this, arguments);
+                this._applyOrdersDedupe();
+                return res;
+            });
+        }
+        return undefined;
+    },
+
+    async load_server_data() {
+        if (typeof __origLoadAll === 'function') {
+            return this._withOrdersFetchLock(async () => {
+                const res = await __origLoadAll.apply(this, arguments);
                 this._applyOrdersDedupe();
                 return res;
             });

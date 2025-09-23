@@ -212,6 +212,13 @@ const computeDeltaTickets = (orders, allLines, sid) => {
         }
 
         if (makeTicket && ticketLines.length) {
+            // Remove any existing badges for this order so only the new badge remains
+            for (const key of Object.keys(ticketsByKey)) {
+                // keys are `${orderId}_pressIndex`, keep only those not matching this order
+                if (String(key).startsWith(`${orderId}_`)) {
+                    delete ticketsByKey[key];
+                }
+            }
             // Create virtual line snapshot records so old badges never go empty
             const byId = new Map(lines.map((l) => [l.id, l]));
             const deltaMap = new Map();
@@ -305,7 +312,7 @@ const fetchOrderDetails = async () => {
 
         // Normalize lines before building tickets
         const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
-        const normalizedLines = rawLines.map((line) => {
+        let normalizedLines = rawLines.map((line) => {
             const flags = extractToppingFlags(line, null);
             const isModifier = flags.is_topping;
             const normalized = {
@@ -351,6 +358,23 @@ const fetchOrderDetails = async () => {
                     });
                 });
             }
+            // Keep only the latest badge per order (same order number)
+            const latestByOrder = new Map();
+            for (const t of tickets) {
+                const current = latestByOrder.get(t.id);
+                const currentWhen = current && (current.ticket_created_at || current.write_date || current.date_order);
+                const nextWhen = t && (t.ticket_created_at || t.write_date || t.date_order);
+                if (!current) {
+                    latestByOrder.set(t.id, t);
+                } else {
+                    const c = String(currentWhen || '').replace(' ', 'T');
+                    const n = String(nextWhen || '').replace(' ', 'T');
+                    const cdt = DateTime.fromISO(c, { zone: 'UTC' });
+                    const ndt = DateTime.fromISO(n, { zone: 'UTC' });
+                    if (ndt > cdt) latestByOrder.set(t.id, t);
+                }
+            }
+            tickets = Array.from(latestByOrder.values());
         } else {
             const delta = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
             tickets = delta.tickets;
