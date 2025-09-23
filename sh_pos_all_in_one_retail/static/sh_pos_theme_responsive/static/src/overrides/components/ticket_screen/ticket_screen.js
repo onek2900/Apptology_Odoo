@@ -6,7 +6,9 @@ import { patch } from "@web/core/utils/patch";
 patch(TicketScreen.prototype, {
     setup() {
         super.setup()
-        
+        if(this.pos.get_order()){
+            this.pos.get_order().is_reciptScreen =  false
+        }
         setTimeout(() => {
 
             var owl = $('.owl-carousel');

@@ -66,7 +66,7 @@
 <templates id="template" xml:space="preserve">
     <t t-name="Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
         <xpath expr="//div[hasclass('product-name')]" position="before">
-            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_image_display_in_cart and env.services.pos.get_order() and !env.services.pos.get_order().finalized">
+            <t t-if="env.services.pos.pos_theme_settings_data and env.services.pos.pos_theme_settings_data[0] and env.services.pos.pos_theme_settings_data[0].sh_image_display_in_cart and env.services.pos.get_order() and !env.services.pos.get_order().finalized and env.services.pos.get_order().is_reciptScreen == false">
                 <span class="span_product_image">
                     <img t-att-src="env.services.pos.get_product_image_url(line.product_id,line.write_date)" class="cart_product_image" t-att-alt="line.productName" />
 	            </span>
