@@ -189,15 +189,18 @@ export class OnlineOrderScreen extends Component {
                 });
             }
         });
+        const safeData = {
+            ...(exportedOrder || {}),
+            orderData: currentOrder || exportedOrder || {},
+            orderLineData: orderLines,
+            headerData: { company: this.pos.company },
+            // Some printer services toggle this flag; ensure it exists
+            is_reciptScreen: true,
+        };
         this.printer.print(
             onlineOrderReceipt,
             {
-                data: {
-                    ...exportedOrder,
-                    orderData: currentOrder || exportedOrder,
-                    orderLineData: orderLines,
-                    headerData: {company:this.pos.company}
-                },
+                data: safeData,
                 formatCurrency: this.env.utils.formatCurrency,
             },
             { webPrintFallback: true }

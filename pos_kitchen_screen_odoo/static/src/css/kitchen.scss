@@ -195,6 +195,20 @@ $space: var(--k-spacing);
   .kitchen-dashboard { --k-card-w: 250px !important; }
 }
 
+/* Tablet layout: force 4 equal columns and let cards fill tracks */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .kitchen-dashboard .dashboard-section .row.g-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    justify-content: center; /* center the 4 tracks within the container */
+  }
+  .kitchen-dashboard .order-card {
+    width: 100% !important;   /* take full grid track width */
+    max-width: none !important;
+  }
+  /* Slightly scale down inner content to keep readability */
+  .kitchen-dashboard { --k-content-scale: .92 !important; }
+}
+
 
 .section-header .section-title,
 .section-header h3 {
