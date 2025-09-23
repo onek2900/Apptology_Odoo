@@ -143,25 +143,36 @@ class PosOrder(models.Model):
 
     def order_progress_cancel(self):
         """Calling function from js to change the order status"""
-        self.write({'order_status':'cancel',
-                    'online_order_status':'cancelled',
-                    'declined_time':fields.Datetime.now()})
+        vals = {'order_status': 'cancel'}
+        if 'online_order_status' in self._fields:
+            vals['online_order_status'] = 'cancelled'
+        if 'declined_time' in self._fields:
+            vals['declined_time'] = fields.Datetime.now()
+        self.write(vals)
 
         for line in self.lines:
             if line.order_status != "ready":
                 line.order_status = "cancel"
-        self.update_order_status_in_deliverect(110)
-        deliverect_payment_method = self.env['pos.payment.method'].search([('company_id', '=', self.company_id.id),
-                                                                           ('is_deliverect_payment_method', '=', True)])
-        refund_action = self.refund()
-        refund = self.env['pos.order'].sudo().browse(refund_action['res_id'])
-        payment_context = {"active_ids": refund.ids, "active_id": refund.id}
-        refund_payment = self.env['pos.make.payment'].sudo().with_context(**payment_context).create({
-            'amount': refund.amount_total,
-            'payment_method_id': deliverect_payment_method.id,
-        })
-        refund_payment.with_context(**payment_context).check()
-        self.env['pos.order'].sudo().browse(refund.id).action_pos_order_invoice()
+        if hasattr(self, 'update_order_status_in_deliverect'):
+            self.update_order_status_in_deliverect(110)
+
+        deliverect_payment_method = False
+        payment_method_model = self.env['pos.payment.method']
+        if 'is_deliverect_payment_method' in payment_method_model._fields:
+            deliverect_payment_method = payment_method_model.search([
+                ('company_id', '=', self.company_id.id),
+                ('is_deliverect_payment_method', '=', True)
+            ], limit=1)
+        if deliverect_payment_method:
+            refund_action = self.refund()
+            refund = self.env['pos.order'].sudo().browse(refund_action['res_id'])
+            payment_context = {"active_ids": refund.ids, "active_id": refund.id}
+            refund_payment = self.env['pos.make.payment'].sudo().with_context(**payment_context).create({
+                'amount': refund.amount_total,
+                'payment_method_id': deliverect_payment_method.id,
+            })
+            refund_payment.with_context(**payment_context).check()
+            self.env['pos.order'].sudo().browse(refund.id).action_pos_order_invoice()
 
     def order_progress_change(self):
         """Calling function from js to change the order status"""
@@ -177,7 +188,8 @@ class PosOrder(models.Model):
             self.order_status = "ready"
         else:
             self.order_status = "ready"
-        self.update_order_status_in_deliverect(70)
+        if hasattr(self, 'update_order_status_in_deliverect'):
+            self.update_order_status_in_deliverect(70)
 
 
     def check_order(self, order_name):
