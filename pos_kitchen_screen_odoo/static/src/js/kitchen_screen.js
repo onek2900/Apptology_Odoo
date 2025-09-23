@@ -303,7 +303,6 @@ export class KitchenScreenDashboard extends Component {
         this.state = useState({
             order_details: [],
             tickets: [],
-            tickets: [],
             shop_id: shopId,
             stages: ORDER_STATUSES.DRAFT,
             draft_count: 0,

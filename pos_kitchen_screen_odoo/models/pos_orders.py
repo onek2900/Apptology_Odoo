@@ -391,6 +391,7 @@ class PosOrder(models.Model):
                 if hasattr(self, 'update_order_status_in_deliverect'):
                     self.update_order_status_in_deliverect(70)
     
+        @api.model
         def check_order(self, order_name):
             """Calling function from js to know status of the order"""
             pos_order = self.env['pos.order'].sudo().search(
@@ -412,6 +413,7 @@ class PosOrder(models.Model):
             else:
                 return False
     
+        @api.model
         def check_order_status(self, order_name):
             pos_order = self.env['pos.order'].sudo().search(
                 [('pos_reference', '=', str(order_name))])
@@ -430,47 +432,47 @@ class PosOrder(models.Model):
                 return True
     
     
-    class PosOrderLine(models.Model):
-        """Inheriting the pos order line"""
-        _inherit = "pos.order.line"
-    
-        order_status = fields.Selection(
-            selection=[('draft', 'Draft'), ('waiting', 'Cooking'),
-                       ('ready', 'Ready'), ('cancel', 'Cancel')], default='draft',
-            help='The status of orderliness')
-        order_ref = fields.Char(related='order_id.order_ref',
-                                string='Order Reference',
-                                help='Order reference of order')
-        kitchen_ticket_uid = fields.Char(string='Kitchen Ticket UID', copy=False)
-        is_cooking = fields.Boolean(string="Cooking", default=False,
-                                    help='To identify the order is  '
-                                         'kitchen orders')
-        customer_id = fields.Many2one('res.partner', string="Customer",
-                                      related='order_id.partner_id',
-                                      help='Id of the customer')
-        # Kitchen module relies on sh_is_topping on lines for grouping.
-    
-    
-        product_sh_is_topping = fields.Boolean(string='Product Is Topping', default=False, help='Denormalized product topping flag for kitchen fallback')
-    
-    
-        def get_product_details(self, ids):
-            """To get the product details"""
-            lines = self.env['pos.order'].browse(ids)
-            res = []
-            for rec in lines:
-                res.append({
-                    'product_id': rec.product_id.id,
-                    'name': rec.product_id.name,
-                    'qty': rec.qty
-                })
-            return res
-    
-        def order_progress_change(self):
-            """Calling function from js to change the order_line status"""
-            for line in self:
-                if line.order_status == 'ready':
-                    line.order_status = 'waiting'
-                else:
-                    line.order_status = 'ready'
+class PosOrderLine(models.Model):
+    """Inheriting the pos order line"""
+    _inherit = "pos.order.line"
+
+    order_status = fields.Selection(
+        selection=[('draft', 'Draft'), ('waiting', 'Cooking'),
+                   ('ready', 'Ready'), ('cancel', 'Cancel')], default='draft',
+        help='The status of orderliness')
+    order_ref = fields.Char(related='order_id.order_ref',
+                            string='Order Reference',
+                            help='Order reference of order')
+    kitchen_ticket_uid = fields.Char(string='Kitchen Ticket UID', copy=False)
+    is_cooking = fields.Boolean(string="Cooking", default=False,
+                                help='To identify the order is  '
+                                     'kitchen orders')
+    customer_id = fields.Many2one('res.partner', string="Customer",
+                                  related='order_id.partner_id',
+                                  help='Id of the customer')
+    # Kitchen module relies on sh_is_topping on lines for grouping.
+
+
+    product_sh_is_topping = fields.Boolean(string='Product Is Topping', default=False, help='Denormalized product topping flag for kitchen fallback')
+
+
+    def get_product_details(self, ids):
+        """To get the product details"""
+        lines = self.env['pos.order'].browse(ids)
+        res = []
+        for rec in lines:
+            res.append({
+                'product_id': rec.product_id.id,
+                'name': rec.product_id.name,
+                'qty': rec.qty
+            })
+        return res
+
+    def order_progress_change(self):
+        """Calling function from js to change the order_line status"""
+        for line in self:
+            if line.order_status == 'ready':
+                line.order_status = 'waiting'
+            else:
+                line.order_status = 'ready'
     

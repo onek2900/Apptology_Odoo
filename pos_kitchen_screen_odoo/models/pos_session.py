@@ -10,10 +10,10 @@ class PosSession(models.Model):
     def _pos_ui_models_to_load(self):
         """Pos ui models to load"""
         result = super()._pos_ui_models_to_load()
-        result += {
-            'pos.order', 'pos.order.line'
-        }
-        return result
+        try:
+            return set(result) | {'pos.order', 'pos.order.line'}
+        except Exception:
+            return list(result) + ['pos.order', 'pos.order.line']
 
     def _loader_params_pos_order(self):
         """Load the fields to pos order"""
@@ -40,7 +40,5 @@ class PosSession(models.Model):
 
     def _get_pos_ui_pos_order_line(self, params):
         """Get pos ui pos order line"""
-        data = self.env['pos.order.line'].search_read(
-            **params['search_params'])
         return self.env['pos.order.line'].search_read(
             **params['search_params'])
