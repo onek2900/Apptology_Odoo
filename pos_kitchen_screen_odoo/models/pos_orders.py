@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from odoo import api, fields, models
 from datetime import timedelta
+
+_logger = logging.getLogger(__name__)
 
 
 
@@ -16,6 +20,93 @@ class PosOrder(models.Model):
                                                ("cancel", "Cancel")],
                                     default='draft',
                                     help='To know the status of order')
+
+    @staticmethod
+    def _normalize_bool(value):
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return bool(value)
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if not normalized:
+                return False
+            if normalized in {'false', '0', 'no', 'off', 'n'}:
+                return False
+            if normalized in {'true', '1', 'yes', 'on', 'y'}:
+                return True
+            return bool(value)
+        if isinstance(value, (list, tuple, set)):
+            return any(PosOrder._normalize_bool(v) for v in value)
+        return bool(value)
+
+    @api.model
+    def _order_fields(self, ui_order):
+        res = super()._order_fields(ui_order)
+        lines = res.get('lines') or []
+        ui_lines = ui_order.get('lines') or []
+
+        def _get_ui_vals(index):
+            if index >= len(ui_lines):
+                return {}
+            ui_line = ui_lines[index]
+            if isinstance(ui_line, (list, tuple)) and len(ui_line) >= 3 and isinstance(ui_line[2], dict):
+                return ui_line[2]
+            return {}
+
+        try:
+            for idx, line_tuple in enumerate(lines):
+                if not isinstance(line_tuple, (list, tuple)) or len(line_tuple) < 3:
+                    continue
+                line_vals = line_tuple[2]
+                if not isinstance(line_vals, dict):
+                    continue
+
+                ui_vals = _get_ui_vals(idx)
+
+                candidates = [
+                    ui_vals.get('sh_is_topping'),
+                    ui_vals.get('is_topping'),
+                    line_vals.get('sh_is_topping'),
+                    line_vals.get('is_topping'),
+                ]
+                flag = any(self._normalize_bool(val) for val in candidates)
+
+                product_flag = False
+                product_id = line_vals.get('product_id') or ui_vals.get('product_id')
+                if isinstance(product_id, (list, tuple)):
+                    product_id = product_id[0]
+                if product_id:
+                    product_flag = bool(self.env['product.product'].sudo().browse(product_id).sh_is_topping)
+
+                final_flag = flag or product_flag
+
+                line_vals['sh_is_topping'] = final_flag
+                line_vals['is_topping'] = final_flag
+                line_vals['product_sh_is_topping'] = product_flag
+
+                has_candidates = [
+                    ui_vals.get('sh_is_has_topping'),
+                    ui_vals.get('is_has_topping'),
+                    line_vals.get('sh_is_has_topping'),
+                    line_vals.get('is_has_topping'),
+                ]
+                has_flag = any(self._normalize_bool(val) for val in has_candidates)
+                line_vals['sh_is_has_topping'] = has_flag
+                line_vals['is_has_topping'] = has_flag
+
+                _logger.debug('Normalized topping flags', {
+                    'line_index': idx,
+                    'product_id': product_id,
+                    'product_flag': product_flag,
+                    'ui_is_topping': ui_vals.get('sh_is_topping'),
+                    'final_flag': final_flag,
+                })
+        except Exception as exc:
+            _logger.debug('Failed to normalize topping flags: %s', exc)
+
+        return res
+
     order_ref = fields.Char(string="Order Reference",
                             help='Reference of the order')
     is_cooking = fields.Boolean(string="Is Cooking",

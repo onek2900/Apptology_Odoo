@@ -59,7 +59,8 @@ const computeModifierFlag = (line) => {
     }
     const primary = normalizeBooleanFlag(line.sh_is_topping);
     const fallback = normalizeBooleanFlag(line.is_topping);
-    return primary || fallback;
+    const productFallback = normalizeBooleanFlag(line.product_sh_is_topping);
+    return primary || fallback || productFallback;
 };
 
 /**
@@ -107,6 +108,7 @@ const useOrderManagement = (rpc, shopId) => {
                     ...line,
                     sh_is_topping: normalizeBooleanFlag(line ? line.sh_is_topping : false),
                     is_topping: normalizeBooleanFlag(line ? line.is_topping : false),
+                    product_sh_is_topping: normalizeBooleanFlag(line ? line.product_sh_is_topping : false),
                     is_modifier: isModifier,
                 };
                 console.debug('[Kitchen] normalized line', {
@@ -115,8 +117,10 @@ const useOrderManagement = (rpc, shopId) => {
                     qty: normalized.qty,
                     raw_sh_is_topping: line ? line.sh_is_topping : undefined,
                     raw_is_topping: line ? line.is_topping : undefined,
+                    raw_product_sh_is_topping: line ? line.product_sh_is_topping : undefined,
                     normalized_sh_is_topping: normalized.sh_is_topping,
                     normalized_is_topping: normalized.is_topping,
+                    normalized_product_sh_is_topping: normalized.product_sh_is_topping,
                     is_modifier: normalized.is_modifier,
                 });
                 return normalized;
