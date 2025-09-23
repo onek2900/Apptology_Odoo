@@ -113,6 +113,7 @@ const useOrderManagement = (rpc, shopId) => {
 
 const storageKeyForLines = (sid) => `kitchen_seen_lines_${sid}`;
 const storageKeyForTickets = (sid) => `kitchen_seen_tickets_${sid}`;
+const storageKeyForPressCounts = (sid) => `kitchen_press_counts_${sid}`;
 
 const loadSeenLines = (sid) => {
     try {
@@ -129,11 +130,12 @@ const loadSeenTickets = (sid) => {
     try {
         const raw = window.localStorage.getItem(storageKeyForTickets(sid));
         const parsed = raw ? JSON.parse(raw) : null;
-        // Backward compatibility: previously we stored an array. Convert to map keyed by order id.
+        // Backward compatibility: previously we stored an array or order-id map.
+        // Convert to a generic map keyed by a ticket key (orderId_pressIndex) or fallback to orderId.
         if (Array.isArray(parsed)) {
             const map = {};
             for (const t of parsed) {
-                if (t && typeof t.id === 'number') map[t.id] = t;
+                if (t && typeof t.id === 'number') map[`${t.id}_1`] = t;
             }
             return map;
         }
@@ -145,9 +147,22 @@ const saveSeenTickets = (sid, ticketsByOrderId) => {
     try { window.localStorage.setItem(storageKeyForTickets(sid), JSON.stringify(ticketsByOrderId)); } catch (_) { /* ignore */ }
 };
 
+const loadPressCounts = (sid) => {
+    try {
+        const raw = window.localStorage.getItem(storageKeyForPressCounts(sid));
+        const obj = raw ? JSON.parse(raw) : {};
+        return obj && typeof obj === 'object' ? obj : {};
+    } catch (_) { return {}; }
+};
+
+const savePressCounts = (sid, obj) => {
+    try { window.localStorage.setItem(storageKeyForPressCounts(sid), JSON.stringify(obj)); } catch (_) { /* ignore */ }
+};
+
 const computeDeltaTickets = (orders, allLines, sid) => {
     const seenLines = loadSeenLines(sid);
-    const ticketsByOrder = loadSeenTickets(sid); // map: orderId -> ticket
+    const ticketsByKey = loadSeenTickets(sid);   // map: ticketKey -> ticket
+    const pressCounts = loadPressCounts(sid);    // map: orderId -> last press index
 
     const byOrder = new Map();
     for (const line of allLines || []) {
@@ -181,30 +196,37 @@ const computeDeltaTickets = (orders, allLines, sid) => {
         // First time we see this order: create initial ticket with all lines
         const isFirstSeen = !seenLines.hasOwnProperty(orderId);
         let ticketLines = [];
+        let makeTicket = false;
         if (isFirstSeen && lines.length) {
+            pressCounts[orderId] = 1;
             ticketLines = lines.map((l) => l.id);
+            makeTicket = true;
         } else if (deltaIds.length) {
+            const curPress = Number(pressCounts[orderId] || 0) + 1;
+            pressCounts[orderId] = curPress;
             ticketLines = deltaIds.map((x) => x.id);
-        } else {
-            ticketLines = [];
+            makeTicket = true;
         }
 
-        // Keep one ticket per order id; replace its contents with the latest delta
-        ticketsByOrder[orderId] = {
-            ...order,
-            ticket_uid: `order-${orderId}`,
-            ticket_created_at: order.write_date,
-            lines: ticketLines,
-        };
+        if (makeTicket && ticketLines.length) {
+            const key = `${orderId}_${pressCounts[orderId]}`;
+            ticketsByKey[key] = {
+                ...order,
+                ticket_uid: `order-${orderId}-press-${pressCounts[orderId]}`,
+                ticket_created_at: order.write_date,
+                lines: ticketLines,
+            };
+        }
 
         // Persist snapshot
         seenLines[orderId] = cur;
     }
 
     saveSeenLines(sid, seenLines);
-    saveSeenTickets(sid, ticketsByOrder);
+    saveSeenTickets(sid, ticketsByKey);
+    savePressCounts(sid, pressCounts);
     // Render only non-empty tickets to avoid blank cards
-    return Object.values(ticketsByOrder).filter((t) => Array.isArray(t.lines) && t.lines.length);
+    return Object.values(ticketsByKey).filter((t) => Array.isArray(t.lines) && t.lines.length);
 };
 
 const fetchOrderDetails = async () => {
