@@ -63,7 +63,7 @@
           <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
             <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
             <t t-if="line">
-              <t t-set="isModifier" t-value="Boolean(line.is_modifier)"/>
+              <t t-set="isModifier" t-value="line.is_modifier"/>
               <t t-if="!isModifier">
                 <li class="list-group-item order-card__item">
                   <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
@@ -171,7 +171,7 @@
                       <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + lineId">
                         <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
                         <t t-if="line">
-                          <t t-set="isModifier" t-value="Boolean(line.is_modifier)"/>
+                          <t t-set="isModifier" t-value="line.is_modifier"/>
                           <t t-if="!isModifier">
                             <li class="list-group-item order-card__item"
                                 t-att-class="{'completed': line.order_status === 'ready'}"
