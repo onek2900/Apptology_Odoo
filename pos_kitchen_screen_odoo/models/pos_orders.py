@@ -302,7 +302,12 @@ class PosOrder(models.Model):
                 self.update_order_status_in_deliverect(70)
 
     @api.model
-    def check_order(self, order_name):
+    def check_order(self, order_name=None, *args, **kwargs):
+        # Accept extra positional args to be resilient to various call_kw signatures
+        if order_name is None and args:
+            order_name = args[0]
+        if order_name is None:
+            return False
         pos_order = self.env["pos.order"].sudo().search([("pos_reference", "=", str(order_name))])
         kitchen_order = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", pos_order.config_id.id)])
         if kitchen_order:
@@ -316,7 +321,12 @@ class PosOrder(models.Model):
         return False
 
     @api.model
-    def check_order_status(self, order_name):
+    def check_order_status(self, order_name=None, *args, **kwargs):
+        # Accept extra positional args to be resilient to various call_kw signatures
+        if order_name is None and args:
+            order_name = args[0]
+        if order_name is None:
+            return True
         pos_order = self.env["pos.order"].sudo().search([("pos_reference", "=", str(order_name))])
         kitchen_order = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", pos_order.config_id.id)])
         for category in pos_order.lines.mapped("product_id").mapped("pos_categ_ids").mapped("id"):
@@ -353,4 +363,3 @@ class PosOrderLine(models.Model):
     def order_progress_change(self):
         for line in self:
             line.order_status = "waiting" if line.order_status == "ready" else "ready"
-
