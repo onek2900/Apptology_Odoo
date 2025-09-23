@@ -1,33 +1,27 @@
 /** @odoo-module **/
 
-// Normalize printer props without importing the printer service module directly.
-// We wrap the 'printer' service via the service registry to maintain compatibility
-// across POS variants and asset bundles.
+// Normalize printer props for environments where the printer service
+// tries to set flags on null props/data. This is safe and no-ops when
+// props are already well-formed.
 
-import { registry } from "@web/core/registry";
+import { patch } from "@web/core/utils/patch";
+import { PosPrinterService } from "@point_of_sale/app/services/printer/printer";
 
-const services = registry.category("services");
-const printerSvc = services.get("printer");
+const __origPrint = PosPrinterService.prototype.print;
 
-if (printerSvc && typeof printerSvc.start === "function") {
-    const origStart = printerSvc.start;
-    printerSvc.start = (env, deps) => {
-        const svc = origStart(env, deps);
-        if (svc && typeof svc.print === "function" && !svc.__apptology_print_wrapped__) {
-            const origPrint = svc.print.bind(svc);
-            svc.print = function (Component, props, options) {
-                try {
-                    if (!props || typeof props !== "object") props = {};
-                    if (!props.data || typeof props.data !== "object") props.data = {};
-                    if (props.is_reciptScreen == null) props.is_reciptScreen = true;
-                    if (props.data.is_reciptScreen == null) props.data.is_reciptScreen = true;
-                } catch (_) {
-                    props = { data: { is_reciptScreen: true }, is_reciptScreen: true };
-                }
-                return origPrint(Component, props, options);
-            };
-            svc.__apptology_print_wrapped__ = true;
+patch(PosPrinterService.prototype, {
+    async print(Component, props, options) {
+        try {
+            if (!props || typeof props !== "object") props = {};
+            if (!props.data || typeof props.data !== "object") props.data = {};
+            // Some implementations expect this flag on either root or data
+            if (props.is_reciptScreen == null) props.is_reciptScreen = true;
+            if (props.data.is_reciptScreen == null) props.data.is_reciptScreen = true;
+        } catch (e) {
+            // Last-resort guard: never let printing crash due to props shape
+            props = { data: { is_reciptScreen: true }, is_reciptScreen: true };
         }
-        return svc;
-    };
-}
+        return __origPrint.call(this, Component, props, options);
+    },
+});
+
