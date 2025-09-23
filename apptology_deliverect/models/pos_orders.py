@@ -310,7 +310,7 @@ class PosOrder(models.Model):
         :return: dict with 'orders' list and 'has_more' boolean
         """
         filters = filters or {}
-        domain = [('config_id', '=', config_id)]
+        domain = [('config_id', '=', config_id), ('amount_total', '>', 0)]
 
         # Source filter
         source = filters.get('source', 'all')
