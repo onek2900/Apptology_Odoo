@@ -196,6 +196,13 @@ export class KitchenScreenDashboard extends Component {
     }
 
     /**
+     * Return true when a line represents a modifier/topping
+     */
+    isModifierLine(line) {
+        return !!(line && (line.sh_is_topping || line.is_topping));
+    }
+
+    /**
      * Refresh order details
      */
     async refreshOrderDetails() {
@@ -348,7 +355,7 @@ export class KitchenScreenDashboard extends Component {
             const line = this.state.lines.find((l) => l.id === id);
             if (!line) return;
             // Do not toggle toppings/modifiers
-            if (line.sh_is_topping) return;
+            if (this.isModifierLine(line)) return;
 
             await this.orm.call("pos.order.line", "order_progress_change", [id]);
 
@@ -384,7 +391,7 @@ export class KitchenScreenDashboard extends Component {
             const lines = lineIds
                 .map((lid) => this.state.lines.find((l) => l.id === lid))
                 .filter(Boolean)
-                .filter((l) => !l.sh_is_topping)
+                .filter((l) => !this.isModifierLine(l))
                 .filter((l) => l.order_status !== ORDER_STATUSES.READY);
 
             // Toggle only lines that are not yet ready
@@ -419,7 +426,7 @@ export class KitchenScreenDashboard extends Component {
         const mains = ids
             .map((id) => this.state.lines.find((l) => l.id === id))
             .filter(Boolean)
-            .filter((l) => !l.sh_is_topping);
+            .filter((l) => !this.isModifierLine(l));
         return mains.length > 0 && mains.every((l) => l.order_status === ORDER_STATUSES.READY);
     }
 
@@ -434,7 +441,7 @@ export class KitchenScreenDashboard extends Component {
         for (const id of ids) {
             const line = getLine(id);
             if (!line) continue;
-            if (!line.sh_is_topping) {
+            if (!this.isModifierLine(line)) {
                 if (current.length) groups.push(current);
                 current = [id];
             } else {
@@ -478,7 +485,7 @@ export class KitchenScreenDashboard extends Component {
         for (const id of ids) {
             const line = getLine(id);
             if (!line) continue;
-            if (!line.sh_is_topping) {
+            if (!this.isModifierLine(line)) {
                 if (current.length) groups.push(current);
                 current = [id];
             } else {
