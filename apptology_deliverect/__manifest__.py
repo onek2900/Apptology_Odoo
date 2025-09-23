@@ -20,11 +20,9 @@
         'views/menu_views.xml',
         'views/toping_group_limit.xml'
     ],
-    # Keep frontend minimal: rely on sh_pos_all_in_one_retail and pos_kitchen_printer for POS UI.
-    # Do not load our POS JS by default to avoid conflicts and duplication.
     'assets': {
         'point_of_sale._assets_pos': [
-            # intentionally empty in simple mode
+            'apptology_deliverect/static/src/**/*',
         ],
     },
     'license': 'LGPL-3',
