@@ -345,36 +345,46 @@ const fetchOrderDetails = async () => {
         let tickets = [];
         const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
         if (anyLogs) {
+            // Build exactly one badge per order using only the new lines
+            // from the most recent log (difference vs previous logs).
             for (const order of normalizedOrders) {
                 const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
                 if (!logs.length) continue;
-                logs.forEach((log, index) => {
-                    const ticketLineIds = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
-                    tickets.push({
-                        ...order,
-                        ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
-                        ticket_created_at: log.created_at || order.write_date,
-                        lines: ticketLineIds,
-                    });
+
+                // Sort logs in ascending time so we can diff cumulatively.
+                const sorted = logs.slice().sort((a, b) => {
+                    const sa = String(a.created_at || '').replace(' ', 'T');
+                    const sb = String(b.created_at || '').replace(' ', 'T');
+                    const da = DateTime.fromISO(sa, { zone: 'UTC' });
+                    const db = DateTime.fromISO(sb, { zone: 'UTC' });
+                    if (!da.isValid && !db.isValid) return 0;
+                    if (!da.isValid) return -1;
+                    if (!db.isValid) return 1;
+                    return da - db;
+                });
+
+                const seenIds = new Set();
+                let lastDeltaIds = [];
+                let lastCreatedAt = order.write_date;
+                for (const log of sorted) {
+                    const ids = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
+                    const delta = ids.filter((id) => !seenIds.has(id));
+                    ids.forEach((id) => seenIds.add(id));
+                    lastDeltaIds = delta;
+                    lastCreatedAt = log.created_at || order.write_date;
+                }
+
+                // Only create the latest badge for this order, containing just the new lines
+                tickets.push({
+                    ...order,
+                    ticket_uid: `ticket-${order.id}-latest`,
+                    ticket_created_at: lastCreatedAt,
+                    lines: lastDeltaIds,
                 });
             }
-            // Keep only the latest badge per order (same order number)
-            const latestByOrder = new Map();
-            for (const t of tickets) {
-                const current = latestByOrder.get(t.id);
-                const currentWhen = current && (current.ticket_created_at || current.write_date || current.date_order);
-                const nextWhen = t && (t.ticket_created_at || t.write_date || t.date_order);
-                if (!current) {
-                    latestByOrder.set(t.id, t);
-                } else {
-                    const c = String(currentWhen || '').replace(' ', 'T');
-                    const n = String(nextWhen || '').replace(' ', 'T');
-                    const cdt = DateTime.fromISO(c, { zone: 'UTC' });
-                    const ndt = DateTime.fromISO(n, { zone: 'UTC' });
-                    if (ndt > cdt) latestByOrder.set(t.id, t);
-                }
-            }
-            tickets = Array.from(latestByOrder.values());
+
+            // Filter out empty tickets (no new lines in latest log)
+            tickets = tickets.filter((t) => Array.isArray(t.lines) && t.lines.length);
         } else {
             const delta = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
             tickets = delta.tickets;
