@@ -111,6 +111,94 @@ const useOrderManagement = (rpc, shopId) => {
      * @returns {Promise<Object>} Order details and counts
      */
 
+const storageKeyForLines = (sid) => `kitchen_seen_lines_${sid}`;
+const storageKeyForTickets = (sid) => `kitchen_seen_tickets_${sid}`;
+
+const loadSeenLines = (sid) => {
+    try {
+        const raw = window.localStorage.getItem(storageKeyForLines(sid));
+        return raw ? JSON.parse(raw) : {};
+    } catch (_) { return {}; }
+};
+
+const saveSeenLines = (sid, data) => {
+    try { window.localStorage.setItem(storageKeyForLines(sid), JSON.stringify(data)); } catch (_) { /* ignore */ }
+};
+
+const loadSeenTickets = (sid) => {
+    try {
+        const raw = window.localStorage.getItem(storageKeyForTickets(sid));
+        return raw ? JSON.parse(raw) : [];
+    } catch (_) { return []; }
+};
+
+const saveSeenTickets = (sid, tickets) => {
+    try { window.localStorage.setItem(storageKeyForTickets(sid), JSON.stringify(tickets)); } catch (_) { /* ignore */ }
+};
+
+const computeDeltaTickets = (orders, allLines, sid) => {
+    const seenLines = loadSeenLines(sid);
+    const existingTickets = loadSeenTickets(sid);
+
+    const byOrder = new Map();
+    for (const line of allLines || []) {
+        if (!line || !Array.isArray(line.order_id)) continue;
+        const orderId = line.order_id[0];
+        if (!byOrder.has(orderId)) byOrder.set(orderId, []);
+        byOrder.get(orderId).push(line);
+    }
+
+    const newTickets = [];
+    for (const order of orders || []) {
+        const orderId = order.id;
+        const lines = byOrder.get(orderId) || [];
+        const prev = seenLines[orderId] || {};
+
+        // Build current snapshot map id -> qty
+        const cur = {};
+        for (const l of lines) {
+            cur[l.id] = Number(l.qty) || 0;
+        }
+
+        // Determine delta additions
+        const deltaIds = [];
+        for (const l of lines) {
+            const prevQty = Number(prev[l.id] || 0);
+            const curQty = Number(cur[l.id] || 0);
+            if (curQty > prevQty) {
+                deltaIds.push({ id: l.id, add: curQty - prevQty });
+            }
+        }
+
+        // First time we see this order: create initial ticket with all lines
+        const isFirstSeen = !seenLines.hasOwnProperty(orderId);
+        if (isFirstSeen && lines.length) {
+            newTickets.push({
+                ...order,
+                ticket_uid: `init-${orderId}-${Date.now()}`,
+                ticket_created_at: order.write_date,
+                lines: lines.map((l) => l.id),
+            });
+        } else if (deltaIds.length) {
+            newTickets.push({
+                ...order,
+                ticket_uid: `delta-${orderId}-${Date.now()}`,
+                ticket_created_at: order.write_date,
+                lines: deltaIds.map((x) => x.id),
+                _delta_quantities: Object.fromEntries(deltaIds.map((x) => [x.id, x.add])),
+            });
+        }
+
+        // Persist snapshot
+        seenLines[orderId] = cur;
+    }
+
+    const mergedTickets = [...existingTickets, ...newTickets];
+    saveSeenLines(sid, seenLines);
+    saveSeenTickets(sid, mergedTickets);
+    return mergedTickets;
+};
+
 const fetchOrderDetails = async () => {
     try {
         const result = await rpc("/pos/kitchen/get_order_details", {
@@ -156,51 +244,25 @@ const fetchOrderDetails = async () => {
             };
         });
 
-        const tickets = [];
-        for (const order of normalizedOrders) {
-            const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
-            if (!logs.length) {
-                const orderLineIds = Array.isArray(order.lines) ? order.lines.slice() : [];
-                tickets.push({
-                    ...order,
-                    ticket_uid: `order-${order.id}`,
-                    ticket_created_at: order.write_date,
-                    ticket_line_ids: orderLineIds,
-                    lines: orderLineIds,
-                    kitchen_new_line_summary: Array.isArray(order.kitchen_new_line_summary) ? order.kitchen_new_line_summary : [],
-                    kitchen_new_line_count: order.kitchen_new_line_count || Math.round((orderLineIds.length || 0) * 100) / 100,
+        // Prefer server-provided logs if present, otherwise compute delta-based tickets
+        let tickets = [];
+        const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
+        if (anyLogs) {
+            for (const order of normalizedOrders) {
+                const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
+                if (!logs.length) continue;
+                logs.forEach((log, index) => {
+                    const ticketLineIds = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
+                    tickets.push({
+                        ...order,
+                        ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
+                        ticket_created_at: log.created_at || order.write_date,
+                        lines: ticketLineIds,
+                    });
                 });
-                continue;
             }
-            logs.forEach((log, index) => {
-                const ticketLineIds = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
-                const snapshot = Array.isArray(log.line_snapshot) ? log.line_snapshot : [];
-                const summary = snapshot.map((entry) => ({
-                    product_id: entry && entry.product_id,
-                    product_name: (entry && entry.full_product_name) || '',
-                    quantity: Number(entry && entry.qty) || 0,
-                    note: entry && entry.note ? entry.note : '',
-                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
-                }));
-                let ticketCount = 0;
-                if (typeof log.line_count === 'number') {
-                    ticketCount = log.line_count;
-                } else {
-                    ticketCount = summary.reduce((acc, entry) => {
-                        const numeric = Number(entry.quantity) || 0;
-                        return acc + (numeric > 0 ? numeric : 0);
-                    }, 0);
-                }
-                tickets.push({
-                    ...order,
-                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
-                    ticket_created_at: log.created_at || order.write_date,
-                    ticket_line_ids: ticketLineIds,
-                    lines: ticketLineIds,
-                    kitchen_new_line_summary: summary,
-                    kitchen_new_line_count: Math.round((ticketCount || 0) * 100) / 100,
-                });
-            });
+        } else {
+            tickets = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
         }
 
         const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
@@ -407,7 +469,7 @@ export class KitchenScreenDashboard extends Component {
             const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
-            this.state.tickets = this.buildTickets(this.state.order_details, this.state.lines);
+            // tickets computed in fetchOrderDetails, no need to rebuild
             this.recomputeTicketCounts();
             this.recomputeTicketCounts();
 
