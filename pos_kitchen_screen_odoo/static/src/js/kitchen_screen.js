@@ -54,9 +54,9 @@ const normalizeBooleanFlag = (value) => {
 };
 
 const extractToppingFlags = (line, product) => {
-    const lineFlag = normalizeBooleanFlag(line && line.sh_is_topping);
+    const lineFlag = normalizeBooleanFlag(line && ((line.sh_is_topping !== undefined ? line.sh_is_topping : line.is_topping)));
     const productFlag = normalizeBooleanFlag(product && product.sh_is_topping);
-    const hasFlag = normalizeBooleanFlag(line && line.sh_is_has_topping);
+    const hasFlag = normalizeBooleanFlag(line && ((line.sh_is_has_topping !== undefined ? line.sh_is_has_topping : line.is_has_topping)));
     return {
         sh_is_topping: lineFlag || productFlag,
         sh_is_has_topping: hasFlag,
