@@ -61,7 +61,7 @@ patch(ActionpadWidget.prototype, {
                     }
                 });
                 if ( self.kitchen_order_status){
-                    const ticketUid =  `ticket_${(Get-Date).ToFileTime()}_${(Get-Random -Maximum 1000)}`; 
+                    const ticketUid = 'ticket_' + Date.now() + '_' + Math.floor(Math.random()*1000);
                     const changeSummary = this.currentOrder.getOrderChanges ? this.currentOrder.getOrderChanges() : null;
                     const newLineSummary = [];
                     if (changeSummary && changeSummary.orderlines) {
