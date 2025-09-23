@@ -159,6 +159,8 @@ const savePressCounts = (sid, obj) => {
     try { window.localStorage.setItem(storageKeyForPressCounts(sid), JSON.stringify(obj)); } catch (_) { /* ignore */ }
 };
 
+let __deltaVirtualId = -1;
+
 const computeDeltaTickets = (orders, allLines, sid) => {
     const seenLines = loadSeenLines(sid);
     const ticketsByKey = loadSeenTickets(sid);   // map: ticketKey -> ticket
@@ -172,6 +174,7 @@ const computeDeltaTickets = (orders, allLines, sid) => {
         byOrder.get(orderId).push(line);
     }
 
+    const virtualLines = [];
     for (const order of orders || []) {
         const orderId = order.id;
         const lines = byOrder.get(orderId) || [];
@@ -209,12 +212,37 @@ const computeDeltaTickets = (orders, allLines, sid) => {
         }
 
         if (makeTicket && ticketLines.length) {
+            // Create virtual line snapshot records so old badges never go empty
+            const byId = new Map(lines.map((l) => [l.id, l]));
+            const deltaMap = new Map();
+            for (const d of deltaIds) deltaMap.set(d.id, d.add);
+            const vIds = [];
+            for (const baseId of ticketLines) {
+                const base = byId.get(baseId) || allLines.find((l) => l.id === baseId);
+                const qty = deltaMap.has(baseId) ? Number(deltaMap.get(baseId)) || 0 : Number(base && base.qty) || 0;
+                if (!base || qty <= 0) continue;
+                const v = {
+                    id: __deltaVirtualId--,
+                    full_product_name: base.full_product_name || base.product || base.display_name || 'Item',
+                    qty: qty,
+                    order_status: base.order_status || 'waiting',
+                    is_modifier: false,
+                    is_topping: false,
+                    sh_is_topping: false,
+                    product_is_topping: false,
+                    product_sh_is_topping: false,
+                    sh_is_has_topping: false,
+                };
+                virtualLines.push(v);
+                vIds.push(v.id);
+            }
+
             const key = `${orderId}_${pressCounts[orderId]}`;
             ticketsByKey[key] = {
                 ...order,
                 ticket_uid: `order-${orderId}-press-${pressCounts[orderId]}`,
                 ticket_created_at: order.write_date,
-                lines: ticketLines,
+                lines: vIds,
             };
         }
 
@@ -226,7 +254,8 @@ const computeDeltaTickets = (orders, allLines, sid) => {
     saveSeenTickets(sid, ticketsByKey);
     savePressCounts(sid, pressCounts);
     // Render only non-empty tickets to avoid blank cards
-    return Object.values(ticketsByKey).filter((t) => Array.isArray(t.lines) && t.lines.length);
+    const tickets = Object.values(ticketsByKey).filter((t) => Array.isArray(t.lines) && t.lines.length);
+    return { tickets, virtualLines };
 };
 
 const fetchOrderDetails = async () => {
@@ -323,7 +352,9 @@ const fetchOrderDetails = async () => {
                 });
             }
         } else {
-            tickets = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
+            const delta = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
+            tickets = delta.tickets;
+            normalizedLines = normalizedLines.concat(delta.virtualLines);
         }
         return {
             order_details: normalizedOrders,
