@@ -179,11 +179,25 @@ $space: var(--k-spacing);
   display: grid;
   grid-template-columns: repeat(auto-fill, var(--k-card-w, 360px));
   gap: 1rem;
-  justify-content: start;
+  /* Center the grid tracks so leftover space is split left/right */
+  justify-content: center;
   align-content: start;
   align-items: start;
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+
+/* On medium/tablet widths, use auto-fit + minmax to reduce edge gaps
+   while preserving minimum card size. Cards can stretch slightly to fill. */
+@media (max-width: 1368px) and (min-width: 700px) {
+  .kitchen-dashboard .dashboard-section .row.g-4 {
+    grid-template-columns: repeat(auto-fit, minmax(var(--k-card-w, 360px), 1fr));
+  }
+  /* Allow card to stretch within its grid track */
+  .kitchen-dashboard .order-card {
+    width: 100%;
+    max-width: var(--k-card-w, 360px);
+  }
 }
 
 .section-header .section-title,
