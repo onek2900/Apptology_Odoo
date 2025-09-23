@@ -24,6 +24,44 @@ const BUS_EVENT = {
     MODEL: "pos.order"
 };
 
+const normalizeBooleanFlag = (value) => {
+    if (Array.isArray(value)) {
+        return value.some((item) => normalizeBooleanFlag(item));
+    }
+    if (value === undefined || value === null) {
+        return false;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (!normalized) {
+            return false;
+        }
+        if (['false', '0', 'no', 'off', 'n'].includes(normalized)) {
+            return false;
+        }
+        if (['true', '1', 'yes', 'on', 'y'].includes(normalized)) {
+            return true;
+        }
+        return Boolean(value);
+    }
+    if (typeof value === 'number') {
+        return value !== 0;
+    }
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    return Boolean(value);
+};
+
+const computeModifierFlag = (line) => {
+    if (!line) {
+        return false;
+    }
+    const primary = normalizeBooleanFlag(line.sh_is_topping);
+    const fallback = normalizeBooleanFlag(line.is_topping);
+    return primary || fallback;
+};
+
 /**
  * Custom hook for order management functionality
  * @param {Object} rpc - ORM service
@@ -62,9 +100,19 @@ const useOrderManagement = (rpc, shopId) => {
             const result = await rpc("/pos/kitchen/get_order_details", {
                 shop_id: shopId
             });
+            const rawLines = Array.isArray(result.order_lines) ? result.order_lines : [];
+            const normalizedLines = rawLines.map((line) => {
+                const isModifier = computeModifierFlag(line);
+                return {
+                    ...line,
+                    sh_is_topping: normalizeBooleanFlag(line ? line.sh_is_topping : false),
+                    is_topping: normalizeBooleanFlag(line ? line.is_topping : false),
+                    is_modifier: isModifier,
+                };
+            });
             return {
                 order_details: result.orders,
-                lines: result.order_lines,
+                lines: normalizedLines,
                 ...calculateOrderCounts(result.orders, shopId)
             };
         } catch (error) {
@@ -199,7 +247,17 @@ export class KitchenScreenDashboard extends Component {
      * Return true when a line represents a modifier/topping
      */
     isModifierLine(line) {
-        return !!(line && (line.sh_is_topping || line.is_topping));
+        if (!line) {
+            return false;
+        }
+        if (typeof line.is_modifier === 'boolean') {
+            return line.is_modifier;
+        }
+        const flag = computeModifierFlag(line);
+        line.is_modifier = flag;
+        line.sh_is_topping = normalizeBooleanFlag(line.sh_is_topping);
+        line.is_topping = normalizeBooleanFlag(line.is_topping);
+        return flag;
     }
 
     /**
