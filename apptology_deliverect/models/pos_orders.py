@@ -14,6 +14,14 @@ class PosOrder(models.Model):
     """Inherit class to add new fields and functions"""
     _inherit = "pos.order"
 
+    _sql_constraints = [
+        (
+            'unique_online_order_id',
+            'unique(online_order_id)',
+            'The Deliverect online order has already been imported into the POS.'
+        ),
+    ]
+
     order_type = fields.Selection([
         ('1', 'Pick up'),
         ('2', 'Delivery'),

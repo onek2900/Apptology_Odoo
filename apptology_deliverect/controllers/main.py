@@ -315,8 +315,18 @@ class DeliverectWebhooks(http.Controller):
             else:
                 pos_order_data = self.create_order_data(data, pos_configuration.id)
                 if pos_order_data and deliverect_payment_method.id in pos_configuration.payment_method_ids.ids:
-                    order = request.env['pos.order'].sudo().create(pos_order_data)
-                    if data['orderIsAlreadyPaid']:
+                    existing_order = request.env['pos.order'].sudo().search([
+                        ('online_order_id', '=', pos_order_data.get('online_order_id')),
+                        ('config_id', '=', pos_configuration.id),
+                    ], limit=1)
+                    created_new_order = not existing_order
+                    order = existing_order or request.env['pos.order'].sudo().create(pos_order_data)
+                    if existing_order:
+                        _logger.info(
+                            "Deliverect order %s already exists as POS order %s - skipping duplicate creation",
+                            pos_order_data.get('online_order_id'), existing_order.id
+                        )
+                    if data['orderIsAlreadyPaid'] and order.state != 'paid':
                         payment_context = {"active_ids": order.ids, "active_id": order.id}
                         order_payment = request.env['pos.make.payment'].with_user(
                             pos_configuration.current_user_id.id).sudo(
@@ -359,8 +369,9 @@ class DeliverectWebhooks(http.Controller):
                     except Exception as _e:
                         _logger.info(f"Kitchen auto-ready check skipped: {_e}")
                     self.generate_order_notification(pos_configuration.id, 'success')
+                    message = 'Order created' if created_new_order else 'Order already exists'
                     return Response(
-                        json.dumps({'status': 'success', 'message': 'Order created',
+                        json.dumps({'status': 'success', 'message': message,
                                     'order_id': order.id}),
                         content_type='application/json',
                         status=200
