@@ -326,6 +326,12 @@ class DeliverectWebhooks(http.Controller):
                             "Deliverect order %s already exists as POS order %s - skipping duplicate creation",
                             pos_order_data.get('online_order_id'), existing_order.id
                         )
+                    # If POS is configured to auto-approve, push approval status to Deliverect
+                    try:
+                        if pos_configuration.auto_approve and order.online_order_status != 'approved':
+                            order.update_order_status('approved')
+                    except Exception as _e:
+                        _logger.info(f"Auto-approve status push skipped: {_e}")
                     if data['orderIsAlreadyPaid'] and order.state != 'paid':
                         payment_context = {"active_ids": order.ids, "active_id": order.id}
                         order_payment = request.env['pos.make.payment'].with_user(
