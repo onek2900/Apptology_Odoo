@@ -25,6 +25,7 @@ class PosSession(models.Model):
             'domain': [],
             'fields': ['name', 'date_order', 'pos_reference',
                        'partner_id', 'lines', 'order_status', 'order_ref',
+                       'table_id',
                        'is_cooking', 'kitchen_new_line_summary', 'kitchen_new_line_count', 'kitchen_send_logs']}}
 
     def _get_pos_ui_pos_order(self, params):

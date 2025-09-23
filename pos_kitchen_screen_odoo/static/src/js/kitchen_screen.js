@@ -531,6 +531,23 @@ export class KitchenScreenDashboard extends Component {
             const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
+            // Append persisted virtual lines so previous badges keep content across refreshes
+            try {
+                const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                const persisted = window.localStorage.getItem(`kitchen_virtual_lines_${sid}`);
+                const arr = persisted ? JSON.parse(persisted) : [];
+                if (Array.isArray(arr) && arr.length) {
+                    this.state.lines = (this.state.lines || []).concat(arr);
+                }
+                // Persist any newly created virtual lines from this refresh
+                const currentVirtual = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
+                const byId = new Map((Array.isArray(arr) ? arr : []).map((v) => [v.id, v]));
+                for (const v of currentVirtual) {
+                    if (!byId.has(v.id)) byId.set(v.id, v);
+                }
+                const merged = Array.from(byId.values());
+                window.localStorage.setItem(`kitchen_virtual_lines_${sid}`, JSON.stringify(merged));
+            } catch (_) { /* ignore */ }
             // tickets computed in fetchOrderDetails, no need to rebuild
             this.recomputeTicketCounts();
             this.recomputeTicketCounts();
@@ -1023,5 +1040,3 @@ export async function createKitchenApp() {
     });
     return app.mount(document.body);
 }
-
-
