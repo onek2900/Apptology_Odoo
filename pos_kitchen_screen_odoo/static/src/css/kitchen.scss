@@ -187,18 +187,14 @@ $space: var(--k-spacing);
   margin-right: 0 !important;
 }
 
-/* On medium/tablet widths, use auto-fit + minmax to reduce edge gaps
-   while preserving minimum card size. Cards can stretch slightly to fill. */
-@media (max-width: 1368px) and (min-width: 700px) {
-  .kitchen-dashboard .dashboard-section .row.g-4 {
-    grid-template-columns: repeat(auto-fit, minmax(var(--k-card-w, 360px), 1fr));
-  }
-  /* Allow card to stretch within its grid track */
-  .kitchen-dashboard .order-card {
-    width: 100%;
-    max-width: var(--k-card-w, 360px);
-  }
+/* iPad-friendly widths: shrink tile to fit 4 columns */
+@media (max-width: 1024px) {
+  .kitchen-dashboard { --k-card-w: 230px !important; }
 }
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .kitchen-dashboard { --k-card-w: 250px !important; }
+}
+
 
 .section-header .section-title,
 .section-header h3 {
