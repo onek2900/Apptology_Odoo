@@ -55,6 +55,13 @@
             <i class="fa fa-building" aria-hidden="true"></i>
             <span>Floor <t t-esc="order.floor"/></span>
           </div>
+          <t t-set="newLineCount" t-value="this.newLineCount(order)"/>
+          <t t-if="newLineCount">
+            <div class="order-card__newlines" t-att-title="this.newLineTooltip(order)">
+              <span class="order-card__newlines-label">New</span>
+              <span class="order-card__newlines-value">+<t t-esc="newLineCount"/></span>
+            </div>
+          </t>
         </div>
       </header>
 

@@ -40,6 +40,41 @@ class PosOrder(models.Model):
             return any(PosOrder._normalize_bool(v) for v in value)
         return bool(value)
 
+    @staticmethod
+    def _sanitize_new_line_summary(summary):
+        sanitized = []
+        if not summary:
+            return sanitized
+        for entry in summary:
+            if not isinstance(entry, dict):
+                continue
+            quantity = entry.get('quantity')
+            try:
+                qty = float(quantity)
+            except (TypeError, ValueError):
+                qty = 0.0
+            if qty <= 0:
+                continue
+            sanitized.append({
+                'product_id': entry.get('product_id'),
+                'product_name': (entry.get('product_name') or entry.get('name') or ''),
+                'quantity': round(qty, 4),
+                'note': entry.get('note') or '',
+            })
+        return sanitized
+
+    @staticmethod
+    def _calculate_new_line_count(summary):
+        total = 0
+        for entry in summary or []:
+            try:
+                qty = float(entry.get('quantity', 0))
+            except (TypeError, ValueError):
+                qty = 0.0
+            if qty > 0:
+                total += qty
+        return round(total, 4)
+
     @api.model
     def _order_fields(self, ui_order):
         res = super()._order_fields(ui_order)
@@ -119,6 +154,9 @@ class PosOrder(models.Model):
                        help='To set the time of each order')
     minutes = fields.Char(string='order time')
     floor = fields.Char(string='Floor time')
+    kitchen_new_line_summary = fields.Json(string='Kitchen New Line Summary', default=list)
+    kitchen_new_line_count = fields.Float(string='Kitchen New Line Count', default=0.0)
+
 
     def write(self, vals):
         """Super the write function for adding order status in vals"""
@@ -169,17 +207,25 @@ class PosOrder(models.Model):
 
     def get_details(self, shop_id, order=None):
         """For getting the kitchen orders for the cook"""
-        dic = order
+        order_record = self.env['pos.order']
+        new_line_summary = []
         if order:
-            orders = self.search(
-                [("pos_reference", "=", order[0]['pos_reference'])])
-            if not orders:
-                self.create(dic)
+            payload = order[0].copy()
+            new_line_summary = payload.pop('kitchen_new_lines', []) or []
+            order_ref = payload.get('pos_reference')
+            order_record = self.search([("pos_reference", "=", order_ref)])
+            if not order_record:
+                order_record = self.create([payload])
             else:
-                orders.lines = False
-                orders.write(dic[0])
-        kitchen_screen = self.env["kitchen.screen"].sudo().search(
-            [("pos_config_id", "=", shop_id)])
+                order_record.lines = False
+                order_record.write(payload)
+            sanitized_summary = self._sanitize_new_line_summary(new_line_summary)
+            if order_record:
+                order_record.sudo().write({
+                    'kitchen_new_line_summary': sanitized_summary,
+                    'kitchen_new_line_count': self._calculate_new_line_count(sanitized_summary),
+                })
+        kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
 
         pos_session_id = self.env["pos.session"].search([('config_id', '=', shop_id), ('state', '=', 'opened')], limit=1)
 
@@ -187,7 +233,6 @@ class PosOrder(models.Model):
             ["&", ("lines.is_cooking", "=", True),
              ("lines.product_id.pos_categ_ids", "in",
               kitchen_screen.pos_categ_ids.ids), ('session_id', '=', pos_session_id.id)], order="date_order")
-        print(pos_orders)
         values = {"orders": pos_orders.read(), "order_lines": pos_orders.lines.read()}
         return values
 
@@ -244,6 +289,10 @@ class PosOrder(models.Model):
         if 'declined_time' in self._fields:
             vals['declined_time'] = fields.Datetime.now()
         self.write(vals)
+        self.write({
+            'kitchen_new_line_summary': [],
+            'kitchen_new_line_count': 0,
+        })
 
         for line in self.lines:
             if line.order_status != "ready":
@@ -307,8 +356,13 @@ class PosOrder(models.Model):
         if new_status != self.order_status:
             self.order_status = new_status
 
-        if self.order_status == "ready" and hasattr(self, 'update_order_status_in_deliverect'):
-            self.update_order_status_in_deliverect(70)
+        if self.order_status == "ready":
+            self.write({
+                'kitchen_new_line_summary': [],
+                'kitchen_new_line_count': 0,
+            })
+            if hasattr(self, 'update_order_status_in_deliverect'):
+                self.update_order_status_in_deliverect(70)
 
     def check_order(self, order_name):
         """Calling function from js to know status of the order"""
@@ -391,3 +445,4 @@ class PosOrderLine(models.Model):
                 line.order_status = 'waiting'
             else:
                 line.order_status = 'ready'
+

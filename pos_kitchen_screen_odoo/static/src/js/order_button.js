@@ -61,6 +61,22 @@ patch(ActionpadWidget.prototype, {
                     }
                 });
                 if ( self.kitchen_order_status){
+                    const changeSummary = this.currentOrder.getOrderChanges ? this.currentOrder.getOrderChanges() : null;
+                    const newLineSummary = [];
+                    if (changeSummary && changeSummary.orderlines) {
+                        for (const change of Object.values(changeSummary.orderlines)) {
+                            const deltaQty = Number(change.quantity) || 0;
+                            if (deltaQty > 0) {
+                                const productData = this.pos?.db?.product_by_id?.[change.product_id];
+                                newLineSummary.push({
+                                    product_id: change.product_id,
+                                    product_name: productData?.display_name || change.name || '',
+                                    quantity: deltaQty,
+                                    note: change.note || '',
+                                });
+                            }
+                        }
+                    }
                     await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
                     const currentOrder = this.currentOrder;
                     for (const orders of currentOrder.orderlines) {
@@ -92,6 +108,7 @@ patch(ActionpadWidget.prototype, {
                     }
                     var orders = [{
                         'pos_reference': this.pos.get_order().name,
+                        'kitchen_new_lines': newLineSummary,
                         'amount_total': 0,
                         'amount_paid': 0,
                         'amount_return': '0',
@@ -156,3 +173,4 @@ patch(ActionpadWidget.prototype, {
         return false;
     },
 });
+
