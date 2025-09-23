@@ -182,7 +182,7 @@
                         </div>
                         <div t-if="order.table_id" class="order-card__table">
                           <i class="fa fa-table" aria-hidden="true"></i>
-                          <span>Table <t t-esc="order.table_id[1]"/></span>
+                          <span> Table <t t-esc="order.table_id[1]"/></span>
                         </div>
                       </div>
                     </header>
