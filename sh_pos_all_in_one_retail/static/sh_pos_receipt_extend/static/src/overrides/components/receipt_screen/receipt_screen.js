@@ -10,9 +10,7 @@ import { useService } from "@web/core/utils/hooks";
 patch(ReprintReceiptScreen.prototype, {
   setup() {
     super.setup();
-    if(this.pos.get_order()){
-      this.pos.get_order().is_reciptScreen =  true
-    }
+      
     this.receipt_type = "standard";
     this.is_not_standard_size = false;
     var config = this.pos.config;

@@ -8,9 +8,7 @@ patch(Navbar.prototype, {
     setup() {
         super.setup();
         onMounted(this.onMounted);
-        if(this.pos.get_order()){
-            this.pos.get_order().is_reciptScreen =  false;
-        }
+        
     },
     onMounted() {
         var self = this

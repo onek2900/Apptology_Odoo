@@ -14,9 +14,7 @@ patch(ProductsWidget.prototype, {
         super.setup()
         this.pos.isMobile = false
         onMounted(this.onMounted);
-        if(this.pos.get_order()){
-            this.pos.get_order().is_reciptScreen =  false
-        }
+        
     },
     onMounted() {
         if(this && this.pos && this.pos.pos_theme_settings_data && this.pos.pos_theme_settings_data[0] && this.pos.pos_theme_settings_data[0].sh_pos_switch_view){
@@ -36,4 +34,3 @@ patch(ProductsWidget.prototype, {
         }
     }
 });
-

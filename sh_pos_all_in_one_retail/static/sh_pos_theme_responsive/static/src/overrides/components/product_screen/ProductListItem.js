@@ -8,8 +8,6 @@ export class ProductListItem extends Component {
     setup() {
         super.setup(...arguments);
         this.pos = usePos();
-        if(this.pos.get_order()){
-          this.pos.get_order().is_reciptScreen =  false
-        }
+        
     }
 }
