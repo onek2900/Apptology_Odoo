@@ -59,37 +59,33 @@
       </header>
 
         <!-- Lines -->
-                                        <ul class="list-group list-group-flush">
-                                            <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
-                                                <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-                                                <li t-if="line" class="list-group-item">
-                                                    <div class="qty">
-                                                        <t t-if="!line.sh_is_topping">
-
-                                                            <t t-esc="line.qty"/>×
-                                                        </t>
-                                                    </div>
-                                                    <div class="product-info">
-                                                        <div class="product-name">
-                                                            <t t-if="!line.sh_is_topping">
-                                                                <t t-esc="line.full_product_name"/>
-                                                            </t>
-                                                            <t t-else="">
-                                                                <span class="modifier-info">
-                                                                    →
-                                                                    <t t-esc="line.full_product_name"/>
-                                                                </span>
-                                                            </t>
-
-                                                        </div>
-                                                        <small t-if="line.note" class="note">
-                                                            <i class="fa fa-tag"/>
-                                                            <t t-esc="line.note"/>
-                                                        </small>
-                                                    </div>
-                                                </li>
-                                            </t>
-                                        </ul>
+        <ul class="list-group list-group-flush">
+          <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
+            <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
+            <li t-if="line"
+                t-att-class="{'list-group-item': true, 'order-card__item': true, 'modifier': line.sh_is_topping}">
+              <div class="order-card__qty">
+                <t t-if="!line.sh_is_topping">
+                  <t t-esc="line.qty"/>x
+                </t>
+              </div>
+              <div class="order-card__product">
+                <t t-if="!line.sh_is_topping">
+                  <t t-esc="line.full_product_name"/>
+                </t>
+                <t t-else="">
+                  <span class="modifier-info">
+                    <t t-esc="line.full_product_name"/>
+                  </span>
+                </t>
+              </div>
+              <div class="order-card__note" t-if="line.note">
+                <i class="fa fa-tag"/>
+                <t t-esc="line.note"/>
+              </div>
+            </li>
+          </t>
+        </ul>
 
 
       <!-- Clover-style: no footer actions; tap header to complete, tap items to toggle -->

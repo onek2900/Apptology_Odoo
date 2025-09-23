@@ -391,12 +391,32 @@ $space: var(--k-spacing);
 }
 
 /* Modifiers are non-interactive, keep full readability */
-.order-card__item.modifier { cursor: default; opacity: 1; }
+.order-card__item.modifier {
+  cursor: default;
+  opacity: 1;
+  padding-left: calc(var(--k-line-padding, 1.1rem) + 18px);
+}
+.order-card__item.modifier .order-card__qty {
+  visibility: hidden;
+  width: 18px;
+}
+.order-card__item.modifier .order-card__product {
+  font-weight: 500;
+}
 /* Topping text: slightly smaller, clearly readable, indented */
-.modifier-info {
-  color: var(--k-line-color) !important;
+.order-card__item.modifier .modifier-info {
+  display: block;
+  color: var(--k-muted);
   font-size: 0.88em;
-  padding-left: 20px;
+  padding-left: 18px;
+  position: relative;
+}
+.order-card__item.modifier .modifier-info::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--k-muted);
 }
 
 /* Divider between pending and completed item groups */
