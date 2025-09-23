@@ -194,20 +194,15 @@ export class OnlineOrderScreen extends Component {
             orderData: currentOrder || exportedOrder || {},
             orderLineData: orderLines,
             headerData: { company: this.pos.company },
-        };
-        // Ensure both root-level and nested flags exist depending on printer implementation
-        safeData.is_reciptScreen = true;
-        const printProps = {
-            data: safeData,
-            // Some implementations expect the flag on props instead of props.data
+            // Some printer services toggle this flag; ensure it exists
             is_reciptScreen: true,
-            formatCurrency: (this.env.utils && this.env.utils.formatCurrency)
-                ? this.env.utils.formatCurrency
-                : (v) => (typeof v === 'number' ? v.toFixed(2) : v),
         };
         this.printer.print(
             onlineOrderReceipt,
-            printProps,
+            {
+                data: safeData,
+                formatCurrency: this.env.utils.formatCurrency,
+            },
             { webPrintFallback: true }
         );
     } catch (error) {
