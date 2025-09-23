@@ -68,7 +68,6 @@ class PosOrder(models.Model):
                     ui_vals.get('sh_is_topping'),
                     ui_vals.get('is_topping'),
                     line_vals.get('sh_is_topping'),
-                    line_vals.get('is_topping'),
                 ]
                 flag = any(self._normalize_bool(val) for val in candidates)
 
@@ -82,18 +81,15 @@ class PosOrder(models.Model):
                 final_flag = flag or product_flag
 
                 line_vals['sh_is_topping'] = final_flag
-                line_vals['is_topping'] = final_flag
                 line_vals['product_sh_is_topping'] = product_flag
 
                 has_candidates = [
                     ui_vals.get('sh_is_has_topping'),
                     ui_vals.get('is_has_topping'),
                     line_vals.get('sh_is_has_topping'),
-                    line_vals.get('is_has_topping'),
                 ]
                 has_flag = any(self._normalize_bool(val) for val in has_candidates)
                 line_vals['sh_is_has_topping'] = has_flag
-                line_vals['is_has_topping'] = has_flag
 
                 _logger.debug('Normalized topping flags', {
                     'line_index': idx,
@@ -101,6 +97,7 @@ class PosOrder(models.Model):
                     'product_flag': product_flag,
                     'ui_is_topping': ui_vals.get('sh_is_topping'),
                     'final_flag': final_flag,
+                    'has_topping': has_flag,
                 })
         except Exception as exc:
             _logger.debug('Failed to normalize topping flags: %s', exc)
@@ -340,6 +337,9 @@ class PosOrderLine(models.Model):
                                   related='order_id.partner_id',
                                   help='Id of the customer')
     # Kitchen module relies on sh_is_topping on lines for grouping.
+
+
+    product_sh_is_topping = fields.Boolean(string='Product Is Topping', default=False, help='Denormalized product topping flag for kitchen fallback')
 
 
     def get_product_details(self, ids):

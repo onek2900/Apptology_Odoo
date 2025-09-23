@@ -107,7 +107,7 @@ const useOrderManagement = (rpc, shopId) => {
                 const normalized = {
                     ...line,
                     sh_is_topping: normalizeBooleanFlag(line ? line.sh_is_topping : false),
-                    is_topping: normalizeBooleanFlag(line ? line.is_topping : false),
+                    is_topping: normalizeBooleanFlag(line ? (Object.prototype.hasOwnProperty.call(line, 'is_topping') ? line.is_topping : line.sh_is_topping) : false),
                     product_sh_is_topping: normalizeBooleanFlag(line ? line.product_sh_is_topping : false),
                     is_modifier: isModifier,
                 };
