@@ -65,6 +65,7 @@ function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange
     });
 }
 
+
 function resolveOrderline(order, line, fallbackUid) {
     if (!order) {
         return null;
@@ -129,20 +130,21 @@ patch(ActionpadWidget.prototype, {
                 for (const [uid, line] of Object.entries(changes.orderlines)) {
                     const product = (this.pos.db.product_by_id && this.pos.db.product_by_id[line.product_id]) || null;
                     const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
+                    const uidHint = line.uid || line.uuid || uid;
+                    const resolvedLine = resolveOrderline(order, line, uidHint);
                     changeLines.push({
-                        uid: line.uid || line.uuid || uid,
-                        name: product ? (product.display_name || product.name) : (line.name || ""),
-                        note: line.customerNote || line.note,
-                        product_id: line.product_id,
-                        quantity: line.quantity,
+                        uid: uidHint,
+                        name: resolvedLine ? resolvedLine.full_product_name || resolvedLine.product?.display_name || resolvedLine.product?.name || resolvedLine.name || '' : (product ? (product.display_name || product.name) : (line.name || '')),
+                        note: resolvedLine ? resolvedLine.customerNote || resolvedLine.note : (line.customerNote || line.note),
+                        product_id: resolvedLine ? resolvedLine.product?.id || line.product_id : line.product_id,
+                        quantity: resolvedLine ? resolvedLine.quantity : line.quantity,
                         category_ids: categories,
-                        customerNote: line.customerNote,
-                        // topping flags if present from toppings module
-                        sh_is_topping: !!line.sh_is_topping,
-                        sh_is_has_topping: !!line.sh_is_has_topping,
-                        parent_line_id: line.sh_topping_parent ? line.sh_topping_parent.id : null,
-                        parent_name: line.sh_topping_parent ? line.sh_topping_parent.full_product_name : null,
-                        toppings_count: Array.isArray(line.Toppings) ? line.Toppings.length : (line.Toppings ? 1 : 0),
+                        customerNote: resolvedLine ? resolvedLine.customerNote || resolvedLine.note : line.customerNote,
+                        sh_is_topping: resolvedLine ? !!resolvedLine.sh_is_topping : !!line.sh_is_topping,
+                        sh_is_has_topping: resolvedLine ? !!resolvedLine.sh_is_has_topping : !!line.sh_is_has_topping,
+                        parent_line_id: resolvedLine && resolvedLine.sh_topping_parent ? resolvedLine.sh_topping_parent.id : (line.sh_topping_parent ? line.sh_topping_parent.id : null),
+                        parent_name: resolvedLine && resolvedLine.sh_topping_parent ? resolvedLine.sh_topping_parent.full_product_name : (line.sh_topping_parent ? line.sh_topping_parent.full_product_name : null),
+                        toppings_count: resolvedLine ? (Array.isArray(resolvedLine.Toppings) ? resolvedLine.Toppings.length : (resolvedLine.Toppings ? 1 : 0)) : (Array.isArray(line.Toppings) ? line.Toppings.length : (line.Toppings ? 1 : 0)),
                     });
                 }
             }
