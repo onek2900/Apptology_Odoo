@@ -69,6 +69,9 @@ class OrderScreen(http.Controller):
         pos_session_id = request.env["pos.session"].sudo().search(
             [('config_id', '=', shop_id), ('state', '=', 'opened')],
             limit=1)
+        if not pos_session_id:
+            return {"orders": [], "order_lines": [], "error": "no_open_session"}
+
         # Build domains with optional category filter; if no categories chosen, show all
         cat_domain = []
         if kitchen_screen.pos_categ_ids:

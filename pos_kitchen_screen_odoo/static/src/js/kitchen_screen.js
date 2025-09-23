@@ -54,13 +54,20 @@ const normalizeBooleanFlag = (value) => {
 };
 
 const extractToppingFlags = (line, product) => {
-    const lineFlag = normalizeBooleanFlag(line && ((line.sh_is_topping !== undefined ? line.sh_is_topping : line.is_topping)));
-    const productFlag = normalizeBooleanFlag(product && product.sh_is_topping);
-    const hasFlag = normalizeBooleanFlag(line && ((line.sh_is_has_topping !== undefined ? line.sh_is_has_topping : line.is_has_topping)));
+    const lineFlagRaw = line && (line.is_topping ?? line.sh_is_topping);
+    const productFlagRaw = product && (product.is_topping ?? product.sh_is_topping);
+    const denormFlagRaw = line && (line.product_is_topping ?? line.product_sh_is_topping);
+    const hasFlag = normalizeBooleanFlag(line && (line.sh_is_has_topping ?? line.is_has_topping));
+
+    const productFlag = normalizeBooleanFlag(productFlagRaw) || normalizeBooleanFlag(denormFlagRaw);
+    const lineFlag = normalizeBooleanFlag(lineFlagRaw) || productFlag;
+
     return {
-        sh_is_topping: lineFlag || productFlag,
+        is_topping: lineFlag,
+        sh_is_topping: lineFlag,
         sh_is_has_topping: hasFlag,
-        product_sh_is_topping: normalizeBooleanFlag(line && line.product_sh_is_topping) || productFlag,
+        product_is_topping: productFlag,
+        product_sh_is_topping: productFlag,
     };
 };
 
@@ -69,7 +76,7 @@ const computeModifierFlag = (line, product) => {
         return false;
     }
     const flags = extractToppingFlags(line, product);
-    return flags.sh_is_topping;
+    return flags.is_topping;
 };
 
 /**
@@ -110,13 +117,28 @@ const useOrderManagement = (rpc, shopId) => {
             const result = await rpc("/pos/kitchen/get_order_details", {
                 shop_id: shopId
             });
-            const rawLines = Array.isArray(result.order_lines) ? result.order_lines : [];
+
+            if (result && result.error === "no_open_session") {
+                return {
+                    order_details: [],
+                    lines: [],
+                    draft_count: 0,
+                    waiting_count: 0,
+                    ready_count: 0,
+                    session_error: true,
+                };
+            }
+
+            const orders = Array.isArray(result?.orders) ? result.orders : [];
+            const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
             const normalizedLines = rawLines.map((line) => {
                 const flags = extractToppingFlags(line, null);
-                const isModifier = flags.sh_is_topping;
+                const isModifier = flags.is_topping;
                 const normalized = {
                     ...line,
+                    is_topping: flags.is_topping,
                     sh_is_topping: flags.sh_is_topping,
+                    product_is_topping: flags.product_is_topping,
                     product_sh_is_topping: flags.product_sh_is_topping,
                     sh_is_has_topping: flags.sh_is_has_topping,
                     is_modifier: isModifier,
@@ -125,20 +147,23 @@ const useOrderManagement = (rpc, shopId) => {
                     id: normalized.id,
                     product: normalized.full_product_name,
                     qty: normalized.qty,
+                    raw_line_is_topping: line ? line.is_topping : undefined,
                     raw_sh_is_topping: line ? line.sh_is_topping : undefined,
+                    raw_product_is_topping: line ? line.product_is_topping : undefined,
                     raw_product_sh_is_topping: line ? line.product_sh_is_topping : undefined,
                     raw_sh_is_has_topping: line ? line.sh_is_has_topping : undefined,
-                    normalized_sh_is_topping: normalized.sh_is_topping,
-                    normalized_product_sh_is_topping: normalized.product_sh_is_topping,
+                    normalized_is_topping: normalized.is_topping,
+                    normalized_product_is_topping: normalized.product_is_topping,
                     normalized_sh_is_has_topping: normalized.sh_is_has_topping,
                     is_modifier: normalized.is_modifier,
                 });
                 return normalized;
             });
             return {
-                order_details: result.orders,
+                order_details: orders,
                 lines: normalizedLines,
-                ...calculateOrderCounts(result.orders, shopId)
+                ...calculateOrderCounts(orders, shopId),
+                session_error: false,
             };
         } catch (error) {
             console.error("Error fetching order details:", error);
@@ -147,7 +172,8 @@ const useOrderManagement = (rpc, shopId) => {
                 lines: [],
                 draft_count: 0,
                 waiting_count: 0,
-                ready_count: 0
+                ready_count: 0,
+                session_error: false,
             };
         }
     };
@@ -206,6 +232,7 @@ export class KitchenScreenDashboard extends Component {
             lines: [],
             loading: false,
             error: null,
+            session_error: false,
             // Zoom UI state
             zoomIndex: 1,
             card_w: 360,
@@ -280,12 +307,14 @@ export class KitchenScreenDashboard extends Component {
             return line.is_modifier;
         }
         const flags = extractToppingFlags(line, null);
-        const flag = flags.sh_is_topping;
+        const flag = flags.is_topping;
         line.is_modifier = flag;
+        line.is_topping = flags.is_topping;
         line.sh_is_topping = flags.sh_is_topping;
+        line.product_is_topping = flags.product_is_topping;
         line.product_sh_is_topping = flags.product_sh_is_topping;
         line.sh_is_has_topping = flags.sh_is_has_topping;
-        console.debug('[Kitchen] computed modifier flag', { id: line.id, product: line.full_product_name, is_modifier: flag, sh_is_topping: line.sh_is_topping, product_sh_is_topping: line.product_sh_is_topping });
+        console.debug('[Kitchen] computed modifier flag', { id: line.id, product: line.full_product_name, is_modifier: flag, is_topping: line.is_topping, product_is_topping: line.product_is_topping });
         return flag;
     }
 
@@ -296,8 +325,16 @@ export class KitchenScreenDashboard extends Component {
         try {
             this.state.loading = true;
             this.state.error = null;
+            const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
+
+            if (this.state.session_error && !previousSessionError) {
+                this.notification.add(_t("No open POS session found. Please start a session to display kitchen orders."), {
+                    title: _t("Kitchen Screen"),
+                    type: "warning",
+                });
+            }
         } catch (error) {
             this.state.error = "Failed to refresh orders";
             this.notification.add("Failed to refresh orders", {
@@ -482,9 +519,12 @@ export class KitchenScreenDashboard extends Component {
                 .filter((l) => l.order_status !== ORDER_STATUSES.READY);
 
             // Toggle only lines that are not yet ready
-            for (const line of lines) {
-                await this.orm.call("pos.order.line", "order_progress_change", [Number(line.id)]);
-                line.order_status = ORDER_STATUSES.READY;
+            const lineIdsToToggle = lines.map((line) => Number(line.id));
+            if (lineIdsToToggle.length) {
+                await this.orm.call("pos.order.line", "order_progress_change", [lineIdsToToggle]);
+                for (const line of lines) {
+                    line.order_status = ORDER_STATUSES.READY;
+                }
             }
 
             // Complete the order if all mains are now ready

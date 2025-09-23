@@ -65,7 +65,9 @@ class PosOrder(models.Model):
                 ui_vals = _get_ui_vals(idx)
 
                 candidates = [
+                    ui_vals.get('is_topping'),
                     ui_vals.get('sh_is_topping'),
+                    line_vals.get('is_topping'),
                     line_vals.get('sh_is_topping'),
                 ]
                 flag = any(self._normalize_bool(val) for val in candidates)
@@ -75,7 +77,11 @@ class PosOrder(models.Model):
                 if isinstance(product_id, (list, tuple)):
                     product_id = product_id[0]
                 if product_id:
-                    product_flag = bool(self.env['product.product'].sudo().browse(product_id).sh_is_topping)
+                    product = self.env['product.product'].sudo().browse(product_id)
+                    product_flag = bool(
+                        getattr(product, 'is_topping', False)
+                        or getattr(product, 'sh_is_topping', False)
+                    )
 
                 final_flag = flag or product_flag
 
@@ -84,7 +90,9 @@ class PosOrder(models.Model):
 
                 has_candidates = [
                     ui_vals.get('sh_is_has_topping'),
+                    ui_vals.get('is_has_topping'),
                     line_vals.get('sh_is_has_topping'),
+                    line_vals.get('is_has_topping'),
                 ]
                 has_flag = any(self._normalize_bool(val) for val in has_candidates)
                 line_vals['sh_is_has_topping'] = has_flag
@@ -93,7 +101,8 @@ class PosOrder(models.Model):
                     'line_index': idx,
                     'product_id': product_id,
                     'product_flag': product_flag,
-                    'ui_is_topping': ui_vals.get('sh_is_topping'),
+                    'ui_is_topping': ui_vals.get('is_topping'),
+                    'ui_sh_is_topping': ui_vals.get('sh_is_topping'),
                     'final_flag': final_flag,
                     'has_topping': has_flag,
                 })
@@ -261,22 +270,45 @@ class PosOrder(models.Model):
             self.env['pos.order'].sudo().browse(refund.id).action_pos_order_invoice()
 
     def order_progress_change(self):
-        """Calling function from js to change the order status"""
-        kitchen_screen = self.env["kitchen.screen"].search(
-            [("pos_config_id", "=", self.config_id.id)])
-        stage = []
-        for line in self.lines:
-            for categ in line.product_id.pos_categ_ids:
-                if categ.id in [rec.id for rec in
-                                kitchen_screen.pos_categ_ids]:
-                    stage.append(line.order_status)
-        if "waiting" in stage or "draft" in stage:
-            self.order_status = "ready"
-        else:
-            self.order_status = "ready"
-        if hasattr(self, 'update_order_status_in_deliverect'):
-            self.update_order_status_in_deliverect(70)
+        """Update the order status based on the progress of main (non modifier) lines."""
+        kitchen_screen = self.env["kitchen.screen"].search([("pos_config_id", "=", self.config_id.id)])
+        tracked_categories = kitchen_screen.pos_categ_ids
+        relevant_lines = self.lines
+        if tracked_categories:
+            relevant_lines = relevant_lines.filtered(
+                lambda l: bool(l.product_id.pos_categ_ids & tracked_categories)
+            )
+        if not relevant_lines:
+            relevant_lines = self.lines
 
+        def _is_modifier(line):
+            product = line.product_id
+            return bool(
+                getattr(product, "is_topping", False)
+                or getattr(product, "sh_is_topping", False)
+                or getattr(line, "is_topping", False)
+                or getattr(line, "sh_is_topping", False)
+                or getattr(line, "product_sh_is_topping", False)
+            )
+
+        main_lines = relevant_lines.filtered(lambda l: not _is_modifier(l))
+        if not main_lines:
+            main_lines = relevant_lines
+
+        pending_states = {"draft", "waiting"}
+        ready_like_states = {"ready", "cancel"}
+
+        new_status = self.order_status
+        if any(line.order_status in pending_states for line in main_lines):
+            new_status = "waiting"
+        elif main_lines and all(line.order_status in ready_like_states for line in main_lines):
+            new_status = "ready"
+
+        if new_status != self.order_status:
+            self.order_status = new_status
+
+        if self.order_status == "ready" and hasattr(self, 'update_order_status_in_deliverect'):
+            self.update_order_status_in_deliverect(70)
 
     def check_order(self, order_name):
         """Calling function from js to know status of the order"""
@@ -354,7 +386,8 @@ class PosOrderLine(models.Model):
 
     def order_progress_change(self):
         """Calling function from js to change the order_line status"""
-        if self.order_status == 'ready':
-            self.order_status = 'waiting'
-        else:
-            self.order_status = 'ready'
+        for line in self:
+            if line.order_status == 'ready':
+                line.order_status = 'waiting'
+            else:
+                line.order_status = 'ready'

@@ -64,25 +64,31 @@ patch(ActionpadWidget.prototype, {
                     await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
                     const currentOrder = this.currentOrder;
                     for (const orders of currentOrder.orderlines) {
-                        line.push([0, 0, {
-                            'qty': orders.quantity,
-                            'price_unit': orders.price,
-                            'price_subtotal': orders.quantity * orders.price,
-                            'price_subtotal_incl': orders.get_display_price(),
-                            'discount': orders.discount,
-                            'product_id': orders.product.id,
-                            'tax_ids': [
-                                [6, 0, orders.get_taxes().map((tax) => tax.id)]
-                            ],
-
-                            'id': 29,
-                            'pack_lot_ids': [],
-                            'full_product_name': orders.product.display_name,
-                            'price_extra': orders.price_extra,
-                            'name': 'newsx/0031',
-                            'is_cooking': true,
-                            'note':orders.customerNote,
-                        }])
+                        if (!orders.product) {
+                            continue;
+                        }
+                        const product = orders.product;
+                        const taxes = typeof orders.get_taxes === 'function' ? orders.get_taxes() : [];
+                        const taxIds = taxes.map((tax) => tax.id);
+                        const prices = typeof orders.get_all_prices === 'function' ? orders.get_all_prices() : {};
+                        const productIsTopping = Boolean(product.is_topping ?? product.sh_is_topping);
+                        const payload = {
+                            qty: orders.quantity,
+                            price_unit: orders.price,
+                            price_subtotal: prices.priceWithoutTax ?? orders.quantity * orders.price,
+                            price_subtotal_incl: prices.priceWithTax ?? orders.get_display_price(),
+                            discount: orders.discount,
+                            product_id: product.id,
+                            tax_ids: [[6, 0, taxIds]],
+                            pack_lot_ids: [],
+                            full_product_name: product.display_name,
+                            price_extra: orders.price_extra,
+                            is_cooking: true,
+                            note: orders.customerNote,
+                            sh_is_topping: productIsTopping,
+                            product_sh_is_topping: Boolean(product.sh_is_topping),
+                        };
+                        line.push([0, 0, payload]);
                     }
                     var orders = [{
                         'pos_reference': this.pos.get_order().name,
