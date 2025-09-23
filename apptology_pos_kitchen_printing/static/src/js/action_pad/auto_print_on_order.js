@@ -65,6 +65,32 @@ function getPrintingCategoriesChanges(pos, printerCategories, currentOrderChange
     });
 }
 
+function resolveOrderline(order, line, fallbackUid) {
+    if (!order) {
+        return null;
+    }
+    const candidates = [
+        line && line.uid,
+        line && line.uuid,
+        line && line.id,
+        fallbackUid
+    ].filter(Boolean);
+    for (const identifier of candidates) {
+        const match = order.orderlines.find((ol) =>
+            ol && (
+                ol.uid === identifier ||
+                ol.id === identifier ||
+                ol.cid === identifier ||
+                ol.uuid === identifier
+            )
+        );
+        if (match) {
+            return match;
+        }
+    }
+    return null;
+}
+
 patch(ActionpadWidget.prototype, {
     setup(...args) {
         if (typeof PreviousSetup_KitchenPrinting === "function") {
