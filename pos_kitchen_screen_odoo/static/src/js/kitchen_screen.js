@@ -453,18 +453,9 @@ export class KitchenScreenDashboard extends Component {
         return Math.round(total * 100) / 100;
     }
 
-    newLineTooltip(order) {
-        const summary = this.newLineSummary(order);
-        if (!summary.length) {
-            return '';
-        }
-        return summary.map((entry) => {
-            const quantityValue = Number(entry && entry.quantity) || 0;
-            const displayQty = Math.round(quantityValue * 100) / 100;
-            const productName = (entry && (entry.product_name || entry.name)) || '';
-            const note = entry && entry.note ? ' (' + entry.note + ')' : '';
-            return displayQty + '× ' + productName + note;
-        }).join(', ');
+    formatNewLineQuantity(quantity) {
+        const numeric = Number(quantity) || 0;
+        return Math.round(numeric * 100) / 100;
     }
 
     // ===== Zoom controls =====

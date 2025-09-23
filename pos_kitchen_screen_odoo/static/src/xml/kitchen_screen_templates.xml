@@ -55,11 +55,16 @@
             <i class="fa fa-building" aria-hidden="true"></i>
             <span>Floor <t t-esc="order.floor"/></span>
           </div>
-          <t t-set="newLineCount" t-value="this.newLineCount(order)"/>
-          <t t-if="newLineCount">
-            <div class="order-card__newlines" t-att-title="this.newLineTooltip(order)">
-              <span class="order-card__newlines-label">New</span>
-              <span class="order-card__newlines-value">+<t t-esc="newLineCount"/></span>
+          <t t-set="newLines" t-value="this.newLineSummary(order)"/>
+          <t t-if="newLines.length">
+            <div class="order-card__newlines-group">
+              <t t-foreach="newLines" t-as="entry" t-key="entry.product_id or loop.index">
+                <div class="order-card__newbadge">
+                  <span class="order-card__newbadge-qty"><t t-esc="this.formatNewLineQuantity(entry.quantity)"/>×</span>
+                  <span class="order-card__newbadge-name"><t t-esc="entry.product_name"/></span>
+                  <span class="order-card__newbadge-note" t-if="entry.note"><t t-esc="entry.note"/></span>
+                </div>
+              </t>
             </div>
           </t>
         </div>
