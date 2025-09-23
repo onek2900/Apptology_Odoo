@@ -8,12 +8,16 @@ class PosSession(models.Model):
     _inherit = 'pos.session'
 
     def _pos_ui_models_to_load(self):
-        """Pos ui models to load"""
-        result = super()._pos_ui_models_to_load()
-        try:
-            return set(result) | {'pos.order', 'pos.order.line'}
-        except Exception:
-            return list(result) + ['pos.order', 'pos.order.line']
+        """Pos ui models to load
+
+        Keep original order and append extra models at the end to avoid
+        breaking dependencies (e.g., 'pos.combo' before 'pos.combo.line').
+        """
+        result = list(super()._pos_ui_models_to_load())
+        for model in ['pos.order', 'pos.order.line']:
+            if model not in result:
+                result.append(model)
+        return result
 
     def _loader_params_pos_order(self):
         """Load the fields to pos order"""
