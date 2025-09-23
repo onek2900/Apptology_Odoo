@@ -21,7 +21,7 @@ class PosSession(models.Model):
             'domain': [],
             'fields': ['name', 'date_order', 'pos_reference',
                        'partner_id', 'lines', 'order_status', 'order_ref',
-                       'is_cooking']}}
+                       'is_cooking', 'kitchen_new_line_summary', 'kitchen_new_line_count', 'kitchen_send_logs']}}
 
     def _get_pos_ui_pos_order(self, params):
         """Get pos ui pos order"""
@@ -33,8 +33,10 @@ class PosSession(models.Model):
         return {'search_params': {'domain': [],
                                   'fields': ['product_id', 'qty',
                                              'order_status', 'order_ref',
-                                             'customer_id',
-                                             'price_subtotal', 'total_cost']}}
+                                             'customer_id', 'full_product_name', 'note',
+                                             'price_subtotal', 'total_cost',
+                                             'sh_is_topping', 'product_sh_is_topping',
+                                             'kitchen_ticket_uid']}}
 
     def _get_pos_ui_pos_order_line(self, params):
         """Get pos ui pos order line"""

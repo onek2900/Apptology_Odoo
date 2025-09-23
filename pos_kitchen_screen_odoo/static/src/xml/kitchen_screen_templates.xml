@@ -154,7 +154,7 @@
                               class="btn btn-success order-card__complete-all"
                               title="Mark all ready"
                               aria-label="Mark all ready"
-                              t-on-click="() => this.mark_all_ready(order.id)">
+                              t-on-click="() => this.mark_all_ready(order.id, order.lines)">
                         <i class="fa fa-check"></i>
                       </button>
                       <span class="order-card__type-badge"

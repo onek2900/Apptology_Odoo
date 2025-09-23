@@ -110,97 +110,151 @@ const useOrderManagement = (rpc, shopId) => {
      * Fetch order details from server
      * @returns {Promise<Object>} Order details and counts
      */
-    const fetchOrderDetails = async () => {
-        try {
-            // const result = await orm.call("pos.order", "get_details", ["", shopId, ""]);
 
-            const result = await rpc("/pos/kitchen/get_order_details", {
-                shop_id: shopId
-            });
+const fetchOrderDetails = async () => {
+    try {
+        const result = await rpc("/pos/kitchen/get_order_details", {
+            shop_id: shopId
+        });
 
-            if (result && result.error === "no_open_session") {
-                return {
-                    order_details: [],
-                    lines: [],
-                    draft_count: 0,
-                    waiting_count: 0,
-                    ready_count: 0,
-                    session_error: true,
-                };
-            }
-
-            const rawOrders = Array.isArray(result?.orders) ? result.orders : [];
-            const normalizedOrders = rawOrders.map((order) => {
-                const summaryRaw = Array.isArray(order.kitchen_new_line_summary) ? order.kitchen_new_line_summary : [];
-                const sanitizedSummary = summaryRaw.map((entry) => ({
-                    product_id: entry && entry.product_id,
-                    product_name: (entry && (entry.product_name || entry.name)) || '',
-                    quantity: Number(entry && entry.quantity) || 0,
-                    note: entry && entry.note ? entry.note : '',
-                }));
-                let explicitCount = 0;
-                if (typeof order.kitchen_new_line_count === 'number') {
-                    explicitCount = order.kitchen_new_line_count;
-                } else {
-                    explicitCount = sanitizedSummary.reduce((acc, entry) => {
-                        const numeric = Number(entry.quantity) || 0;
-                        return acc + (numeric > 0 ? numeric : 0);
-                    }, 0);
-                }
-                const normalizedCount = Math.round(explicitCount * 100) / 100;
-                return {
-                    ...order,
-                    kitchen_new_line_summary: sanitizedSummary,
-                    kitchen_new_line_count: normalizedCount,
-                };
-            });
-            const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
-            const normalizedLines = rawLines.map((line) => {
-                const flags = extractToppingFlags(line, null);
-                const isModifier = flags.is_topping;
-                const normalized = {
-                    ...line,
-                    is_topping: flags.is_topping,
-                    sh_is_topping: flags.sh_is_topping,
-                    product_is_topping: flags.product_is_topping,
-                    product_sh_is_topping: flags.product_sh_is_topping,
-                    sh_is_has_topping: flags.sh_is_has_topping,
-                    is_modifier: isModifier,
-                };
-                console.debug('[Kitchen] normalized line', {
-                    id: normalized.id,
-                    product: normalized.full_product_name,
-                    qty: normalized.qty,
-                    raw_line_is_topping: line ? line.is_topping : undefined,
-                    raw_sh_is_topping: line ? line.sh_is_topping : undefined,
-                    raw_product_is_topping: line ? line.product_is_topping : undefined,
-                    raw_product_sh_is_topping: line ? line.product_sh_is_topping : undefined,
-                    raw_sh_is_has_topping: line ? line.sh_is_has_topping : undefined,
-                    normalized_is_topping: normalized.is_topping,
-                    normalized_product_is_topping: normalized.product_is_topping,
-                    normalized_sh_is_has_topping: normalized.sh_is_has_topping,
-                    is_modifier: normalized.is_modifier,
-                });
-                return normalized;
-            });
-            return {
-                order_details: normalizedOrders,
-                lines: normalizedLines,
-                ...calculateOrderCounts(normalizedOrders, shopId),
-                session_error: false,
-            };
-        } catch (error) {
-            console.error("Error fetching order details:", error);
+        if (result && result.error === "no_open_session") {
             return {
                 order_details: [],
+                tickets: [],
                 lines: [],
                 draft_count: 0,
                 waiting_count: 0,
                 ready_count: 0,
-                session_error: false,
+                session_error: true,
             };
         }
-    };
+
+        const rawOrders = Array.isArray(result?.orders) ? result.orders : [];
+        const normalizedOrders = rawOrders.map((order) => {
+            const summaryRaw = Array.isArray(order.kitchen_new_line_summary) ? order.kitchen_new_line_summary : [];
+            const sanitizedSummary = summaryRaw.map((entry) => ({
+                product_id: entry && entry.product_id,
+                product_name: (entry && (entry.product_name || entry.name)) || '',
+                quantity: Number(entry && entry.quantity) || 0,
+                note: entry && entry.note ? entry.note : '',
+                ticket_uid: entry && entry.ticket_uid,
+            }));
+            let explicitCount = 0;
+            if (typeof order.kitchen_new_line_count === 'number') {
+                explicitCount = order.kitchen_new_line_count;
+            } else {
+                explicitCount = sanitizedSummary.reduce((acc, entry) => {
+                    const numeric = Number(entry.quantity) || 0;
+                    return acc + (numeric > 0 ? numeric : 0);
+                }, 0);
+            }
+            const normalizedCount = Math.round(explicitCount * 100) / 100;
+            return {
+                ...order,
+                kitchen_new_line_summary: sanitizedSummary,
+                kitchen_new_line_count: normalizedCount,
+            };
+        });
+
+        const tickets = [];
+        for (const order of normalizedOrders) {
+            const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
+            if (!logs.length) {
+                const orderLineIds = Array.isArray(order.lines) ? order.lines.slice() : [];
+                tickets.push({
+                    ...order,
+                    ticket_uid: `order-${order.id}`,
+                    ticket_created_at: order.write_date,
+                    ticket_line_ids: orderLineIds,
+                    lines: orderLineIds,
+                    kitchen_new_line_summary: Array.isArray(order.kitchen_new_line_summary) ? order.kitchen_new_line_summary : [],
+                    kitchen_new_line_count: order.kitchen_new_line_count || Math.round((orderLineIds.length || 0) * 100) / 100,
+                });
+                continue;
+            }
+            logs.forEach((log, index) => {
+                const ticketLineIds = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
+                const snapshot = Array.isArray(log.line_snapshot) ? log.line_snapshot : [];
+                const summary = snapshot.map((entry) => ({
+                    product_id: entry && entry.product_id,
+                    product_name: (entry && entry.full_product_name) || '',
+                    quantity: Number(entry && entry.qty) || 0,
+                    note: entry && entry.note ? entry.note : '',
+                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
+                }));
+                let ticketCount = 0;
+                if (typeof log.line_count === 'number') {
+                    ticketCount = log.line_count;
+                } else {
+                    ticketCount = summary.reduce((acc, entry) => {
+                        const numeric = Number(entry.quantity) || 0;
+                        return acc + (numeric > 0 ? numeric : 0);
+                    }, 0);
+                }
+                tickets.push({
+                    ...order,
+                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
+                    ticket_created_at: log.created_at || order.write_date,
+                    ticket_line_ids: ticketLineIds,
+                    lines: ticketLineIds,
+                    kitchen_new_line_summary: summary,
+                    kitchen_new_line_count: Math.round((ticketCount || 0) * 100) / 100,
+                });
+            });
+        }
+
+        const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
+        const normalizedLines = rawLines.map((line) => {
+            const flags = extractToppingFlags(line, null);
+            const isModifier = flags.is_topping;
+            const normalized = {
+                ...line,
+                is_topping: flags.is_topping,
+                sh_is_topping: flags.sh_is_topping,
+                product_is_topping: flags.product_is_topping,
+                product_sh_is_topping: flags.product_sh_is_topping,
+                sh_is_has_topping: flags.sh_is_has_topping,
+                is_modifier: isModifier,
+            };
+            console.debug('[Kitchen] normalized line', {
+                id: normalized.id,
+                product: normalized.full_product_name,
+                qty: normalized.qty,
+                raw_line_is_topping: line ? line.is_topping : undefined,
+                raw_sh_is_topping: line ? line.sh_is_topping : undefined,
+                raw_product_is_topping: line ? line.product_is_topping : undefined,
+                raw_product_sh_is_topping: line ? line.product_sh_is_topping : undefined,
+                raw_sh_is_has_topping: line ? line.sh_is_has_topping : undefined,
+                normalized_is_topping: normalized.is_topping,
+                normalized_product_is_topping: normalized.product_is_topping,
+                normalized_sh_is_has_topping: normalized.sh_is_has_topping,
+                is_modifier: normalized.is_modifier,
+            });
+            return normalized;
+        });
+        return {
+            order_details: normalizedOrders,
+            tickets,
+            lines: normalizedLines,
+            draft_count: 0,
+            waiting_count: 0,
+            ready_count: 0,
+            session_error: false,
+        };
+    } catch (error) {
+        console.error("Error fetching order details:", error);
+        return {
+            order_details: [],
+            tickets: [],
+            lines: [],
+            draft_count: 0,
+            waiting_count: 0,
+            ready_count: 0,
+            session_error: false,
+        };
+    }
+};
+
 
     return {
         fetchOrderDetails,
@@ -248,6 +302,7 @@ export class KitchenScreenDashboard extends Component {
 
         this.state = useState({
             order_details: [],
+            tickets: [],
             shop_id: shopId,
             stages: ORDER_STATUSES.DRAFT,
             draft_count: 0,
@@ -352,6 +407,7 @@ export class KitchenScreenDashboard extends Component {
             const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
+            this.recomputeTicketCounts();
 
             if (this.state.session_error && !previousSessionError) {
                 this.notification.add(_t("No open POS session found. Please start a session to display kitchen orders."), {
@@ -407,27 +463,11 @@ export class KitchenScreenDashboard extends Component {
     }
 
     get orderInProgress() {
-        return this.state.order_details.filter(o =>
-            o.config_id[0] === this.state.shop_id &&
-            o.order_status === 'draft')
+        return this.ticketsInProgress;
     }
 
     get orderCompleted() {
-        const userTimezone = this.user.tz || 'UTC';
-        return this.state.order_details.filter(o => {
-            // Ensure write_date is in a format Luxon can parse (e.g., "2024-11-12T09:00:46")
-            const formattedWriteDate = o.write_date.replace(' ', 'T');
-
-            // Parse the formatted date string in UTC and convert to user timezone
-            const writeDate = DateTime.fromISO(formattedWriteDate, {zone: 'UTC'})
-                .setZone(userTimezone);
-
-            return (
-                o.config_id[0] === this.state.shop_id &&
-                o.order_status === 'ready' &&
-                writeDate > DateTime.now().minus({minutes: 5})
-            );
-        });
+        return this.ticketsCompleted;
     }
 
     newLineSummary(order) {
@@ -457,6 +497,83 @@ export class KitchenScreenDashboard extends Component {
         const numeric = Number(quantity) || 0;
         return Math.round(numeric * 100) / 100;
     }
+
+
+ticketLineRecords(ticket) {
+    const lineIds = Array.isArray(ticket && ticket.lines) ? ticket.lines : [];
+    return lineIds
+        .map((id) => this.state.lines.find((line) => line.id === id))
+        .filter(Boolean);
+}
+
+ticketStatus(ticket) {
+    if (!ticket) {
+        return ORDER_STATUSES.DRAFT;
+    }
+    const records = this.ticketLineRecords(ticket);
+    if (!records.length) {
+        return ticket.order_status || ORDER_STATUSES.DRAFT;
+    }
+    const mains = records.filter((line) => !this.isModifierLine(line));
+    if (!mains.length) {
+        return ORDER_STATUSES.READY;
+    }
+    const hasWaiting = mains.some((line) => line.order_status === ORDER_STATUSES.WAITING);
+    const allReady = mains.every((line) => line.order_status === ORDER_STATUSES.READY);
+    if (allReady) {
+        return ORDER_STATUSES.READY;
+    }
+    if (hasWaiting) {
+        return ORDER_STATUSES.WAITING;
+    }
+    return ORDER_STATUSES.DRAFT;
+}
+
+ticketCreatedAt(ticket) {
+    const source = ticket && (ticket.ticket_created_at || ticket.write_date || ticket.date_order);
+    if (!source) {
+        return DateTime.now();
+    }
+    const formatted = String(source).replace(' ', 'T');
+    return DateTime.fromISO(formatted, { zone: 'UTC' });
+}
+
+get ticketsInProgress() {
+    return (this.state.tickets || [])
+        .filter((ticket) => {
+            const status = this.ticketStatus(ticket);
+            return status === ORDER_STATUSES.DRAFT || status === ORDER_STATUSES.WAITING;
+        })
+        .sort((a, b) => this.ticketCreatedAt(a) - this.ticketCreatedAt(b));
+}
+
+get ticketsCompleted() {
+    const userTimezone = this.user.tz || 'UTC';
+    const cutoff = DateTime.now().setZone(userTimezone).minus({ minutes: 5 });
+    return (this.state.tickets || [])
+        .filter((ticket) => this.ticketStatus(ticket) === ORDER_STATUSES.READY)
+        .filter((ticket) => this.ticketCreatedAt(ticket).setZone(userTimezone) > cutoff)
+        .sort((a, b) => this.ticketCreatedAt(b) - this.ticketCreatedAt(a));
+}
+
+recomputeTicketCounts() {
+    let draft = 0;
+    let waiting = 0;
+    let ready = 0;
+    for (const ticket of this.state.tickets || []) {
+        const status = this.ticketStatus(ticket);
+        if (status === ORDER_STATUSES.READY) {
+            ready += 1;
+        } else if (status === ORDER_STATUSES.WAITING) {
+            waiting += 1;
+        } else {
+            draft += 1;
+        }
+    }
+    this.state.draft_count = draft;
+    this.state.waiting_count = waiting;
+    this.state.ready_count = ready;
+}
 
     // ===== Zoom controls =====
     initZoomFromStorage() {
@@ -557,31 +674,35 @@ export class KitchenScreenDashboard extends Component {
      * Mark all main items in an order as ready and complete the order
      * @param {number} orderId
      */
-    async mark_all_ready(orderId) {
+    async mark_all_ready(orderId, ticketLineIds = null) {
         try {
             const id = Number(orderId);
             const order = this.state.order_details.find((o) => o.id === id);
             if (!order) return;
 
-            const lineIds = Array.isArray(order.lines) ? order.lines : [];
-            const lines = lineIds
+            const targetLineIds = Array.isArray(ticketLineIds) && ticketLineIds.length
+                ? ticketLineIds.map((lid) => Number(lid))
+                : (Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : []);
+
+            const targetLines = targetLineIds
                 .map((lid) => this.state.lines.find((l) => l.id === lid))
                 .filter(Boolean)
                 .filter((l) => !this.isModifierLine(l))
                 .filter((l) => l.order_status !== ORDER_STATUSES.READY);
 
-            // Toggle only lines that are not yet ready
-            const lineIdsToToggle = lines.map((line) => Number(line.id));
-            if (lineIdsToToggle.length) {
-                await this.orm.call("pos.order.line", "order_progress_change", [lineIdsToToggle]);
-                for (const line of lines) {
+            if (targetLines.length) {
+                const idsToToggle = targetLines.map((line) => Number(line.id));
+                await this.orm.call("pos.order.line", "order_progress_change", [idsToToggle]);
+                for (const line of targetLines) {
                     line.order_status = ORDER_STATUSES.READY;
                 }
             }
 
-            // Complete the order if all mains are now ready
-            await this.done_order(id);
-            await this.refreshOrderDetails();
+            if (this.areAllMainItemsReady(order)) {
+                await this.done_order(id);
+            } else {
+                await this.refreshOrderDetails();
+            }
 
             this.notification.add("Order marked as ready", { title: "Success", type: "success" });
         } catch (error) {
@@ -589,6 +710,7 @@ export class KitchenScreenDashboard extends Component {
             this.notification.add("Failed to mark all ready", { title: "Error", type: "danger" });
         }
     }
+
 
     /**
      * Find order containing given line id

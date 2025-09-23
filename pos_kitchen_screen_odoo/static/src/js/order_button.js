@@ -61,6 +61,7 @@ patch(ActionpadWidget.prototype, {
                     }
                 });
                 if ( self.kitchen_order_status){
+                    const ticketUid = 	icket__;
                     const changeSummary = this.currentOrder.getOrderChanges ? this.currentOrder.getOrderChanges() : null;
                     const newLineSummary = [];
                     if (changeSummary && changeSummary.orderlines) {
@@ -73,6 +74,7 @@ patch(ActionpadWidget.prototype, {
                                     product_name: productData?.display_name || change.name || '',
                                     quantity: deltaQty,
                                     note: change.note || '',
+                                    ticket_uid: ticketUid,
                                 });
                             }
                         }
@@ -103,11 +105,13 @@ patch(ActionpadWidget.prototype, {
                             note: orders.customerNote,
                             sh_is_topping: productIsTopping,
                             product_sh_is_topping: Boolean(product.sh_is_topping),
+                            kitchen_ticket_uid: ticketUid,
                         };
                         line.push([0, 0, payload]);
                     }
                     var orders = [{
                         'pos_reference': this.pos.get_order().name,
+                        'ticket_uid': ticketUid,
                         'kitchen_new_lines': newLineSummary,
                         'amount_total': 0,
                         'amount_paid': 0,

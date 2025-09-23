@@ -205,36 +205,62 @@ class PosOrder(models.Model):
                         'pos.order.line')
                 return super().create(vals_list)
 
-    def get_details(self, shop_id, order=None):
-        """For getting the kitchen orders for the cook"""
-        order_record = self.env['pos.order']
-        new_line_summary = []
-        if order:
-            payload = order[0].copy()
-            new_line_summary = payload.pop('kitchen_new_lines', []) or []
-            order_ref = payload.get('pos_reference')
-            order_record = self.search([("pos_reference", "=", order_ref)])
-            if not order_record:
-                order_record = self.create([payload])
-            else:
-                order_record.lines = False
-                order_record.write(payload)
-            sanitized_summary = self._sanitize_new_line_summary(new_line_summary)
-            if order_record:
-                order_record.sudo().write({
-                    'kitchen_new_line_summary': sanitized_summary,
-                    'kitchen_new_line_count': self._calculate_new_line_count(sanitized_summary),
-                })
-        kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
 
-        pos_session_id = self.env["pos.session"].search([('config_id', '=', shop_id), ('state', '=', 'opened')], limit=1)
+def get_details(self, shop_id, order=None):
+    """For getting the kitchen orders for the cook"""
+    order_record = self.env['pos.order']
+    new_line_summary = []
+    ticket_uid = None
+    if order:
+        payload = order[0].copy()
+        new_line_summary = payload.pop('kitchen_new_lines', []) or []
+        ticket_uid = payload.pop('ticket_uid', None)
+        order_ref = payload.get('pos_reference')
+        order_record = self.search([("pos_reference", "=", order_ref)])
+        if not order_record:
+            order_record = self.create([payload])
+        else:
+            order_record.lines = False
+            order_record.write(payload)
+        sanitized_summary = self._sanitize_new_line_summary(new_line_summary)
+        if sanitized_summary and not ticket_uid:
+            ticket_uid = sanitized_summary[0].get('ticket_uid')
+        ticket_uid = ticket_uid or f"ticket_{order_ref or ''}_{fields.Datetime.now().timestamp()}"
+        ticket_lines = order_record.lines.filtered(lambda l: l.kitchen_ticket_uid == ticket_uid)
+        line_snapshot = []
+        for line in ticket_lines:
+            line_snapshot.append({
+                'line_id': line.id,
+                'product_id': line.product_id.id,
+                'full_product_name': line.full_product_name,
+                'qty': line.qty,
+                'note': line.note,
+                'order_status': line.order_status,
+            })
+        logs = list(order_record.kitchen_send_logs or [])
+        if ticket_lines:
+            logs.append({
+                'ticket_uid': ticket_uid,
+                'created_at': fields.Datetime.now().isoformat(),
+                'line_ids': ticket_lines.ids,
+                'line_snapshot': line_snapshot,
+                'line_count': self._calculate_new_line_count(sanitized_summary) or sum(line.qty for line in ticket_lines),
+            })
+        order_record.write({
+            'kitchen_new_line_summary': sanitized_summary,
+            'kitchen_new_line_count': self._calculate_new_line_count(sanitized_summary),
+            'kitchen_send_logs': logs,
+        })
+    kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
 
-        pos_orders = self.env["pos.order"].search(
-            ["&", ("lines.is_cooking", "=", True),
-             ("lines.product_id.pos_categ_ids", "in",
-              kitchen_screen.pos_categ_ids.ids), ('session_id', '=', pos_session_id.id)], order="date_order")
-        values = {"orders": pos_orders.read(), "order_lines": pos_orders.lines.read()}
-        return values
+    pos_session_id = self.env["pos.session"].search([('config_id', '=', shop_id), ('state', '=', 'opened')], limit=1)
+
+    pos_orders = self.env["pos.order"].search(
+        ["&", ("lines.is_cooking", "=", True),
+         ("lines.product_id.pos_categ_ids", "in",
+          kitchen_screen.pos_categ_ids.ids), ('session_id', '=', pos_session_id.id)], order="date_order")
+    values = {"orders": pos_orders.read(), "order_lines": pos_orders.lines.read()}
+    return values
 
     @api.model
     def get_order_details(self, screen_id):
@@ -414,6 +440,7 @@ class PosOrderLine(models.Model):
     order_ref = fields.Char(related='order_id.order_ref',
                             string='Order Reference',
                             help='Order reference of order')
+    kitchen_ticket_uid = fields.Char(string='Kitchen Ticket UID', copy=False)
     is_cooking = fields.Boolean(string="Cooking", default=False,
                                 help='To identify the order is  '
                                      'kitchen orders')
