@@ -128,17 +128,26 @@ const saveSeenLines = (sid, data) => {
 const loadSeenTickets = (sid) => {
     try {
         const raw = window.localStorage.getItem(storageKeyForTickets(sid));
-        return raw ? JSON.parse(raw) : [];
-    } catch (_) { return []; }
+        const parsed = raw ? JSON.parse(raw) : null;
+        // Backward compatibility: previously we stored an array. Convert to map keyed by order id.
+        if (Array.isArray(parsed)) {
+            const map = {};
+            for (const t of parsed) {
+                if (t && typeof t.id === 'number') map[t.id] = t;
+            }
+            return map;
+        }
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_) { return {}; }
 };
 
-const saveSeenTickets = (sid, tickets) => {
-    try { window.localStorage.setItem(storageKeyForTickets(sid), JSON.stringify(tickets)); } catch (_) { /* ignore */ }
+const saveSeenTickets = (sid, ticketsByOrderId) => {
+    try { window.localStorage.setItem(storageKeyForTickets(sid), JSON.stringify(ticketsByOrderId)); } catch (_) { /* ignore */ }
 };
 
 const computeDeltaTickets = (orders, allLines, sid) => {
     const seenLines = loadSeenLines(sid);
-    const existingTickets = loadSeenTickets(sid);
+    const ticketsByOrder = loadSeenTickets(sid); // map: orderId -> ticket
 
     const byOrder = new Map();
     for (const line of allLines || []) {
@@ -148,7 +157,6 @@ const computeDeltaTickets = (orders, allLines, sid) => {
         byOrder.get(orderId).push(line);
     }
 
-    const newTickets = [];
     for (const order of orders || []) {
         const orderId = order.id;
         const lines = byOrder.get(orderId) || [];
@@ -172,31 +180,31 @@ const computeDeltaTickets = (orders, allLines, sid) => {
 
         // First time we see this order: create initial ticket with all lines
         const isFirstSeen = !seenLines.hasOwnProperty(orderId);
+        let ticketLines = [];
         if (isFirstSeen && lines.length) {
-            newTickets.push({
-                ...order,
-                ticket_uid: `init-${orderId}-${Date.now()}`,
-                ticket_created_at: order.write_date,
-                lines: lines.map((l) => l.id),
-            });
+            ticketLines = lines.map((l) => l.id);
         } else if (deltaIds.length) {
-            newTickets.push({
-                ...order,
-                ticket_uid: `delta-${orderId}-${Date.now()}`,
-                ticket_created_at: order.write_date,
-                lines: deltaIds.map((x) => x.id),
-                _delta_quantities: Object.fromEntries(deltaIds.map((x) => [x.id, x.add])),
-            });
+            ticketLines = deltaIds.map((x) => x.id);
+        } else {
+            ticketLines = [];
         }
+
+        // Keep one ticket per order id; replace its contents with the latest delta
+        ticketsByOrder[orderId] = {
+            ...order,
+            ticket_uid: `order-${orderId}`,
+            ticket_created_at: order.write_date,
+            lines: ticketLines,
+        };
 
         // Persist snapshot
         seenLines[orderId] = cur;
     }
 
-    const mergedTickets = [...existingTickets, ...newTickets];
     saveSeenLines(sid, seenLines);
-    saveSeenTickets(sid, mergedTickets);
-    return mergedTickets;
+    saveSeenTickets(sid, ticketsByOrder);
+    // Render only non-empty tickets to avoid blank cards
+    return Object.values(ticketsByOrder).filter((t) => Array.isArray(t.lines) && t.lines.length);
 };
 
 const fetchOrderDetails = async () => {
