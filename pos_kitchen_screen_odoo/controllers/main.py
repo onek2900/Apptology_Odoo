@@ -71,9 +71,11 @@ class OrderScreen(http.Controller):
         kitchen_screen = request.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)], limit=1)
 
-        # Use the config's current_session_id to avoid picking an older opened session
-        config = request.env["pos.config"].sudo().browse(shop_id)
-        pos_session_id = config.current_session_id
+        # Previous stable logic: search opened session for this config
+        pos_session_id = request.env["pos.session"].sudo().search(
+            [("config_id", "=", shop_id), ("state", "=", "opened")],
+            limit=1,
+        )
         if not pos_session_id:
             return {"orders": [], "order_lines": [], "error": "no_open_session"}
 
@@ -82,31 +84,26 @@ class OrderScreen(http.Controller):
         if kitchen_screen.pos_categ_ids:
             cat_domain = [("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids)]
 
-        pos_order_model = request.env["pos.order"].sudo()
-        has_online_flag = "is_online_order" in pos_order_model._fields
-        has_online_status = "online_order_status" in pos_order_model._fields
+        # Only orders with cooking lines; split in‑store vs online (approved)
+        pos_orders = request.env["pos.order"].sudo().search(
+            [("lines.is_cooking", "=", True), ("is_online_order", "=", False), ("session_id", "=", pos_session_id.id)]
+            + cat_domain,
+            order="date_order",
+        )
 
-        # Include in-progress (draft, waiting) and ready orders; ignore 'is_cooking' flags
-        base_domain = [
-            ("order_status", "in", ["ready"]),
-            ("session_id", "=", pos_session_id.id),
-        ] + cat_domain
-        in_store_domain = list(base_domain)
-        if has_online_flag:
-            in_store_domain.append(("is_online_order", "=", False))
-
-        pos_orders = pos_order_model.search(in_store_domain, order="date_order")
-
-        approved_deliverect_orders = pos_order_model.browse()
-        if has_online_flag:
-            approved_domain = list(base_domain) + [("is_online_order", "=", True)]
-            if has_online_status:
-                approved_domain.append(("online_order_status", "=", "approved"))
-            approved_deliverect_orders = pos_order_model.search(approved_domain, order="date_order")
+        approved_deliverect_orders = request.env["pos.order"].sudo().search(
+            [
+                ("lines.is_cooking", "=", True),
+                ("session_id", "=", pos_session_id.id),
+                ("is_online_order", "=", True),
+                ("online_order_status", "=", "approved"),
+            ]
+            + cat_domain,
+            order="date_order",
+        )
 
         combined_orders = pos_orders | approved_deliverect_orders
         values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
-        # print(values,"values")
         return values
 
     @http.route("/apptology_kitchen_screen", auth="public", type="http", website=True)
