@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Apptology Deliverect',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Point Of Sale',
     'summary': 'Module to Connect Deliverect with Odoo Point of Sale',
     'description': 'Module to Connect Deliverect with Odoo Point of Sale',
