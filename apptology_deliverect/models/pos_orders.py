@@ -391,6 +391,16 @@ class PosOrder(models.Model):
 
         offset = max(0, (page - 1) * page_size)
         orders = self.search_read(complete_domain, fields_list, offset=offset, limit=page_size, order="date_order DESC")
+        # Defensive: ensure uniqueness by id (can help if any join/domain side-effects cause dup rows)
+        uniq = []
+        seen_ids = set()
+        for o in orders:
+            oid = o.get('id')
+            if oid in seen_ids:
+                continue
+            seen_ids.add(oid)
+            uniq.append(o)
+        orders = uniq
 
         # Determine per-order whether it falls under kitchen screen categories
         in_kitchen_map = {}

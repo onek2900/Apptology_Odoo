@@ -219,6 +219,9 @@ export class OnlineOrderScreen extends Component {
      * Fetch orders with current filters and page.
      */
     async fetchOrders(page = 1){
+        // Coalesce overlapping requests to avoid race-induced duplicates
+        this._reqToken = (this._reqToken || 0) + 1;
+        const reqToken = this._reqToken;
         this.state.loading = true;
         try {
             const payload = {
@@ -233,11 +236,22 @@ export class OnlineOrderScreen extends Component {
                 page_size: 50,
             }
             const result = await this.orm.call("pos.order", "get_orders", [], payload);
-            if (page === 1){
-                this.state.orders = result.orders;
-            } else {
-                this.state.orders = this.state.orders.concat(result.orders);
+
+            // Ignore stale responses
+            if (reqToken !== this._reqToken) return;
+
+            const incoming = Array.isArray(result?.orders) ? result.orders : [];
+            const existing = page === 1 ? [] : (Array.isArray(this.state.orders) ? this.state.orders : []);
+            // Merge and de-duplicate by id, preserving newest-first order
+            const seen = new Set();
+            const merged = [];
+            for (const o of [...incoming, ...existing]) {
+                const oid = (o && (typeof o.id === 'number' ? o.id : Number(o.id))) || null;
+                if (!oid || seen.has(oid)) continue;
+                seen.add(oid);
+                merged.push(o);
             }
+            this.state.orders = merged;
             this.state.page = page;
             this.state.hasMore = !!result.has_more;
         } catch (error) {
