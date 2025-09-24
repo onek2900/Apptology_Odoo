@@ -262,7 +262,8 @@ $space: var(--k-spacing);
   display: flex;
   flex-direction: column;
   transition: transform .2s ease, box-shadow .2s ease;
-  width: var(--k-card-w, 360px);
+  /* Fill the grid track. Track defines min width; card can expand to fit row */
+  width: 100%;
   min-width: var(--k-card-w, 360px); /* prevent grid track collapse on Safari */
   height: var(--k-card-h, 520px);
 }
