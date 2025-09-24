@@ -514,7 +514,7 @@ export class KitchenScreenDashboard extends Component {
             // Zoom UI state
             zoomIndex: 2,
             card_w: 320,
-            card_h: 520,
+            card_h: 400,
             content_scale: 1,
             // Completed window (minutes); 0 = show all
             completed_window_minutes: 5,
@@ -923,13 +923,13 @@ recomputeTicketCounts() {
     }
 
     zoomLevels() {
-        // width, height, and content scale factor
+        // width changes with zoom; height is fixed to 400; no inner scaling
         return [
-            { w: 260, h: 420, s: 0.78 }, // xs
-            { w: 300, h: 460, s: 0.90 }, // compact
-            { w: 320, h: 520, s: 1.00 }, // default (new)
-            { w: 380, h: 580, s: 1.10 }, // large
-            { w: 440, h: 640, s: 1.18 }, // xlarge
+            { w: 260, h: 400, s: 1.00 }, // xs
+            { w: 300, h: 400, s: 1.00 }, // compact
+            { w: 320, h: 400, s: 1.00 }, // default (new)
+            { w: 380, h: 400, s: 1.00 }, // large
+            { w: 440, h: 400, s: 1.00 }, // xlarge
         ];
     }
 
@@ -938,8 +938,8 @@ recomputeTicketCounts() {
         const idx = Math.min(Math.max(this.state.zoomIndex, 0), levels.length - 1);
         const { w, h, s } = levels[idx];
         this.state.card_w = w;
-        this.state.card_h = h;
-        this.state.content_scale = s;
+        this.state.card_h = h; // fixed to 400 via levels
+        this.state.content_scale = s; // 1.00 (no scaling)
         try {
             window.localStorage.setItem('kitchen_zoom_index', String(idx));
         } catch (_) { /* ignore */ }
