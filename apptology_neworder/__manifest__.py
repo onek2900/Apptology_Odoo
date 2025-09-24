@@ -10,10 +10,10 @@
     "assets": {
         "point_of_sale._assets_pos": [
             "apptology_neworder/static/src/xml/floor_neworder_button.xml",
-            "apptology_neworder/static/src/js/floor_neworder_button.js",
-            "apptology_neworder/static/src/scss/floor_neworder_button.scss"
+                        "apptology_neworder/static/src/scss/floor_neworder_button.scss"
         ]
     },
     "installable": True
 }
+
 
