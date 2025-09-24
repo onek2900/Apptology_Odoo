@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import werkzeug
 
 from odoo import http
 from odoo.http import request
+
+_logger = logging.getLogger(__name__)
 
 
 class OrderScreen(http.Controller):
@@ -71,11 +74,9 @@ class OrderScreen(http.Controller):
         kitchen_screen = request.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)], limit=1)
 
-        # Previous stable logic: search opened session for this config
-        pos_session_id = request.env["pos.session"].sudo().search(
-            [("config_id", "=", shop_id), ("state", "=", "opened")],
-            limit=1,
-        )
+        # Resolve the exact current session from POS config to avoid picking a stale opened session
+        config = request.env["pos.config"].sudo().browse(int(shop_id))
+        pos_session_id = config.current_session_id
         if not pos_session_id:
             return {"orders": [], "order_lines": [], "error": "no_open_session"}
 
@@ -84,7 +85,7 @@ class OrderScreen(http.Controller):
         if kitchen_screen.pos_categ_ids:
             cat_domain = [("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids)]
 
-        # In‑progress: only orders with cooking lines; split in‑store vs online (approved)
+        # In‑progress: only orders with cooking lines; split in‑store vs online (allow open/approved/finalized)
         pos_orders = request.env["pos.order"].sudo().search(
             [("lines.is_cooking", "=", True), ("is_online_order", "=", False), ("session_id", "=", pos_session_id.id)]
             + cat_domain,
@@ -96,7 +97,7 @@ class OrderScreen(http.Controller):
                 ("lines.is_cooking", "=", True),
                 ("session_id", "=", pos_session_id.id),
                 ("is_online_order", "=", True),
-                ("online_order_status", "in", ["approved", "finalized"]),
+                ("online_order_status", "in", ["open", "approved", "finalized"]),
             ]
             + cat_domain,
             order="date_order",
@@ -120,6 +121,28 @@ class OrderScreen(http.Controller):
         )
 
         combined_orders = pos_orders | approved_deliverect_orders | ready_instore | ready_online
+
+        # Debug/diagnostic logging
+        try:
+            _logger.info(
+                "[KitchenAPI] shop=%s session=%s cats=%s counts in_progress(instore=%s, online=%s) ready(instore=%s, online=%s)",
+                shop_id,
+                pos_session_id.id,
+                kitchen_screen.pos_categ_ids.ids if kitchen_screen else [],
+                len(pos_orders),
+                len(approved_deliverect_orders),
+                len(ready_instore),
+                len(ready_online),
+            )
+            _logger.debug(
+                "[KitchenAPI] ids in_progress(instore=%s, online=%s) ready(instore=%s, online=%s)",
+                pos_orders.ids,
+                approved_deliverect_orders.ids,
+                ready_instore.ids,
+                ready_online.ids,
+            )
+        except Exception:
+            pass
         values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
         return values
 
