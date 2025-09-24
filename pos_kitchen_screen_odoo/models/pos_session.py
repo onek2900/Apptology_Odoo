@@ -49,8 +49,9 @@ class PosSession(models.Model):
             **params['search_params'])
 
     # When a session is closed, mark any remaining kitchen orders as ready
-    def action_pos_session_closing_control(self):
-        res = super().action_pos_session_closing_control()
+    def action_pos_session_closing_control(self, *args, **kwargs):
+        # Preserve upstream signature (e.g., bank_payment_method_diffs kwarg)
+        res = super().action_pos_session_closing_control(*args, **kwargs)
         for session in self:
             orders = self.env['pos.order'].sudo().search([
                 ('session_id', '=', session.id),
