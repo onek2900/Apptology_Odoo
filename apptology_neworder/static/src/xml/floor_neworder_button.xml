@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <!-- Extend the FloorScreen to inject a New Order button for pickup (generic name) -->
-    <t t-inherit="FloorScreen" t-inherit-mode="extension">
-        <xpath expr="//div[@class='screen-content-flexbox']" position="inside">
-            <div class="o-apptology-floor-header">
-                <button class="btn btn-primary o-apptology-neworder-btn" type="button" t-on-click="onNewPickupOrder">
-                    <i class="fa fa-plus me-1" role="img" aria-label="New" title="New"></i>
-                    <span>New Order</span>
-                </button>
-            </div>
-        </xpath>
-    </t>
-
-    <!-- Extend with namespaced template for safety on some versions -->
+    <!-- Insert New Order button above the floor map -->
     <t t-inherit="pos_restaurant.FloorScreen" t-inherit-mode="extension">
-        <xpath expr="//div[@class='screen-content-flexbox']" position="inside">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' floor-map ')]" position="before">
             <div class="o-apptology-floor-header">
                 <button class="btn btn-primary o-apptology-neworder-btn" type="button" t-on-click="onNewPickupOrder">
                     <i class="fa fa-plus me-1" role="img" aria-label="New" title="New"></i>
