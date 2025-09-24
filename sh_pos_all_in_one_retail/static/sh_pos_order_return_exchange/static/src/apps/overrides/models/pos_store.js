@@ -22,30 +22,32 @@ patch(PosStore.prototype, {
         const result = super.push_single_order(order)
         if (result){
             result.then(function ( Orders ) {
-                if ( Orders ){
+                try {
+                    if (!Array.isArray(Orders) || !Orders.length || !Orders[0]) return;
                     let order_id = Orders[0].id
-                    if (self.db.pos_order_by_id[order_id]){
+                    if (self.db.pos_order_by_id && self.db.pos_order_by_id[order_id]){
                         if (order.is_return_order || order.is_exchange_order){
-                            self.db.pos_order_by_id[order_id][0]['is_return_order'] = order.is_return_order
-                            let old_order_id = order.old_pos_order_id
-                            let old_order = self.db.pos_order_by_id[old_order_id]
-                            if (old_order[0]['old_pos_reference']){
-                                old_order[0]['old_pos_reference'] += order.name
-                            }else{
-                                old_order[0]['old_pos_reference'] = order.name
-                            }
-                            if (old_order){
+                            self.db.pos_order_by_id[order_id][0]['is_return_order'] = !!order.is_return_order
+                            let old_order_id = order && order.old_pos_order_id
+                            let old_order = old_order_id ? self.db.pos_order_by_id[old_order_id] : undefined
+                            if (old_order && old_order[0]){
+                                if (old_order[0]['old_pos_reference']){
+                                    old_order[0]['old_pos_reference'] += (order && order.name) || ''
+                                }else{
+                                    old_order[0]['old_pos_reference'] = (order && order.name) || ''
+                                }
                                 for(let i=0; i < old_order[1].length; i++){
                                     let new_line = old_order[1][i]
-                                    for (let oldline of order.get_orderlines()){
-                                        if (oldline.product.id == new_line.product_id){
+                                    const ols = (order && order.get_orderlines) ? order.get_orderlines() : []
+                                    for (let oldline of ols){
+                                        if (oldline && oldline.product && oldline.product.id == new_line.product_id){
                                             if( order.is_exchange_order ){
-                                                if( oldline.quantity < 0 ){
+                                                if( Number(oldline.quantity) < 0 ){
                                                     // same product wty will not add as return 
-                                                    new_line['sh_return_qty'] -= oldline.quantity
+                                                    new_line['sh_return_qty'] -= Number(oldline.quantity)
                                                 }
                                             }else{
-                                                new_line['sh_return_qty'] -= oldline.quantity
+                                                new_line['sh_return_qty'] -= Number(oldline.quantity)
                                             }
                                             
                                         }
@@ -53,19 +55,22 @@ patch(PosStore.prototype, {
                                 }
                             }
                         }else{
+                            const linesArg = (Orders[0] && Orders[0].lines) ? Orders[0].lines : []
                             self.orm.call("pos.session", "sh_get_line_data_by_id", [
-                                [], Orders[0].lines,
+                                [], linesArg,
                             ]).then(function (lines) {
                                 for(let i=0; i < lines.length; i++){
                                     let new_line = lines[i]
                                     new_line['sh_return_qty'] = 0
                                     self.db.pos_order_line_by_id[new_line.id] = new_line
                                 }
-                                self.db.pos_order_by_id[order_id][1] = lines
+                                if (self.db.pos_order_by_id[order_id]){
+                                    self.db.pos_order_by_id[order_id][1] = lines
+                                }
                             })
                         }
                     }
-                }
+                } catch (_) { /* ignore */ }
             })
         }
         return result

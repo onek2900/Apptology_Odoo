@@ -378,17 +378,33 @@ export class OnlineOrderScreen extends Component {
     /**
      * Closes the online order screen and navigates to the product screen.
      */
-    closeOnlineOrderScreen(){
+      closeOnlineOrderScreen(){
         const pos = this.env.services.pos;
+        const cfg = pos && pos.config ? pos.config : {};
+        // Heuristics to detect restaurant mode across versions/modules
+        const isRestaurant = Boolean(
+            cfg.module_pos_restaurant ||
+            cfg.iface_floorplan ||
+            (Array.isArray(cfg.restaurant_floor_ids) && cfg.restaurant_floor_ids.length)
+        );
         try {
             if (!pos.get_order()) {
                 pos.add_new_order();
             }
         } catch (e) {
-            console.warn('Failed to ensure a current order before returning to ProductScreen:', e);
+            // continue; floor screen does not require a current order
+        }
+        if (isRestaurant) {
+            try {
+                pos.showScreen("FloorScreen");
+                return;
+            } catch (e) {
+                // Fallback to product screen if restaurant screen is unavailable
+                console.warn('FloorScreen not available, falling back to ProductScreen', e);
+            }
         }
         pos.showScreen("ProductScreen");
-    }
+      }
     // Ensure topping modifiers carry a consistent boolean flag for styling.
     normalizeOrderLines(lines){
         if (!Array.isArray(lines)){
