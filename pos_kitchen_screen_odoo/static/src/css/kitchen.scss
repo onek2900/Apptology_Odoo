@@ -441,6 +441,26 @@ $space: var(--k-spacing);
 /* row icon subtle pop on completion */
 .order-card__item i.fa { transition: transform .18s ease; }
 
+/* Distinguish modifiers (toppings) visually */
+.order-card__item.modifier {
+  opacity: .78;
+  color: var(--k-muted);
+  background: transparent;
+  padding-left: 2.25rem; /* indent under parent */
+  position: relative;
+}
+.order-card__item.modifier::before {
+  content: "↳";
+  position: absolute;
+  left: .9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--k-muted);
+  font-size: .9rem;
+}
+.order-card__item.modifier .order-card__qty { visibility: hidden; }
+.order-card__item.modifier .order-card__product { font-style: italic; }
+
 /* Per-item completion visuals */
 .order-card__item.completed .order-card__product { text-decoration: line-through; opacity: .7; }
 .order-card__item.completed .order-card__qty { background: rgba(40,167,69,.9); color: #fff; }
