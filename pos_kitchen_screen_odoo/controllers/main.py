@@ -96,7 +96,7 @@ class OrderScreen(http.Controller):
                 ("lines.is_cooking", "=", True),
                 ("session_id", "=", pos_session_id.id),
                 ("is_online_order", "=", True),
-                ("online_order_status", "=", "approved"),
+                ("online_order_status", "in", ["approved", "finalized"]),
             ]
             + cat_domain,
             order="date_order",
@@ -113,7 +113,7 @@ class OrderScreen(http.Controller):
                 ("order_status", "=", "ready"),
                 ("session_id", "=", pos_session_id.id),
                 ("is_online_order", "=", True),
-                ("online_order_status", "=", "approved"),
+                ("online_order_status", "in", ["approved", "finalized"]),
             ]
             + cat_domain,
             order="date_order",
