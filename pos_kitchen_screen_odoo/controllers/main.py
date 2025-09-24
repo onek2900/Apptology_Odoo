@@ -3,7 +3,7 @@
 import logging
 import werkzeug
 
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
@@ -100,7 +100,9 @@ class OrderScreen(http.Controller):
         context = {
             "session_info": {
                 **request.env["ir.http"].get_frontend_session_info(),
-                'shop_id': shop.get('id')
+                'shop_id': shop.get('id'),
+                # Boot token to force client-side refresh/reset on page open
+                'kitchen_boot_ts': fields.Datetime.now().isoformat(),
             },
             "shop_id": shop.get('id'),
             "title": "Pos Kitchen Screen",

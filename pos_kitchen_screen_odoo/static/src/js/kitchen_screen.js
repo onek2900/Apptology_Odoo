@@ -548,6 +548,7 @@ export class KitchenScreenDashboard extends Component {
 
         onWillStart(async () => {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
+            this.checkBootTokenAndReset();
             await this.refreshOrderDetails();
             this.initZoomFromStorage();
             this.loadCompletedWindow();
@@ -566,6 +567,28 @@ export class KitchenScreenDashboard extends Component {
         this.refreshInterval = setInterval(() => {
             this.refreshOrderDetails();
         }, 5000);
+    }
+
+    // Clear per-shop caches on first load when server boot token changes
+    checkBootTokenAndReset() {
+        try {
+            const sid = this.state?.shop_id || sessionStorage.getItem('shop_id');
+            if (!sid) return;
+            const boot = (window.odoo && (window.odoo.kitchen_boot_ts || (window.odoo.session_info && window.odoo.session_info.kitchen_boot_ts))) || null;
+            if (!boot) return;
+            const key = `kitchen_boot_ts_${sid}`;
+            const prev = window.localStorage.getItem(key);
+            if (prev !== String(boot)) {
+                const keys = [
+                    `kitchen_seen_lines_${sid}`,
+                    `kitchen_seen_tickets_${sid}`,
+                    `kitchen_press_counts_${sid}`,
+                    `kitchen_virtual_lines_${sid}`,
+                ];
+                for (const k of keys) { try { window.localStorage.removeItem(k); } catch (_) { /* ignore */ } }
+                try { window.localStorage.setItem(key, String(boot)); } catch (_) { /* ignore */ }
+            }
+        } catch (_) { /* ignore */ }
     }
 
     // ===== Completed window controls =====
