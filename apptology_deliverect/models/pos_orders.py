@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import json
 import requests
 import re
 import os
@@ -165,6 +166,12 @@ class PosOrder(models.Model):
                 pass
             self.update_order_status_in_deliverect(20)
             self.update_order_status_in_deliverect(50)
+            # Log snapshot of the approved order(s) for debugging/analysis
+            try:
+                for order in self:
+                    order._log_online_order_snapshot(event='approved')
+            except Exception as _e:
+                _logger.debug("Failed to log approved order snapshot: %s", _e)
         elif status == 'finalized':
             self.write({'online_order_status': 'finalized'})
             self.update_order_status_in_deliverect(90)
@@ -551,5 +558,54 @@ class PosOrder(models.Model):
             'orders': orders,
             'has_more': has_more,
         }
+
+    # ----------------------------
+    # Debug helpers (logging only)
+    # ----------------------------
+    def _as_debug_payload(self):
+        """Return a compact dict describing the order and lines for logs."""
+        self.ensure_one()
+        def m2o(v):
+            return (v.id, v.display_name) if v else False
+        base = {
+            'id': self.id,
+            'pos_reference': self.pos_reference,
+            'date_order': fields.Datetime.to_string(self.date_order) if self.date_order else False,
+            'config_id': m2o(self.config_id),
+            'session_id': m2o(self.session_id),
+            'is_online_order': bool(self.is_online_order),
+            'online_order_id': self.online_order_id,
+            'online_order_status': self.online_order_status,
+            'order_status': self.order_status,
+            'is_cooking': bool(self.is_cooking),
+            'order_type': self.order_type,
+            'channel_order_reference': self.channel_order_reference,
+            'amount_total': self.amount_total,
+            'amount_tax': self.amount_tax,
+            'pickup_time': fields.Datetime.to_string(self.pickup_time) if self.pickup_time else False,
+            'delivery_time': fields.Datetime.to_string(self.delivery_time) if self.delivery_time else False,
+        }
+        line_payload = []
+        for l in self.lines:
+            line_payload.append({
+                'id': l.id,
+                'product_id': m2o(l.product_id),
+                'name': l.full_product_name or (l.product_id.display_name if l.product_id else ''),
+                'qty': l.qty,
+                'order_status': l.order_status,
+                'is_cooking': bool(l.is_cooking),
+                'sh_is_topping': bool(l.sh_is_topping),
+                'product_sh_is_topping': bool(getattr(l, 'product_sh_is_topping', False)),
+            })
+        base['lines'] = line_payload
+        return base
+
+    def _log_online_order_snapshot(self, event='approved'):
+        for order in self:
+            try:
+                payload = order._as_debug_payload()
+                _logger.info("[Deliverect][Order %s] Snapshot: %s", event, json.dumps(payload, default=str))
+            except Exception as _e:
+                _logger.debug("Snapshot log failed for %s: %s", order.id, _e)
 
 
