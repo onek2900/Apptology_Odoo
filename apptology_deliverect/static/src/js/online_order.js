@@ -299,13 +299,50 @@ export class OnlineOrderScreen extends Component {
     * Ready function to make the order stage ready
     */
     async done_order(order){
-    await this.rpc("/pos/kitchen/order_status", {
+        try {
+            const toId = (v) => {
+                if (v == null) return null;
+                if (typeof v === 'number') return v;
+                if (Array.isArray(v)) return toId(v[0]);
+                if (typeof v === 'object') return toId(v.id ?? v.ID ?? v._id);
+                const n = Number(v);
+                return Number.isFinite(n) ? n : null;
+            };
+            const isModifier = (line) => {
+                const raw = line?.is_topping ?? line?.sh_is_topping;
+                return Array.isArray(raw) ? !!raw[0] : !!raw;
+            };
+            const allLines = Array.isArray(order?.lines) ? order.lines : [];
+            const mainLineIds = allLines
+                .filter((l) => l && !isModifier(l))
+                .map((l) => toId(l.id))
+                .filter((id) => typeof id === 'number');
+
+            if (mainLineIds.length) {
+                // Mark main lines as ready in the kitchen screen
+                await this.rpc("/pos/kitchen/line_status", { line_ids: mainLineIds });
+            }
+
+            // Recompute and persist the order readiness on the server
+            await this.rpc("/pos/kitchen/order_status", {
                 method: 'order_progress_change',
                 order_id: Number(order.id),
             });
+
             if (order) {
                 order.order_status = 'ready';
+                // Reflect ready status on local lines for immediate UI feedback
+                if (Array.isArray(order.lines)) {
+                    order.lines.forEach((l) => {
+                        if (l && !isModifier(l)) {
+                            l.order_status = 'ready';
+                        }
+                    });
                 }
+            }
+        } catch (e) {
+            console.error('Failed to mark order ready in kitchen screen:', e);
+        }
     }
     /**
      * Closes the online order screen and navigates to the product screen.
