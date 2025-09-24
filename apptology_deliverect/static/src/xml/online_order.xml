@@ -162,7 +162,7 @@
                             </div>
                         </div>
                         <div class="pads border-top">
-                            <t t-if="state.clickedOrder.is_online_order and state.clickedOrder.order_status=='ready' and ['approved','finalized'].includes(state.clickedOrder.online_order_status)">
+                            <t t-if="state.clickedOrder.is_online_order and state.clickedOrder.order_status=='ready' and state.clickedOrder.online_order_status=='approved'">
                                 <button
                                         class="button validation load-order-button w-100 btn btn-lg btn-primary rounded-0 fw-bolder py-3"
                                         t-on-click.stop="() => this.finalizeOrder(state.clickedOrder)">
