@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Insert New Order button above the floor map -->
+    <t t-inherit="pos_restaurant.FloorScreen" t-inherit-mode="extension">
+        <xpath expr="//div[contains(concat(' ', normalize-space(@class), ' '), ' floor-map ')]" position="before">
+            <div class="o-apptology-floor-header">
+                <button class="btn btn-primary o-apptology-neworder-btn" type="button"
+                        t-on-click="() => { env.services.pos.add_new_order(); env.services.pos.showScreen('ProductScreen'); }">
+                    <i class="fa fa-plus me-1" role="img" aria-label="New" title="New"></i>
+                    <span>New Order</span>
+                </button>
+            </div>
+        </xpath>
+    </t>
+</templates>
+
