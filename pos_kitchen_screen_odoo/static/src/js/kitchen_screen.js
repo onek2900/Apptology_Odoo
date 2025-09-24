@@ -941,6 +941,7 @@ recomputeTicketCounts() {
     async accept_order_line(lineId) {
         try {
             const id = Number(lineId);
+            if (!Number.isFinite(id) || id <= 0) return;
             const line = this.state.lines.find((l) => l.id === id);
             if (!line) return;
             // Do not toggle toppings/modifiers

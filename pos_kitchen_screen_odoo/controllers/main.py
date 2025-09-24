@@ -96,7 +96,7 @@ class OrderScreen(http.Controller):
                 ("lines.is_cooking", "=", True),
                 ("session_id", "=", pos_session_id.id),
                 ("is_online_order", "=", True),
-                ("online_order_status", "in", ["opened", "approved"]),
+                ("online_order_status", "in", ["approved", "finalized"]),
             ]
             + cat_domain,
             order="date_order",
@@ -160,12 +160,20 @@ class OrderScreen(http.Controller):
         """
         if not line_ids:
             return False
-        if isinstance(line_ids, (int, str)):
-            try:
-                line_ids = [int(line_ids)]
-            except Exception:
-                return False
-        lines = request.env["pos.order.line"].sudo().browse(line_ids)
+        # Normalize and validate ids
+        ids = []
+        try:
+            if isinstance(line_ids, (int, str)):
+                ids = [int(line_ids)]
+            elif isinstance(line_ids, (list, tuple)):
+                ids = [int(x) for x in line_ids]
+        except Exception:
+            return False
+        ids = [i for i in ids if isinstance(i, int) and i > 0]
+        if not ids:
+            return False
+        # Filter to existing records to avoid warnings on invalid ids
+        lines = request.env["pos.order.line"].sudo().browse(ids).exists()
         if not lines:
             return False
         lines.order_progress_change()

@@ -331,8 +331,9 @@ export class OnlineOrderScreen extends Component {
                     .filter((ld) => ld && !isModifier(ld) && String(ld.order_status) !== 'ready')
                     .map((ld) => toId(ld.id))
                     .filter((id) => typeof id === 'number');
-                if (nonReadyIds.length) {
-                    await this.rpc("/pos/kitchen/line_status", { line_ids: nonReadyIds });
+                const validIds = nonReadyIds.filter((id) => typeof id === 'number' && id > 0);
+                if (validIds.length) {
+                    await this.rpc("/pos/kitchen/line_status", { line_ids: validIds });
                 }
             }
 
