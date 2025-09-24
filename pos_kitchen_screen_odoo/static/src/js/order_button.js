@@ -61,31 +61,58 @@ patch(ActionpadWidget.prototype, {
                     }
                 });
                 if ( self.kitchen_order_status){
+                    const ticketUid = 'ticket_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+                    const changeSummary = this.currentOrder.getOrderChanges ? this.currentOrder.getOrderChanges() : null;
+                    const newLineSummary = [];
+                    if (changeSummary && changeSummary.orderlines) {
+                        for (const change of Object.values(changeSummary.orderlines)) {
+                            const deltaQty = Number(change.quantity) || 0;
+                            if (deltaQty > 0) {
+                                const productData = this.pos?.db?.product_by_id?.[change.product_id];
+                                newLineSummary.push({
+                                    product_id: change.product_id,
+                                    product_name: productData?.display_name || change.name || '',
+                                    quantity: deltaQty,
+                                    note: change.note || '',
+                                    ticket_uid: ticketUid,
+                                });
+                            }
+                        }
+                    }
                     await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
                     const currentOrder = this.currentOrder;
                     for (const orders of currentOrder.orderlines) {
-                        line.push([0, 0, {
-                            'qty': orders.quantity,
-                            'price_unit': orders.price,
-                            'price_subtotal': orders.quantity * orders.price,
-                            'price_subtotal_incl': orders.get_display_price(),
-                            'discount': orders.discount,
-                            'product_id': orders.product.id,
-                            'tax_ids': [
-                                [6, 0, orders.get_taxes().map((tax) => tax.id)]
-                            ],
-
-                            'id': 29,
-                            'pack_lot_ids': [],
-                            'full_product_name': orders.product.display_name,
-                            'price_extra': orders.price_extra,
-                            'name': 'newsx/0031',
-                            'is_cooking': true,
-                            'note':orders.customerNote,
-                        }])
+                        if (!orders.product) {
+                            continue;
+                        }
+                        const product = orders.product;
+                        const taxes = typeof orders.get_taxes === 'function' ? orders.get_taxes() : [];
+                        const taxIds = taxes.map((tax) => tax.id);
+                        const prices = typeof orders.get_all_prices === 'function' ? orders.get_all_prices() : {};
+                        const productIsTopping = Boolean(product.is_topping ?? product.sh_is_topping);
+                        const payload = {
+                            qty: orders.quantity,
+                            price_unit: orders.price,
+                            price_subtotal: prices.priceWithoutTax ?? orders.quantity * orders.price,
+                            price_subtotal_incl: prices.priceWithTax ?? orders.get_display_price(),
+                            discount: orders.discount,
+                            product_id: product.id,
+                            tax_ids: [[6, 0, taxIds]],
+                            pack_lot_ids: [],
+                            full_product_name: product.display_name,
+                            price_extra: orders.price_extra,
+                            is_cooking: true,
+                            note: orders.customerNote,
+                            sh_is_topping: productIsTopping,
+                            product_sh_is_topping: Boolean(product.sh_is_topping),
+                            kitchen_ticket_uid: ticketUid,
+                        };
+                        line.push([0, 0, payload]);
                     }
                     var orders = [{
                         'pos_reference': this.pos.get_order().name,
+                        'ticket_uid': ticketUid,
+                        'kitchen_new_lines': newLineSummary,
                         'amount_total': 0,
                         'amount_paid': 0,
                         'amount_return': '0',
@@ -150,3 +177,4 @@ patch(ActionpadWidget.prototype, {
         return false;
     },
 });
+

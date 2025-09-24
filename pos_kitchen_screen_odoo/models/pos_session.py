@@ -8,11 +8,15 @@ class PosSession(models.Model):
     _inherit = 'pos.session'
 
     def _pos_ui_models_to_load(self):
-        """Pos ui models to load"""
-        result = super()._pos_ui_models_to_load()
-        result += {
-            'pos.order', 'pos.order.line'
-        }
+        """Pos ui models to load
+
+        Keep original order and append extra models at the end to avoid
+        breaking dependencies (e.g., 'pos.combo' before 'pos.combo.line').
+        """
+        result = list(super()._pos_ui_models_to_load())
+        for model in ['pos.order', 'pos.order.line']:
+            if model not in result:
+                result.append(model)
         return result
 
     def _loader_params_pos_order(self):
@@ -21,7 +25,8 @@ class PosSession(models.Model):
             'domain': [],
             'fields': ['name', 'date_order', 'pos_reference',
                        'partner_id', 'lines', 'order_status', 'order_ref',
-                       'is_cooking']}}
+                       'table_id',
+                       'is_cooking', 'kitchen_new_line_summary', 'kitchen_new_line_count', 'kitchen_send_logs']}}
 
     def _get_pos_ui_pos_order(self, params):
         """Get pos ui pos order"""
@@ -33,12 +38,41 @@ class PosSession(models.Model):
         return {'search_params': {'domain': [],
                                   'fields': ['product_id', 'qty',
                                              'order_status', 'order_ref',
-                                             'customer_id',
-                                             'price_subtotal', 'total_cost']}}
+                                             'customer_id', 'full_product_name', 'note',
+                                             'price_subtotal', 'total_cost',
+                                             'sh_is_topping', 'product_sh_is_topping',
+                                             'kitchen_ticket_uid']}}
 
     def _get_pos_ui_pos_order_line(self, params):
         """Get pos ui pos order line"""
-        data = self.env['pos.order.line'].search_read(
-            **params['search_params'])
         return self.env['pos.order.line'].search_read(
             **params['search_params'])
+
+    # When a session is closed, mark any remaining kitchen orders as ready
+    def action_pos_session_closing_control(self, *args, **kwargs):
+        # Preserve upstream signature (e.g., bank_payment_method_diffs kwarg)
+        res = super().action_pos_session_closing_control(*args, **kwargs)
+        for session in self:
+            orders = self.env['pos.order'].sudo().search([
+                ('session_id', '=', session.id),
+                ('order_status', '!=', 'ready'),
+            ])
+            if not orders:
+                continue
+            lines = orders.mapped('lines').filtered(lambda l: l.order_status != 'ready')
+            if lines:
+                lines.write({'order_status': 'ready', 'is_cooking': False})
+            orders.write({
+                'order_status': 'ready',
+                'is_cooking': False,
+                'kitchen_new_line_summary': [],
+                'kitchen_new_line_count': 0,
+            })
+            for o in orders:
+                if hasattr(o, 'update_order_status_in_deliverect'):
+                    try:
+                        o.update_order_status_in_deliverect(70)
+                    except Exception:
+                        # Do not block session closing if external call fails
+                        pass
+        return res

@@ -7,7 +7,7 @@
     'summary': 'Apptology Pos Kitchen Printing',
     # Ensure we patch after the kitchen screen module so our
     # submitOrder chaining runs after its override.
-    'depends': ['pos_restaurant', 'pos_kitchen_screen_odoo'],
+    'depends': ['pos_restaurant'],
     'author': 'Cybrosys Techno Solutions',
     'company': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",

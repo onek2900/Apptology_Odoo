@@ -8,16 +8,20 @@ patch(Order.prototype, {
         super.setup(...arguments);
     },
     get_screen_data() {
-/*    function modified to consider switching from online order screen */
+        // Preserve previously saved screen when coming from OnlineOrderScreen to avoid
+        // forcing a ProductScreen that can trigger creation of a blank draft order.
         const screen = this.screen_data["value"];
-        // If no screen data is saved
-        //   no payment line -> product screen
-        //   with payment line -> payment screen
-        if (!screen || screen?.name=='OnlineOrderScreen') {
-            if (this.get_paymentlines().length > 0) {
-                return { name: "PaymentScreen" };
-            }
-            return { name: "ProductScreen" };
+        if (!screen) {
+            // No saved screen: route based on payment lines only
+            return this.get_paymentlines().length > 0
+                ? { name: "PaymentScreen" }
+                : { name: "ProductScreen" };
+        }
+        if (screen?.name === 'OnlineOrderScreen') {
+            // Keep current context; do not force ProductScreen
+            return this.get_paymentlines().length > 0
+                ? { name: "PaymentScreen" }
+                : (this.finalized ? { name: "TicketScreen" } : { name: "ProductScreen" });
         }
         if (!this.finalized && this.get_paymentlines().length > 0) {
             return { name: "PaymentScreen" };

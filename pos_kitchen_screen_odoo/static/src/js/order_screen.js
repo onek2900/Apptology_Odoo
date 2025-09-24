@@ -192,7 +192,7 @@ export class OrderScreenDashboard extends Component {
 
             return (
                 o.order_status === 'ready' &&
-                writeDate > DateTime.now().minus({minutes: 5})
+                writeDate > DateTime.now().minus({hours: 6}) // Completed within the last hour
             );
         });
     }

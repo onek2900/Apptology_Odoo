@@ -6,6 +6,91 @@ import { useRef } from "@odoo/owl";
 
 
 
+function normalizeBooleanFlag(value) {
+    if (Array.isArray(value)) {
+        return value.some((item) => normalizeBooleanFlag(item));
+    }
+    if (value === undefined || value === null) {
+        return false;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (!normalized) {
+            return false;
+        }
+        if (['false', '0', 'no', 'off', 'n'].includes(normalized)) {
+            return false;
+        }
+        if (['true', '1', 'yes', 'on', 'y'].includes(normalized)) {
+            return true;
+        }
+        return Boolean(value);
+    }
+    if (typeof value === 'number') {
+        return value !== 0;
+    }
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    return Boolean(value);
+}
+
+function extractToppingFlags(line, product) {
+    const lineFlag = normalizeBooleanFlag(line && (line.sh_is_topping ?? line.is_topping));
+    const hasFlag = normalizeBooleanFlag(line && (line.sh_is_has_topping ?? line.is_has_topping));
+    const productFlag = normalizeBooleanFlag(product && product.sh_is_topping);
+    return {
+        sh_is_topping: lineFlag || productFlag,
+        sh_is_has_topping: hasFlag,
+    };
+}
+
+function resolveOrderline(order, line, fallbackUid) {
+    if (!order) {
+        return null;
+    }
+    const candidates = [
+        line && line.id,
+        line && line.uid,
+        line && line.uuid,
+        fallbackUid
+    ].filter(Boolean);
+    for (const identifier of candidates) {
+        const match = order.orderlines.find((ol) => ol && (
+            ol.id === identifier ||
+            ol.uid === identifier ||
+            ol.cid === identifier ||
+            ol.uuid === identifier
+        ));
+        if (match) {
+            return match;
+        }
+    }
+    return null;
+}
+
+function toPlainLine(orderline, product, fallbackUid) {
+    if (!orderline) {
+        return null;
+    }
+    const categories = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
+    const flags = extractToppingFlags(orderline, product);
+    return {
+        name: orderline.full_product_name || (product ? (product.display_name || product.name) : (orderline.name || '')),
+        note: orderline.customerNote || orderline.note,
+        product_id: orderline.product?.id,
+        quantity: orderline.quantity,
+        category_ids: categories,
+        customerNote: orderline.customerNote,
+        uid: orderline.uid || orderline.cid || fallbackUid || `${orderline.product?.id || ''}|${orderline.full_product_name || orderline.product?.display_name || orderline.product?.name || ''}|${orderline.note || orderline.customerNote || ''}|${orderline.sh_topping_parent ? orderline.sh_topping_parent.id : ''}`,
+        sh_is_topping: flags.sh_is_topping,
+        sh_is_has_topping: flags.sh_is_has_topping,
+        parent_line_id: orderline.sh_topping_parent ? orderline.sh_topping_parent.id : null,
+        parent_name: orderline.sh_topping_parent ? orderline.sh_topping_parent.full_product_name : null,
+        toppings_count: Array.isArray(orderline.Toppings) ? orderline.Toppings.length : (orderline.Toppings ? 1 : 0),
+    };
+}
+
 patch(ReceiptScreen.prototype, {
     setup(){
         super.setup();
@@ -21,23 +106,20 @@ patch(ReceiptScreen.prototype, {
         const changes = order.getOrderChanges ? order.getOrderChanges() : null;
         let lines = [];
         if (changes && changes.orderlines) {
-            for (const ch of Object.values(changes.orderlines)) {
+            for (const [uid, ch] of Object.entries(changes.orderlines)) {
                 const product = this.pos.db.product_by_id?.[ch.product_id];
-                lines.push({
-                    name: product ? (product.display_name || product.name) : (ch.name || ""),
-                    note: ch.customerNote || ch.note,
-                    product_id: ch.product_id,
-                    quantity: ch.quantity,
-                    category_ids: product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [],
-                    customerNote: ch.customerNote,
-                    // flags and parent linkage (when available from toppings module)
-                    is_topping: !!(ch.is_topping || ch.sh_is_topping),
-                    is_has_topping: !!(ch.is_has_topping || ch.sh_is_has_topping),
-                    parent_line_id: ch.sh_topping_parent ? ch.sh_topping_parent.id : null,
-                    parent_name: ch.sh_topping_parent ? ch.sh_topping_parent.full_product_name : null,
-                    toppings_count: Array.isArray(ch.Toppings) ? ch.Toppings.length : (ch.Toppings ? 1 : 0),
-                });
+                const resolved = resolveOrderline(order, ch, uid);
+                const plain = toPlainLine.call(this, resolved || ch, product, uid);
+                if (plain) {
+                    lines.push(plain);
+                }
             }
+        }
+        if (!lines.length) {
+            lines = order.orderlines.map((ol) => {
+                const product = this.pos.db.product_by_id?.[ol.product?.id] || ol.product;
+                return toPlainLine.call(this, ol, product, null);
+            }).filter(Boolean);
         }
 
         for (const printer of this.pos.unwatched.printers) {
@@ -67,8 +149,8 @@ patch(ReceiptScreen.prototype, {
                         name: item.name,
                         qty: item.quantity,
                         note: item.customerNote,
-                        is_topping: !!item.is_topping,
-                        has_topping: !!item.is_has_topping,
+                        sh_is_topping: !!item.sh_is_topping,
+                        sh_is_has_topping: !!item.sh_is_has_topping,
                         parent_line_id: item.parent_line_id || null,
                         parent_name: item.parent_name || null,
                         toppings_count: item.toppings_count || 0,

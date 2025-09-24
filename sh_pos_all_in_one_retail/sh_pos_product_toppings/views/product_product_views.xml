@@ -8,6 +8,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='default_code']" position="after">
                 <field name="sh_is_global_topping"></field>
+                <field name="sh_is_topping"></field>
             </xpath>
             <xpath expr="//sheet//notebook" position="inside">
                 <page id="Toppings" string="Toppings">

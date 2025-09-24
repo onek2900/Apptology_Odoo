@@ -315,8 +315,26 @@ class DeliverectWebhooks(http.Controller):
             else:
                 pos_order_data = self.create_order_data(data, pos_configuration.id)
                 if pos_order_data and deliverect_payment_method.id in pos_configuration.payment_method_ids.ids:
-                    order = request.env['pos.order'].sudo().create(pos_order_data)
-                    if data['orderIsAlreadyPaid']:
+                    existing_order = request.env['pos.order'].sudo().search([
+                        ('online_order_id', '=', pos_order_data.get('online_order_id')),
+                        ('config_id', '=', pos_configuration.id),
+                    ], limit=1)
+                    created_new_order = not existing_order
+                    order = existing_order or request.env['pos.order'].sudo().create(pos_order_data)
+                    if existing_order:
+                        _logger.info(
+                            "Deliverect order %s already exists as POS order %s - skipping duplicate creation",
+                            pos_order_data.get('online_order_id'), existing_order.id
+                        )
+                    # If POS is configured to auto-approve, always invoke the
+                    # approval routine so Deliverect receives 20/50 updates
+                    # even if the order was created with status 'approved'.
+                    try:
+                        if pos_configuration.auto_approve:
+                            order.update_order_status('approved')
+                    except Exception as _e:
+                        _logger.info(f"Auto-approve status push skipped: {_e}")
+                    if data['orderIsAlreadyPaid'] and order.state != 'paid':
                         payment_context = {"active_ids": order.ids, "active_id": order.id}
                         order_payment = request.env['pos.make.payment'].with_user(
                             pos_configuration.current_user_id.id).sudo(
@@ -359,8 +377,9 @@ class DeliverectWebhooks(http.Controller):
                     except Exception as _e:
                         _logger.info(f"Kitchen auto-ready check skipped: {_e}")
                     self.generate_order_notification(pos_configuration.id, 'success')
+                    message = 'Order created' if created_new_order else 'Order already exists'
                     return Response(
-                        json.dumps({'status': 'success', 'message': 'Order created',
+                        json.dumps({'status': 'success', 'message': message,
                                     'order_id': order.id}),
                         content_type='application/json',
                         status=200
@@ -415,3 +434,58 @@ class DeliverectWebhooks(http.Controller):
                 "status": "error",
                 "message": str(e)
             }
+
+    @http.route('/deliverect/debug/order', type='json', auth='user')
+    def deliverect_debug_order(self, online_order_id=None, pos_reference=None):
+        """Admin/debug endpoint: echo stored fields for a given Deliverect order.
+
+        Only users in Settings (base.group_system) may access.
+        Pass either `online_order_id` (preferred) or `pos_reference`.
+        """
+        if not request.env.user.has_group('base.group_system'):
+            return {'error': 'forbidden', 'message': 'Administrator rights required'}
+
+        Order = request.env['pos.order'].sudo()
+        domain = []
+        if online_order_id:
+            domain = [('online_order_id', '=', str(online_order_id))]
+        elif pos_reference:
+            domain = [('pos_reference', '=', str(pos_reference))]
+        else:
+            return {'error': 'missing_params', 'message': 'Provide online_order_id or pos_reference'}
+
+        order = Order.search(domain, limit=1)
+        if not order:
+            return {'error': 'not_found', 'message': 'Order not found'}
+
+        order_fields = [
+            'id', 'name', 'pos_reference', 'date_order',
+            'config_id', 'session_id', 'company_id', 'user_id',
+            'is_online_order', 'online_order_id', 'online_order_status', 'online_order_paid',
+            'order_type', 'order_payment_type', 'order_status', 'is_cooking',
+            'amount_total', 'amount_tax', 'amount_paid', 'amount_return',
+            'channel_order_reference', 'channel_name', 'channel_discount', 'channel_service_charge',
+            'channel_delivery_charge', 'channel_tip_amount', 'channel_total_amount', 'channel_tax', 'bag_fee',
+            'pickup_time', 'delivery_time', 'delivery_note',
+            'customer_name', 'customer_company_name', 'customer_email', 'customer_phone', 'customer_note',
+            'kitchen_new_line_summary', 'kitchen_new_line_count', 'kitchen_send_logs',
+            'lines',
+        ]
+
+        def m2o(v):
+            return (v.id, v.display_name) if v else False
+
+        data = order.read(order_fields)[0]
+        data['config_id'] = m2o(order.config_id)
+        data['session_id'] = m2o(order.session_id)
+        data['company_id'] = m2o(order.company_id)
+        data['user_id'] = m2o(order.user_id)
+
+        line_fields = [
+            'id', 'product_id', 'full_product_name', 'qty', 'price_unit',
+            'price_subtotal', 'price_subtotal_incl', 'discount', 'note',
+            'order_status', 'is_cooking', 'sh_is_topping', 'product_sh_is_topping', 'kitchen_ticket_uid'
+        ]
+        lines = order.lines.read(line_fields)
+
+        return {'ok': True, 'order': data, 'lines': lines}

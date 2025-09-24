@@ -35,14 +35,22 @@ export class OnlineOrderScreen extends Component {
         this.channel=`new_pos_order_${this.pos.config.id}`;
         this.busService = this.env.services.bus_service;
         this.busService.addChannel(this.channel);
-        this.busService.addEventListener('notification', ({detail: notifications})=>{
-            notifications = notifications.filter(item => item.payload.channel === this.channel)
-            notifications.forEach(item => {
-                this.reloadOrders();
-            })
-        });
+        this._busHandler = ({ detail: notifications }) => {
+            try {
+                const filtered = (notifications || []).filter((n) => n?.payload?.channel === this.channel);
+                for (const n of filtered) {
+                    this.reloadOrders();
+                }
+            } catch (e) {
+                console.warn('Online order bus handler failed', e);
+            }
+        };
+        this.busService.addEventListener('notification', this._busHandler);
         this.initiateServices();
-        onWillUnmount(()=>clearInterval(this.pollingInterval))
+        onWillUnmount(()=>{
+            if (this.pollingInterval) clearInterval(this.pollingInterval);
+            if (this._busHandler) this.busService.removeEventListener('notification', this._busHandler);
+        })
     }
     /**
      * Initiates services by fetching open orders and starting polling.
@@ -128,9 +136,9 @@ export class OnlineOrderScreen extends Component {
                 const product = pid ? this.pos.db.product_by_id?.[pid] : null;
                 if (!productMatchesPrinter(product, pCatSet)) return;
                 const rawTop = line.sh_is_topping;
-                const isTopping = Array.isArray(rawTop) ? !!rawTop[0] : !!rawTop || !!line.is_topping;
+                const isTopping = Array.isArray(rawTop) ? !!rawTop[0] : !!rawTop;
                 const rawHas = line.sh_is_has_topping;
-                const isHasTopping = Array.isArray(rawHas) ? !!rawHas[0] : !!rawHas || !!line.is_has_topping;
+                const isHasTopping = Array.isArray(rawHas) ? !!rawHas[0] : !!rawHas;
                 // Build categories names for convenience
                 const catObjs = product ? this.pos.db.get_category_by_id(product.pos_categ_ids) : [];
                 const catNames = (catObjs || []).map((c) => c && c.name).filter(Boolean);
@@ -139,8 +147,8 @@ export class OnlineOrderScreen extends Component {
                     name: line.full_product_name,
                     qty: line.qty,
                     note: line.note || "",
-                    is_topping: isTopping,
-                    has_topping: isHasTopping,
+                    sh_is_topping: isTopping,
+                    sh_is_has_topping: isHasTopping,
                 });
             });
 
@@ -171,25 +179,26 @@ export class OnlineOrderScreen extends Component {
                 const shIsToppingRaw = line.sh_is_topping;
                 const isTopping = Array.isArray(shIsToppingRaw)
                     ? !!shIsToppingRaw[0]
-                    : !!shIsToppingRaw || !!line.is_topping;
+                    : !!shIsToppingRaw;
                 orderLines.push({
                     lineId: line.id,
                     name: line.full_product_name,
                     qty: line.qty,
                     note: line.note,
-                    is_topping: isTopping,
+                    sh_is_topping: isTopping,
                 });
             }
         });
+        const safeData = {
+            ...(exportedOrder || {}),
+            orderData: currentOrder || exportedOrder || {},
+            orderLineData: orderLines,
+            headerData: { company: this.pos.company },
+        };
         this.printer.print(
             onlineOrderReceipt,
             {
-                data: {
-                    ...exportedOrder,
-                    orderData: currentOrder || exportedOrder,
-                    orderLineData: orderLines,
-                    headerData: {company:this.pos.company}
-                },
+                data: safeData,
                 formatCurrency: this.env.utils.formatCurrency,
             },
             { webPrintFallback: true }
@@ -288,19 +297,72 @@ export class OnlineOrderScreen extends Component {
     * Ready function to make the order stage ready
     */
     async done_order(order){
-    await this.rpc("/pos/kitchen/order_status", {
+        try {
+            const toId = (v) => {
+                if (v == null) return null;
+                if (typeof v === 'number') return v;
+                if (Array.isArray(v)) return toId(v[0]);
+                if (typeof v === 'object') return toId(v.id ?? v.ID ?? v._id);
+                const n = Number(v);
+                return Number.isFinite(n) ? n : null;
+            };
+            // Read fresh line ids from server to avoid stale/embedded structures
+            const recs = await this.orm.read('pos.order', [toId(order.id)], ['lines']);
+            const liveLineIds = Array.isArray(recs) && recs[0] && Array.isArray(recs[0].lines) ? recs[0].lines : [];
+            // Fetch line details to filter out modifiers/toppings
+            const lineDetails = liveLineIds.length
+                ? await this.orm.read('pos.order.line', liveLineIds, ['id','order_status','sh_is_topping','product_sh_is_topping'])
+                : [];
+            const toBool = (v) => {
+                if (Array.isArray(v)) return v.length ? !!v[0] : false;
+                if (typeof v === 'string') return ['1','true','yes','on','y'].includes(v.trim().toLowerCase());
+                return !!v;
+            };
+            const isModifier = (ld) => toBool(ld?.sh_is_topping) || toBool(ld?.product_sh_is_topping);
+            const mainLineIds = (lineDetails || [])
+                .filter((ld) => ld && !isModifier(ld))
+                .map((ld) => toId(ld.id))
+                .filter((id) => typeof id === 'number');
+
+            if (mainLineIds.length) {
+                // Mark main lines as ready in the kitchen screen (endpoint toggles; these are non-ready lines)
+                // Filter to only non-ready lines to avoid flipping ready -> waiting
+                const nonReadyIds = (lineDetails || [])
+                    .filter((ld) => ld && !isModifier(ld) && String(ld.order_status) !== 'ready')
+                    .map((ld) => toId(ld.id))
+                    .filter((id) => typeof id === 'number');
+                const validIds = nonReadyIds.filter((id) => typeof id === 'number' && id > 0);
+                if (validIds.length) {
+                    await this.rpc("/pos/kitchen/line_status", { line_ids: validIds });
+                }
+            }
+
+            // Recompute and persist the order readiness on the server
+            await this.rpc("/pos/kitchen/order_status", {
                 method: 'order_progress_change',
                 order_id: Number(order.id),
             });
+
             if (order) {
                 order.order_status = 'ready';
-                }
+            }
+        } catch (e) {
+            console.error('Failed to mark order ready in kitchen screen:', e);
+        }
     }
     /**
      * Closes the online order screen and navigates to the product screen.
      */
     closeOnlineOrderScreen(){
-        this.env.services.pos.showScreen("ProductScreen");
+        const pos = this.env.services.pos;
+        try {
+            if (!pos.get_order()) {
+                pos.add_new_order();
+            }
+        } catch (e) {
+            console.warn('Failed to ensure a current order before returning to ProductScreen:', e);
+        }
+        pos.showScreen("ProductScreen");
     }
     // Ensure topping modifiers carry a consistent boolean flag for styling.
     normalizeOrderLines(lines){
@@ -314,9 +376,7 @@ export class OnlineOrderScreen extends Component {
             const normalizedLine = { ...line };
             const rawTopping = normalizedLine.sh_is_topping;
             const normalizedSh = Array.isArray(rawTopping) ? !!rawTopping[0] : !!rawTopping;
-            const rawFallback = normalizedLine.is_topping;
-            const normalizedFallback = Array.isArray(rawFallback) ? !!rawFallback[0] : !!rawFallback;
-            normalizedLine.is_topping = normalizedSh || normalizedFallback;
+            normalizedLine.sh_is_topping = normalizedSh;
             return normalizedLine;
         });
     }
@@ -358,8 +418,8 @@ export class OnlineOrderScreen extends Component {
                 fieldName: "RECEIPT_NUMBER",
                 searchTerm: order.pos_reference,
             };
-            const ticketFilter = order.state=='paid'?"SYNCED":"ACTIVE_ORDERS"
-            await this.pos._syncTableOrdersFromServer();
+            const ticketFilter = order.state=='paid'?"SYNCED":"ACTIVE_ORDERS";
+            // Do not pre-sync here; TicketScreen will handle loading to avoid duplicate fetches
             this.pos.showScreen("TicketScreen", {
                 ui: { filter: ticketFilter, searchDetails },
             });

@@ -24,6 +24,76 @@ const BUS_EVENT = {
     MODEL: "pos.order"
 };
 
+// Debug toggle: enable via ?kdebug=1 or localStorage 'kitchen_debug' = '1'|'true'
+const isDebugEnabled = () => {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('kdebug');
+        if (q !== null) return q !== '0' && q.toLowerCase() !== 'false';
+    } catch (_) { /* ignore */ }
+    try {
+        const v = String(window.localStorage.getItem('kitchen_debug') || '').toLowerCase();
+        return v === '1' || v === 'true' || v === 'yes';
+    } catch (_) { /* ignore */ }
+    return Boolean((window.odoo && window.odoo.debug) || false);
+};
+const __KITCHEN_DEBUG__ = isDebugEnabled();
+
+const normalizeBooleanFlag = (value) => {
+    if (Array.isArray(value)) {
+        return value.some((item) => normalizeBooleanFlag(item));
+    }
+    if (value === undefined || value === null) {
+        return false;
+    }
+    if (typeof value === 'string') {
+        const normalized = value.trim().toLowerCase();
+        if (!normalized) {
+            return false;
+        }
+        if (['false', '0', 'no', 'off', 'n'].includes(normalized)) {
+            return false;
+        }
+        if (['true', '1', 'yes', 'on', 'y'].includes(normalized)) {
+            return true;
+        }
+        return Boolean(value);
+    }
+    if (typeof value === 'number') {
+        return value !== 0;
+    }
+    if (typeof value === 'boolean') {
+        return value;
+    }
+    return Boolean(value);
+};
+
+const extractToppingFlags = (line, product) => {
+    const lineFlagRaw = line && (line.is_topping ?? line.sh_is_topping);
+    const productFlagRaw = product && (product.is_topping ?? product.sh_is_topping);
+    const denormFlagRaw = line && (line.product_is_topping ?? line.product_sh_is_topping);
+    const hasFlag = normalizeBooleanFlag(line && (line.sh_is_has_topping ?? line.is_has_topping));
+
+    const productFlag = normalizeBooleanFlag(productFlagRaw) || normalizeBooleanFlag(denormFlagRaw);
+    const lineFlag = normalizeBooleanFlag(lineFlagRaw) || productFlag;
+
+    return {
+        is_topping: lineFlag,
+        sh_is_topping: lineFlag,
+        sh_is_has_topping: hasFlag,
+        product_is_topping: productFlag,
+        product_sh_is_topping: productFlag,
+    };
+};
+
+const computeModifierFlag = (line, product) => {
+    if (!line) {
+        return false;
+    }
+    const flags = extractToppingFlags(line, product);
+    return flags.is_topping;
+};
+
 /**
  * Custom hook for order management functionality
  * @param {Object} rpc - ORM service
@@ -55,29 +125,339 @@ const useOrderManagement = (rpc, shopId) => {
      * Fetch order details from server
      * @returns {Promise<Object>} Order details and counts
      */
-    const fetchOrderDetails = async () => {
-        try {
-            // const result = await orm.call("pos.order", "get_details", ["", shopId, ""]);
 
-            const result = await rpc("/pos/kitchen/get_order_details", {
-                shop_id: shopId
-            });
-            return {
-                order_details: result.orders,
-                lines: result.order_lines,
-                ...calculateOrderCounts(result.orders, shopId)
+const storageKeyForLines = (sid) => `kitchen_seen_lines_${sid}`;
+const storageKeyForTickets = (sid) => `kitchen_seen_tickets_${sid}`;
+const storageKeyForPressCounts = (sid) => `kitchen_press_counts_${sid}`;
+
+const loadSeenLines = (sid) => {
+    try {
+        const raw = window.localStorage.getItem(storageKeyForLines(sid));
+        return raw ? JSON.parse(raw) : {};
+    } catch (_) { return {}; }
+};
+
+const saveSeenLines = (sid, data) => {
+    try { window.localStorage.setItem(storageKeyForLines(sid), JSON.stringify(data)); } catch (_) { /* ignore */ }
+};
+
+const loadSeenTickets = (sid) => {
+    try {
+        const raw = window.localStorage.getItem(storageKeyForTickets(sid));
+        const parsed = raw ? JSON.parse(raw) : null;
+        // Backward compatibility: previously we stored an array or order-id map.
+        // Convert to a generic map keyed by a ticket key (orderId_pressIndex) or fallback to orderId.
+        if (Array.isArray(parsed)) {
+            const map = {};
+            for (const t of parsed) {
+                if (t && typeof t.id === 'number') map[`${t.id}_1`] = t;
+            }
+            return map;
+        }
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (_) { return {}; }
+};
+
+const saveSeenTickets = (sid, ticketsByOrderId) => {
+    try { window.localStorage.setItem(storageKeyForTickets(sid), JSON.stringify(ticketsByOrderId)); } catch (_) { /* ignore */ }
+};
+
+const loadPressCounts = (sid) => {
+    try {
+        const raw = window.localStorage.getItem(storageKeyForPressCounts(sid));
+        const obj = raw ? JSON.parse(raw) : {};
+        return obj && typeof obj === 'object' ? obj : {};
+    } catch (_) { return {}; }
+};
+
+const savePressCounts = (sid, obj) => {
+    try { window.localStorage.setItem(storageKeyForPressCounts(sid), JSON.stringify(obj)); } catch (_) { /* ignore */ }
+};
+
+let __deltaVirtualId = -1;
+
+const computeDeltaTickets = (orders, allLines, sid) => {
+    const seenLines = loadSeenLines(sid);
+    const ticketsByKey = loadSeenTickets(sid);   // map: ticketKey -> ticket
+    const pressCounts = loadPressCounts(sid);    // map: orderId -> last press index
+
+    const byOrder = new Map();
+    for (const line of allLines || []) {
+        if (!line || !Array.isArray(line.order_id)) continue;
+        const orderId = line.order_id[0];
+        if (!byOrder.has(orderId)) byOrder.set(orderId, []);
+        byOrder.get(orderId).push(line);
+    }
+
+    const virtualLines = [];
+    for (const order of orders || []) {
+        const orderId = order.id;
+        const lines = byOrder.get(orderId) || [];
+        const prev = seenLines[orderId] || {};
+
+        // Build current snapshot map id -> qty
+        const cur = {};
+        for (const l of lines) {
+            cur[l.id] = Number(l.qty) || 0;
+        }
+
+        // Determine delta additions
+        const deltaIds = [];
+        for (const l of lines) {
+            const prevQty = Number(prev[l.id] || 0);
+            const curQty = Number(cur[l.id] || 0);
+            if (curQty > prevQty) {
+                deltaIds.push({ id: l.id, add: curQty - prevQty });
+            }
+        }
+
+        // First time we see this order: create initial ticket with all lines
+        const isFirstSeen = !seenLines.hasOwnProperty(orderId);
+        let ticketLines = [];
+        let makeTicket = false;
+        if (isFirstSeen && lines.length) {
+            pressCounts[orderId] = 1;
+            ticketLines = lines.map((l) => l.id);
+            makeTicket = true;
+        } else if (deltaIds.length) {
+            const curPress = Number(pressCounts[orderId] || 0) + 1;
+            pressCounts[orderId] = curPress;
+            ticketLines = deltaIds.map((x) => x.id);
+            makeTicket = true;
+        }
+
+        if (makeTicket && ticketLines.length) {
+            // Remove any existing badges for this order so only the new badge remains
+            for (const key of Object.keys(ticketsByKey)) {
+                // keys are `${orderId}_pressIndex`, keep only those not matching this order
+                if (String(key).startsWith(`${orderId}_`)) {
+                    delete ticketsByKey[key];
+                }
+            }
+            // Create virtual line snapshot records so old badges never go empty
+            const byId = new Map(lines.map((l) => [l.id, l]));
+            const deltaMap = new Map();
+            for (const d of deltaIds) deltaMap.set(d.id, d.add);
+            const vIds = [];
+            for (const baseId of ticketLines) {
+                const base = byId.get(baseId) || allLines.find((l) => l.id === baseId);
+                const qty = deltaMap.has(baseId) ? Number(deltaMap.get(baseId)) || 0 : Number(base && base.qty) || 0;
+                if (!base || qty <= 0) continue;
+                const v = {
+                    id: __deltaVirtualId--,
+                    full_product_name: base.full_product_name || base.product || base.display_name || 'Item',
+                    qty: qty,
+                    order_status: base.order_status || 'waiting',
+                    is_modifier: false,
+                    is_topping: false,
+                    sh_is_topping: false,
+                    product_is_topping: false,
+                    product_sh_is_topping: false,
+                    sh_is_has_topping: false,
+                };
+                virtualLines.push(v);
+                vIds.push(v.id);
+            }
+
+            const key = `${orderId}_${pressCounts[orderId]}`;
+            ticketsByKey[key] = {
+                ...order,
+                ticket_uid: `order-${orderId}-press-${pressCounts[orderId]}`,
+                ticket_created_at: order.write_date,
+                lines: vIds,
             };
-        } catch (error) {
-            console.error("Error fetching order details:", error);
+        }
+
+        // Persist snapshot
+        seenLines[orderId] = cur;
+    }
+
+    saveSeenLines(sid, seenLines);
+    saveSeenTickets(sid, ticketsByKey);
+    savePressCounts(sid, pressCounts);
+    // Render only non-empty tickets to avoid blank cards
+    const tickets = Object.values(ticketsByKey).filter((t) => Array.isArray(t.lines) && t.lines.length);
+    return { tickets, virtualLines };
+};
+
+const fetchOrderDetails = async () => {
+    try {
+        const result = await rpc("/pos/kitchen/get_order_details", {
+            shop_id: shopId
+        });
+
+        if (result && result.error === "no_open_session") {
             return {
                 order_details: [],
+                tickets: [],
                 lines: [],
                 draft_count: 0,
                 waiting_count: 0,
-                ready_count: 0
+                ready_count: 0,
+                session_error: true,
             };
         }
-    };
+
+        const rawOrders = Array.isArray(result?.orders) ? result.orders : [];
+        const normalizedOrders = rawOrders.map((order) => {
+            const summaryRaw = Array.isArray(order.kitchen_new_line_summary) ? order.kitchen_new_line_summary : [];
+            const sanitizedSummary = summaryRaw.map((entry) => ({
+                product_id: entry && entry.product_id,
+                product_name: (entry && (entry.product_name || entry.name)) || '',
+                quantity: Number(entry && entry.quantity) || 0,
+                note: entry && entry.note ? entry.note : '',
+                ticket_uid: entry && entry.ticket_uid,
+            }));
+            let explicitCount = 0;
+            if (typeof order.kitchen_new_line_count === 'number') {
+                explicitCount = order.kitchen_new_line_count;
+            } else {
+                explicitCount = sanitizedSummary.reduce((acc, entry) => {
+                    const numeric = Number(entry.quantity) || 0;
+                    return acc + (numeric > 0 ? numeric : 0);
+                }, 0);
+            }
+            const normalizedCount = Math.round(explicitCount * 100) / 100;
+            return {
+                ...order,
+                kitchen_new_line_summary: sanitizedSummary,
+                kitchen_new_line_count: normalizedCount,
+            };
+        });
+
+        // Normalize lines before building tickets
+        const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
+        let normalizedLines = rawLines.map((line) => {
+            const flags = extractToppingFlags(line, null);
+            const isModifier = flags.is_topping;
+            const normalized = {
+                ...line,
+                is_topping: flags.is_topping,
+                sh_is_topping: flags.sh_is_topping,
+                product_is_topping: flags.product_is_topping,
+                product_sh_is_topping: flags.product_sh_is_topping,
+                sh_is_has_topping: flags.sh_is_has_topping,
+                is_modifier: isModifier,
+            };
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] normalized line', {
+                id: normalized.id,
+                product: normalized.full_product_name,
+                qty: normalized.qty,
+                raw_line_is_topping: line ? line.is_topping : undefined,
+                raw_sh_is_topping: line ? line.sh_is_topping : undefined,
+                raw_product_is_topping: line ? line.product_is_topping : undefined,
+                raw_product_sh_is_topping: line ? line.product_sh_is_topping : undefined,
+                raw_sh_is_has_topping: line ? line.sh_is_has_topping : undefined,
+                normalized_is_topping: normalized.is_topping,
+                normalized_product_is_topping: normalized.product_is_topping,
+                normalized_sh_is_has_topping: normalized.sh_is_has_topping,
+                is_modifier: normalized.is_modifier,
+            });
+            return normalized;
+        });
+
+        // Prefer server-provided logs if present, otherwise compute delta-based tickets
+        let tickets = [];
+        const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
+        if (anyLogs) {
+            // Build exactly one badge per order. If the order has logs, use the latest delta;
+            // otherwise, fall back to all current order lines so it still renders.
+            for (const order of normalizedOrders) {
+                const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
+                if (!logs.length) {
+                    const allIds = Array.isArray(order.lines) ? order.lines.map((x) => Number(x)) : [];
+                    if (allIds.length) {
+                        tickets.push({
+                            ...order,
+                            ticket_uid: `order-${order.id}-full`,
+                            ticket_created_at: order.write_date,
+                            lines: allIds,
+                        });
+                    }
+                    continue;
+                }
+
+                // Sort logs in ascending time so we can diff cumulatively.
+                const sorted = logs.slice().sort((a, b) => {
+                    const sa = String(a.created_at || '').replace(' ', 'T');
+                    const sb = String(b.created_at || '').replace(' ', 'T');
+                    const da = DateTime.fromISO(sa, { zone: 'UTC' });
+                    const db = DateTime.fromISO(sb, { zone: 'UTC' });
+                    if (!da.isValid && !db.isValid) return 0;
+                    if (!da.isValid) return -1;
+                    if (!db.isValid) return 1;
+                    return da - db;
+                });
+
+                const seenIds = new Set();
+                let lastDeltaIds = [];
+                let lastCreatedAt = order.write_date;
+                let lastIds = [];
+                for (const log of sorted) {
+                    const ids = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
+                    const delta = ids.filter((id) => !seenIds.has(id));
+                    ids.forEach((id) => seenIds.add(id));
+                    lastDeltaIds = delta;
+                    lastIds = ids;
+                    lastCreatedAt = log.created_at || order.write_date;
+                }
+
+                // Create one badge per order. Prefer the latest delta; if empty, fall back to
+                // the latest log's ids; if still empty, fall back to all order lines.
+                let linesForTicket = lastDeltaIds;
+                if (!linesForTicket || !linesForTicket.length) {
+                    linesForTicket = Array.isArray(lastIds) && lastIds.length
+                        ? lastIds
+                        : (Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : []);
+                }
+                tickets.push({
+                    ...order,
+                    ticket_uid: `ticket-${order.id}-latest`,
+                    ticket_created_at: lastCreatedAt,
+                    lines: linesForTicket,
+                });
+            }
+
+            // Filter out empty tickets (safety)
+            tickets = tickets.filter((t) => Array.isArray(t.lines) && t.lines.length);
+        } else {
+            const delta = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
+            tickets = delta.tickets;
+            normalizedLines = normalizedLines.concat(delta.virtualLines);
+            // Fallback: if delta produced no tickets (e.g., first load with cached snapshots),
+            // build one ticket per order using current order lines so the UI shows content.
+            if (!tickets || !tickets.length) {
+                tickets = (normalizedOrders || []).map((order) => ({
+                    ...order,
+                    ticket_uid: `order-${order.id}-full`,
+                    ticket_created_at: order.write_date,
+                    lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
+                })).filter((t) => Array.isArray(t.lines) && t.lines.length);
+            }
+        }
+        return {
+            order_details: normalizedOrders,
+            tickets,
+            lines: normalizedLines,
+            draft_count: 0,
+            waiting_count: 0,
+            ready_count: 0,
+            session_error: false,
+        };
+    } catch (error) {
+        console.error("Error fetching order details:", error);
+        return {
+            order_details: [],
+            tickets: [],
+            lines: [],
+            draft_count: 0,
+            waiting_count: 0,
+            ready_count: 0,
+            session_error: false,
+        };
+    }
+};
+
 
     return {
         fetchOrderDetails,
@@ -125,6 +505,7 @@ export class KitchenScreenDashboard extends Component {
 
         this.state = useState({
             order_details: [],
+            tickets: [],
             shop_id: shopId,
             stages: ORDER_STATUSES.DRAFT,
             draft_count: 0,
@@ -133,11 +514,14 @@ export class KitchenScreenDashboard extends Component {
             lines: [],
             loading: false,
             error: null,
+            session_error: false,
             // Zoom UI state
-            zoomIndex: 1,
+            zoomIndex: 0,
             card_w: 360,
             card_h: 520,
             content_scale: 1,
+            // Completed window (minutes); 0 = show all
+            completed_window_minutes: 5,
         });
 
         this.orderManagement = useOrderManagement(this.rpc, shopId);
@@ -166,6 +550,7 @@ export class KitchenScreenDashboard extends Component {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
             await this.refreshOrderDetails();
             this.initZoomFromStorage();
+            this.loadCompletedWindow();
         });
 
         onMounted(() => {
@@ -183,6 +568,60 @@ export class KitchenScreenDashboard extends Component {
         }, 5000);
     }
 
+    // ===== Completed window controls =====
+    completedWindowKey() {
+        const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+        return `kitchen_completed_window_minutes_${sid || 'global'}`;
+    }
+    loadCompletedWindow() {
+        try {
+            const raw = window.localStorage.getItem(this.completedWindowKey());
+            const n = Number(raw);
+            if (!Number.isNaN(n)) this.state.completed_window_minutes = n;
+        } catch (_) { /* ignore */ }
+    }
+    saveCompletedWindow() {
+        try { window.localStorage.setItem(this.completedWindowKey(), String(this.state.completed_window_minutes)); } catch (_) { /* ignore */ }
+    }
+    onChangeCompletedWindow(value) {
+        const n = Number(value);
+        this.state.completed_window_minutes = Number.isNaN(n) ? 0 : n;
+        this.saveCompletedWindow();
+    }
+
+    /**
+     * Reset local, per-shop kitchen UI state persisted in localStorage
+     * Clears: seen lines, seen tickets, press counts, and virtual lines
+     */
+    resetKitchenState() {
+        try {
+            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+            if (!sid) return;
+            // Keys maintained by this screen for deltas/badges
+            // Build keys inline (helpers live in a different scope)
+            const keys = [
+                `kitchen_seen_lines_${sid}`,
+                `kitchen_seen_tickets_${sid}`,
+                `kitchen_press_counts_${sid}`,
+                `kitchen_virtual_lines_${sid}`,
+            ];
+            for (const k of keys) {
+                try { window.localStorage.removeItem(k); } catch (_) { /* ignore */ }
+            }
+            // Soft reset UI bits that depend on those caches
+            this.state.tickets = [];
+            // Remove any negative-id virtual lines from memory
+            this.state.lines = (this.state.lines || []).filter((l) => !(typeof l?.id === 'number' && l.id < 0));
+            this.recomputeTicketCounts();
+            this.notification.add(_t('Kitchen state cleared'), { title: _t('Kitchen Screen'), type: 'success' });
+            // Reload fresh data
+            this.refreshOrderDetails();
+        } catch (e) {
+            console.error('Failed to reset kitchen state', e);
+            this.notification.add(_t('Failed to clear kitchen state'), { title: _t('Kitchen Screen'), type: 'danger' });
+        }
+    }
+
     /**
      * Handle bus notifications
      * @param {Object} message - Notification message
@@ -196,14 +635,65 @@ export class KitchenScreenDashboard extends Component {
     }
 
     /**
+     * Return true when a line represents a modifier/topping
+     */
+    isModifierLine(line) {
+        if (!line) {
+            return false;
+        }
+        if (typeof line.is_modifier === 'boolean') {
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] using cached modifier flag', { id: line.id, product: line.full_product_name, is_modifier: line.is_modifier });
+            return line.is_modifier;
+        }
+        const flags = extractToppingFlags(line, null);
+        const flag = flags.is_topping;
+        line.is_modifier = flag;
+        line.is_topping = flags.is_topping;
+        line.sh_is_topping = flags.sh_is_topping;
+        line.product_is_topping = flags.product_is_topping;
+        line.product_sh_is_topping = flags.product_sh_is_topping;
+        line.sh_is_has_topping = flags.sh_is_has_topping;
+        if (__KITCHEN_DEBUG__) console.debug('[Kitchen] computed modifier flag', { id: line.id, product: line.full_product_name, is_modifier: flag, is_topping: line.is_topping, product_is_topping: line.product_is_topping });
+        return flag;
+    }
+
+    /**
      * Refresh order details
      */
     async refreshOrderDetails() {
         try {
             this.state.loading = true;
             this.state.error = null;
+            const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
+            // Append persisted virtual lines so previous badges keep content across refreshes
+            try {
+                const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                const persisted = window.localStorage.getItem(`kitchen_virtual_lines_${sid}`);
+                const arr = persisted ? JSON.parse(persisted) : [];
+                if (Array.isArray(arr) && arr.length) {
+                    this.state.lines = (this.state.lines || []).concat(arr);
+                }
+                // Persist any newly created virtual lines from this refresh
+                const currentVirtual = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
+                const byId = new Map((Array.isArray(arr) ? arr : []).map((v) => [v.id, v]));
+                for (const v of currentVirtual) {
+                    if (!byId.has(v.id)) byId.set(v.id, v);
+                }
+                const merged = Array.from(byId.values());
+                window.localStorage.setItem(`kitchen_virtual_lines_${sid}`, JSON.stringify(merged));
+            } catch (_) { /* ignore */ }
+            // tickets computed in fetchOrderDetails, no need to rebuild
+            this.recomputeTicketCounts();
+            this.recomputeTicketCounts();
+
+            if (this.state.session_error && !previousSessionError) {
+                this.notification.add(_t("No open POS session found. Please start a session to display kitchen orders."), {
+                    title: _t("Kitchen Screen"),
+                    type: "warning",
+                });
+            }
         } catch (error) {
             this.state.error = "Failed to refresh orders";
             this.notification.add("Failed to refresh orders", {
@@ -252,28 +742,154 @@ export class KitchenScreenDashboard extends Component {
     }
 
     get orderInProgress() {
-        return this.state.order_details.filter(o =>
-            o.config_id[0] === this.state.shop_id &&
-            o.order_status === 'draft')
+        return this.ticketsInProgress;
     }
 
     get orderCompleted() {
-        const userTimezone = this.user.tz || 'UTC';
-        return this.state.order_details.filter(o => {
-            // Ensure write_date is in a format Luxon can parse (e.g., "2024-11-12T09:00:46")
-            const formattedWriteDate = o.write_date.replace(' ', 'T');
-
-            // Parse the formatted date string in UTC and convert to user timezone
-            const writeDate = DateTime.fromISO(formattedWriteDate, {zone: 'UTC'})
-                .setZone(userTimezone);
-
-            return (
-                o.config_id[0] === this.state.shop_id &&
-                o.order_status === 'ready' &&
-                writeDate > DateTime.now().minus({minutes: 5})
-            );
-        });
+        return this.ticketsCompleted;
     }
+
+    newLineSummary(order) {
+        if (!order) {
+            return [];
+        }
+        const summary = order.kitchen_new_line_summary;
+        return Array.isArray(summary) ? summary : [];
+    }
+
+    newLineCount(order) {
+        if (!order) {
+            return 0;
+        }
+        if (typeof order.kitchen_new_line_count === 'number') {
+            return Math.round(order.kitchen_new_line_count * 100) / 100;
+        }
+        const total = this.newLineSummary(order).reduce((acc, entry) => {
+            const quantity = entry && entry.quantity;
+            const numeric = Number(quantity) || 0;
+            return acc + (numeric > 0 ? numeric : 0);
+        }, 0);
+        return Math.round(total * 100) / 100;
+    }
+
+    formatNewLineQuantity(quantity) {
+        const numeric = Number(quantity) || 0;
+        return Math.round(numeric * 100) / 100;
+    }
+
+
+    buildTickets(orders, allLines) {
+        const tickets = [];
+        const getLine = (id) => (allLines || []).find((l) => l.id === Number(id));
+        for (const order of orders || []) {
+            const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
+            if (!logs.length) {
+                const orderLineIds = Array.isArray(order.lines) ? order.lines.slice() : [];
+                tickets.push({
+                    ...order,
+                    ticket_uid: `order-${order.id}`,
+                    ticket_created_at: order.write_date,
+                    lines: orderLineIds,
+                });
+                continue;
+            }
+            logs.forEach((log, index) => {
+                const ids = Array.isArray(log.line_ids) ? log.line_ids.map((x) => Number(x)) : [];
+                tickets.push({
+                    ...order,
+                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
+                    ticket_created_at: log.created_at || order.write_date,
+                    lines: ids,
+                });
+            });
+        }
+        return tickets;
+    }
+
+
+ticketLineRecords(ticket) {
+    const lineIds = Array.isArray(ticket && ticket.lines) ? ticket.lines : [];
+    return lineIds
+        .map((id) => this.state.lines.find((line) => line.id === id))
+        .filter(Boolean);
+}
+
+ticketStatus(ticket) {
+    if (!ticket) {
+        return ORDER_STATUSES.DRAFT;
+    }
+    // If the server already marks the order as ready, trust it
+    if (ticket.order_status === ORDER_STATUSES.READY) {
+        return ORDER_STATUSES.READY;
+    }
+    const records = this.ticketLineRecords(ticket);
+    if (!records.length) {
+        return ticket.order_status || ORDER_STATUSES.DRAFT;
+    }
+    const mains = records.filter((line) => !this.isModifierLine(line));
+    if (!mains.length) {
+        return ORDER_STATUSES.READY;
+    }
+    const hasWaiting = mains.some((line) => line.order_status === ORDER_STATUSES.WAITING);
+    const allReady = mains.every((line) => line.order_status === ORDER_STATUSES.READY);
+    if (allReady) {
+        return ORDER_STATUSES.READY;
+    }
+    if (hasWaiting) {
+        return ORDER_STATUSES.WAITING;
+    }
+    return ORDER_STATUSES.DRAFT;
+}
+
+ticketCreatedAt(ticket) {
+    const source = ticket && (ticket.ticket_created_at || ticket.write_date || ticket.date_order);
+    if (!source) {
+        return DateTime.now();
+    }
+    const formatted = String(source).replace(' ', 'T');
+    return DateTime.fromISO(formatted, { zone: 'UTC' });
+}
+
+get ticketsInProgress() {
+    return (this.state.tickets || [])
+        .filter((ticket) => {
+            const status = this.ticketStatus(ticket);
+            return status === ORDER_STATUSES.DRAFT || status === ORDER_STATUSES.WAITING;
+        })
+        .sort((a, b) => this.ticketCreatedAt(a) - this.ticketCreatedAt(b));
+}
+
+get ticketsCompleted() {
+    const minutes = Number(this.state.completed_window_minutes) || 0;
+    const list = (this.state.tickets || []).filter((t) => this.ticketStatus(t) === ORDER_STATUSES.READY);
+    if (minutes <= 0) {
+        return list.sort((a, b) => this.ticketCreatedAt(b) - this.ticketCreatedAt(a));
+    }
+    const userTimezone = this.user.tz || 'UTC';
+    const cutoff = DateTime.now().setZone(userTimezone).minus({ minutes });
+    return list
+        .filter((ticket) => this.ticketCreatedAt(ticket).setZone(userTimezone) > cutoff)
+        .sort((a, b) => this.ticketCreatedAt(b) - this.ticketCreatedAt(a));
+}
+
+recomputeTicketCounts() {
+    let draft = 0;
+    let waiting = 0;
+    let ready = 0;
+    for (const ticket of this.state.tickets || []) {
+        const status = this.ticketStatus(ticket);
+        if (status === ORDER_STATUSES.READY) {
+            ready += 1;
+        } else if (status === ORDER_STATUSES.WAITING) {
+            waiting += 1;
+        } else {
+            draft += 1;
+        }
+    }
+    this.state.draft_count = draft;
+    this.state.waiting_count = waiting;
+    this.state.ready_count = ready;
+}
 
     // ===== Zoom controls =====
     initZoomFromStorage() {
@@ -289,6 +905,7 @@ export class KitchenScreenDashboard extends Component {
     zoomLevels() {
         // width, height, and content scale factor
         return [
+            { w: 220, h: 380, s: 0.70 }, // xs
             { w: 300, h: 460, s: 0.90 }, // compact
             { w: 360, h: 520, s: 1.00 }, // default
             { w: 420, h: 580, s: 1.10 }, // large
@@ -331,11 +948,39 @@ export class KitchenScreenDashboard extends Component {
      * @param {Integer} orderId - Integer object
      */
     async done_order(orderId) {
-        await this.updateOrderStatus(
-            orderId,
-            ORDER_STATUSES.READY,
-            "order_progress_change"
-        );
+        try {
+            const id = Number(orderId);
+            const order = this.state.order_details.find((o) => o.id === id);
+            if (!order) {
+                // Fallback: still request recompute
+                await this.updateOrderStatus(id, ORDER_STATUSES.READY, "order_progress_change");
+                return;
+            }
+            // Collect all non-ready, non-modifier main lines
+            const ids = Array.isArray(order.lines) ? order.lines.map((x) => Number(x)) : [];
+            const targetLines = ids
+                .map((lid) => this.state.lines.find((l) => l.id === lid))
+                .filter(Boolean)
+                .filter((l) => !this.isModifierLine(l))
+                .filter((l) => l.order_status !== ORDER_STATUSES.READY);
+
+            if (targetLines.length) {
+                const nonReadyIds = targetLines
+                    .map((l) => Number(l.id))
+                    .filter((n) => Number.isFinite(n) && n > 0);
+                if (nonReadyIds.length) {
+                    await this.rpc("/pos/kitchen/line_status", { line_ids: nonReadyIds });
+                    // Optimistic UI update
+                    for (const l of targetLines) l.order_status = ORDER_STATUSES.READY;
+                }
+            }
+
+            // Now recompute on the backend; this will set the order to ready
+            await this.updateOrderStatus(id, ORDER_STATUSES.READY, "order_progress_change");
+        } catch (e) {
+            console.error("Failed to complete order:", e);
+            this.notification.add("Failed to complete order", { title: "Error", type: "danger" });
+        }
     }
 
     /**
@@ -345,12 +990,14 @@ export class KitchenScreenDashboard extends Component {
     async accept_order_line(lineId) {
         try {
             const id = Number(lineId);
+            if (!Number.isFinite(id) || id <= 0) return;
             const line = this.state.lines.find((l) => l.id === id);
             if (!line) return;
             // Do not toggle toppings/modifiers
-            if (line.sh_is_topping) return;
+            if (this.isModifierLine(line)) return;
 
-            await this.orm.call("pos.order.line", "order_progress_change", [id]);
+            // Use backend endpoint with sudo to avoid ACL issues on public sessions
+            await this.rpc("/pos/kitchen/line_status", { line_ids: [id] });
 
             // Local UI update
             line.order_status = line.order_status === ORDER_STATUSES.READY
@@ -374,28 +1021,36 @@ export class KitchenScreenDashboard extends Component {
      * Mark all main items in an order as ready and complete the order
      * @param {number} orderId
      */
-    async mark_all_ready(orderId) {
+    async mark_all_ready(orderId, ticketLineIds = null) {
         try {
             const id = Number(orderId);
             const order = this.state.order_details.find((o) => o.id === id);
             if (!order) return;
 
-            const lineIds = Array.isArray(order.lines) ? order.lines : [];
-            const lines = lineIds
+            const targetLineIds = Array.isArray(ticketLineIds) && ticketLineIds.length
+                ? ticketLineIds.map((lid) => Number(lid))
+                : (Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : []);
+
+            const targetLines = targetLineIds
                 .map((lid) => this.state.lines.find((l) => l.id === lid))
                 .filter(Boolean)
-                .filter((l) => !l.sh_is_topping)
+                .filter((l) => !this.isModifierLine(l))
                 .filter((l) => l.order_status !== ORDER_STATUSES.READY);
 
-            // Toggle only lines that are not yet ready
-            for (const line of lines) {
-                await this.orm.call("pos.order.line", "order_progress_change", [Number(line.id)]);
-                line.order_status = ORDER_STATUSES.READY;
+            if (targetLines.length) {
+                const idsToToggle = targetLines.map((line) => Number(line.id));
+                // Use backend endpoint with sudo to avoid ACL issues on public sessions
+                await this.rpc("/pos/kitchen/line_status", { line_ids: idsToToggle });
+                for (const line of targetLines) {
+                    line.order_status = ORDER_STATUSES.READY;
+                }
             }
 
-            // Complete the order if all mains are now ready
-            await this.done_order(id);
-            await this.refreshOrderDetails();
+            if (this.areAllMainItemsReady(order)) {
+                await this.done_order(id);
+            } else {
+                await this.refreshOrderDetails();
+            }
 
             this.notification.add("Order marked as ready", { title: "Success", type: "success" });
         } catch (error) {
@@ -403,6 +1058,7 @@ export class KitchenScreenDashboard extends Component {
             this.notification.add("Failed to mark all ready", { title: "Error", type: "danger" });
         }
     }
+
 
     /**
      * Find order containing given line id
@@ -419,7 +1075,7 @@ export class KitchenScreenDashboard extends Component {
         const mains = ids
             .map((id) => this.state.lines.find((l) => l.id === id))
             .filter(Boolean)
-            .filter((l) => !l.sh_is_topping);
+            .filter((l) => !this.isModifierLine(l));
         return mains.length > 0 && mains.every((l) => l.order_status === ORDER_STATUSES.READY);
     }
 
@@ -434,7 +1090,9 @@ export class KitchenScreenDashboard extends Component {
         for (const id of ids) {
             const line = getLine(id);
             if (!line) continue;
-            if (!line.sh_is_topping) {
+            const isModifier = this.isModifierLine(line);
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] sortedLineIds classification', { id, product: line.full_product_name, is_modifier: isModifier });
+            if (!isModifier) {
                 if (current.length) groups.push(current);
                 current = [id];
             } else {
@@ -478,7 +1136,9 @@ export class KitchenScreenDashboard extends Component {
         for (const id of ids) {
             const line = getLine(id);
             if (!line) continue;
-            if (!line.sh_is_topping) {
+            const isModifier = this.isModifierLine(line);
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] linesWithDivider classification', { id, product: line.full_product_name, is_modifier: isModifier });
+            if (!isModifier) {
                 if (current.length) groups.push(current);
                 current = [id];
             } else {

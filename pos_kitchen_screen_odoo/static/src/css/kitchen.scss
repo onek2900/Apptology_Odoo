@@ -177,14 +177,44 @@ $space: var(--k-spacing);
 /* Grid layout for order cards with fixed tile size */
 .kitchen-dashboard .dashboard-section .row.g-4 {
   display: grid;
-  grid-template-columns: repeat(auto-fill, var(--k-card-w, 360px));
+  /* Use flexible tracks that never get thinner than the card width */
+  grid-template-columns: repeat(auto-fit, minmax(var(--k-card-w, 360px), 1fr));
+  /* Safari/iPad: ensure implicit columns also respect the min width */
+  grid-auto-columns: minmax(var(--k-card-w, 360px), 1fr);
   gap: 1rem;
-  justify-content: start;
+  /* Center the grid tracks so leftover space is split left/right */
+  justify-content: center;
   align-content: start;
   align-items: start;
   margin-left: 0 !important;
   margin-right: 0 !important;
 }
+
+/* iPad-friendly widths: shrink tile to fit 4 columns */
+@media (max-width: 1024px) {
+  .kitchen-dashboard { --k-card-w: 230px !important; }
+}
+@media (min-width: 1025px) and (max-width: 1200px) {
+  .kitchen-dashboard { --k-card-w: 250px !important; }
+}
+
+/* Portrait tablets/phones: allow fewer, wider columns and let cards fill tracks */
+@media (orientation: portrait) and (max-width: 1024px) {
+  .kitchen-dashboard .dashboard-section .row.g-4 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    justify-content: center;
+  }
+  .kitchen-dashboard .order-card { width: 100% !important; max-width: none !important; }
+  /* Ensure completed cards follow the same flexible layout */
+  .kitchen-dashboard .section--completed .dashboard-section .row.g-4 {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  .kitchen-dashboard .section--completed .order-card {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
 
 .section-header .section-title,
 .section-header h3 {
@@ -226,6 +256,7 @@ $space: var(--k-spacing);
   flex-direction: column;
   transition: transform .2s ease, box-shadow .2s ease;
   width: var(--k-card-w, 360px);
+  min-width: var(--k-card-w, 360px); /* prevent grid track collapse on Safari */
   height: var(--k-card-h, 520px);
 }
 
@@ -308,6 +339,42 @@ $space: var(--k-spacing);
 
 /* header meta */
 .order-card__meta { color: #ffffff; padding-left: 2.6rem; }
+.order-card__newlines-group {
+  margin-top: .45rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+.order-card__newbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .25rem .55rem;
+  border-radius: 9999px;
+  background: rgba(255, 194, 120, 0.92);
+  color: #7c2d12;
+  font-weight: 600;
+  font-size: .75rem;
+  letter-spacing: .35px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
+}
+.order-card__newbadge-qty {
+  font-weight: 800;
+  font-size: .85rem;
+}
+.order-card__newbadge-name {
+  font-size: .75rem;
+}
+.order-card__newbadge-note {
+  font-size: .7rem;
+  opacity: .75;
+}
+.order-card--completed .order-card__newbadge {
+  background: rgba(255,255,255,0.85);
+  color: var(--k-completed-ink);
+  box-shadow: none;
+}
+
 /* Completed: dark ink instead of white */
 .order-card--completed .order-card__meta { color: var(--k-completed-ink); }
 
@@ -381,6 +448,26 @@ $space: var(--k-spacing);
 /* row icon subtle pop on completion */
 .order-card__item i.fa { transition: transform .18s ease; }
 
+/* Distinguish modifiers (toppings) visually */
+.order-card__item.modifier {
+  opacity: .78;
+  color: var(--k-muted);
+  background: transparent;
+  padding-left: 2.25rem; /* indent under parent */
+  position: relative;
+}
+.order-card__item.modifier::before {
+  content: "↳";
+  position: absolute;
+  left: .9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--k-muted);
+  font-size: .9rem;
+}
+.order-card__item.modifier .order-card__qty { visibility: hidden; }
+.order-card__item.modifier .order-card__product { font-style: italic; }
+
 /* Per-item completion visuals */
 .order-card__item.completed .order-card__product { text-decoration: line-through; opacity: .7; }
 .order-card__item.completed .order-card__qty { background: rgba(40,167,69,.9); color: #fff; }
@@ -391,12 +478,32 @@ $space: var(--k-spacing);
 }
 
 /* Modifiers are non-interactive, keep full readability */
-.order-card__item.modifier { cursor: default; opacity: 1; }
+.order-card__item.modifier {
+  cursor: default;
+  opacity: 1;
+  padding-left: calc(var(--k-line-padding, 1.1rem) + 18px);
+}
+.order-card__item.modifier .order-card__qty {
+  visibility: hidden;
+  width: 18px;
+}
+.order-card__item.modifier .order-card__product {
+  font-weight: 500;
+}
 /* Topping text: slightly smaller, clearly readable, indented */
-.modifier-info {
-  color: var(--k-line-color) !important;
+.order-card__item.modifier .modifier-info {
+  display: block;
+  color: var(--k-muted);
   font-size: 0.88em;
-  padding-left: 20px;
+  padding-left: 18px;
+  position: relative;
+}
+.order-card__item.modifier .modifier-info::before {
+  content: '>';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--k-muted);
 }
 
 /* Divider between pending and completed item groups */
