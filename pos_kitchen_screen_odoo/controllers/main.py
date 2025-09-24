@@ -71,9 +71,9 @@ class OrderScreen(http.Controller):
         kitchen_screen = request.env["kitchen.screen"].sudo().search(
             [("pos_config_id", "=", shop_id)], limit=1)
 
-        pos_session_id = request.env["pos.session"].sudo().search(
-            [('config_id', '=', shop_id), ('state', '=', 'opened')],
-            limit=1)
+        # Use the config's current_session_id to avoid picking an older opened session
+        config = request.env["pos.config"].sudo().browse(shop_id)
+        pos_session_id = config.current_session_id
         if not pos_session_id:
             return {"orders": [], "order_lines": [], "error": "no_open_session"}
 
