@@ -512,8 +512,8 @@ export class KitchenScreenDashboard extends Component {
             error: null,
             session_error: false,
             // Zoom UI state
-            zoomIndex: 0,
-            card_w: 360,
+            zoomIndex: 2,
+            card_w: 320,
             card_h: 520,
             content_scale: 1,
             // Completed window (minutes); 0 = show all
@@ -925,11 +925,11 @@ recomputeTicketCounts() {
     zoomLevels() {
         // width, height, and content scale factor
         return [
-            { w: 220, h: 380, s: 0.70 }, // xs
+            { w: 260, h: 420, s: 0.78 }, // xs
             { w: 300, h: 460, s: 0.90 }, // compact
-            { w: 360, h: 520, s: 1.00 }, // default
-            { w: 420, h: 580, s: 1.10 }, // large
-            { w: 500, h: 640, s: 1.20 }, // xlarge
+            { w: 320, h: 520, s: 1.00 }, // default (new)
+            { w: 380, h: 580, s: 1.10 }, // large
+            { w: 440, h: 640, s: 1.18 }, // xlarge
         ];
     }
 
@@ -956,7 +956,7 @@ recomputeTicketCounts() {
     }
 
     zoomReset() {
-        this.state.zoomIndex = 1; // default preset
+        this.state.zoomIndex = 2; // default preset (matches 320px)
         this.applyZoom();
     }
 
