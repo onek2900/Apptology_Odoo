@@ -514,7 +514,9 @@ export class KitchenScreenDashboard extends Component {
             // Zoom UI state
             zoomIndex: 2,
             card_w: 320,
-            card_h: 400,
+            // Default height follows the zoom preset at index 2
+            // Mapping of widths/heights handled in zoomLevels()
+            card_h: 520,
             content_scale: 1,
             // Completed window (minutes); 0 = show all
             completed_window_minutes: 5,
@@ -923,13 +925,15 @@ recomputeTicketCounts() {
     }
 
     zoomLevels() {
-        // width changes with zoom; height is fixed to 400; no inner scaling
+        // Discrete zoom presets (width x height) as requested
+        // widths: [260, 300, 320, 380, 440]
+        // heights: [400, 500, 520, 520, 540]
         return [
             { w: 260, h: 400, s: 1.00 }, // xs
-            { w: 300, h: 400, s: 1.00 }, // compact
-            { w: 320, h: 400, s: 1.00 }, // default (new)
-            { w: 380, h: 400, s: 1.00 }, // large
-            { w: 440, h: 400, s: 1.00 }, // xlarge
+            { w: 300, h: 500, s: 1.00 }, // compact
+            { w: 320, h: 520, s: 1.00 }, // default
+            { w: 380, h: 520, s: 1.00 }, // large
+            { w: 440, h: 540, s: 1.00 }, // xlarge
         ];
     }
 
