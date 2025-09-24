@@ -381,24 +381,33 @@ const fetchOrderDetails = async () => {
                 const seenIds = new Set();
                 let lastDeltaIds = [];
                 let lastCreatedAt = order.write_date;
+                let lastIds = [];
                 for (const log of sorted) {
                     const ids = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
                     const delta = ids.filter((id) => !seenIds.has(id));
                     ids.forEach((id) => seenIds.add(id));
                     lastDeltaIds = delta;
+                    lastIds = ids;
                     lastCreatedAt = log.created_at || order.write_date;
                 }
 
-                // Only create the latest badge for this order, containing just the new lines
+                // Create one badge per order. Prefer the latest delta; if empty, fall back to
+                // the latest log's ids; if still empty, fall back to all order lines.
+                let linesForTicket = lastDeltaIds;
+                if (!linesForTicket || !linesForTicket.length) {
+                    linesForTicket = Array.isArray(lastIds) && lastIds.length
+                        ? lastIds
+                        : (Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : []);
+                }
                 tickets.push({
                     ...order,
                     ticket_uid: `ticket-${order.id}-latest`,
                     ticket_created_at: lastCreatedAt,
-                    lines: lastDeltaIds,
+                    lines: linesForTicket,
                 });
             }
 
-            // Filter out empty tickets (no new lines in latest log)
+            // Filter out empty tickets (safety)
             tickets = tickets.filter((t) => Array.isArray(t.lines) && t.lines.length);
         } else {
             const delta = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
