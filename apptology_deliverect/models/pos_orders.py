@@ -147,32 +147,20 @@ class PosOrder(models.Model):
         """function to update the status of the order"""
         if status == 'approved':
             self.write({'online_order_status': 'approved'})
-            # Apply kitchen flags: if kitchen categories configured, use them; otherwise mark all as cooking
+            # Apply kitchen flags selectively: only lines in kitchen categories should be cooking
             try:
                 for order in self:
                     in_kitchen_any = False
                     kitchen_screen = self.env['kitchen.screen'].sudo().search([
                         ('pos_config_id', '=', order.config_id.id)
                     ], limit=1)
-                    has_cats = bool(kitchen_screen and kitchen_screen.pos_categ_ids)
-                    kset = set(kitchen_screen.pos_categ_ids.ids) if has_cats else set()
+                    kset = set(kitchen_screen.pos_categ_ids.ids) if kitchen_screen and kitchen_screen.pos_categ_ids else set()
                     for line in order.lines:
-                        if has_cats:
-                            line_categs = set(line.product_id.pos_categ_ids.ids)
-                            flag = bool(line_categs & kset)
-                        else:
-                            flag = True
+                        line_categs = set(line.product_id.pos_categ_ids.ids)
+                        flag = bool(kset and (line_categs & kset))
                         line.is_cooking = flag
                         in_kitchen_any = in_kitchen_any or flag
                     order.is_cooking = in_kitchen_any
-                    # Ensure kitchen status shows In‑Progress immediately
-                    if in_kitchen_any:
-                        order.order_status = 'waiting'
-                        mains_to_wait = order.lines.filtered(
-                            lambda l: l.is_cooking and l.order_status != 'ready' and not (l.sh_is_topping or getattr(l, 'product_sh_is_topping', False))
-                        )
-                        if mains_to_wait:
-                            mains_to_wait.write({'order_status': 'waiting'})
             except Exception:
                 # Fallback: if kitchen app not present, do not set cooking flags
                 pass
