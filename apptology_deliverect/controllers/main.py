@@ -326,9 +326,11 @@ class DeliverectWebhooks(http.Controller):
                             "Deliverect order %s already exists as POS order %s - skipping duplicate creation",
                             pos_order_data.get('online_order_id'), existing_order.id
                         )
-                    # If POS is configured to auto-approve, push approval status to Deliverect
+                    # If POS is configured to auto-approve, always invoke the
+                    # approval routine so Deliverect receives 20/50 updates
+                    # even if the order was created with status 'approved'.
                     try:
-                        if pos_configuration.auto_approve and order.online_order_status != 'approved':
+                        if pos_configuration.auto_approve:
                             order.update_order_status('approved')
                     except Exception as _e:
                         _logger.info(f"Auto-approve status push skipped: {_e}")
