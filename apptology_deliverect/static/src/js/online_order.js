@@ -194,8 +194,6 @@ export class OnlineOrderScreen extends Component {
             orderData: currentOrder || exportedOrder || {},
             orderLineData: orderLines,
             headerData: { company: this.pos.company },
-            // Some printer services toggle this flag; ensure it exists
-            is_reciptScreen: true,
         };
         this.printer.print(
             onlineOrderReceipt,
