@@ -635,6 +635,30 @@ $space: var(--k-spacing);
   }
 }
 
+/* Modifiers readability tweaks: darker text and remove leading '>' marker */
+.order-card__item.modifier { opacity: 1 !important; color: var(--k-text) !important; }
+.order-card__item.modifier .modifier-info { color: var(--k-text) !important; }
+.order-card__item.modifier .modifier-info::before { content: none !important; }
+.order-card__item.modifier::before { content: none !important; }
+
+/* Make completed cards follow the in-progress surface and header ink */
+.order-card--completed { background: var(--k-card-inprogress) !important; }
+.order-card--completed:hover { background: var(--k-card-inprogress-hover) !important; }
+/* Keep the colored header strip like in-progress (no transparent override) */
+.order-card--completed .order-card__header { background: inherit !important; color: inherit !important; }
+/* Use the default type badge styling */
+.order-card--completed .order-card__type-badge { background: rgba(255,255,255,0.88) !important; color: #0b1220 !important; }
+/* Use default item colors and borders inside completed cards */
+.order-card--completed .order-card__item,
+.order-card--completed .order-card__items .list-group-item {
+  background: inherit !important;
+  color: inherit !important;
+  border-color: var(--k-line-border) !important;
+}
+/* Footer border consistent with default */
+:root:not([data-theme="dark"]) .order-card--completed .order-card__footer { border-top-color: rgba(0,0,0,0.06) !important; }
+:root[data-theme="dark"] .order-card--completed .order-card__footer { border-top-color: rgba(255,255,255,0.07) !important; }
+
 /* Completed card subtle flash when moved */
 .section--completed .order-card {
   animation: k-card-pulse .42s ease-out;
