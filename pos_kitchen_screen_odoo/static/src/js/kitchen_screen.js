@@ -413,6 +413,16 @@ const fetchOrderDetails = async () => {
             const delta = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
             tickets = delta.tickets;
             normalizedLines = normalizedLines.concat(delta.virtualLines);
+            // Fallback: if delta produced no tickets (e.g., first load with cached snapshots),
+            // build one ticket per order using current order lines so the UI shows content.
+            if (!tickets || !tickets.length) {
+                tickets = (normalizedOrders || []).map((order) => ({
+                    ...order,
+                    ticket_uid: `order-${order.id}-full`,
+                    ticket_created_at: order.write_date,
+                    lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
+                })).filter((t) => Array.isArray(t.lines) && t.lines.length);
+            }
         }
         return {
             order_details: normalizedOrders,
