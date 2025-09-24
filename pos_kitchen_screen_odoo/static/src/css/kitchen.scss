@@ -190,6 +190,11 @@ $space: var(--k-spacing);
   margin-right: 0 !important;
 }
 
+/* Make the grid item (Bootstrap column wrapper) respect the card min width */
+.kitchen-dashboard .dashboard-section .row.g-4 > * {
+  min-width: var(--k-card-w, 360px);
+}
+
 /* iPad-friendly widths: shrink tile to fit 4 columns */
 @media (max-width: 1024px) {
   .kitchen-dashboard { --k-card-w: 230px !important; }
@@ -204,11 +209,13 @@ $space: var(--k-spacing);
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     justify-content: center;
   }
+  .kitchen-dashboard .dashboard-section .row.g-4 > * { min-width: 280px; }
   .kitchen-dashboard .order-card { width: 100% !important; max-width: none !important; }
   /* Ensure completed cards follow the same flexible layout */
   .kitchen-dashboard .section--completed .dashboard-section .row.g-4 {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
+  .kitchen-dashboard .section--completed .dashboard-section .row.g-4 > * { min-width: 280px; }
   .kitchen-dashboard .section--completed .order-card {
     width: 100% !important;
     max-width: none !important;
