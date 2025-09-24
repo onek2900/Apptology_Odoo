@@ -306,14 +306,20 @@ export class OnlineOrderScreen extends Component {
                 const n = Number(v);
                 return Number.isFinite(n) ? n : null;
             };
-            const isModifier = (line) => {
-                const raw = line?.is_topping ?? line?.sh_is_topping;
-                return Array.isArray(raw) ? !!raw[0] : !!raw;
+            // Read fresh line ids from server to avoid stale/embedded structures
+            const recs = await this.orm.read('pos.order', [toId(order.id)], ['lines']);
+            const liveLineIds = Array.isArray(recs) && recs[0] && Array.isArray(recs[0].lines) ? recs[0].lines : [];
+            // Fetch line details to filter out modifiers/toppings
+            const lineDetails = liveLineIds.length
+                ? await this.orm.read('pos.order.line', liveLineIds, ['id','product_id','order_status','is_topping','sh_is_topping','product_sh_is_topping'])
+                : [];
+            const isModifier = (ld) => {
+                const flags = [ld.is_topping, ld.sh_is_topping, ld.product_sh_is_topping];
+                return flags.some((v) => Array.isArray(v) ? !!v[0] : !!v);
             };
-            const allLines = Array.isArray(order?.lines) ? order.lines : [];
-            const mainLineIds = allLines
-                .filter((l) => l && !isModifier(l))
-                .map((l) => toId(l.id))
+            const mainLineIds = (lineDetails || [])
+                .filter((ld) => ld && !isModifier(ld))
+                .map((ld) => toId(ld.id))
                 .filter((id) => typeof id === 'number');
 
             if (mainLineIds.length) {
@@ -329,14 +335,6 @@ export class OnlineOrderScreen extends Component {
 
             if (order) {
                 order.order_status = 'ready';
-                // Reflect ready status on local lines for immediate UI feedback
-                if (Array.isArray(order.lines)) {
-                    order.lines.forEach((l) => {
-                        if (l && !isModifier(l)) {
-                            l.order_status = 'ready';
-                        }
-                    });
-                }
             }
         } catch (e) {
             console.error('Failed to mark order ready in kitchen screen:', e);
