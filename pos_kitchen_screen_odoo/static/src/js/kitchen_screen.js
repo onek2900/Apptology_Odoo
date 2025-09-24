@@ -360,11 +360,22 @@ const fetchOrderDetails = async () => {
         let tickets = [];
         const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
         if (anyLogs) {
-            // Build exactly one badge per order using only the new lines
-            // from the most recent log (difference vs previous logs).
+            // Build exactly one badge per order. If the order has logs, use the latest delta;
+            // otherwise, fall back to all current order lines so it still renders.
             for (const order of normalizedOrders) {
                 const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
-                if (!logs.length) continue;
+                if (!logs.length) {
+                    const allIds = Array.isArray(order.lines) ? order.lines.map((x) => Number(x)) : [];
+                    if (allIds.length) {
+                        tickets.push({
+                            ...order,
+                            ticket_uid: `order-${order.id}-full`,
+                            ticket_created_at: order.write_date,
+                            lines: allIds,
+                        });
+                    }
+                    continue;
+                }
 
                 // Sort logs in ascending time so we can diff cumulatively.
                 const sorted = logs.slice().sort((a, b) => {
