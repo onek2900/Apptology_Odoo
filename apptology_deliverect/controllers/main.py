@@ -430,10 +430,10 @@ class DeliverectWebhooks(http.Controller):
 
         except Exception as e:
             _logger.error(f"Error processing webhook: {str(e)}")
-                return {
-                    "status": "error",
-                    "message": str(e)
-                }
+            return {
+                "status": "error",
+                "message": str(e)
+            }
 
     @http.route('/deliverect/debug/order', type='json', auth='user')
     def deliverect_debug_order(self, online_order_id=None, pos_reference=None):
