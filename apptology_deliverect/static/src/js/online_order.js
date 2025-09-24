@@ -348,7 +348,15 @@ export class OnlineOrderScreen extends Component {
      * Closes the online order screen and navigates to the product screen.
      */
     closeOnlineOrderScreen(){
-        this.env.services.pos.showScreen("ProductScreen");
+        const pos = this.env.services.pos;
+        try {
+            if (!pos.get_order()) {
+                pos.add_new_order();
+            }
+        } catch (e) {
+            console.warn('Failed to ensure a current order before returning to ProductScreen:', e);
+        }
+        pos.showScreen("ProductScreen");
     }
     // Ensure topping modifiers carry a consistent boolean flag for styling.
     normalizeOrderLines(lines){
