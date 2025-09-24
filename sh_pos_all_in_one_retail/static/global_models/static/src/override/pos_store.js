@@ -17,28 +17,34 @@ patch(PosStore.prototype, {
         var date_str =  date.getFullYear() +'-'+  date.getMonth() +'-'+ date.getDate() +'- '+ date.getHours()+':'+ date.getMinutes()+ ':'+ date.getSeconds();
         if (result){
             var order_line_list = []
-            for (let line of order.get_orderlines()){
-                order_line_list.push(line.export_as_JSON())
-            }
+            try {
+                const lines = (order && typeof order.get_orderlines === 'function') ? order.get_orderlines() : [];
+                for (let line of lines){
+                    if (line && typeof line.export_as_JSON === 'function') {
+                        order_line_list.push(line.export_as_JSON())
+                    }
+                }
+            } catch (_) { /* ignore */ }
             result.then(function (Orders) {
-                if ( Orders ){
+                try {
+                    if (!Array.isArray(Orders) || !Orders.length || !Orders[0]) return;
                     let order_id = Orders[0].id
                     // set name
-                    order.sh_created_seq = Orders[0].name
+                    if (order) order.sh_created_seq = Orders[0].name
                     // Pushed ordeer to order list
                     
                     self.db.pos_order_by_id[order_id] = [{
                         'id': order_id, 
                         'name': Orders[0].name  , 
                         'date_order':  date_str, 
-                        'partner_id':  order.get_partner() ? order.get_partner().id : false , 
-                        'partner_name':  order.get_partner() ? order.get_partner().name : false , 
-                        'pos_reference': order.name, 
-                        'amount_total': order.get_total_with_tax() , 
+                        'partner_id':  (order && order.get_partner && order.get_partner()) ? order.get_partner().id : false , 
+                        'partner_name':  (order && order.get_partner && order.get_partner()) ? order.get_partner().name : false , 
+                        'pos_reference': order ? order.name : '', 
+                        'amount_total': (order && order.get_total_with_tax) ? order.get_total_with_tax() : 0 , 
                         'state': Orders[0].account_move ? 'invoiced' : 'paid', 
-                        'trackingNumber' : order.trackingNumber,
+                        'trackingNumber' : order ? order.trackingNumber : undefined,
                     }, order_line_list]
-                }
+                } catch (_) { /* ignore */ }
             })
         }
         return result
@@ -46,6 +52,14 @@ patch(PosStore.prototype, {
     async addProductToCurrentOrder(product, options = {}) {
         var order = this.get_order()
         var self = this;
+        if (!product) {
+            // No product to add; defer to base for any error handling
+            return await super.addProductToCurrentOrder(...arguments)
+        }
+        if (!order) {
+            // Ensure an order exists
+            return await super.addProductToCurrentOrder(...arguments)
+        }
         if (this.config.sh_show_qty_location && this.config.sh_display_stock && product.type == "product") {
             var sh_min_qty = this.config.sh_min_qty
             var location_id = this.config.sh_pos_location ? this.config.sh_pos_location[0] : false
@@ -58,13 +72,13 @@ patch(PosStore.prototype, {
                     stock_qty = sh_stock[0].quantity
                 }
             }
-            var line = order.get_orderlines().filter((x) => x.product.id == product.id)
+            var line = (order.get_orderlines() || []).filter((x) => x && x.product && x.product.id == product.id)
             if (line && line.length) {
                 let restrict_popup = false
                 let qty = 0.00
                 for (let ol of line) {
-                    qty += ol.quantity
-                    if (ol && ol.product.id == product.id && (stock_qty - qty) <= sh_min_qty) {
+                    qty += Number(ol && ol.quantity || 0)
+                    if (ol && ol.product && ol.product.id == product.id && (stock_qty - qty) <= sh_min_qty) {
                         restrict_popup = true
                     }
                 }

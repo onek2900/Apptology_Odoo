@@ -9,13 +9,20 @@ patch(PosStore.prototype, {
     async _processData(loadedData) {
       await super._processData(...arguments);
       this.db.order_by_barcode = {};
-      if(loadedData['pos_order_by_id']){
-        let orders = Object.values(loadedData['pos_order_by_id'])
-        for (var i = 0, len = orders.length; i < len; i++) {
-            var each_order = orders[i]; 
-            this.db.order_by_barcode[each_order[0].pos_reference.split(' ')[1]] = each_order;
+      try {
+        const pobi = loadedData && loadedData['pos_order_by_id'] ? loadedData['pos_order_by_id'] : null;
+        if (pobi){
+          let orders = Object.values(pobi)
+          for (var i = 0, len = orders.length; i < len; i++) {
+              var each_order = orders[i];
+              if (!each_order || !each_order[0]) continue;
+              const pref = String(each_order[0].pos_reference || '');
+              const parts = pref.split(' ');
+              const key = parts.length > 1 ? parts[1] : pref;
+              this.db.order_by_barcode[key] = each_order;
+          }
         }
-      }
+      } catch (_e) { /* ignore */ }
     },
     push_single_order(order) {
       var self = this;
@@ -24,10 +31,12 @@ patch(PosStore.prototype, {
       var date_str =  date.getFullYear() +'-'+  date.getMonth() +'-'+ date.getDate() +'- '+ date.getHours()+':'+ date.getMinutes()+ ':'+ date.getSeconds();
       if (result){
           result.then(async function (Orders) {
-              if ( Orders ){ 
+              try {
+                if (!Array.isArray(Orders) || !Orders.length || !Orders[0]) return;
                 var order_line_list = []
+                const linesArg = (Orders[0] && Orders[0].lines) ? Orders[0].lines : []
                 await self.orm.call("pos.session", "sh_get_line_data_by_id", [
-                  [], Orders[0].lines,
+                  [], linesArg,
                 ]).then(function (lines) {
                   for(let i=0; i < lines.length; i++){
                       let new_line = lines[i]
@@ -41,14 +50,17 @@ patch(PosStore.prototype, {
                       'id': order_id, 
                       'name': Orders[0].name  , 
                       'date_order':  date_str, 
-                      'partner_id':  order.get_partner() ? order.get_partner().id : false , 
-                      'partner_name':  order.get_partner() ? order.get_partner().name : false , 
-                      'pos_reference': order.name, 
-                      'amount_total': order.get_total_with_tax() , 
+                      'partner_id':  (order && order.get_partner && order.get_partner()) ? order.get_partner().id : false , 
+                      'partner_name':  (order && order.get_partner && order.get_partner()) ? order.get_partner().name : false , 
+                      'pos_reference': order ? order.name : '', 
+                      'amount_total': (order && order.get_total_with_tax) ? order.get_total_with_tax() : 0 , 
                       'state': Orders[0].account_move ? 'invoiced' : 'paid', 
                   }, order_line_list]
-                  self.db.order_by_barcode[order.name.split(' ')[1]] = order_data
-              }
+                  const pref = String(order ? order.name : '')
+                  const parts = pref.split(' ')
+                  const key = parts.length > 1 ? parts[1] : pref
+                  self.db.order_by_barcode[key] = order_data
+              } catch (_e) { /* ignore */ }
           })
       }
       return result
