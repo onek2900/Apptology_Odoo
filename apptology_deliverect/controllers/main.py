@@ -430,7 +430,62 @@ class DeliverectWebhooks(http.Controller):
 
         except Exception as e:
             _logger.error(f"Error processing webhook: {str(e)}")
-            return {
-                "status": "error",
-                "message": str(e)
-            }
+                return {
+                    "status": "error",
+                    "message": str(e)
+                }
+
+    @http.route('/deliverect/debug/order', type='json', auth='user')
+    def deliverect_debug_order(self, online_order_id=None, pos_reference=None):
+        """Admin/debug endpoint: echo stored fields for a given Deliverect order.
+
+        Only users in Settings (base.group_system) may access.
+        Pass either `online_order_id` (preferred) or `pos_reference`.
+        """
+        if not request.env.user.has_group('base.group_system'):
+            return {'error': 'forbidden', 'message': 'Administrator rights required'}
+
+        Order = request.env['pos.order'].sudo()
+        domain = []
+        if online_order_id:
+            domain = [('online_order_id', '=', str(online_order_id))]
+        elif pos_reference:
+            domain = [('pos_reference', '=', str(pos_reference))]
+        else:
+            return {'error': 'missing_params', 'message': 'Provide online_order_id or pos_reference'}
+
+        order = Order.search(domain, limit=1)
+        if not order:
+            return {'error': 'not_found', 'message': 'Order not found'}
+
+        order_fields = [
+            'id', 'name', 'pos_reference', 'date_order',
+            'config_id', 'session_id', 'company_id', 'user_id',
+            'is_online_order', 'online_order_id', 'online_order_status', 'online_order_paid',
+            'order_type', 'order_payment_type', 'order_status', 'is_cooking',
+            'amount_total', 'amount_tax', 'amount_paid', 'amount_return',
+            'channel_order_reference', 'channel_name', 'channel_discount', 'channel_service_charge',
+            'channel_delivery_charge', 'channel_tip_amount', 'channel_total_amount', 'channel_tax', 'bag_fee',
+            'pickup_time', 'delivery_time', 'delivery_note',
+            'customer_name', 'customer_company_name', 'customer_email', 'customer_phone', 'customer_note',
+            'kitchen_new_line_summary', 'kitchen_new_line_count', 'kitchen_send_logs',
+            'lines',
+        ]
+
+        def m2o(v):
+            return (v.id, v.display_name) if v else False
+
+        data = order.read(order_fields)[0]
+        data['config_id'] = m2o(order.config_id)
+        data['session_id'] = m2o(order.session_id)
+        data['company_id'] = m2o(order.company_id)
+        data['user_id'] = m2o(order.user_id)
+
+        line_fields = [
+            'id', 'product_id', 'full_product_name', 'qty', 'price_unit',
+            'price_subtotal', 'price_subtotal_incl', 'discount', 'note',
+            'order_status', 'is_cooking', 'sh_is_topping', 'product_sh_is_topping', 'kitchen_ticket_uid'
+        ]
+        lines = order.lines.read(line_fields)
+
+        return {'ok': True, 'order': data, 'lines': lines}
