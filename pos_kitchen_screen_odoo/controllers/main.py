@@ -10,46 +10,6 @@ _logger = logging.getLogger(__name__)
 
 
 class OrderScreen(http.Controller):
-    @http.route("/pos.order/get_order_details", auth="public", type="json", website=False)
-    def get_pos_order_details(self, screen_id):
-        kitchen_screen = request.env["kitchen.screen"].sudo().browse(int(screen_id))
-
-        # Use current session from the POS config to avoid selecting a stale opened session
-        config = kitchen_screen.pos_config_id
-        pos_session_id = config.current_session_id
-        if not pos_session_id:
-            return {"orders": []}
-        # Build domains with optional category filter; if no categories chosen, show all
-        cat_domain = []
-        if kitchen_screen.pos_categ_ids:
-            cat_domain = [("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids)]
-
-        pos_order_model = request.env["pos.order"].sudo()
-        has_online_flag = "is_online_order" in pos_order_model._fields
-        has_online_status = "online_order_status" in pos_order_model._fields
-
-        # Only consider orders still in progress; exclude those already marked ready
-        base_domain = [
-            ("lines.is_cooking", "=", True),
-            ("order_status", "!=", "ready"),
-            ("session_id", "=", pos_session_id.id),
-        ] + cat_domain
-        in_store_domain = list(base_domain)
-        if has_online_flag:
-            in_store_domain.append(("is_online_order", "=", False))
-
-        pos_orders = pos_order_model.search(in_store_domain, order="date_order")
-
-        approved_deliverect_orders = pos_order_model.browse()
-        if has_online_flag:
-            approved_domain = list(base_domain) + [("is_online_order", "=", True)]
-            if has_online_status:
-                approved_domain.append(("online_order_status", "=", "approved"))
-            approved_deliverect_orders = pos_order_model.search(approved_domain, order="date_order")
-
-        combined_orders = pos_orders | approved_deliverect_orders
-        values = {"orders": combined_orders.sudo().read()}
-        return values
 
     @http.route("/pos/kitchen/get_order_details", auth="public", type="json", website=False)
     def get_pos_kitchen_order_details(self, shop_id):
