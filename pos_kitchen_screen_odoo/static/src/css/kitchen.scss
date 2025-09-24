@@ -401,6 +401,10 @@ $space: var(--k-spacing);
    Order lines
    ───────────────────────────────────────────────────────── */
 .order-card__items { background: transparent; }
+/* Ensure order lines typography scales with zoom */
+.order-card__items {
+  font-size: calc(1rem * var(--k-font-scale, var(--k-content-scale, 1)));
+}
 .order-card__item,
 .order-card__items .list-group-item {
   background: var(--k-line-bg) !important;
@@ -441,12 +445,13 @@ $space: var(--k-spacing);
   background: rgba(0,0,0,0.35);
   border-radius: 999px;
   padding: .1rem .5rem;
+  font-size: calc(1rem * var(--k-font-scale, var(--k-content-scale, 1)));
 }
 /* qty on green stays legible */
 .order-card--completed .order-card__qty { background: rgba(0,0,0,0.20); color: #ffffff; }
 
-.order-card__product { flex: 1 1 auto; font-weight: 600; }
-.order-card__note { display: block; color: var(--k-muted); margin-left: auto; }
+.order-card__product { flex: 1 1 auto; font-weight: 600; font-size: calc(1rem * var(--k-font-scale, var(--k-content-scale, 1))); }
+.order-card__note { display: block; color: var(--k-muted); margin-left: auto; font-size: calc(.95rem * var(--k-font-scale, var(--k-content-scale, 1))); }
 .order-card__note i { margin-right: .35rem; }
 /* row icon subtle pop on completion */
 .order-card__item i.fa { transition: transform .18s ease; }
@@ -634,6 +639,15 @@ $space: var(--k-spacing);
     transition: none !important;
   }
 }
+
+/* Modifiers readability tweaks: darker text and remove leading '>' marker */
+.order-card__item.modifier { opacity: 1 !important; color: var(--k-text) !important; }
+.order-card__item.modifier .modifier-info { color: var(--k-text) !important; }
+.order-card__item.modifier .modifier-info::before { content: none !important; }
+.order-card__item.modifier::before { content: none !important; }
+
+/* (Reverted) Keep completed cards' original background/hover colors */
+/* Keep the colored header strip like in-progress (no transparent override) */
 
 /* Completed card subtle flash when moved */
 .section--completed .order-card {

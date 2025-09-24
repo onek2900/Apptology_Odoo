@@ -931,10 +931,9 @@ recomputeTicketCounts() {
         // font scale Option A: [0.92, 0.97, 1.00, 1.08, 1.16]
         return [
             { w: 260, h: 400, s: 0.92 }, // xs (denser)
-            { w: 300, h: 500, s: 0.97 }, // compact
-            { w: 320, h: 520, s: 1.00 }, // default
+            { w: 340, h: 520, s: 1.00 }, // default
             { w: 380, h: 520, s: 1.08 }, // large
-            { w: 440, h: 540, s: 1.16 }, // xlarge (readable)
+            { w: 460, h: 540, s: 1.2 }, // xlarge (readable)
         ];
     }
 
