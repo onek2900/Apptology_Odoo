@@ -806,11 +806,9 @@ get ticketsInProgress() {
 }
 
 get ticketsCompleted() {
-    const userTimezone = this.user.tz || 'UTC';
-    const cutoff = DateTime.now().setZone(userTimezone).minus({ minutes: 5 });
+    // Show all ready tickets (no time cutoff)
     return (this.state.tickets || [])
         .filter((ticket) => this.ticketStatus(ticket) === ORDER_STATUSES.READY)
-        .filter((ticket) => this.ticketCreatedAt(ticket).setZone(userTimezone) > cutoff)
         .sort((a, b) => this.ticketCreatedAt(b) - this.ticketCreatedAt(a));
 }
 
