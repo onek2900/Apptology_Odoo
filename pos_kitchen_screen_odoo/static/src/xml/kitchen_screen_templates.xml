@@ -75,17 +75,18 @@
         </div>
       </header>
 
-        <!-- Lines -->
-        <ul class="list-group list-group-flush">
-          <t t-foreach="order.lines" t-as="lineId" t-key="lineId">
+        <!-- Lines (match In Progress look & grouping, no click actions) -->
+        <ul class="list-group list-group-flush order-card__items">
+          <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'c-line-' + lineId">
             <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
             <t t-if="line">
               <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
               <t t-if="!isModifier">
-                <li class="list-group-item order-card__item">
+                <li class="list-group-item order-card__item" t-att-class="{'completed': line.order_status === 'ready'}">
                   <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
                   <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
                   <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                  <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
                 </li>
               </t>
               <t t-else="">
