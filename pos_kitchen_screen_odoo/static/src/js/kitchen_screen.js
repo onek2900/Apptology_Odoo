@@ -544,10 +544,11 @@ export class KitchenScreenDashboard extends Component {
             const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
             if (!sid) return;
             // Keys maintained by this screen for deltas/badges
+            // Build keys inline (helpers live in a different scope)
             const keys = [
-                storageKeyForLines(sid),
-                storageKeyForTickets(sid),
-                storageKeyForPressCounts(sid),
+                `kitchen_seen_lines_${sid}`,
+                `kitchen_seen_tickets_${sid}`,
+                `kitchen_press_counts_${sid}`,
                 `kitchen_virtual_lines_${sid}`,
             ];
             for (const k of keys) {
