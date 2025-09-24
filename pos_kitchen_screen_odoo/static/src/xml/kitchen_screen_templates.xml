@@ -130,6 +130,10 @@
                 t-on-click="() => this.zoomReset()">
           <i class="fa fa-compress"></i>
         </button>
+        <button type="button" class="btn btn-sm btn-warning ms-2" title="Reset Kitchen State" aria-label="Reset Kitchen State"
+                t-on-click="() => this.resetKitchenState()">
+          <i class="fa fa-refresh"></i>
+        </button>
       </div>
       <div class="row g-4">
 

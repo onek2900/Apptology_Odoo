@@ -536,6 +536,38 @@ export class KitchenScreenDashboard extends Component {
     }
 
     /**
+     * Reset local, per-shop kitchen UI state persisted in localStorage
+     * Clears: seen lines, seen tickets, press counts, and virtual lines
+     */
+    resetKitchenState() {
+        try {
+            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+            if (!sid) return;
+            // Keys maintained by this screen for deltas/badges
+            const keys = [
+                storageKeyForLines(sid),
+                storageKeyForTickets(sid),
+                storageKeyForPressCounts(sid),
+                `kitchen_virtual_lines_${sid}`,
+            ];
+            for (const k of keys) {
+                try { window.localStorage.removeItem(k); } catch (_) { /* ignore */ }
+            }
+            // Soft reset UI bits that depend on those caches
+            this.state.tickets = [];
+            // Remove any negative-id virtual lines from memory
+            this.state.lines = (this.state.lines || []).filter((l) => !(typeof l?.id === 'number' && l.id < 0));
+            this.recomputeTicketCounts();
+            this.notification.add(_t('Kitchen state cleared'), { title: _t('Kitchen Screen'), type: 'success' });
+            // Reload fresh data
+            this.refreshOrderDetails();
+        } catch (e) {
+            console.error('Failed to reset kitchen state', e);
+            this.notification.add(_t('Failed to clear kitchen state'), { title: _t('Kitchen Screen'), type: 'danger' });
+        }
+    }
+
+    /**
      * Handle bus notifications
      * @param {Object} message - Notification message
      */
