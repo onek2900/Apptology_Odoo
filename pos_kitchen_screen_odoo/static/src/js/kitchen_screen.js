@@ -927,11 +927,39 @@ recomputeTicketCounts() {
      * @param {Integer} orderId - Integer object
      */
     async done_order(orderId) {
-        await this.updateOrderStatus(
-            orderId,
-            ORDER_STATUSES.READY,
-            "order_progress_change"
-        );
+        try {
+            const id = Number(orderId);
+            const order = this.state.order_details.find((o) => o.id === id);
+            if (!order) {
+                // Fallback: still request recompute
+                await this.updateOrderStatus(id, ORDER_STATUSES.READY, "order_progress_change");
+                return;
+            }
+            // Collect all non-ready, non-modifier main lines
+            const ids = Array.isArray(order.lines) ? order.lines.map((x) => Number(x)) : [];
+            const targetLines = ids
+                .map((lid) => this.state.lines.find((l) => l.id === lid))
+                .filter(Boolean)
+                .filter((l) => !this.isModifierLine(l))
+                .filter((l) => l.order_status !== ORDER_STATUSES.READY);
+
+            if (targetLines.length) {
+                const nonReadyIds = targetLines
+                    .map((l) => Number(l.id))
+                    .filter((n) => Number.isFinite(n) && n > 0);
+                if (nonReadyIds.length) {
+                    await this.rpc("/pos/kitchen/line_status", { line_ids: nonReadyIds });
+                    // Optimistic UI update
+                    for (const l of targetLines) l.order_status = ORDER_STATUSES.READY;
+                }
+            }
+
+            // Now recompute on the backend; this will set the order to ready
+            await this.updateOrderStatus(id, ORDER_STATUSES.READY, "order_progress_change");
+        } catch (e) {
+            console.error("Failed to complete order:", e);
+            this.notification.add("Failed to complete order", { title: "Error", type: "danger" });
+        }
     }
 
     /**
