@@ -127,3 +127,23 @@ class OrderScreen(http.Controller):
             result = method_to_call()
             return result
         return False
+
+    @http.route("/pos/kitchen/line_status", auth="public", type="json", website=False)
+    def change_order_line_status(self, line_ids=None):
+        """Toggle the readiness of given order line(s) using sudo.
+
+        Accepts a single id or a list of ids in `line_ids`.
+        Returns True on success, False otherwise.
+        """
+        if not line_ids:
+            return False
+        if isinstance(line_ids, (int, str)):
+            try:
+                line_ids = [int(line_ids)]
+            except Exception:
+                return False
+        lines = request.env["pos.order.line"].sudo().browse(line_ids)
+        if not lines:
+            return False
+        lines.order_progress_change()
+        return True

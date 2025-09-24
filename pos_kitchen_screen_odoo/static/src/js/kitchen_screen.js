@@ -857,7 +857,8 @@ recomputeTicketCounts() {
             // Do not toggle toppings/modifiers
             if (this.isModifierLine(line)) return;
 
-            await this.orm.call("pos.order.line", "order_progress_change", [id]);
+            // Use backend endpoint with sudo to avoid ACL issues on public sessions
+            await this.rpc("/pos/kitchen/line_status", { line_ids: [id] });
 
             // Local UI update
             line.order_status = line.order_status === ORDER_STATUSES.READY
@@ -899,7 +900,8 @@ recomputeTicketCounts() {
 
             if (targetLines.length) {
                 const idsToToggle = targetLines.map((line) => Number(line.id));
-                await this.orm.call("pos.order.line", "order_progress_change", [idsToToggle]);
+                // Use backend endpoint with sudo to avoid ACL issues on public sessions
+                await this.rpc("/pos/kitchen/line_status", { line_ids: idsToToggle });
                 for (const line of targetLines) {
                     line.order_status = ORDER_STATUSES.READY;
                 }
