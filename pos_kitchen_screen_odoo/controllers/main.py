@@ -51,26 +51,6 @@ class OrderScreen(http.Controller):
         values = {"orders": combined_orders.sudo().read()}
         return values
 
-    @http.route("/apptology_order_screen", auth="public", type="http", website=True)
-    def apptology_order_screen(self, screen_id):
-
-        query = f"""SELECT id from kitchen_screen where id = {int(screen_id)} limit 1"""
-        request.env.cr.execute(query)
-        kitchen_screen = request.env.cr.dictfetchone()
-        if kitchen_screen is None:
-            raise werkzeug.exceptions.NotFound()
-
-        context = {
-            "session_info": {
-                **request.env["ir.http"].get_frontend_session_info(),
-                'kitchen_screen': kitchen_screen.get('id')
-            },
-            "kitchen_screen": kitchen_screen.get('id'),
-            "title": "Pos Order Tracking",
-            "screen": "order",
-        }
-        return request.render("pos_kitchen_screen_odoo.index", context)
-
     @http.route("/pos/kitchen/get_order_details", auth="public", type="json", website=False)
     def get_pos_kitchen_order_details(self, shop_id):
         kitchen_screen = request.env["kitchen.screen"].sudo().search(
