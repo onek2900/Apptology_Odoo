@@ -24,6 +24,8 @@ const BUS_EVENT = {
     MODEL: "pos.order"
 };
 
+// Feature flag: disable all localStorage-based delta caching (seen lines/tickets/press counts/virtual lines)
+const DISABLE_LOCAL_CACHE = true;
 // Debug toggle: enable via ?kdebug=1 or localStorage 'kitchen_debug' = '1'|'true'
 const isDebugEnabled = () => {
     try {
@@ -356,12 +358,12 @@ const fetchOrderDetails = async () => {
             return normalized;
         });
 
-        // Prefer server-provided logs if present, otherwise compute delta-based tickets
-        let tickets = [];
-        const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
-        if (anyLogs) {
-            // Build exactly one badge per order. If the order has logs, use the latest delta;
-            // otherwise, fall back to all current order lines so it still renders.
+          // Prefer server-provided logs if present; otherwise build full tickets (no local delta caching)
+          let tickets = [];
+          const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
+          if (anyLogs) {
+              // Build exactly one badge per order. If the order has logs, use the latest delta;
+              // otherwise, fall back to all current order lines so it still renders.
             for (const order of normalizedOrders) {
                 const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
                 if (!logs.length) {
@@ -421,19 +423,13 @@ const fetchOrderDetails = async () => {
             // Filter out empty tickets (safety)
             tickets = tickets.filter((t) => Array.isArray(t.lines) && t.lines.length);
         } else {
-            const delta = computeDeltaTickets(normalizedOrders, normalizedLines, shopId);
-            tickets = delta.tickets;
-            normalizedLines = normalizedLines.concat(delta.virtualLines);
-            // Fallback: if delta produced no tickets (e.g., first load with cached snapshots),
-            // build one ticket per order using current order lines so the UI shows content.
-            if (!tickets || !tickets.length) {
-                tickets = (normalizedOrders || []).map((order) => ({
-                    ...order,
-                    ticket_uid: `order-${order.id}-full`,
-                    ticket_created_at: order.write_date,
-                    lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
-                })).filter((t) => Array.isArray(t.lines) && t.lines.length);
-            }
+            // Build one ticket per order using all current order lines (no delta/local cache)
+            tickets = (normalizedOrders || []).map((order) => ({
+                ...order,
+                ticket_uid: `order-${order.id}-full`,
+                ticket_created_at: order.write_date,
+                lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
+            })).filter((t) => Array.isArray(t.lines) && t.lines.length);
         }
         return {
             order_details: normalizedOrders,
@@ -548,6 +544,7 @@ export class KitchenScreenDashboard extends Component {
 
         onWillStart(async () => {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
+            if (!DISABLE_LOCAL_CACHE) this.checkBootTokenAndReset();
             await this.refreshOrderDetails();
             this.initZoomFromStorage();
             this.loadCompletedWindow();
@@ -566,6 +563,28 @@ export class KitchenScreenDashboard extends Component {
         this.refreshInterval = setInterval(() => {
             this.refreshOrderDetails();
         }, 5000);
+    }
+
+    // Clear per-shop caches on first load when server boot token changes
+    checkBootTokenAndReset() {
+        try {
+            const sid = this.state?.shop_id || sessionStorage.getItem('shop_id');
+            if (!sid) return;
+            const boot = (window.odoo && (window.odoo.kitchen_boot_ts || (window.odoo.session_info && window.odoo.session_info.kitchen_boot_ts))) || null;
+            if (!boot) return;
+            const key = `kitchen_boot_ts_${sid}`;
+            const prev = window.localStorage.getItem(key);
+            if (prev !== String(boot)) {
+                const keys = [
+                    `kitchen_seen_lines_${sid}`,
+                    `kitchen_seen_tickets_${sid}`,
+                    `kitchen_press_counts_${sid}`,
+                    `kitchen_virtual_lines_${sid}`,
+                ];
+                for (const k of keys) { try { window.localStorage.removeItem(k); } catch (_) { /* ignore */ } }
+                try { window.localStorage.setItem(key, String(boot)); } catch (_) { /* ignore */ }
+            }
+        } catch (_) { /* ignore */ }
     }
 
     // ===== Completed window controls =====
@@ -667,23 +686,24 @@ export class KitchenScreenDashboard extends Component {
             const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
-            // Append persisted virtual lines so previous badges keep content across refreshes
-            try {
-                const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
-                const persisted = window.localStorage.getItem(`kitchen_virtual_lines_${sid}`);
-                const arr = persisted ? JSON.parse(persisted) : [];
-                if (Array.isArray(arr) && arr.length) {
-                    this.state.lines = (this.state.lines || []).concat(arr);
-                }
-                // Persist any newly created virtual lines from this refresh
-                const currentVirtual = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
-                const byId = new Map((Array.isArray(arr) ? arr : []).map((v) => [v.id, v]));
-                for (const v of currentVirtual) {
-                    if (!byId.has(v.id)) byId.set(v.id, v);
-                }
-                const merged = Array.from(byId.values());
-                window.localStorage.setItem(`kitchen_virtual_lines_${sid}`, JSON.stringify(merged));
-            } catch (_) { /* ignore */ }
+            // Skip persisted virtual lines when local cache is disabled
+            if (!DISABLE_LOCAL_CACHE) {
+                try {
+                    const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                    const persisted = window.localStorage.getItem(`kitchen_virtual_lines_${sid}`);
+                    const arr = persisted ? JSON.parse(persisted) : [];
+                    if (Array.isArray(arr) && arr.length) {
+                        this.state.lines = (this.state.lines || []).concat(arr);
+                    }
+                    const currentVirtual = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
+                    const byId = new Map((Array.isArray(arr) ? arr : []).map((v) => [v.id, v]));
+                    for (const v of currentVirtual) {
+                        if (!byId.has(v.id)) byId.set(v.id, v);
+                    }
+                    const merged = Array.from(byId.values());
+                    window.localStorage.setItem(`kitchen_virtual_lines_${sid}`, JSON.stringify(merged));
+                } catch (_) { /* ignore */ }
+            }
             // tickets computed in fetchOrderDetails, no need to rebuild
             this.recomputeTicketCounts();
             this.recomputeTicketCounts();
