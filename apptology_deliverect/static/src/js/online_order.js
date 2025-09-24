@@ -274,6 +274,9 @@ export class OnlineOrderScreen extends Component {
      * Starts polling for open orders every 10 seconds.
      */
     async startPollingOrders() {
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
         this.pollingInterval = setInterval(async () => this.reloadOrders(), 10000);
     }
     /**
