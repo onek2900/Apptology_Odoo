@@ -14,9 +14,11 @@ class OrderScreen(http.Controller):
     def get_pos_order_details(self, screen_id):
         kitchen_screen = request.env["kitchen.screen"].sudo().browse(int(screen_id))
 
-        pos_session_id = request.env["pos.session"].sudo().search([
-            ('config_id', '=', kitchen_screen.pos_config_id.id),
-            ('state', '=', 'opened')], limit=1)
+        # Use current session from the POS config to avoid selecting a stale opened session
+        config = kitchen_screen.pos_config_id
+        pos_session_id = config.current_session_id
+        if not pos_session_id:
+            return {"orders": []}
         # Build domains with optional category filter; if no categories chosen, show all
         cat_domain = []
         if kitchen_screen.pos_categ_ids:
