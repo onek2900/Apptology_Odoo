@@ -84,7 +84,7 @@ class OrderScreen(http.Controller):
         if kitchen_screen.pos_categ_ids:
             cat_domain = [("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids)]
 
-        # Only orders with cooking lines; split in‑store vs online (approved)
+        # In‑progress: only orders with cooking lines; split in‑store vs online (approved)
         pos_orders = request.env["pos.order"].sudo().search(
             [("lines.is_cooking", "=", True), ("is_online_order", "=", False), ("session_id", "=", pos_session_id.id)]
             + cat_domain,
@@ -102,7 +102,24 @@ class OrderScreen(http.Controller):
             order="date_order",
         )
 
-        combined_orders = pos_orders | approved_deliverect_orders
+        # Completed: include READY orders for the same session (ignore is_cooking flags)
+        ready_instore = request.env["pos.order"].sudo().search(
+            [("order_status", "=", "ready"), ("is_online_order", "=", False), ("session_id", "=", pos_session_id.id)]
+            + cat_domain,
+            order="date_order",
+        )
+        ready_online = request.env["pos.order"].sudo().search(
+            [
+                ("order_status", "=", "ready"),
+                ("session_id", "=", pos_session_id.id),
+                ("is_online_order", "=", True),
+                ("online_order_status", "=", "approved"),
+            ]
+            + cat_domain,
+            order="date_order",
+        )
+
+        combined_orders = pos_orders | approved_deliverect_orders | ready_instore | ready_online
         values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
         return values
 
