@@ -24,6 +24,21 @@ const BUS_EVENT = {
     MODEL: "pos.order"
 };
 
+// Debug toggle: enable via ?kdebug=1 or localStorage 'kitchen_debug' = '1'|'true'
+const isDebugEnabled = () => {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('kdebug');
+        if (q !== null) return q !== '0' && q.toLowerCase() !== 'false';
+    } catch (_) { /* ignore */ }
+    try {
+        const v = String(window.localStorage.getItem('kitchen_debug') || '').toLowerCase();
+        return v === '1' || v === 'true' || v === 'yes';
+    } catch (_) { /* ignore */ }
+    return Boolean((window.odoo && window.odoo.debug) || false);
+};
+const __KITCHEN_DEBUG__ = isDebugEnabled();
+
 const normalizeBooleanFlag = (value) => {
     if (Array.isArray(value)) {
         return value.some((item) => normalizeBooleanFlag(item));
@@ -324,7 +339,7 @@ const fetchOrderDetails = async () => {
                 sh_is_has_topping: flags.sh_is_has_topping,
                 is_modifier: isModifier,
             };
-            console.debug('[Kitchen] normalized line', {
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] normalized line', {
                 id: normalized.id,
                 product: normalized.full_product_name,
                 qty: normalized.qty,
@@ -540,7 +555,7 @@ export class KitchenScreenDashboard extends Component {
             return false;
         }
         if (typeof line.is_modifier === 'boolean') {
-            console.debug('[Kitchen] using cached modifier flag', { id: line.id, product: line.full_product_name, is_modifier: line.is_modifier });
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] using cached modifier flag', { id: line.id, product: line.full_product_name, is_modifier: line.is_modifier });
             return line.is_modifier;
         }
         const flags = extractToppingFlags(line, null);
@@ -551,7 +566,7 @@ export class KitchenScreenDashboard extends Component {
         line.product_is_topping = flags.product_is_topping;
         line.product_sh_is_topping = flags.product_sh_is_topping;
         line.sh_is_has_topping = flags.sh_is_has_topping;
-        console.debug('[Kitchen] computed modifier flag', { id: line.id, product: line.full_product_name, is_modifier: flag, is_topping: line.is_topping, product_is_topping: line.product_is_topping });
+        if (__KITCHEN_DEBUG__) console.debug('[Kitchen] computed modifier flag', { id: line.id, product: line.full_product_name, is_modifier: flag, is_topping: line.is_topping, product_is_topping: line.product_is_topping });
         return flag;
     }
 
@@ -952,7 +967,7 @@ recomputeTicketCounts() {
             const line = getLine(id);
             if (!line) continue;
             const isModifier = this.isModifierLine(line);
-            console.debug('[Kitchen] sortedLineIds classification', { id, product: line.full_product_name, is_modifier: isModifier });
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] sortedLineIds classification', { id, product: line.full_product_name, is_modifier: isModifier });
             if (!isModifier) {
                 if (current.length) groups.push(current);
                 current = [id];
@@ -998,7 +1013,7 @@ recomputeTicketCounts() {
             const line = getLine(id);
             if (!line) continue;
             const isModifier = this.isModifierLine(line);
-            console.debug('[Kitchen] linesWithDivider classification', { id, product: line.full_product_name, is_modifier: isModifier });
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] linesWithDivider classification', { id, product: line.full_product_name, is_modifier: isModifier });
             if (!isModifier) {
                 if (current.length) groups.push(current);
                 current = [id];
