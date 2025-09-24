@@ -14,5 +14,6 @@
             "apptology_neworder/static/src/scss/floor_neworder_button.scss"
         ]
     },
-    "installable": true
+    "installable": True
 }
+
