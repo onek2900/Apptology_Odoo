@@ -47,3 +47,31 @@ class PosSession(models.Model):
         """Get pos ui pos order line"""
         return self.env['pos.order.line'].search_read(
             **params['search_params'])
+
+    # When a session is closed, mark any remaining kitchen orders as ready
+    def action_pos_session_closing_control(self):
+        res = super().action_pos_session_closing_control()
+        for session in self:
+            orders = self.env['pos.order'].sudo().search([
+                ('session_id', '=', session.id),
+                ('order_status', '!=', 'ready'),
+            ])
+            if not orders:
+                continue
+            lines = orders.mapped('lines').filtered(lambda l: l.order_status != 'ready')
+            if lines:
+                lines.write({'order_status': 'ready', 'is_cooking': False})
+            orders.write({
+                'order_status': 'ready',
+                'is_cooking': False,
+                'kitchen_new_line_summary': [],
+                'kitchen_new_line_count': 0,
+            })
+            for o in orders:
+                if hasattr(o, 'update_order_status_in_deliverect'):
+                    try:
+                        o.update_order_status_in_deliverect(70)
+                    except Exception:
+                        # Do not block session closing if external call fails
+                        pass
+        return res

@@ -23,7 +23,12 @@ class OrderScreen(http.Controller):
         has_online_flag = "is_online_order" in pos_order_model._fields
         has_online_status = "online_order_status" in pos_order_model._fields
 
-        base_domain = [("lines.is_cooking", "=", True), ("session_id", "=", pos_session_id.id)] + cat_domain
+        # Only consider orders still in progress; exclude those already marked ready
+        base_domain = [
+            ("lines.is_cooking", "=", True),
+            ("order_status", "!=", "ready"),
+            ("session_id", "=", pos_session_id.id),
+        ] + cat_domain
         in_store_domain = list(base_domain)
         if has_online_flag:
             in_store_domain.append(("is_online_order", "=", False))

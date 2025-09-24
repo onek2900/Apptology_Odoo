@@ -297,7 +297,16 @@ class PosOrder(models.Model):
         if new != self.order_status:
             self.order_status = new
         if self.order_status == "ready":
-            self.write({"kitchen_new_line_summary": [], "kitchen_new_line_count": 0})
+            # Explicitly stop tracking in kitchen once ready
+            # Turn off cooking flags on lines and order so fetch domain drops them
+            self.lines.write({
+                "is_cooking": False,
+            })
+            self.write({
+                "is_cooking": False,
+                "kitchen_new_line_summary": [],
+                "kitchen_new_line_count": 0,
+            })
             if hasattr(self, "update_order_status_in_deliverect"):
                 self.update_order_status_in_deliverect(70)
 
