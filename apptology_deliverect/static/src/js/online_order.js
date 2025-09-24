@@ -195,6 +195,14 @@ export class OnlineOrderScreen extends Component {
             orderLineData: orderLines,
             headerData: { company: this.pos.company },
         };
+        try {
+            const curOrder = this.pos && typeof this.pos.get_order === 'function' ? this.pos.get_order() : null;
+            if (curOrder) {
+                curOrder.is_reciptScreen = true;
+            }
+        } catch (e) {
+            // No active POS order; proceed with printing
+        }
         this.printer.print(
             onlineOrderReceipt,
             {
