@@ -298,10 +298,12 @@ class PosOrder(models.Model):
             self.order_status = new
         if self.order_status == "ready":
             # Explicitly stop tracking in kitchen once ready
-            # Turn off cooking flags on lines and order so fetch domain drops them
-            self.lines.write({
-                "is_cooking": False,
-            })
+            # 1) Mark all main lines as ready so UI derives READY status from lines
+            mains_filtered = mains.filtered(lambda l: l.order_status != "ready") if mains else self.lines.filtered(lambda l: l.order_status != "ready")
+            if mains_filtered:
+                mains_filtered.write({"order_status": "ready"})
+            # 2) Turn off cooking flags on lines and order so fetch domain drops them
+            self.lines.write({"is_cooking": False})
             self.write({
                 "is_cooking": False,
                 "kitchen_new_line_summary": [],

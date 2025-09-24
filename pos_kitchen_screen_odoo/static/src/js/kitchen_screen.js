@@ -731,6 +731,10 @@ ticketStatus(ticket) {
     if (!ticket) {
         return ORDER_STATUSES.DRAFT;
     }
+    // If the server already marks the order as ready, trust it
+    if (ticket.order_status === ORDER_STATUSES.READY) {
+        return ORDER_STATUSES.READY;
+    }
     const records = this.ticketLineRecords(ticket);
     if (!records.length) {
         return ticket.order_status || ORDER_STATUSES.DRAFT;
