@@ -121,12 +121,12 @@ patch(ActionpadWidget.prototype, {
                         'is_cooking': true,
                         'order_status': 'draft',
                         'company_id': this.pos.company.id,
-                        'session_id':currentOrder.pos_session_id,
-                        'hour':currentOrder.date_order.c.hour,
-                        'minutes':currentOrder.date_order.c.minute,
-                        'table_id':currentOrder.pos.table.id,
-                        'floor':currentOrder.pos.currentFloor.name,
-                        'config_id':currentOrder.pos.config.id
+                        'session_id': (currentOrder && currentOrder.pos_session_id),
+                        'hour': ((currentOrder && currentOrder.date_order && currentOrder.date_order.c && currentOrder.date_order.c.hour) || new Date().getHours()),
+                        'minutes': ((currentOrder && currentOrder.date_order && currentOrder.date_order.c && currentOrder.date_order.c.minute) || new Date().getMinutes()),
+                        'table_id': ((currentOrder && currentOrder.pos && currentOrder.pos.table && currentOrder.pos.table.id) || false),
+                        'floor': ((currentOrder && currentOrder.pos && currentOrder.pos.currentFloor && currentOrder.pos.currentFloor.name) || 'Pickup'),
+                        'config_id': ((currentOrder && currentOrder.pos && currentOrder.pos.config && currentOrder.pos.config.id) || (this.pos && this.pos.config && this.pos.config.id))
                     }]
                     await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
                 }
@@ -177,4 +177,5 @@ patch(ActionpadWidget.prototype, {
         return false;
     },
 });
+
 
