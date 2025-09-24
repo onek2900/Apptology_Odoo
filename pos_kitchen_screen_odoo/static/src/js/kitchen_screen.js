@@ -925,15 +925,16 @@ recomputeTicketCounts() {
     }
 
     zoomLevels() {
-        // Discrete zoom presets (width x height) as requested
-        // widths: [260, 300, 320, 380, 440]
+        // Discrete zoom presets (width x height + font scale)
+        // widths:  [260, 300, 320, 380, 440]
         // heights: [400, 500, 520, 520, 540]
+        // font scale Option A: [0.92, 0.97, 1.00, 1.08, 1.16]
         return [
-            { w: 260, h: 400, s: 1.00 }, // xs
-            { w: 300, h: 500, s: 1.00 }, // compact
+            { w: 260, h: 400, s: 0.92 }, // xs (denser)
+            { w: 300, h: 500, s: 0.97 }, // compact
             { w: 320, h: 520, s: 1.00 }, // default
-            { w: 380, h: 520, s: 1.00 }, // large
-            { w: 440, h: 540, s: 1.00 }, // xlarge
+            { w: 380, h: 520, s: 1.08 }, // large
+            { w: 440, h: 540, s: 1.16 }, // xlarge (readable)
         ];
     }
 
