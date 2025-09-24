@@ -490,6 +490,8 @@ export class KitchenScreenDashboard extends Component {
             card_w: 360,
             card_h: 520,
             content_scale: 1,
+            // Completed window (minutes); 0 = show all
+            completed_window_minutes: 5,
         });
 
         this.orderManagement = useOrderManagement(this.rpc, shopId);
@@ -518,6 +520,7 @@ export class KitchenScreenDashboard extends Component {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
             await this.refreshOrderDetails();
             this.initZoomFromStorage();
+            this.loadCompletedWindow();
         });
 
         onMounted(() => {
@@ -533,6 +536,27 @@ export class KitchenScreenDashboard extends Component {
         this.refreshInterval = setInterval(() => {
             this.refreshOrderDetails();
         }, 5000);
+    }
+
+    // ===== Completed window controls =====
+    completedWindowKey() {
+        const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+        return `kitchen_completed_window_minutes_${sid || 'global'}`;
+    }
+    loadCompletedWindow() {
+        try {
+            const raw = window.localStorage.getItem(this.completedWindowKey());
+            const n = Number(raw);
+            if (!Number.isNaN(n)) this.state.completed_window_minutes = n;
+        } catch (_) { /* ignore */ }
+    }
+    saveCompletedWindow() {
+        try { window.localStorage.setItem(this.completedWindowKey(), String(this.state.completed_window_minutes)); } catch (_) { /* ignore */ }
+    }
+    onChangeCompletedWindow(value) {
+        const n = Number(value);
+        this.state.completed_window_minutes = Number.isNaN(n) ? 0 : n;
+        this.saveCompletedWindow();
     }
 
     /**
@@ -806,9 +830,15 @@ get ticketsInProgress() {
 }
 
 get ticketsCompleted() {
-    // Show all ready tickets (no time cutoff)
-    return (this.state.tickets || [])
-        .filter((ticket) => this.ticketStatus(ticket) === ORDER_STATUSES.READY)
+    const minutes = Number(this.state.completed_window_minutes) || 0;
+    const list = (this.state.tickets || []).filter((t) => this.ticketStatus(t) === ORDER_STATUSES.READY);
+    if (minutes <= 0) {
+        return list.sort((a, b) => this.ticketCreatedAt(b) - this.ticketCreatedAt(a));
+    }
+    const userTimezone = this.user.tz || 'UTC';
+    const cutoff = DateTime.now().setZone(userTimezone).minus({ minutes });
+    return list
+        .filter((ticket) => this.ticketCreatedAt(ticket).setZone(userTimezone) > cutoff)
         .sort((a, b) => this.ticketCreatedAt(b) - this.ticketCreatedAt(a));
 }
 

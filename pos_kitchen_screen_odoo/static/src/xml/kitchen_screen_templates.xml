@@ -134,6 +134,15 @@
                 t-on-click="() => this.resetKitchenState()">
           <i class="fa fa-refresh"></i>
         </button>
+        <select class="form-select form-select-sm ms-2" style="width:auto" title="Completed window"
+                t-on-change="(ev) => this.onChangeCompletedWindow(ev.target.value)">
+          <option t-att-selected="state.completed_window_minutes === 5" value="5">5m</option>
+          <option t-att-selected="state.completed_window_minutes === 30" value="30">30m</option>
+          <option t-att-selected="state.completed_window_minutes === 60" value="60">1h</option>
+          <option t-att-selected="state.completed_window_minutes === 120" value="120">2h</option>
+          <option t-att-selected="state.completed_window_minutes === 360" value="360">6h</option>
+          <option t-att-selected="state.completed_window_minutes === 0" value="0">All</option>
+        </select>
       </div>
       <div class="row g-4">
 
