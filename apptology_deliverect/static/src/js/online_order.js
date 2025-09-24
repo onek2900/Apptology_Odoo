@@ -311,20 +311,29 @@ export class OnlineOrderScreen extends Component {
             const liveLineIds = Array.isArray(recs) && recs[0] && Array.isArray(recs[0].lines) ? recs[0].lines : [];
             // Fetch line details to filter out modifiers/toppings
             const lineDetails = liveLineIds.length
-                ? await this.orm.read('pos.order.line', liveLineIds, ['id','product_id','order_status','is_topping','sh_is_topping','product_sh_is_topping'])
+                ? await this.orm.read('pos.order.line', liveLineIds, ['id','order_status','sh_is_topping','product_sh_is_topping'])
                 : [];
-            const isModifier = (ld) => {
-                const flags = [ld.is_topping, ld.sh_is_topping, ld.product_sh_is_topping];
-                return flags.some((v) => Array.isArray(v) ? !!v[0] : !!v);
+            const toBool = (v) => {
+                if (Array.isArray(v)) return v.length ? !!v[0] : false;
+                if (typeof v === 'string') return ['1','true','yes','on','y'].includes(v.trim().toLowerCase());
+                return !!v;
             };
+            const isModifier = (ld) => toBool(ld?.sh_is_topping) || toBool(ld?.product_sh_is_topping);
             const mainLineIds = (lineDetails || [])
                 .filter((ld) => ld && !isModifier(ld))
                 .map((ld) => toId(ld.id))
                 .filter((id) => typeof id === 'number');
 
             if (mainLineIds.length) {
-                // Mark main lines as ready in the kitchen screen
-                await this.rpc("/pos/kitchen/line_status", { line_ids: mainLineIds });
+                // Mark main lines as ready in the kitchen screen (endpoint toggles; these are non-ready lines)
+                // Filter to only non-ready lines to avoid flipping ready -> waiting
+                const nonReadyIds = (lineDetails || [])
+                    .filter((ld) => ld && !isModifier(ld) && String(ld.order_status) !== 'ready')
+                    .map((ld) => toId(ld.id))
+                    .filter((id) => typeof id === 'number');
+                if (nonReadyIds.length) {
+                    await this.rpc("/pos/kitchen/line_status", { line_ids: nonReadyIds });
+                }
             }
 
             // Recompute and persist the order readiness on the server
