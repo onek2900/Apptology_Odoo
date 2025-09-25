@@ -27,27 +27,32 @@ patch(OrderListScreen.prototype, {
         this.fetch()
     },
     get allPosOrders() {
+        const toUniqueSorted = (arr) => {
+            const sorted = (arr || []).slice().sort((a, b) => {
+                const aid = a && a[0] ? Number(a[0]['id']) : 0;
+                const bid = b && b[0] ? Number(b[0]['id']) : 0;
+                return bid - aid;
+            });
+            const seen = new Set();
+            const out = [];
+            for (const tpl of sorted) {
+                const hid = tpl && tpl[0] ? tpl[0].id : null;
+                if (!hid || seen.has(hid)) continue;
+                seen.add(hid);
+                out.push(tpl);
+            }
+            return out;
+        };
         if (this.isSearch) {
-            var orders = this.subFilterdOrders;
-            return orders.sort((function (a, b) { return b[0]['id'] - a[0]['id'] }))
+            return toUniqueSorted(this.subFilterdOrders);
         } else {
-            // retunr order fileter
+            const orders = Object.values(this.pos.db.pos_order_by_id || {});
             if (this.get_return_filter()) {
-                var orders = Object.values(this.pos.db.pos_order_by_id)
-                var filterd_orders = orders.filter((x) => x[0].is_return_order) || []
-                if (filterd_orders && filterd_orders.length) {
-                    return filterd_orders.sort((function (a, b) { return b[0]['id'] - a[0]['id'] }))
-                } else {
-                    return []
-                }
+                const filtered = orders.filter((x) => x && x[0] && x[0].is_return_order) || []
+                return toUniqueSorted(filtered);
             } else {
-                var orders = Object.values(this.pos.db.pos_order_by_id)
-                var filterd_orders = orders.filter((x) => !x[0].is_return_order) || []
-                if (filterd_orders && filterd_orders.length) {
-                    return filterd_orders.sort((function (a, b) { return b[0]['id'] - a[0]['id'] }))
-                } else {
-                    return orders
-                }
+                const filtered = orders.filter((x) => x && x[0] && !x[0].is_return_order) || []
+                return toUniqueSorted(filtered.length ? filtered : orders);
             }
         }
     },

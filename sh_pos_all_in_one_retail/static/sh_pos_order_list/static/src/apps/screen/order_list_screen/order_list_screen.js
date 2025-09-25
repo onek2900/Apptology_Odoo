@@ -210,13 +210,25 @@ export class OrderListScreen extends Component {
         this.render(true)
     }
     get allPosOrders() {
-        if (this.isSearch) {
-            var orders = this.subFilterdOrders;
-            return orders.sort((function (a, b) { return b[0]['id'] - a[0]['id'] }))
-        } else {
-            var orders = Object.values(this.pos.db.pos_order_by_id)
-            return orders.sort((function (a, b) { return b[0]['id'] - a[0]['id'] }))
+        // Source array
+        const arr = this.isSearch ? (this.subFilterdOrders || []) : Object.values(this.pos.db.pos_order_by_id || {});
+        // Sort newest first
+        const sorted = arr.slice().sort((a, b) => {
+            const aid = a && a[0] ? Number(a[0]['id']) : 0;
+            const bid = b && b[0] ? Number(b[0]['id']) : 0;
+            return bid - aid;
+        });
+        // De-duplicate by order header id to avoid doubles when sources overlap
+        const unique = [];
+        const seen = new Set();
+        for (const tpl of sorted) {
+            const hid = tpl && tpl[0] ? tpl[0].id : null;
+            if (!hid) continue;
+            if (seen.has(hid)) continue;
+            seen.add(hid);
+            unique.push(tpl);
         }
+        return unique;
     }
     onNextPage() {
         if (this.currentPage <= this.lastPage) {
