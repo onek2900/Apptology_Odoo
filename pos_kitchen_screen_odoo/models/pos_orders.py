@@ -151,10 +151,32 @@ class PosOrder(models.Model):
             order_ref = payload.get("pos_reference")
             order_record = self.search([("pos_reference", "=", order_ref)])
             if not order_record:
+                # First press: create order with provided lines as-is
                 order_record = self.create([payload])
             else:
-                order_record.lines = False
-                order_record.write(payload)
+                # Existing order: append only the lines belonging to this press (by ticket_uid)
+                all_cmds = payload.get("lines") or []
+                press_cmds = []
+                for cmd in all_cmds:
+                    try:
+                        vals = isinstance(cmd, (list, tuple)) and len(cmd) >= 3 and isinstance(cmd[2], dict) and cmd[2] or None
+                        if not vals:
+                            continue
+                        if ticket_uid and str(vals.get("kitchen_ticket_uid") or "") != str(ticket_uid):
+                            continue
+                        press_cmds.append((0, 0, vals))
+                    except Exception:
+                        continue
+                write_vals = {}
+                # Append new lines for this press only
+                if press_cmds:
+                    write_vals["lines"] = press_cmds
+                # Update simple order fields (exclude lines so we don't overwrite existing)
+                for k in ["order_status", "is_cooking", "order_ref", "hour", "minutes", "floor", "session_id", "config_id", "table_id"]:
+                    if k in payload:
+                        write_vals[k] = payload[k]
+                if write_vals:
+                    order_record.write(write_vals)
             # Create/update kitchen ticket for this send
             if ticket_uid:
                 ticket_lines = order_record.lines.filtered(lambda l: str(getattr(l, "kitchen_ticket_uid", "")) == str(ticket_uid))
