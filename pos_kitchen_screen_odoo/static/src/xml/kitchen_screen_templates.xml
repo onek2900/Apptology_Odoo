@@ -125,15 +125,12 @@
         </ul>
 
 
-      <!-- Clover-style: no footer actions; tap header to complete, tap items to toggle -->
       </div>
     </article>
   </t>
 
-  <!-- Page -->
   <t t-name="KitchenCustomDashBoard">
 
-    <!-- Cancel confirmation removed (Clover-style UX) -->
 
     <div class="kitchen-dashboard"
          t-att-style="'--k-card-w: ' + state.card_w + 'px; --k-card-h: ' + state.card_h + 'px; --k-content-scale: ' + state.content_scale">
