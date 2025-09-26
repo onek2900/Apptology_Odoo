@@ -65,10 +65,10 @@
             <i class="fa fa-table" aria-hidden="true"></i>
             <span>Table <t t-esc="order.table_id[1]"/></span>
           </div>
-          <!-- header newLines removed -->
-          <!-- newLines header chips removed -->
-            <div class="order-card__newlines-group">
-              <t t-foreach="newLines" t-as="entry" t-key="entry.product_id or loop.index">
+
+
+
+
                 <div class="order-card__newbadge">
                   <span class="order-card__newbadge-qty"><t t-esc="this.formatNewLineQuantity(entry.quantity)"/>×</span>
                   <span class="order-card__newbadge-name"><t t-esc="entry.product_name"/></span>
@@ -82,16 +82,7 @@
 
         
         <ul class="list-group list-group-flush order-card__items">
-          <t t-if="false">
-            <li class="list-group-item order-card__item">
-              <div class="order-card__newlines-group">
-                <t t-foreach="order.ticket_summary" t-as="entry" t-key="(entry.product_id or loop.index) + '-' + (order.ticket_uid or order.id)">
-                  <div class="order-card__newbadge">
-                    <span class="order-card__newbadge-qty"><t t-esc="this.formatNewLineQuantity(entry.quantity)"/>x</span>
-                    <span class="order-card__newbadge-name"><t t-esc="entry.product_name"/></span>
-                    <span class="order-card__newbadge-note" t-if="entry.note"><t t-esc="entry.note"/></span>
-                  </div>
-                </t>
+          
               </div>
             </li>
           </t>
@@ -230,16 +221,7 @@
 
                     <!-- Lines: always render as normal grouped lines -->
                     <ul class="list-group list-group-flush order-card__items">
-                      <t t-if="false">
-                        <li class="list-group-item order-card__item">
-                          <div class="order-card__newlines-group">
-                            <t t-foreach="order.ticket_summary" t-as="entry" t-key="(entry.product_id or loop.index) + '-' + (order.ticket_uid or order.id)">
-                              <div class="order-card__newbadge">
-                                <span class="order-card__newbadge-qty"><t t-esc="this.formatNewLineQuantity(entry.quantity)"/>x</span>
-                                <span class="order-card__newbadge-name"><t t-esc="entry.product_name"/></span>
-                                <span class="order-card__newbadge-note" t-if="entry.note"><t t-esc="entry.note"/></span>
-                              </div>
-                            </t>
+                      
                           </div>
                         </li>
                       </t>
@@ -317,3 +299,4 @@
 </templates>
 
       
+
