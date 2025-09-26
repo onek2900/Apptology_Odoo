@@ -538,16 +538,18 @@ export class KitchenScreenDashboard extends Component {
             for (const entry of items) {
                 const qty = Number(entry && entry.quantity) || 0;
                 if (qty <= 0) continue;
+                const entryIsTopping = Boolean(entry && (entry.is_topping === true));
                 const v = {
                     id: __deltaVirtualId--,
                     full_product_name: (entry && (entry.product_name || entry.name)) || 'Item',
                     qty: qty,
                     order_status: 'waiting',
-                    is_modifier: false,
-                    is_topping: false,
-                    sh_is_topping: false,
-                    product_is_topping: false,
-                    product_sh_is_topping: false,
+                    // Pre-classify modifiers for virtual lines using hint from the POS
+                    is_modifier: entryIsTopping,
+                    is_topping: entryIsTopping,
+                    sh_is_topping: entryIsTopping,
+                    product_is_topping: entryIsTopping,
+                    product_sh_is_topping: entryIsTopping,
                     sh_is_has_topping: false,
                     note: entry && entry.note || '',
                 };

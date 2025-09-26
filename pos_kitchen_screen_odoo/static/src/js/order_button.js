@@ -76,6 +76,8 @@ patch(ActionpadWidget.prototype, {
                                     quantity: deltaQty,
                                     note: change.note || '',
                                     ticket_uid: ticketUid,
+                                    // Hint for kitchen: whether this is a modifier/topping
+                                    is_topping: Boolean(productData?.is_topping ?? productData?.sh_is_topping ?? false),
                                 });
                             }
                         }
