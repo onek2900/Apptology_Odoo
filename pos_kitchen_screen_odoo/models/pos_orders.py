@@ -158,20 +158,21 @@ class PosOrder(models.Model):
             # Create/update kitchen ticket for this send
             if ticket_uid:
                 ticket_lines = order_record.lines.filtered(lambda l: str(getattr(l, "kitchen_ticket_uid", "")) == str(ticket_uid))
-                existing = self.env["pos.kitchen.ticket"].sudo().search([("order_id", "=", order_record.id)])
-                press_index = len(existing)
-                kt = self.env["pos.kitchen.ticket"].sudo().search([("ticket_uid", "=", ticket_uid), ("order_id", "=", order_record.id)], limit=1)
-                vals = {
-                    "order_id": order_record.id,
-                    "press_index": press_index,
-                    "ticket_uid": ticket_uid,
-                    "created_at": fields.Datetime.now(),
-                }
-                if kt:
-                    kt.write(vals)
-                else:
-                    kt = self.env["pos.kitchen.ticket"].sudo().create(vals)
+                # Only create a ticket when there are actual lines for this press
                 if ticket_lines:
+                    existing = self.env["pos.kitchen.ticket"].sudo().search([("order_id", "=", order_record.id)])
+                    press_index = len(existing)
+                    kt = self.env["pos.kitchen.ticket"].sudo().search([("ticket_uid", "=", ticket_uid), ("order_id", "=", order_record.id)], limit=1)
+                    vals = {
+                        "order_id": order_record.id,
+                        "press_index": press_index,
+                        "ticket_uid": ticket_uid,
+                        "created_at": fields.Datetime.now(),
+                    }
+                    if kt:
+                        kt.write(vals)
+                    else:
+                        kt = self.env["pos.kitchen.ticket"].sudo().create(vals)
                     kt.write({"line_ids": [(6, 0, ticket_lines.ids)]})
         kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
         pos_session_id = self.env["pos.session"].search([("config_id", "=", shop_id), ("state", "=", "opened")], limit=1)
