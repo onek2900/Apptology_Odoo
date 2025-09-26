@@ -207,45 +207,15 @@ const fetchOrderDetails = async () => {
             return normalized;
         });
 
-            // Build tickets per press using server logs; fallback to full order if no logs
-            let tickets = [];
-            for (const order of normalizedOrders) {
-                const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
-                if (!logs.length) {
-                    const allIds = Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [];
-                    if (allIds.length) {
-                        tickets.push({
-                            ...order,
-                            ticket_uid: `order-${order.id}-full`,
-                            ticket_created_at: order.write_date,
-                            lines: allIds,
-                        });
-                    }
-                    continue;
-                }
-                logs.forEach((log, idx) => {
-                    const ids = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
-                    const pressIndex = typeof log.press_index === 'number' ? log.press_index : idx;
-                    const snap = Array.isArray(log.line_snapshot) ? log.line_snapshot : [];
-                    const ticketSummary = snap
-                        .map((e) => ({
-                            product_id: e && e.product_id,
-                            product_name: (e && (e.full_product_name || e.product_name || e.name)) || '',
-                            quantity: Number(e && e.qty) || Number(e && e.quantity) || 0,
-                            note: (e && e.note) || '',
-                        }))
-                        .filter((e) => e.quantity > 0);
-                    tickets.push({
-                        ...order,
-                        ticket_uid: log.ticket_uid || `ticket-${order.id}-${idx}`,
-                        ticket_created_at: log.created_at || order.write_date,
-                        lines: ids,
-                        kitchen_press_index: pressIndex,
-                        ticket_summary: ticketSummary,
-                    });
-                });
-            }
-            tickets = tickets.filter((t) => Array.isArray(t.lines) && t.lines.length);
+            // Build one ticket per order using current server lines (live deltas are appended separately)
+            let tickets = (normalizedOrders || [])
+                .map((order) => ({
+                    ...order,
+                    ticket_uid: `order-${order.id}-full`,
+                    ticket_created_at: order.write_date,
+                    lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
+                }))
+                .filter((t) => Array.isArray(t.lines) && t.lines.length);
         return {
             order_details: normalizedOrders,
             tickets,
@@ -658,47 +628,15 @@ export class KitchenScreenDashboard extends Component {
 
 
     buildTickets(orders) {
-        // Per-press tickets: build one ticket per kitchen_send_log entry;
-        // fallback to full order when no logs exist.
-        const tickets = [];
-        for (const order of orders || []) {
-            const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
-            if (!logs.length) {
-                const allIds = Array.isArray(order.lines) ? order.lines.slice() : [];
-                if (allIds.length) {
-                    tickets.push({
-                        ...order,
-                        ticket_uid: `order-${order.id}`,
-                        ticket_created_at: order.write_date,
-                        lines: allIds,
-                    });
-                }
-                continue;
-            }
-            logs.forEach((log, idx) => {
-                const ids = Array.isArray(log.line_ids) ? log.line_ids.map((x) => Number(x)) : [];
-                const pressIndex = typeof log.press_index === 'number' ? log.press_index : idx;
-                // Build per-ticket summary from log snapshot when available
-                const snap = Array.isArray(log.line_snapshot) ? log.line_snapshot : [];
-                const ticketSummary = snap
-                    .map((e) => ({
-                        product_id: e && e.product_id,
-                        product_name: (e && (e.full_product_name || e.product_name || e.name)) || '',
-                        quantity: Number(e && e.qty) || Number(e && e.quantity) || 0,
-                        note: (e && e.note) || '',
-                    }))
-                    .filter((e) => e.quantity > 0);
-                tickets.push({
-                    ...order,
-                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${idx}`,
-                    ticket_created_at: log.created_at || order.write_date,
-                    lines: ids,
-                    kitchen_press_index: pressIndex,
-                    ticket_summary: ticketSummary,
-                });
-            });
-        }
-        return tickets.filter((t) => Array.isArray(t.lines) && t.lines.length);
+        // Build one ticket per order using all current order lines
+        return (orders || [])
+            .map((order) => ({
+                ...order,
+                ticket_uid: `order-${order.id}`,
+                ticket_created_at: order.write_date,
+                lines: Array.isArray(order.lines) ? order.lines.slice() : [],
+            }))
+            .filter((t) => Array.isArray(t.lines) && t.lines.length);
     }
 
 

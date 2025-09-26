@@ -25,9 +25,7 @@ class PosOrder(models.Model):
     hour = fields.Char(string="Order Time", readonly=True)
     minutes = fields.Char(string="order time")
     floor = fields.Char(string="Floor time")
-    kitchen_new_line_summary = fields.Json(string="Kitchen New Line Summary", default=list)
-    kitchen_new_line_count = fields.Float(string="Kitchen New Line Count", default=0.0)
-    kitchen_send_logs = fields.Json(string="Kitchen Send Logs", default=list)
+    # Legacy fields removed: kitchen_new_line_summary, kitchen_new_line_count, kitchen_send_logs
     # Press counter: increments each time order is sent to kitchen; starts at 0
     kitchen_press_index = fields.Integer(string="Kitchen Press Index", default=0, help="0-based counter of sends to kitchen")
 
@@ -51,39 +49,7 @@ class PosOrder(models.Model):
             return any(PosOrder._normalize_bool(v) for v in value)
         return bool(value)
 
-    @staticmethod
-    def _sanitize_new_line_summary(summary):
-        out = []
-        for e in summary or []:
-            if not isinstance(e, dict):
-                continue
-            try:
-                qty = float(e.get("quantity"))
-            except (TypeError, ValueError):
-                qty = 0.0
-            if qty <= 0:
-                continue
-            out.append(
-                {
-                    "product_id": e.get("product_id"),
-                    "product_name": (e.get("product_name") or e.get("name") or ""),
-                    "quantity": round(qty, 4),
-                    "note": e.get("note") or "",
-                }
-            )
-        return out
-
-    @staticmethod
-    def _calculate_new_line_count(summary):
-        total = 0
-        for e in summary or []:
-            try:
-                qty = float(e.get("quantity", 0))
-            except (TypeError, ValueError):
-                qty = 0.0
-            if qty > 0:
-                total += qty
-        return round(total, 4)
+    # Removed legacy helpers _sanitize_new_line_summary and _calculate_new_line_count
 
     # Overrides
     @api.model
@@ -157,12 +123,11 @@ class PosOrder(models.Model):
     # Kitchen helpers and transitions
     def get_details(self, shop_id, order=None):
         order_record = self.env["pos.order"]
-        new_line_summary = []
-        ticket_uid = None
         if order:
+            # Minimal upsert of order/lines without legacy logs/delta fields
             payload = order[0].copy()
-            new_line_summary = payload.pop("kitchen_new_lines", []) or []
-            ticket_uid = payload.pop("ticket_uid", None)
+            payload.pop("kitchen_new_lines", None)
+            payload.pop("ticket_uid", None)
             order_ref = payload.get("pos_reference")
             order_record = self.search([("pos_reference", "=", order_ref)])
             if not order_record:
@@ -170,44 +135,6 @@ class PosOrder(models.Model):
             else:
                 order_record.lines = False
                 order_record.write(payload)
-            sanitized = self._sanitize_new_line_summary(new_line_summary)
-            if sanitized and not ticket_uid:
-                ticket_uid = sanitized[0].get("ticket_uid")
-            ticket_uid = ticket_uid or f"ticket_{order_ref or ''}_{fields.Datetime.now().timestamp()}"
-            ticket_lines = order_record.lines.filtered(lambda l: l.kitchen_ticket_uid == ticket_uid)
-            snap = [
-                {
-                    "line_id": l.id,
-                    "product_id": l.product_id.id,
-                    "full_product_name": l.full_product_name,
-                    "qty": l.qty,
-                    "note": l.note,
-                    "order_status": l.order_status,
-                }
-                for l in ticket_lines
-            ]
-            logs = list(order_record.kitchen_send_logs or [])
-            # Current press index is the number of existing logs (0-based)
-            current_press_index = len(logs)
-            if ticket_lines:
-                logs.append(
-                    {
-                        "ticket_uid": ticket_uid,
-                        "created_at": fields.Datetime.now().isoformat(),
-                        "line_ids": ticket_lines.ids,
-                        "line_snapshot": snap,
-                        "line_count": self._calculate_new_line_count(sanitized) or sum(l.qty for l in ticket_lines),
-                        "press_index": current_press_index,
-                    }
-                )
-            order_record.write(
-                {
-                    "kitchen_new_line_summary": sanitized,
-                    "kitchen_new_line_count": self._calculate_new_line_count(sanitized),
-                    "kitchen_send_logs": logs,
-                    "kitchen_press_index": current_press_index,
-                }
-            )
         kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
         pos_session_id = self.env["pos.session"].search([("config_id", "=", shop_id), ("state", "=", "opened")], limit=1)
         pos_orders = self.env["pos.order"].search(
@@ -251,7 +178,7 @@ class PosOrder(models.Model):
         if "declined_time" in self._fields:
             vals["declined_time"] = fields.Datetime.now()
         self.write(vals)
-        self.write({"kitchen_new_line_summary": [], "kitchen_new_line_count": 0})
+        # Removed clearing of legacy kitchen delta fields
         for l in self.lines:
             if l.order_status != "ready":
                 l.order_status = "cancel"
@@ -312,8 +239,6 @@ class PosOrder(models.Model):
             self.lines.write({"is_cooking": False})
             self.write({
                 "is_cooking": False,
-                "kitchen_new_line_summary": [],
-                "kitchen_new_line_count": 0,
             })
             if hasattr(self, "update_order_status_in_deliverect"):
                 self.update_order_status_in_deliverect(70)

@@ -26,7 +26,7 @@ class PosSession(models.Model):
             'fields': ['name', 'date_order', 'pos_reference',
                        'partner_id', 'lines', 'order_status', 'order_ref',
                        'table_id',
-                       'is_cooking', 'kitchen_new_line_summary', 'kitchen_new_line_count', 'kitchen_send_logs',
+                       'is_cooking',
                        'kitchen_press_index']}}
 
     def _get_pos_ui_pos_order(self, params):
@@ -66,8 +66,6 @@ class PosSession(models.Model):
             orders.write({
                 'order_status': 'ready',
                 'is_cooking': False,
-                'kitchen_new_line_summary': [],
-                'kitchen_new_line_count': 0,
             })
             for o in orders:
                 if hasattr(o, 'update_order_status_in_deliverect'):
