@@ -26,7 +26,29 @@ const BUS_EVENT = {
 
 // Client-side local delta caching removed; server summaries are the source of truth.
 // Support live delta pushes via bus ('kitchen.delta') for immediate rendering.
+// Persist only live tickets/lines in localStorage so they survive page reloads.
 let __deltaVirtualId = -1;
+
+const liveTicketsKey = (sid) => `kitchen_live_tickets_${sid}`;
+const liveLinesKey = (sid) => `kitchen_live_lines_${sid}`;
+const loadLiveState = (sid) => {
+    try {
+        const tRaw = window.localStorage.getItem(liveTicketsKey(sid));
+        const lRaw = window.localStorage.getItem(liveLinesKey(sid));
+        const tickets = tRaw ? JSON.parse(tRaw) : [];
+        const lines = lRaw ? JSON.parse(lRaw) : [];
+        return {
+            tickets: Array.isArray(tickets) ? tickets : [],
+            lines: Array.isArray(lines) ? lines : [],
+        };
+    } catch (_) { return { tickets: [], lines: [] }; }
+};
+const saveLiveState = (sid, tickets, lines) => {
+    try {
+        window.localStorage.setItem(liveTicketsKey(sid), JSON.stringify(tickets || []));
+        window.localStorage.setItem(liveLinesKey(sid), JSON.stringify(lines || []));
+    } catch (_) { /* ignore */ }
+};
 // Debug toggle: enable via ?kdebug=1 or localStorage 'kitchen_debug' = '1'|'true'
 const isDebugEnabled = () => {
     try {
@@ -329,6 +351,7 @@ export class KitchenScreenDashboard extends Component {
     setupEventListeners() {
         this.busService.addChannel(BUS_CHANNEL);
         try { this.busService.addChannel('kitchen.delta'); } catch (_) { /* ignore */ }
+        try { this.busService.addChannel('kitchen.session'); } catch (_) { /* ignore */ }
 
         onWillStart(async () => {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
@@ -354,20 +377,24 @@ export class KitchenScreenDashboard extends Component {
     }
 
     // Clear per-shop caches on first load when server boot token changes
-    checkBootTokenAndReset() {
-        try {
-            const sid = this.state?.shop_id || sessionStorage.getItem('shop_id');
-            if (!sid) return;
-            const boot = (window.odoo && (window.odoo.kitchen_boot_ts || (window.odoo.session_info && window.odoo.session_info.kitchen_boot_ts))) || null;
-            if (!boot) return;
-            const key = `kitchen_boot_ts_${sid}`;
-            const prev = window.localStorage.getItem(key);
-            if (prev !== String(boot)) {
-                // No per-shop delta caches to clear anymore; only update the boot token.
-                try { window.localStorage.setItem(key, String(boot)); } catch (_) { /* ignore */ }
-            }
-        } catch (_) { /* ignore */ }
-    }
+      checkBootTokenAndReset() {
+          try {
+              const sid = this.state?.shop_id || sessionStorage.getItem('shop_id');
+              if (!sid) return;
+              const boot = (window.odoo && (window.odoo.kitchen_boot_ts || (window.odoo.session_info && window.odoo.session_info.kitchen_boot_ts))) || null;
+              if (!boot) return;
+              const key = `kitchen_boot_ts_${sid}`;
+              const prev = window.localStorage.getItem(key);
+              if (prev !== String(boot)) {
+                  // Clear persisted live state for the previous session
+                  try {
+                      window.localStorage.removeItem(liveTicketsKey(sid));
+                      window.localStorage.removeItem(liveLinesKey(sid));
+                  } catch (_) { /* ignore */ }
+                  try { window.localStorage.setItem(key, String(boot)); } catch (_) { /* ignore */ }
+              }
+          } catch (_) { /* ignore */ }
+      }
 
     // ===== Completed window controls =====
     completedWindowKey() {
@@ -394,16 +421,20 @@ export class KitchenScreenDashboard extends Component {
      * Reset local, per-shop kitchen UI state persisted in localStorage
      * Clears: seen lines, seen tickets, press counts, and virtual lines
      */
-    resetKitchenState() {
-        try {
-            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
-            if (!sid) return;
-            // No delta caches to clear in localStorage.
-            // Soft reset UI bits that depend on those caches
-            this.state.tickets = [];
-            // Remove any negative-id virtual lines from memory
-            this.state.lines = (this.state.lines || []).filter((l) => !(typeof l?.id === 'number' && l.id < 0));
-            this.recomputeTicketCounts();
+      resetKitchenState() {
+          try {
+              const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+              if (!sid) return;
+              // Clear persisted live tickets/lines
+              try {
+                  window.localStorage.removeItem(liveTicketsKey(sid));
+                  window.localStorage.removeItem(liveLinesKey(sid));
+              } catch (_) { /* ignore */ }
+              // Soft reset UI bits that depend on those caches
+              this.state.tickets = [];
+              // Remove any negative-id virtual lines from memory
+              this.state.lines = (this.state.lines || []).filter((l) => !(typeof l?.id === 'number' && l.id < 0));
+              this.recomputeTicketCounts();
             this.notification.add(_t('Kitchen state cleared'), { title: _t('Kitchen Screen'), type: 'success' });
             // Reload fresh data
             this.refreshOrderDetails();
@@ -430,6 +461,21 @@ export class KitchenScreenDashboard extends Component {
                 const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
                 if (Number(payload.shop_id) !== Number(sid)) return;
                 this.appendLiveDeltaTicket(payload);
+            } catch (_) { /* ignore */ }
+        }
+        // Session lifecycle events
+        if (payload && payload.type === 'kitchen_session_closed') {
+            try {
+                const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                if (Number(payload.shop_id) !== Number(sid)) return;
+                // Clear persisted and in-memory live state
+                try {
+                    window.localStorage.removeItem(liveTicketsKey(sid));
+                    window.localStorage.removeItem(liveLinesKey(sid));
+                } catch (_) { /* ignore */ }
+                this.state.tickets = (this.state.tickets || []).filter((t) => !(String(t.ticket_uid||'').startsWith('ticket-live-')));
+                this.state.lines = (this.state.lines || []).filter((l) => !(typeof l?.id === 'number' && l.id < 0));
+                this.recomputeTicketCounts();
             } catch (_) { /* ignore */ }
         }
     }
@@ -475,6 +521,10 @@ export class KitchenScreenDashboard extends Component {
             };
             this.state.tickets = [ticket, ...(this.state.tickets || [])];
             this.recomputeTicketCounts();
+            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+            const currentLiveTickets = (this.state.tickets || []).filter((t) => String(t.ticket_uid || '').startsWith('ticket-live-'));
+            const currentLiveLines = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
+            saveLiveState(sid, currentLiveTickets, currentLiveLines);
         } catch (e) {
             if (__KITCHEN_DEBUG__) console.error('appendLiveDeltaTicket failed', e);
         }
@@ -511,17 +561,19 @@ export class KitchenScreenDashboard extends Component {
             this.state.loading = true;
             this.state.error = null;
             const previousSessionError = this.state.session_error;
+            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
             const prevTickets = Array.isArray(this.state.tickets) ? this.state.tickets.slice() : [];
             const prevLines = Array.isArray(this.state.lines) ? this.state.lines.slice() : [];
+            const persisted = loadLiveState(sid);
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
             // Preserve live (pushed) virtual lines/tickets when skipping server persistence
-            const liveTickets = prevTickets.filter((t) => {
+            const liveTickets = [...(prevTickets || []), ...(persisted.tickets || [])].filter((t) => {
                 const uid = String(t && t.ticket_uid || '');
                 const hasVirtual = Array.isArray(t && t.lines) && t.lines.some((id) => Number(id) < 0);
                 return uid.startsWith('ticket-live-') || hasVirtual;
             });
-            const liveLines = prevLines.filter((l) => typeof l?.id === 'number' && l.id < 0);
+            const liveLines = [...(prevLines || []), ...(persisted.lines || [])].filter((l) => typeof l?.id === 'number' && l.id < 0);
             if (liveLines.length) {
                 const byId = new Map((this.state.lines || []).map((x) => [x.id, x]));
                 for (const v of liveLines) {
@@ -531,9 +583,19 @@ export class KitchenScreenDashboard extends Component {
                 }
             }
             if (liveTickets.length) {
-                this.state.tickets = [...liveTickets, ...(this.state.tickets || [])];
+                const byUid = new Map();
+                for (const t of liveTickets) {
+                    const key = String(t && t.ticket_uid || `t-${Math.random()}`);
+                    if (!byUid.has(key)) byUid.set(key, t);
+                }
+                // Prepend unique live tickets, keep server tickets after
+                this.state.tickets = [...byUid.values(), ...(this.state.tickets || [])];
             }
             this.recomputeTicketCounts();
+            // Persist back merged live state
+            const currentLiveTickets = (this.state.tickets || []).filter((t) => String(t.ticket_uid || '').startsWith('ticket-live-'));
+            const currentLiveLines = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
+            saveLiveState(sid, currentLiveTickets, currentLiveLines);
 
             if (this.state.session_error && !previousSessionError) {
                 this.notification.add(_t("No open POS session found. Please start a session to display kitchen orders."), {

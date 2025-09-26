@@ -74,4 +74,10 @@ class PosSession(models.Model):
                     except Exception:
                         # Do not block session closing if external call fails
                         pass
+            # Notify kitchen screens to clear local, live state for this shop/config
+            try:
+                payload = {"type": "kitchen_session_closed", "shop_id": session.config_id.id}
+                self.env['bus.bus']._sendone('kitchen.session', 'notification', payload)
+            except Exception:
+                pass
         return res
