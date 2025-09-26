@@ -80,8 +80,7 @@
         </div>
       </header>
 
-        <!-- Lines: when this is a per-press ticket, show chips (delta) inside the list;
-             otherwise show the normal grouped lines. -->
+        
         <ul class="list-group list-group-flush order-card__items">
           <t t-if="false">
             <li class="list-group-item order-card__item">
