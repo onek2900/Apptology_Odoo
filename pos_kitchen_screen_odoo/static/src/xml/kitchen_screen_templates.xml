@@ -1,302 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates>
 
-  <!-- Reusable Order Card component -->
   <t t-name="KitchenOrderCard">
-    <!-- expects: order, status ('inprogress'|'completed'), showActions (boolean) -->
     <article class="order-card"
-             t-att-class="{
-               'order-card--inprogress': status === 'inprogress',
-               'order-card--completed': status === 'completed',
-               'is-online': order.is_online_order,
-               'is-pickup': order.order_type == '1',
-               'is-delivery': order.order_type == '2'
-             }"
-             t-att-data-order-id="order.id"
-             t-att-data-order-type="order.order_type"
-             t-att-data-online="order.is_online_order">
-      <div class="order-card__scale">
-      <!-- Header -->
-      <header class="order-card__header"
-              t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white">
-
-        <!-- tiny badge with icon (P/D/In-store) -->
-        <span class="order-card__type-badge"
-              t-att-title="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')"
-              t-att-aria-label="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')">
-          <t t-if="order.order_type == '1'">
-            <i class="fa fa-shopping-basket" aria-hidden="true"></i>
-          </t>
-          <t t-elif="order.order_type == '2'">
-            <i class="fa fa-truck" aria-hidden="true"></i>
-          </t>
-          <t t-else="">
-            <i class="fa fa-cutlery" aria-hidden="true"></i>
-          </t>
+             t-att-class="{'order-card--inprogress': status === 'inprogress', 'order-card--completed': status === 'completed', 'is-online': order.is_online_order, 'is-pickup': order.order_type == '1', 'is-delivery': order.order_type == '2'}"
+             t-att-data-order-id="order.id">
+      <header class="order-card__header" t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white">
+        <t t-if="status === 'inprogress'">
+          <button type="button"
+                  class="btn btn-success order-card__complete-all"
+                  title="Mark all ready"
+                  aria-label="Mark all ready"
+                  t-on-click="() => this.mark_all_ready(order.id, order.lines)">
+            <i class="fa fa-check"/>
+          </button>
+        </t>
+        <span class="order-card__type-badge">
+          <t t-if="order.order_type == '1'"><i class="fa fa-shopping-basket"/></t>
+          <t t-elif="order.order_type == '2'"><i class="fa fa-truck"/></t>
+          <t t-else=""><i class="fa fa-cutlery"/></t>
         </span>
-
-        <!-- Meta -->
         <div class="order-card__meta">
           <div class="order-card__code-row">
             <h4 class="order-card__code">
-              <t t-if="order.is_online_order">
-                <t t-esc="order.channel_order_reference"/>
-              </t>
-              <t t-else="">
-                <t t-esc="order.tracking_number"/>
-              </t>
+              <t t-if="order.is_online_order"><t t-esc="order.channel_order_reference"/></t>
+              <t t-else=""><t t-esc="order.tracking_number"/></t>
             </h4>
             <t t-if="typeof order.kitchen_press_index === 'number'">
-              <span class="order-card__pressbadge" title="Send count">Send <t t-esc="order.kitchen_press_index"/></span>
+              <span class="order-card__pressbadge">Send <t t-esc="order.kitchen_press_index"/></span>
             </t>
           </div>
-
-          <div class="order-card__partner" t-if="order.partner_id" t-esc="order.partner_id[1]"></div>
-          <div class="order-card__posref" t-if="status === 'inprogress'" t-esc="order.pos_reference"></div>
-
-          <!-- Floor: only when present and not the literal 'false'
-               NOTE: escape ampersands in XML attributes -->
-          <div t-if="order.floor &amp;&amp; order.floor !== 'false'" class="order-card__floor">
-            <i class="fa fa-building" aria-hidden="true"></i>
-            <span>Floor <t t-esc="order.floor"/></span>
-          </div>
-          <!-- Table: show after floor when available -->
-          <div t-if="order.table_id" class="order-card__table">
-            <i class="fa fa-table" aria-hidden="true"></i>
-            <span>Table <t t-esc="order.table_id[1]"/></span>
-          </div>
-
-
-
-
-                <div class="order-card__newbadge">
-                  <span class="order-card__newbadge-qty"><t t-esc="this.formatNewLineQuantity(entry.quantity)"/>×</span>
-                  <span class="order-card__newbadge-name"><t t-esc="entry.product_name"/></span>
-                  <span class="order-card__newbadge-note" t-if="entry.note"><t t-esc="entry.note"/></span>
-                </div>
-              </t>
-            </div>
-          
+          <div class="order-card__partner" t-if="order.partner_id" t-esc="order.partner_id[1]"/>
+          <div class="order-card__posref" t-if="status === 'inprogress'" t-esc="order.pos_reference"/>
+          <div t-if="order.floor and order.floor != 'false'" class="order-card__floor"><i class="fa fa-building"/><span>Floor <t t-esc="order.floor"/></span></div>
+          <div t-if="order.table_id" class="order-card__table"><i class="fa fa-table"/><span>Table <t t-esc="order.table_id[1]"/></span></div>
         </div>
       </header>
-
-        
-        <ul class="list-group list-group-flush order-card__items">
-          
-              </div>
-            </li>
-          </t>
-          <t t-else="">
-            <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'c-line-' + (order.ticket_uid or order.id) + '-' + lineId">
-              <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-              <t t-if="line">
-                <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
-                <t t-if="!isModifier">
-                  <li class="list-group-item order-card__item" t-att-class="{'completed': line.order_status === 'ready'}">
-                    <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
-                    <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
-                    <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                    <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
-                  </li>
-                </t>
-                <t t-else="">
-                  <li class="list-group-item order-card__item modifier">
-                    <div class="order-card__qty"></div>
-                    <div class="order-card__product">
-                      <span class="modifier-info">
-                        <t t-esc="line.full_product_name"/>
-                      </span>
-                    </div>
-                    <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                  </li>
-                </t>
-              </t>
+      <ul class="list-group list-group-flush order-card__items">
+        <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'c-line-' + (order.ticket_uid or order.id) + '-' + lineId">
+          <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
+          <t t-if="line">
+            <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
+            <t t-if="!isModifier">
+              <li class="list-group-item order-card__item" t-att-class="{'completed': line.order_status === 'ready'}">
+                <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
+                <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
+                <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'"/>
+              </li>
+            </t>
+            <t t-else="">
+              <li class="list-group-item order-card__item modifier">
+                <div class="order-card__qty"></div>
+                <div class="order-card__product"><span class="modifier-info"><t t-esc="line.full_product_name"/></span></div>
+                <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+              </li>
             </t>
           </t>
-        </ul>
-
-
-      </div>
+        </t>
+      </ul>
     </article>
   </t>
 
   <t t-name="KitchenCustomDashBoard">
-
-
-    <div class="kitchen-dashboard"
-         t-att-style="'--k-card-w: ' + state.card_w + 'px; --k-card-h: ' + state.card_h + 'px; --k-content-scale: ' + state.content_scale">
-      <!-- Zoom toolbar -->
-      <div class="k-toolbar" role="toolbar" aria-label="Zoom controls">
-        <button type="button" class="btn btn-sm btn-light" title="Zoom out" aria-label="Zoom out"
-                t-on-click="() => this.zoomOut()">
-          <i class="fa fa-search-minus"></i>
-        </button>
-        <button type="button" class="btn btn-sm btn-light" title="Zoom in" aria-label="Zoom in"
-                t-on-click="() => this.zoomIn()">
-          <i class="fa fa-search-plus"></i>
-        </button>
-        <button type="button" class="btn btn-sm btn-light" title="Reset zoom" aria-label="Reset zoom"
-                t-on-click="() => this.zoomReset()">
-          <i class="fa fa-compress"></i>
-        </button>
-        <button type="button" class="btn btn-sm btn-warning ms-2" title="Reset Kitchen State" aria-label="Reset Kitchen State"
-                t-on-click="() => this.resetKitchenState()">
-          <i class="fa fa-refresh"></i>
-        </button>
-        <select class="form-select form-select-sm ms-2" style="width:auto" title="Completed window"
-                t-on-change="(ev) => this.onChangeCompletedWindow(ev.target.value)">
-          <option t-att-selected="state.completed_window_minutes === 5" value="5">5m</option>
-          <option t-att-selected="state.completed_window_minutes === 30" value="30">30m</option>
-          <option t-att-selected="state.completed_window_minutes === 60" value="60">1h</option>
-          <option t-att-selected="state.completed_window_minutes === 120" value="120">2h</option>
-          <option t-att-selected="state.completed_window_minutes === 360" value="360">6h</option>
-          <option t-att-selected="state.completed_window_minutes === 0" value="0">All</option>
-        </select>
-      </div>
+    <div class="kitchen-dashboard" t-att-style="'--k-card-w: ' + state.card_w + 'px; --k-card-h: ' + state.card_h + 'px; --k-content-scale: ' + state.content_scale">
       <div class="row g-4">
-
-        <!-- In Progress -->
         <section class="col-12 section section--inprogress">
           <div class="text-center section-header section-inprogress">
-            <h3 class="section-title">
-              In Progress
-              <span class="order-count"><t t-esc="orderInProgress.length"/></span>
-            </h3>
+            <h3 class="section-title">In Progress <span class="order-count"><t t-esc="orderInProgress.length"/></span></h3>
           </div>
-
           <div class="dashboard-section">
             <div t-if="orderInProgress.length" class="row g-4">
               <t t-foreach="orderInProgress" t-as="order" t-key="order.ticket_uid or order.id">
                 <div class="col-12 col-md-4 fade-in">
-                  <!-- Order Card with interactive header and items -->
-                  <article class="order-card order-card--inprogress"
-                           t-att-class="{'is-online': order.is_online_order, 'is-pickup': order.order_type == '1', 'is-delivery': order.order_type == '2'}"
-                           t-att-data-order-id="order.id">
-                    <div class="order-card__scale">
-                    <!-- Header (no direct complete on tap) -->
-                    <header class="order-card__header"
-                            t-attf-class="order-card__header #{order.is_online_order ? 'bg-secondary-online' : 'bg-secondary'} text-white">
-                      <!-- Mark All Ready button (top-right) -->
-                      <button type="button"
-                              class="btn btn-success order-card__complete-all"
-                              title="Mark all ready"
-                              aria-label="Mark all ready"
-                              t-on-click="() => this.mark_all_ready(order.id, order.lines)">
-                        <i class="fa fa-check"></i>
-                      </button>
-                      <span class="order-card__type-badge"
-                            t-att-title="order.order_type == '1' ? 'Pick Up' : (order.order_type == '2' ? 'Delivery' : 'In Store')"
-                            t-att-aria-label="order.order_type == '1' ? 'Pick Up' : 'Delivery'">
-                        <t t-if="order.order_type == '1'"><i class="fa fa-shopping-basket" aria-hidden="true"></i></t>
-                        <t t-elif="order.order_type == '2'"><i class="fa fa-truck" aria-hidden="true"></i></t>
-                        <t t-else=""><i class="fa fa-cutlery" aria-hidden="true"></i></t>
-                      </span>
-                      <div class="order-card__meta">
-                        <div class="order-card__code-row">
-                          <h4 class="order-card__code">
-                            <t t-if="order.is_online_order"><t t-esc="order.channel_order_reference"/></t>
-                            <t t-else=""><t t-esc="order.tracking_number"/></t>
-                          </h4>
-                          <t t-if="typeof order.kitchen_press_index === 'number'">
-                            <span class="order-card__pressbadge" title="Send count">Send <t t-esc="order.kitchen_press_index"/></span>
-                          </t>
-                        </div>
-                        <div class="order-card__partner" t-if="order.partner_id" t-esc="order.partner_id[1]"></div>
-                        <div class="order-card__posref" t-esc="order.pos_reference"></div>
-                        <t t-if="typeof order.kitchen_press_index === 'number'">
-                          <div class="order-card__pressindex small mt-1">
-                            <span title="Send count">Send <t t-esc="order.kitchen_press_index"/></span>
-                          </div>
-                        </t>
-                        <div t-if="order.floor &amp;&amp; order.floor !== 'false'" class="order-card__floor">
-                          <i class="fa fa-building" aria-hidden="true"></i>
-                          <span>Floor <t t-esc="order.floor"/></span>
-                        </div>
-                        <div t-if="order.table_id" class="order-card__table">
-                          <i class="fa fa-table" aria-hidden="true"></i>
-                          <span> Table <t t-esc="order.table_id[1]"/></span>
-                        </div>
-                      </div>
-                    </header>
-
-                    <!-- Lines: always render as normal grouped lines -->
-                    <ul class="list-group list-group-flush order-card__items">
-                      
-                          </div>
-                        </li>
-                      </t>
-                      <t t-else="">
-                        <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + (order.ticket_uid or order.id) + '-' + lineId">
-                          <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-                          <t t-if="line">
-                            <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
-                            <t t-if="!isModifier">
-                              <li class="list-group-item order-card__item"
-                                  t-att-class="{'completed': line.order_status === 'ready'}"
-                                  t-on-click="() => this.accept_order_line(line.id)">
-                                <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
-                                <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
-                                <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                                <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
-                              </li>
-                            </t>
-                            <t t-else="">
-                              <li class="list-group-item order-card__item modifier">
-                                <div class="order-card__qty"></div>
-                                <div class="order-card__product">
-                                  <span class="modifier-info">
-                                    <t t-esc="line.full_product_name"/>
-                                  </span>
-                                </div>
-                                <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                              </li>
-                            </t>
-                          </t>
-                        </t>
-                      </t>
-                    </ul>
-                    </div>
-                  </article>
+                  <t t-call="KitchenOrderCard"><t t-set="order" t-value="order"/><t t-set="status" t-value="'inprogress'"/></t>
                 </div>
               </t>
             </div>
-            <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100">
-              <h1 t-esc="noOrders"/>
-            </div>
+            <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100"><h1 t-esc="noOrders"/></div>
           </div>
         </section>
 
-        <!-- Completed -->
         <section class="col-12 section section--completed">
-          <div class="text-center section-header">
-            <h3 class="section-title">
-              Completed
-              <span class="order-count"><t t-esc="orderCompleted.length"/></span>
-            </h3>
-          </div>
-
+          <div class="text-center section-header"><h3 class="section-title">Completed <span class="order-count"><t t-esc="orderCompleted.length"/></span></h3></div>
           <div class="dashboard-section">
             <div t-if="orderCompleted.length" class="row g-4">
               <t t-foreach="orderCompleted" t-as="order" t-key="order.ticket_uid or order.id">
                 <div class="col-12 col-md-4 fade-in">
-                  <t t-call="KitchenOrderCard">
-                    <t t-set="order" t-value="order"/>
-                    <t t-set="status" t-value="'completed'"/>
-                    <t t-set="showActions" t-value="false"/>
-                  </t>
+                  <t t-call="KitchenOrderCard"><t t-set="order" t-value="order"/><t t-set="status" t-value="'completed'"/></t>
                 </div>
               </t>
             </div>
-            <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100">
-              <h1 t-esc="noOrders"/>
-            </div>
+            <div t-else="" class="no-data d-flex align-items-center justify-content-center h-100"><h1 t-esc="noOrders"/></div>
           </div>
         </section>
-
       </div>
     </div>
   </t>
+
 </templates>
-
-      
-
