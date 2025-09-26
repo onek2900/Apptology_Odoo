@@ -146,3 +146,33 @@ class OrderScreen(http.Controller):
             return False
         lines.order_progress_change()
         return True
+
+    @http.route("/pos/kitchen/push_delta", auth="public", type="json", website=False)
+    def push_delta_to_kitchen(self, shop_id=None, order_ref=None, ticket_uid=None, new_lines=None, meta=None):
+        """Receive a delta from POS and broadcast it to kitchen screens via bus.
+
+        This avoids a full refresh: the kitchen UI can render the payload directly.
+        Expected payload:
+          - shop_id: POS config id
+          - order_ref: pos_reference string
+          - ticket_uid: client-generated unique id for this press
+          - new_lines: list of {product_id, product_name, quantity, note}
+          - meta: optional dict with partner, table, floor, order_type, is_online_order
+        """
+        try:
+            shop_id = int(shop_id) if shop_id is not None else None
+        except Exception:
+            shop_id = None
+        if not shop_id:
+            return {"ok": False}
+        payload = {
+            "type": "kitchen_delta",
+            "shop_id": shop_id,
+            "order_ref": order_ref or "",
+            "ticket_uid": ticket_uid or f"ticket_{fields.Datetime.now().timestamp()}",
+            "items": new_lines or [],
+            "meta": meta or {},
+        }
+        # Fanout to the custom kitchen channel; clients subscribe via bus_service
+        request.env["bus.bus"]._sendone("kitchen.delta", "notification", payload)
+        return {"ok": True}

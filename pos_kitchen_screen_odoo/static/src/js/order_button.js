@@ -22,6 +22,7 @@ patch(ActionpadWidget.prototype, {
         this.pos = this.pos || this.env?.services?.pos;
         this.ui = this.ui || this.env?.services?.ui;
         this.orm = useService("orm");
+        this.rpc = useService("rpc");
         this.popup = useService("popup");
     },
     get swapButton() {
@@ -128,7 +129,27 @@ patch(ActionpadWidget.prototype, {
                         'floor': ((currentOrder && currentOrder.pos && currentOrder.pos.currentFloor && currentOrder.pos.currentFloor.name) || 'Pickup'),
                         'config_id': ((currentOrder && currentOrder.pos && currentOrder.pos.config && currentOrder.pos.config.id) || (this.pos && this.pos.config && this.pos.config.id))
                     }]
-                    await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
+                    // Fire-and-forget bus push so kitchen screen updates immediately without polling
+                    try {
+                        const current = this.currentOrder;
+                        const meta = {
+                            partner: current?.get_partner()?.name || '',
+                            table_id: (current?.pos?.table && [current.pos.table.id, current.pos.table.name]) || null,
+                            floor: (current?.pos?.currentFloor && current.pos.currentFloor.name) || '',
+                            is_online_order: Boolean(current?.is_online_order),
+                            order_type: current?.order_type || '',
+                        };
+                        await this.rpc('/pos/kitchen/push_delta', {
+                            shop_id: this.pos.config.id,
+                            order_ref: this.pos.get_order().name,
+                            ticket_uid: ticketUid,
+                            new_lines: newLineSummary,
+                            meta,
+                        });
+                    } catch (e) { /* ignore client-side bus failures */ }
+
+                    // Skip server persistence if you don't need history/logs
+                    // await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
                 }
             } finally {
                 this.clicked = false;

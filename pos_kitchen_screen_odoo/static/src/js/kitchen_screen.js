@@ -25,6 +25,8 @@ const BUS_EVENT = {
 };
 
 // Client-side local delta caching removed; server summaries are the source of truth.
+// Support live delta pushes via bus ('kitchen.delta') for immediate rendering.
+let __deltaVirtualId = -1;
 // Debug toggle: enable via ?kdebug=1 or localStorage 'kitchen_debug' = '1'|'true'
 const isDebugEnabled = () => {
     try {
@@ -356,6 +358,7 @@ export class KitchenScreenDashboard extends Component {
      */
     setupEventListeners() {
         this.busService.addChannel(BUS_CHANNEL);
+        try { this.busService.addChannel('kitchen.delta'); } catch (_) { /* ignore */ }
 
         onWillStart(async () => {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
@@ -449,6 +452,61 @@ export class KitchenScreenDashboard extends Component {
         if (payload.message === BUS_EVENT.MESSAGE &&
             payload.res_model === BUS_EVENT.MODEL) {
             await this.refreshOrderDetails();
+            return;
+        }
+        // Live delta push from POS
+        if (payload && payload.type === 'kitchen_delta') {
+            try {
+                const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                if (Number(payload.shop_id) !== Number(sid)) return;
+                this.appendLiveDeltaTicket(payload);
+            } catch (_) { /* ignore */ }
+        }
+    }
+
+    appendLiveDeltaTicket(payload) {
+        try {
+            const items = Array.isArray(payload.items) ? payload.items : [];
+            if (!items.length) return;
+            const orderMeta = payload.meta || {};
+            const vIds = [];
+            for (const entry of items) {
+                const qty = Number(entry && entry.quantity) || 0;
+                if (qty <= 0) continue;
+                const v = {
+                    id: __deltaVirtualId--,
+                    full_product_name: (entry && (entry.product_name || entry.name)) || 'Item',
+                    qty: qty,
+                    order_status: 'waiting',
+                    is_modifier: false,
+                    is_topping: false,
+                    sh_is_topping: false,
+                    product_is_topping: false,
+                    product_sh_is_topping: false,
+                    sh_is_has_topping: false,
+                    note: entry && entry.note || '',
+                };
+                this.state.lines.push(v);
+                vIds.push(v.id);
+            }
+            if (!vIds.length) return;
+            const ticket = {
+                id: 0,
+                pos_reference: payload.order_ref || '',
+                partner_id: orderMeta.partner ? [0, orderMeta.partner] : null,
+                table_id: Array.isArray(orderMeta.table_id) ? orderMeta.table_id : null,
+                floor: orderMeta.floor || '',
+                order_type: orderMeta.order_type || '',
+                is_online_order: !!orderMeta.is_online_order,
+                order_status: 'waiting',
+                ticket_uid: payload.ticket_uid || `ticket-live-${Date.now()}`,
+                ticket_created_at: new Date().toISOString(),
+                lines: vIds,
+            };
+            this.state.tickets = [ticket, ...(this.state.tickets || [])];
+            this.recomputeTicketCounts();
+        } catch (e) {
+            if (__KITCHEN_DEBUG__) console.error('appendLiveDeltaTicket failed', e);
         }
     }
 
