@@ -95,8 +95,8 @@ class PosOrder(models.Model):
         return res
 
     def write(self, vals):
-        message = {"res_model": self._name, "message": "pos_order_created"}
-        self.env["bus.bus"]._sendone("pos_order_created", "notification", message)
+        # Avoid spamming kitchen bus on every write; a single notification is
+        # sent explicitly from flows that persist kitchen sends (e.g., get_details).
         for order in self:
             if order.order_status == "waiting" and vals.get("order_status") != "ready":
                 vals["order_status"] = order.order_status
@@ -106,8 +106,8 @@ class PosOrder(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        message = {"res_model": self._name, "message": "pos_order_created"}
-        self.env["bus.bus"]._sendone("pos_order_created", "notification", message)
+        # Do not emit kitchen bus from generic create path; handled by callers that
+        # change kitchen-visible state (e.g., get_details).
         for vals in vals_list:
             pos_orders = self.search([("pos_reference", "=", vals.get("pos_reference"))])
             if pos_orders:
@@ -146,6 +146,12 @@ class PosOrder(models.Model):
             ],
             order="date_order",
         )
+        # After persisting/updating orders/lines, notify kitchen screens once.
+        try:
+            message = {"res_model": self._name, "message": "pos_order_created"}
+            self.env["bus.bus"]._sendone("pos_order_created", "notification", message)
+        except Exception:
+            pass
         return {"orders": pos_orders.read(), "order_lines": pos_orders.lines.read()}
 
     def action_pos_order_paid(self):
