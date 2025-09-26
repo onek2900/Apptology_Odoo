@@ -541,9 +541,28 @@ export class KitchenScreenDashboard extends Component {
             this.state.loading = true;
             this.state.error = null;
             const previousSessionError = this.state.session_error;
+            const prevTickets = Array.isArray(this.state.tickets) ? this.state.tickets.slice() : [];
+            const prevLines = Array.isArray(this.state.lines) ? this.state.lines.slice() : [];
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
-            // tickets computed in fetchOrderDetails, no need to rebuild twice
+            // Preserve live (pushed) virtual lines/tickets when skipping server persistence
+            const liveTickets = prevTickets.filter((t) => {
+                const uid = String(t && t.ticket_uid || '');
+                const hasVirtual = Array.isArray(t && t.lines) && t.lines.some((id) => Number(id) < 0);
+                return uid.startsWith('ticket-live-') || hasVirtual;
+            });
+            const liveLines = prevLines.filter((l) => typeof l?.id === 'number' && l.id < 0);
+            if (liveLines.length) {
+                const byId = new Map((this.state.lines || []).map((x) => [x.id, x]));
+                for (const v of liveLines) {
+                    if (!byId.has(v.id)) {
+                        (this.state.lines || []).push(v);
+                    }
+                }
+            }
+            if (liveTickets.length) {
+                this.state.tickets = [...liveTickets, ...(this.state.tickets || [])];
+            }
             this.recomputeTicketCounts();
 
             if (this.state.session_error && !previousSessionError) {

@@ -364,41 +364,7 @@ $space: var(--k-spacing);
   background: rgba(0,0,0,0.12);
   color: var(--k-completed-ink);
 }
-.order-card__newlines-group {
-  margin-top: .45rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: .35rem;
-}
-.order-card__newbadge {
-  display: inline-flex;
-  align-items: center;
-  gap: .3rem;
-  padding: .25rem .55rem;
-  border-radius: 9999px;
-  background: rgba(255, 194, 120, 0.92);
-  color: #7c2d12;
-  font-weight: 600;
-  font-size: .75rem;
-  letter-spacing: .35px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
-}
-.order-card__newbadge-qty {
-  font-weight: 800;
-  font-size: .85rem;
-}
-.order-card__newbadge-name {
-  font-size: .75rem;
-}
-.order-card__newbadge-note {
-  font-size: .7rem;
-  opacity: .75;
-}
-.order-card--completed .order-card__newbadge {
-  background: rgba(255,255,255,0.85);
-  color: var(--k-completed-ink);
-  box-shadow: none;
-}
+/* Removed new-line chip styles for simplified UI */
 
 /* Completed: dark ink instead of white */
 .order-card--completed .order-card__meta { color: var(--k-completed-ink); }
