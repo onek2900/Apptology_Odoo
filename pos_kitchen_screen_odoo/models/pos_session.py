@@ -81,3 +81,15 @@ class PosSession(models.Model):
             except Exception:
                 pass
         return res
+
+    def action_pos_session_opening(self, *args, **kwargs):
+        """Notify kitchen screens when a POS session is opened so they can refresh."""
+        res = super().action_pos_session_opening(*args, **kwargs)
+        for session in self:
+            try:
+                payload = {"type": "kitchen_session_opened", "shop_id": session.config_id.id}
+                self.env['bus.bus']._sendone('kitchen.session', 'notification', payload)
+            except Exception:
+                # Non-blocking
+                pass
+        return res

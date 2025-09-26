@@ -477,6 +477,19 @@ export class KitchenScreenDashboard extends Component {
                 this.recomputeTicketCounts();
             } catch (_) { /* ignore */ }
         }
+        if (payload && payload.type === 'kitchen_session_opened') {
+            try {
+                const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                if (Number(payload.shop_id) !== Number(sid)) return;
+                // Clear any persisted live state from a previous session and refresh
+                try {
+                    window.localStorage.removeItem(liveTicketsKey(sid));
+                    window.localStorage.removeItem(liveLinesKey(sid));
+                    window.localStorage.removeItem(pressCountsKey(sid));
+                } catch (_) { /* ignore */ }
+                await this.refreshOrderDetails();
+            } catch (_) { /* ignore */ }
+        }
     }
 
     appendLiveDeltaTicket(payload) {
