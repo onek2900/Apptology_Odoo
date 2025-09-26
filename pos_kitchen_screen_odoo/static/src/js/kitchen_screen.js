@@ -31,6 +31,7 @@ let __deltaVirtualId = -1;
 
 const liveTicketsKey = (sid) => `kitchen_live_tickets_${sid}`;
 const liveLinesKey = (sid) => `kitchen_live_lines_${sid}`;
+const pressCountsKey = (sid) => `kitchen_press_counts_${sid}`;
 const loadLiveState = (sid) => {
     try {
         const tRaw = window.localStorage.getItem(liveTicketsKey(sid));
@@ -49,6 +50,8 @@ const saveLiveState = (sid, tickets, lines) => {
         window.localStorage.setItem(liveLinesKey(sid), JSON.stringify(lines || []));
     } catch (_) { /* ignore */ }
 };
+const loadPressCounts = (sid) => { try { const raw = window.localStorage.getItem(pressCountsKey(sid)); const obj = raw ? JSON.parse(raw) : {}; return obj && typeof obj === 'object' ? obj : {}; } catch (_) { return {}; } };
+const savePressCounts = (sid, obj) => { try { window.localStorage.setItem(pressCountsKey(sid), JSON.stringify(obj || {})); } catch (_) { /* ignore */ } };
 // Debug toggle: enable via ?kdebug=1 or localStorage 'kitchen_debug' = '1'|'true'
 const isDebugEnabled = () => {
     try {
@@ -384,6 +387,7 @@ export class KitchenScreenDashboard extends Component {
                   try {
                       window.localStorage.removeItem(liveTicketsKey(sid));
                       window.localStorage.removeItem(liveLinesKey(sid));
+                      window.localStorage.removeItem(pressCountsKey(sid));
                   } catch (_) { /* ignore */ }
                   try { window.localStorage.setItem(key, String(boot)); } catch (_) { /* ignore */ }
               }
@@ -466,6 +470,7 @@ export class KitchenScreenDashboard extends Component {
                 try {
                     window.localStorage.removeItem(liveTicketsKey(sid));
                     window.localStorage.removeItem(liveLinesKey(sid));
+                    window.localStorage.removeItem(pressCountsKey(sid));
                 } catch (_) { /* ignore */ }
                 this.state.tickets = (this.state.tickets || []).filter((t) => !(String(t.ticket_uid||'').startsWith('ticket-live-')));
                 this.state.lines = (this.state.lines || []).filter((l) => !(typeof l?.id === 'number' && l.id < 0));
@@ -479,6 +484,10 @@ export class KitchenScreenDashboard extends Component {
             const items = Array.isArray(payload.items) ? payload.items : [];
             if (!items.length) return;
             const orderMeta = payload.meta || {};
+            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+            const press = loadPressCounts(sid);
+            const orderRef = String(payload.order_ref || '');
+            const currentIndex = Number(press[orderRef] || 0);
             const vIds = [];
             for (const entry of items) {
                 const qty = Number(entry && entry.quantity) || 0;
@@ -512,10 +521,13 @@ export class KitchenScreenDashboard extends Component {
                 ticket_uid: payload.ticket_uid || `ticket-live-${Date.now()}`,
                 ticket_created_at: new Date().toISOString(),
                 lines: vIds,
+                kitchen_press_index: currentIndex,
             };
             this.state.tickets = [ticket, ...(this.state.tickets || [])];
             this.recomputeTicketCounts();
-            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+            // bump press index and persist
+            press[orderRef] = currentIndex + 1;
+            savePressCounts(sid, press);
             const currentLiveTickets = (this.state.tickets || []).filter((t) => String(t.ticket_uid || '').startsWith('ticket-live-'));
             const currentLiveLines = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
             saveLiveState(sid, currentLiveTickets, currentLiveLines);

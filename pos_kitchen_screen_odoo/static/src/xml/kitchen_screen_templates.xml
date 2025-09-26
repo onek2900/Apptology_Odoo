@@ -64,6 +64,34 @@
 
   <t t-name="KitchenCustomDashBoard">
     <div class="kitchen-dashboard" t-att-style="'--k-card-w: ' + state.card_w + 'px; --k-card-h: ' + state.card_h + 'px; --k-content-scale: ' + state.content_scale">
+      <!-- Zoom toolbar -->
+      <div class="k-toolbar" role="toolbar" aria-label="Zoom controls">
+        <button type="button" class="btn btn-sm btn-light" title="Zoom out" aria-label="Zoom out"
+                t-on-click="() => this.zoomOut()">
+          <i class="fa fa-search-minus"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-light" title="Zoom in" aria-label="Zoom in"
+                t-on-click="() => this.zoomIn()">
+          <i class="fa fa-search-plus"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-light" title="Reset zoom" aria-label="Reset zoom"
+                t-on-click="() => this.zoomReset()">
+          <i class="fa fa-compress"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-warning ms-2" title="Reset Kitchen State" aria-label="Reset Kitchen State"
+                t-on-click="() => this.resetKitchenState()">
+          <i class="fa fa-refresh"></i>
+        </button>
+        <select class="form-select form-select-sm ms-2" style="width:auto" title="Completed window"
+                t-on-change="(ev) => this.onChangeCompletedWindow(ev.target.value)">
+          <option t-att-selected="state.completed_window_minutes === 5" value="5">5m</option>
+          <option t-att-selected="state.completed_window_minutes === 30" value="30">30m</option>
+          <option t-att-selected="state.completed_window_minutes === 60" value="60">1h</option>
+          <option t-att-selected="state.completed_window_minutes === 120" value="120">2h</option>
+          <option t-att-selected="state.completed_window_minutes === 360" value="360">6h</option>
+          <option t-att-selected="state.completed_window_minutes === 0" value="0">All</option>
+        </select>
+      </div>
       <div class="row g-4">
         <section class="col-12 section section--inprogress">
           <div class="text-center section-header section-inprogress">

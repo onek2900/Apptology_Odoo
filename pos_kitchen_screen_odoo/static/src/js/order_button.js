@@ -148,8 +148,8 @@ patch(ActionpadWidget.prototype, {
                         });
                     } catch (e) { /* ignore client-side bus failures */ }
 
-                    // Skip server persistence if you don't need history/logs
-                    // await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
+                    // Persist order + lines so fetch includes sent-but-unpaid orders
+                    await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
                 }
             } finally {
                 this.clicked = false;
