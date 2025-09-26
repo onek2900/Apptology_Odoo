@@ -1,2 +1,3 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access.kitchen.screen,access.kitchen.screen,model_kitchen_screen,base.group_user,1,1,1,1
+access_pos_kitchen_ticket_user,access_pos_kitchen_ticket_user,model_pos_kitchen_ticket,base.group_user,1,1,1,1
