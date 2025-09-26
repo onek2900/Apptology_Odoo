@@ -175,6 +175,7 @@ const fetchOrderDetails = async () => {
         }
 
         const rawOrders = Array.isArray(result?.orders) ? result.orders : [];
+        if (__KITCHEN_DEBUG__) console.debug('[Kitchen][fetch] rawOrders', rawOrders.length);
         const normalizedOrders = rawOrders.map((order) => {
             const summaryRaw = Array.isArray(order.kitchen_new_line_summary) ? order.kitchen_new_line_summary : [];
             const sanitizedSummary = summaryRaw.map((entry) => ({
@@ -203,6 +204,7 @@ const fetchOrderDetails = async () => {
 
         // Normalize lines before building tickets
         const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
+        if (__KITCHEN_DEBUG__) console.debug('[Kitchen][fetch] rawLines', rawLines.length);
         let normalizedLines = rawLines.map((line) => {
             const flags = extractToppingFlags(line, null);
             const isModifier = flags.is_topping;
@@ -234,6 +236,7 @@ const fetchOrderDetails = async () => {
 
             // Tickets-only path: render per-press tickets from server (no full-order fallback)
             const rawTickets = Array.isArray(result?.tickets) ? result.tickets : [];
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen][fetch] rawTickets', rawTickets.length);
             const byId = new Map((normalizedOrders || []).map((o) => [o.id, o]));
             const tickets = rawTickets.map((t) => {
                 const oid = Array.isArray(t.order_id) ? Number(t.order_id[0]) : Number(t.order_id);
@@ -247,6 +250,7 @@ const fetchOrderDetails = async () => {
                     ticket_state: t.state || 'inprogress',
                 };
             }).filter((tk) => Array.isArray(tk.lines) && tk.lines.length);
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen][fetch] built tickets', tickets.length);
         return {
             order_details: normalizedOrders,
             tickets,
@@ -464,6 +468,7 @@ export class KitchenScreenDashboard extends Component {
             try {
                 const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
                 if (Number(payload.shop_id) !== Number(sid)) return;
+                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][bus] kitchen_delta', { uid: payload.ticket_uid, items: (payload.items||[]).length });
                 this.appendLiveDeltaTicket(payload);
             } catch (_) { /* ignore */ }
         }
@@ -474,6 +479,7 @@ export class KitchenScreenDashboard extends Component {
                 if (Number(payload.shop_id) !== Number(sid)) return;
                 const uid = String(payload.ticket_uid || '');
                 const realIds = (payload.line_ids || []).map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0);
+                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][bus] ticket_resolved', { uid, real: realIds.length });
                 if (uid && realIds.length) {
                     const t = (this.state.tickets || []).find((x) => String(x.ticket_uid || '') === uid);
                     if (t) {
@@ -523,6 +529,7 @@ export class KitchenScreenDashboard extends Component {
             const items = Array.isArray(payload.items) ? payload.items : [];
             if (!items.length) return;
             const orderMeta = payload.meta || {};
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen][append] building virtual ticket from push', { items: items.length, uid: payload.ticket_uid });
             const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
             const press = loadPressCounts(sid);
             const orderRef = String(payload.order_ref || '');
@@ -563,6 +570,7 @@ export class KitchenScreenDashboard extends Component {
                 kitchen_press_index: currentIndex,
             };
             this.state.tickets = [ticket, ...(this.state.tickets || [])];
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen][append] appended live ticket', { vcount: vIds.length, total: (this.state.tickets||[]).length });
             this.recomputeTicketCounts();
             // bump press index and persist
             press[orderRef] = currentIndex + 1;
@@ -613,6 +621,7 @@ export class KitchenScreenDashboard extends Component {
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
             const hasServerTickets = Array.isArray(details && details.tickets) && details.tickets.length > 0;
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] hasServerTickets', hasServerTickets, 'serverTickets', (details.tickets||[]).length, 'prevLive', (persisted.tickets||[]).length);
             // Preserve live (pushed) virtual lines/tickets when skipping server persistence
             const liveTickets = hasServerTickets
                 ? []
@@ -640,6 +649,7 @@ export class KitchenScreenDashboard extends Component {
                 }
                 // Prepend unique live tickets, keep server tickets after
                 this.state.tickets = [...byUid.values(), ...(this.state.tickets || [])];
+                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] merged live tickets', liveTickets.length, 'final tickets', (this.state.tickets||[]).length);
             }
             // Resolve live tickets (virtual lines) to real line ids using kitchen_ticket_uid (only when no server tickets present)
             if (!hasServerTickets) {
@@ -659,6 +669,7 @@ export class KitchenScreenDashboard extends Component {
                             t.lines = ids;
                         }
                     }
+                    if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] resolved virtual to real where possible');
                 } catch (_) { /* ignore */ }
             }
             this.recomputeTicketCounts();
