@@ -147,6 +147,41 @@ class OrderScreen(http.Controller):
         lines.order_progress_change()
         return True
 
+    @http.route("/pos/kitchen/get_ticket_lines", auth="public", type="json", website=False)
+    def get_ticket_lines(self, shop_id=None, order_ref=None, ticket_uid=None):
+        """Return real pos.order.line ids for a given ticket_uid.
+
+        Optionally restrict by current opened session of shop_id.
+        """
+        if not ticket_uid:
+            return {"line_ids": [], "order_id": False}
+        domain = [("kitchen_ticket_uid", "=", str(ticket_uid))]
+        if shop_id:
+            config = request.env["pos.config"].sudo().browse(int(shop_id))
+            session = config.current_session_id
+            if session:
+                domain = request.env["pos.order.line"].sudo()._where_calc(domain).get_sql()
+        lines = request.env["pos.order.line"].sudo().search([("kitchen_ticket_uid", "=", str(ticket_uid))])
+        order_id = lines[:1].order_id.id if lines else False
+        return {"line_ids": lines.ids, "order_id": order_id}
+
+    @http.route("/pos/kitchen/resolve_ticket", auth="public", type="json", website=False)
+    def resolve_ticket(self, shop_id=None, ticket_uid=None):
+        """Broadcast a resolution message mapping a ticket_uid to real line_ids."""
+        try:
+            out = self.get_ticket_lines(shop_id=shop_id, ticket_uid=ticket_uid)
+            payload = {
+                "type": "kitchen_ticket_resolved",
+                "shop_id": int(shop_id) if shop_id else None,
+                "ticket_uid": ticket_uid,
+                "line_ids": out.get("line_ids", []),
+                "order_id": out.get("order_id"),
+            }
+            request.env["bus.bus"]._sendone("kitchen.delta", "notification", payload)
+            return {"ok": True, **payload}
+        except Exception:
+            return {"ok": False}
+
     @http.route("/pos/kitchen/push_delta", auth="public", type="json", website=False)
     def push_delta_to_kitchen(self, shop_id=None, order_ref=None, ticket_uid=None, new_lines=None, meta=None):
         """Receive a delta from POS and broadcast it to kitchen screens via bus.

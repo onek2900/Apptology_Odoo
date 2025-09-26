@@ -150,6 +150,13 @@ patch(ActionpadWidget.prototype, {
 
                     // Persist order + lines so fetch includes sent-but-unpaid orders
                     await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
+                    // Eagerly resolve ticket to real line_ids and broadcast to kitchen
+                    try {
+                        await this.rpc('/pos/kitchen/resolve_ticket', {
+                            shop_id: this.pos.config.id,
+                            ticket_uid: ticketUid,
+                        });
+                    } catch (e) { /* ignore */ }
                 }
             } finally {
                 this.clicked = false;

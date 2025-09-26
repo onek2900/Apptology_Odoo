@@ -461,6 +461,26 @@ export class KitchenScreenDashboard extends Component {
                 this.appendLiveDeltaTicket(payload);
             } catch (_) { /* ignore */ }
         }
+        // Resolution push: replace virtual ids with real line_ids for this ticket
+        if (payload && payload.type === 'kitchen_ticket_resolved') {
+            try {
+                const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                if (Number(payload.shop_id) !== Number(sid)) return;
+                const uid = String(payload.ticket_uid || '');
+                const realIds = (payload.line_ids || []).map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0);
+                if (uid && realIds.length) {
+                    const t = (this.state.tickets || []).find((x) => String(x.ticket_uid || '') === uid);
+                    if (t) {
+                        t.lines = realIds;
+                        this.recomputeTicketCounts();
+                        const live = (this.state.tickets || []).filter((x) => String(x.ticket_uid || '').startsWith('ticket-live-'));
+                        const liveLines = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
+                        const sid2 = this.state.shop_id || sessionStorage.getItem('shop_id');
+                        saveLiveState(sid2, live, liveLines);
+                    }
+                }
+            } catch (_) { /* ignore */ }
+        }
         // Session lifecycle events
         if (payload && payload.type === 'kitchen_session_closed') {
             try {
@@ -610,6 +630,24 @@ export class KitchenScreenDashboard extends Component {
                 // Prepend unique live tickets, keep server tickets after
                 this.state.tickets = [...byUid.values(), ...(this.state.tickets || [])];
             }
+            // Resolve live tickets (virtual lines) to real line ids using kitchen_ticket_uid
+            try {
+                const all = Array.isArray(this.state.lines) ? this.state.lines : [];
+                for (const t of this.state.tickets || []) {
+                    const uid = String(t && t.ticket_uid || '');
+                    if (!uid) continue;
+                    // If ticket already has positive ids, skip
+                    const hasReal = Array.isArray(t.lines) && t.lines.some((id) => Number(id) > 0);
+                    if (hasReal) continue;
+                    const ids = all
+                        .filter((l) => String(l && l.kitchen_ticket_uid || '') === uid)
+                        .map((l) => Number(l.id))
+                        .filter((n) => Number.isFinite(n) && n > 0);
+                    if (ids.length) {
+                        t.lines = ids;
+                    }
+                }
+            } catch (_) { /* ignore */ }
             this.recomputeTicketCounts();
             // Persist back merged live state
             const currentLiveTickets = (this.state.tickets || []).filter((t) => String(t.ticket_uid || '').startsWith('ticket-live-'));
