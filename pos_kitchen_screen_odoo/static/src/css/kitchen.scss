@@ -342,6 +342,28 @@ $space: var(--k-spacing);
 
 /* header meta */
 .order-card__meta { color: #ffffff; padding-left: 2.6rem; }
+.order-card__code-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+.order-card__pressbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .2rem .55rem;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.9);
+  color: #0b1220;
+  font-weight: 700;
+  font-size: .75rem;
+  letter-spacing: .25px;
+}
+.order-card--completed .order-card__pressbadge {
+  background: rgba(0,0,0,0.12);
+  color: var(--k-completed-ink);
+}
 .order-card__newlines-group {
   margin-top: .45rem;
   display: flex;
