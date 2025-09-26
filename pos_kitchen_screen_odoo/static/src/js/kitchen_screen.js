@@ -281,9 +281,7 @@ export class KitchenScreenDashboard extends Component {
         this.setupEventListeners();
 
         onWillUnmount(() => {
-            if (this.refreshInterval) {
-                clearInterval(this.refreshInterval);
-            }
+            // no periodic refresh to clear
             this.busService.removeEventListener('notification', this.handleNotification);
         })
     }
@@ -362,19 +360,15 @@ export class KitchenScreenDashboard extends Component {
         });
 
         onMounted(() => {
-            this.startAutoRefresh();
+            // One-time fetch only; rely on bus + live deltas afterwards
+            // No periodic auto-refresh
         });
     }
 
     /**
      * Start auto-refresh timer
      */
-    startAutoRefresh() {
-        // Refresh every 5 seconds
-        this.refreshInterval = setInterval(() => {
-            this.refreshOrderDetails();
-        }, 5000);
-    }
+    // startAutoRefresh removed: one-time fetch + bus updates only
 
     // Clear per-shop caches on first load when server boot token changes
       checkBootTokenAndReset() {
