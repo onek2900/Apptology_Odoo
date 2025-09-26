@@ -42,12 +42,24 @@
           <t t-if="line">
             <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
             <t t-if="!isModifier">
-              <li class="list-group-item order-card__item" t-att-class="{'completed': line.order_status === 'ready'}">
-                <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
-                <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
-                <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'"/>
-              </li>
+              <t t-if="status === 'inprogress'">
+                <li class="list-group-item order-card__item"
+                    t-att-class="{'completed': line.order_status === 'ready'}"
+                    t-on-click="() => this.accept_order_line(line.id)">
+                  <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
+                  <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
+                  <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                  <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'"/>
+                </li>
+              </t>
+              <t t-else="">
+                <li class="list-group-item order-card__item" t-att-class="{'completed': line.order_status === 'ready'}">
+                  <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
+                  <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
+                  <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                  <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'"/>
+                </li>
+              </t>
             </t>
             <t t-else="">
               <li class="list-group-item order-card__item modifier">
