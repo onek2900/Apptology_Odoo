@@ -61,6 +61,12 @@
             <span>Table <t t-esc="order.table_id[1]"/></span>
           </div>
           <t t-set="newLines" t-value="this.newLineSummary(order)"/>
+          <!-- Show kitchen press counter: 0 for first send, increments per send -->
+          <t t-if="typeof order.kitchen_press_index === 'number'">
+            <div class="order-card__pressindex small mt-1">
+              <span title="Send count">Send <t t-esc="order.kitchen_press_index"/></span>
+            </div>
+          </t>
           <t t-if="newLines.length">
             <div class="order-card__newlines-group">
               <t t-foreach="newLines" t-as="entry" t-key="entry.product_id or loop.index">

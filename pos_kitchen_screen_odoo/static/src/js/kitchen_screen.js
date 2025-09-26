@@ -360,13 +360,7 @@ export class KitchenScreenDashboard extends Component {
             const key = `kitchen_boot_ts_${sid}`;
             const prev = window.localStorage.getItem(key);
             if (prev !== String(boot)) {
-                const keys = [
-                    `kitchen_seen_lines_${sid}`,
-                    `kitchen_seen_tickets_${sid}`,
-                    `kitchen_press_counts_${sid}`,
-                    `kitchen_virtual_lines_${sid}`,
-                ];
-                for (const k of keys) { try { window.localStorage.removeItem(k); } catch (_) { /* ignore */ } }
+                // No per-shop delta caches to clear anymore; only update the boot token.
                 try { window.localStorage.setItem(key, String(boot)); } catch (_) { /* ignore */ }
             }
         } catch (_) { /* ignore */ }
@@ -401,17 +395,7 @@ export class KitchenScreenDashboard extends Component {
         try {
             const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
             if (!sid) return;
-            // Keys maintained by this screen for deltas/badges
-            // Build keys inline (helpers live in a different scope)
-            const keys = [
-                `kitchen_seen_lines_${sid}`,
-                `kitchen_seen_tickets_${sid}`,
-                `kitchen_press_counts_${sid}`,
-                `kitchen_virtual_lines_${sid}`,
-            ];
-            for (const k of keys) {
-                try { window.localStorage.removeItem(k); } catch (_) { /* ignore */ }
-            }
+            // No delta caches to clear in localStorage.
             // Soft reset UI bits that depend on those caches
             this.state.tickets = [];
             // Remove any negative-id virtual lines from memory

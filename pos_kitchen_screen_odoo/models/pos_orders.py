@@ -28,6 +28,8 @@ class PosOrder(models.Model):
     kitchen_new_line_summary = fields.Json(string="Kitchen New Line Summary", default=list)
     kitchen_new_line_count = fields.Float(string="Kitchen New Line Count", default=0.0)
     kitchen_send_logs = fields.Json(string="Kitchen Send Logs", default=list)
+    # Press counter: increments each time order is sent to kitchen; starts at 0
+    kitchen_press_index = fields.Integer(string="Kitchen Press Index", default=0, help="0-based counter of sends to kitchen")
 
     # Helpers
     @staticmethod
@@ -185,6 +187,8 @@ class PosOrder(models.Model):
                 for l in ticket_lines
             ]
             logs = list(order_record.kitchen_send_logs or [])
+            # Current press index is the number of existing logs (0-based)
+            current_press_index = len(logs)
             if ticket_lines:
                 logs.append(
                     {
@@ -193,6 +197,7 @@ class PosOrder(models.Model):
                         "line_ids": ticket_lines.ids,
                         "line_snapshot": snap,
                         "line_count": self._calculate_new_line_count(sanitized) or sum(l.qty for l in ticket_lines),
+                        "press_index": current_press_index,
                     }
                 )
             order_record.write(
@@ -200,6 +205,7 @@ class PosOrder(models.Model):
                     "kitchen_new_line_summary": sanitized,
                     "kitchen_new_line_count": self._calculate_new_line_count(sanitized),
                     "kitchen_send_logs": logs,
+                    "kitchen_press_index": current_press_index,
                 }
             )
         kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
