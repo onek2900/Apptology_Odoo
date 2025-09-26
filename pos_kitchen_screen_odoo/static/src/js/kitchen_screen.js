@@ -24,8 +24,7 @@ const BUS_EVENT = {
     MODEL: "pos.order"
 };
 
-// Feature flag: disable all localStorage-based delta caching (seen lines/tickets/press counts/virtual lines)
-const DISABLE_LOCAL_CACHE = true;
+// Client-side local delta caching removed; server summaries are the source of truth.
 // Debug toggle: enable via ?kdebug=1 or localStorage 'kitchen_debug' = '1'|'true'
 const isDebugEnabled = () => {
     try {
@@ -128,159 +127,7 @@ const useOrderManagement = (rpc, shopId) => {
      * @returns {Promise<Object>} Order details and counts
      */
 
-const storageKeyForLines = (sid) => `kitchen_seen_lines_${sid}`;
-const storageKeyForTickets = (sid) => `kitchen_seen_tickets_${sid}`;
-const storageKeyForPressCounts = (sid) => `kitchen_press_counts_${sid}`;
-
-const loadSeenLines = (sid) => {
-    try {
-        const raw = window.localStorage.getItem(storageKeyForLines(sid));
-        return raw ? JSON.parse(raw) : {};
-    } catch (_) { return {}; }
-};
-
-const saveSeenLines = (sid, data) => {
-    try { window.localStorage.setItem(storageKeyForLines(sid), JSON.stringify(data)); } catch (_) { /* ignore */ }
-};
-
-const loadSeenTickets = (sid) => {
-    try {
-        const raw = window.localStorage.getItem(storageKeyForTickets(sid));
-        const parsed = raw ? JSON.parse(raw) : null;
-        // Backward compatibility: previously we stored an array or order-id map.
-        // Convert to a generic map keyed by a ticket key (orderId_pressIndex) or fallback to orderId.
-        if (Array.isArray(parsed)) {
-            const map = {};
-            for (const t of parsed) {
-                if (t && typeof t.id === 'number') map[`${t.id}_1`] = t;
-            }
-            return map;
-        }
-        return parsed && typeof parsed === 'object' ? parsed : {};
-    } catch (_) { return {}; }
-};
-
-const saveSeenTickets = (sid, ticketsByOrderId) => {
-    try { window.localStorage.setItem(storageKeyForTickets(sid), JSON.stringify(ticketsByOrderId)); } catch (_) { /* ignore */ }
-};
-
-const loadPressCounts = (sid) => {
-    try {
-        const raw = window.localStorage.getItem(storageKeyForPressCounts(sid));
-        const obj = raw ? JSON.parse(raw) : {};
-        return obj && typeof obj === 'object' ? obj : {};
-    } catch (_) { return {}; }
-};
-
-const savePressCounts = (sid, obj) => {
-    try { window.localStorage.setItem(storageKeyForPressCounts(sid), JSON.stringify(obj)); } catch (_) { /* ignore */ }
-};
-
-let __deltaVirtualId = -1;
-
-const computeDeltaTickets = (orders, allLines, sid) => {
-    const seenLines = loadSeenLines(sid);
-    const ticketsByKey = loadSeenTickets(sid);   // map: ticketKey -> ticket
-    const pressCounts = loadPressCounts(sid);    // map: orderId -> last press index
-
-    const byOrder = new Map();
-    for (const line of allLines || []) {
-        if (!line || !Array.isArray(line.order_id)) continue;
-        const orderId = line.order_id[0];
-        if (!byOrder.has(orderId)) byOrder.set(orderId, []);
-        byOrder.get(orderId).push(line);
-    }
-
-    const virtualLines = [];
-    for (const order of orders || []) {
-        const orderId = order.id;
-        const lines = byOrder.get(orderId) || [];
-        const prev = seenLines[orderId] || {};
-
-        // Build current snapshot map id -> qty
-        const cur = {};
-        for (const l of lines) {
-            cur[l.id] = Number(l.qty) || 0;
-        }
-
-        // Determine delta additions
-        const deltaIds = [];
-        for (const l of lines) {
-            const prevQty = Number(prev[l.id] || 0);
-            const curQty = Number(cur[l.id] || 0);
-            if (curQty > prevQty) {
-                deltaIds.push({ id: l.id, add: curQty - prevQty });
-            }
-        }
-
-        // First time we see this order: create initial ticket with all lines
-        const isFirstSeen = !seenLines.hasOwnProperty(orderId);
-        let ticketLines = [];
-        let makeTicket = false;
-        if (isFirstSeen && lines.length) {
-            pressCounts[orderId] = 1;
-            ticketLines = lines.map((l) => l.id);
-            makeTicket = true;
-        } else if (deltaIds.length) {
-            const curPress = Number(pressCounts[orderId] || 0) + 1;
-            pressCounts[orderId] = curPress;
-            ticketLines = deltaIds.map((x) => x.id);
-            makeTicket = true;
-        }
-
-        if (makeTicket && ticketLines.length) {
-            // Remove any existing badges for this order so only the new badge remains
-            for (const key of Object.keys(ticketsByKey)) {
-                // keys are `${orderId}_pressIndex`, keep only those not matching this order
-                if (String(key).startsWith(`${orderId}_`)) {
-                    delete ticketsByKey[key];
-                }
-            }
-            // Create virtual line snapshot records so old badges never go empty
-            const byId = new Map(lines.map((l) => [l.id, l]));
-            const deltaMap = new Map();
-            for (const d of deltaIds) deltaMap.set(d.id, d.add);
-            const vIds = [];
-            for (const baseId of ticketLines) {
-                const base = byId.get(baseId) || allLines.find((l) => l.id === baseId);
-                const qty = deltaMap.has(baseId) ? Number(deltaMap.get(baseId)) || 0 : Number(base && base.qty) || 0;
-                if (!base || qty <= 0) continue;
-                const v = {
-                    id: __deltaVirtualId--,
-                    full_product_name: base.full_product_name || base.product || base.display_name || 'Item',
-                    qty: qty,
-                    order_status: base.order_status || 'waiting',
-                    is_modifier: false,
-                    is_topping: false,
-                    sh_is_topping: false,
-                    product_is_topping: false,
-                    product_sh_is_topping: false,
-                    sh_is_has_topping: false,
-                };
-                virtualLines.push(v);
-                vIds.push(v.id);
-            }
-
-            const key = `${orderId}_${pressCounts[orderId]}`;
-            ticketsByKey[key] = {
-                ...order,
-                ticket_uid: `order-${orderId}-press-${pressCounts[orderId]}`,
-                ticket_created_at: order.write_date,
-                lines: vIds,
-            };
-        }
-
-        // Persist snapshot
-        seenLines[orderId] = cur;
-    }
-
-    saveSeenLines(sid, seenLines);
-    saveSeenTickets(sid, ticketsByKey);
-    savePressCounts(sid, pressCounts);
-    // Render only non-empty tickets to avoid blank cards
-    const tickets = Object.values(ticketsByKey).filter((t) => Array.isArray(t.lines) && t.lines.length);
-    return { tickets, virtualLines };
-};
+// Client-side local delta caching removed.
 
 const fetchOrderDetails = async () => {
     try {
@@ -358,79 +205,15 @@ const fetchOrderDetails = async () => {
             return normalized;
         });
 
-          // Prefer server-provided logs if present; otherwise build full tickets (no local delta caching)
-          let tickets = [];
-          const anyLogs = normalizedOrders.some((o) => Array.isArray(o.kitchen_send_logs) && o.kitchen_send_logs.length);
-          if (anyLogs) {
-              // Build exactly one badge per order. If the order has logs, use the latest delta;
-              // otherwise, fall back to all current order lines so it still renders.
-            for (const order of normalizedOrders) {
-                const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
-                if (!logs.length) {
-                    const allIds = Array.isArray(order.lines) ? order.lines.map((x) => Number(x)) : [];
-                    if (allIds.length) {
-                        tickets.push({
-                            ...order,
-                            ticket_uid: `order-${order.id}-full`,
-                            ticket_created_at: order.write_date,
-                            lines: allIds,
-                        });
-                    }
-                    continue;
-                }
-
-                // Sort logs in ascending time so we can diff cumulatively.
-                const sorted = logs.slice().sort((a, b) => {
-                    const sa = String(a.created_at || '').replace(' ', 'T');
-                    const sb = String(b.created_at || '').replace(' ', 'T');
-                    const da = DateTime.fromISO(sa, { zone: 'UTC' });
-                    const db = DateTime.fromISO(sb, { zone: 'UTC' });
-                    if (!da.isValid && !db.isValid) return 0;
-                    if (!da.isValid) return -1;
-                    if (!db.isValid) return 1;
-                    return da - db;
-                });
-
-                const seenIds = new Set();
-                let lastDeltaIds = [];
-                let lastCreatedAt = order.write_date;
-                let lastIds = [];
-                for (const log of sorted) {
-                    const ids = Array.isArray(log.line_ids) ? log.line_ids.map((lid) => Number(lid)) : [];
-                    const delta = ids.filter((id) => !seenIds.has(id));
-                    ids.forEach((id) => seenIds.add(id));
-                    lastDeltaIds = delta;
-                    lastIds = ids;
-                    lastCreatedAt = log.created_at || order.write_date;
-                }
-
-                // Create one badge per order. Prefer the latest delta; if empty, fall back to
-                // the latest log's ids; if still empty, fall back to all order lines.
-                let linesForTicket = lastDeltaIds;
-                if (!linesForTicket || !linesForTicket.length) {
-                    linesForTicket = Array.isArray(lastIds) && lastIds.length
-                        ? lastIds
-                        : (Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : []);
-                }
-                tickets.push({
+            // Build one ticket per order using all current order lines
+            const tickets = (normalizedOrders || [])
+                .map((order) => ({
                     ...order,
-                    ticket_uid: `ticket-${order.id}-latest`,
-                    ticket_created_at: lastCreatedAt,
-                    lines: linesForTicket,
-                });
-            }
-
-            // Filter out empty tickets (safety)
-            tickets = tickets.filter((t) => Array.isArray(t.lines) && t.lines.length);
-        } else {
-            // Build one ticket per order using all current order lines (no delta/local cache)
-            tickets = (normalizedOrders || []).map((order) => ({
-                ...order,
-                ticket_uid: `order-${order.id}-full`,
-                ticket_created_at: order.write_date,
-                lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
-            })).filter((t) => Array.isArray(t.lines) && t.lines.length);
-        }
+                    ticket_uid: `order-${order.id}-full`,
+                    ticket_created_at: order.write_date,
+                    lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
+                }))
+                .filter((t) => Array.isArray(t.lines) && t.lines.length);
         return {
             order_details: normalizedOrders,
             tickets,
@@ -546,7 +329,7 @@ export class KitchenScreenDashboard extends Component {
 
         onWillStart(async () => {
             this.busService.addEventListener('notification', this.handleNotification.bind(this));
-            if (!DISABLE_LOCAL_CACHE) this.checkBootTokenAndReset();
+        this.checkBootTokenAndReset();
             await this.refreshOrderDetails();
             this.initZoomFromStorage();
             this.loadCompletedWindow();
@@ -688,26 +471,7 @@ export class KitchenScreenDashboard extends Component {
             const previousSessionError = this.state.session_error;
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
-            // Skip persisted virtual lines when local cache is disabled
-            if (!DISABLE_LOCAL_CACHE) {
-                try {
-                    const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
-                    const persisted = window.localStorage.getItem(`kitchen_virtual_lines_${sid}`);
-                    const arr = persisted ? JSON.parse(persisted) : [];
-                    if (Array.isArray(arr) && arr.length) {
-                        this.state.lines = (this.state.lines || []).concat(arr);
-                    }
-                    const currentVirtual = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
-                    const byId = new Map((Array.isArray(arr) ? arr : []).map((v) => [v.id, v]));
-                    for (const v of currentVirtual) {
-                        if (!byId.has(v.id)) byId.set(v.id, v);
-                    }
-                    const merged = Array.from(byId.values());
-                    window.localStorage.setItem(`kitchen_virtual_lines_${sid}`, JSON.stringify(merged));
-                } catch (_) { /* ignore */ }
-            }
-            // tickets computed in fetchOrderDetails, no need to rebuild
-            this.recomputeTicketCounts();
+            // tickets computed in fetchOrderDetails, no need to rebuild twice
             this.recomputeTicketCounts();
 
             if (this.state.session_error && !previousSessionError) {
@@ -800,32 +564,14 @@ export class KitchenScreenDashboard extends Component {
     }
 
 
-    buildTickets(orders, allLines) {
-        const tickets = [];
-        const getLine = (id) => (allLines || []).find((l) => l.id === Number(id));
-        for (const order of orders || []) {
-            const logs = Array.isArray(order.kitchen_send_logs) ? order.kitchen_send_logs : [];
-            if (!logs.length) {
-                const orderLineIds = Array.isArray(order.lines) ? order.lines.slice() : [];
-                tickets.push({
-                    ...order,
-                    ticket_uid: `order-${order.id}`,
-                    ticket_created_at: order.write_date,
-                    lines: orderLineIds,
-                });
-                continue;
-            }
-            logs.forEach((log, index) => {
-                const ids = Array.isArray(log.line_ids) ? log.line_ids.map((x) => Number(x)) : [];
-                tickets.push({
-                    ...order,
-                    ticket_uid: log.ticket_uid || `ticket-${order.id}-${index}`,
-                    ticket_created_at: log.created_at || order.write_date,
-                    lines: ids,
-                });
-            });
-        }
-        return tickets;
+    buildTickets(orders) {
+        // Simplified: one ticket per order using all current order lines
+        return (orders || []).map((order) => ({
+            ...order,
+            ticket_uid: `order-${order.id}`,
+            ticket_created_at: order.write_date,
+            lines: Array.isArray(order.lines) ? order.lines.slice() : [],
+        })).filter((t) => Array.isArray(t.lines) && t.lines.length);
     }
 
 
