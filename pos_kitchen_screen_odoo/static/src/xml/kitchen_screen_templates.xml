@@ -65,8 +65,8 @@
             <i class="fa fa-table" aria-hidden="true"></i>
             <span>Table <t t-esc="order.table_id[1]"/></span>
           </div>
-          <t t-set="newLines" t-value="this.newLineSummary(order)"/>
-          <t t-if="newLines.length">
+          <!-- header newLines removed -->
+          <!-- newLines header chips removed
             <div class="order-card__newlines-group">
               <t t-foreach="newLines" t-as="entry" t-key="entry.product_id or loop.index">
                 <div class="order-card__newbadge">
@@ -80,30 +80,46 @@
         </div>
       </header>
 
-        <!-- Lines (match In Progress look & grouping, no click actions) -->
+        <!-- Lines: when this is a per-press ticket, show chips (delta) inside the list;
+             otherwise show the normal grouped lines. -->
         <ul class="list-group list-group-flush order-card__items">
-          <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'c-line-' + lineId">
-            <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-            <t t-if="line">
-              <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
-              <t t-if="!isModifier">
-                <li class="list-group-item order-card__item" t-att-class="{'completed': line.order_status === 'ready'}">
-                  <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
-                  <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
-                  <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                  <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
-                </li>
-              </t>
-              <t t-else="">
-                <li class="list-group-item order-card__item modifier">
-                  <div class="order-card__qty"></div>
-                  <div class="order-card__product">
-                    <span class="modifier-info">
-                      <t t-esc="line.full_product_name"/>
-                    </span>
+          <t t-if="false">
+            <li class="list-group-item order-card__item">
+              <div class="order-card__newlines-group">
+                <t t-foreach="order.ticket_summary" t-as="entry" t-key="(entry.product_id or loop.index) + '-' + (order.ticket_uid or order.id)">
+                  <div class="order-card__newbadge">
+                    <span class="order-card__newbadge-qty"><t t-esc="this.formatNewLineQuantity(entry.quantity)"/>x</span>
+                    <span class="order-card__newbadge-name"><t t-esc="entry.product_name"/></span>
+                    <span class="order-card__newbadge-note" t-if="entry.note"><t t-esc="entry.note"/></span>
                   </div>
-                  <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                </li>
+                </t>
+              </div>
+            </li>
+          </t>
+          <t t-else="">
+            <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'c-line-' + (order.ticket_uid or order.id) + '-' + lineId">
+              <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
+              <t t-if="line">
+                <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
+                <t t-if="!isModifier">
+                  <li class="list-group-item order-card__item" t-att-class="{'completed': line.order_status === 'ready'}">
+                    <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
+                    <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
+                    <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                    <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
+                  </li>
+                </t>
+                <t t-else="">
+                  <li class="list-group-item order-card__item modifier">
+                    <div class="order-card__qty"></div>
+                    <div class="order-card__product">
+                      <span class="modifier-info">
+                        <t t-esc="line.full_product_name"/>
+                      </span>
+                    </div>
+                    <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                  </li>
+                </t>
               </t>
             </t>
           </t>
@@ -216,32 +232,47 @@
                       </div>
                     </header>
 
-                    <!-- Lines: main item clickable, toppings not clickable; completed groups sink to bottom -->
+                    <!-- Lines: always render as normal grouped lines -->
                     <ul class="list-group list-group-flush order-card__items">
-                      <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + lineId">
-                        <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
-                        <t t-if="line">
-                          <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
-                          <t t-if="!isModifier">
-                            <li class="list-group-item order-card__item"
-                                t-att-class="{'completed': line.order_status === 'ready'}"
-                                t-on-click="() => this.accept_order_line(line.id)">
-                              <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
-                              <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
-                              <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                              <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
-                            </li>
-                          </t>
-                          <t t-else="">
-                            <li class="list-group-item order-card__item modifier">
-                              <div class="order-card__qty"></div>
-                              <div class="order-card__product">
-                                <span class="modifier-info">
-                                  <t t-esc="line.full_product_name"/>
-                                </span>
+                      <t t-if="false">
+                        <li class="list-group-item order-card__item">
+                          <div class="order-card__newlines-group">
+                            <t t-foreach="order.ticket_summary" t-as="entry" t-key="(entry.product_id or loop.index) + '-' + (order.ticket_uid or order.id)">
+                              <div class="order-card__newbadge">
+                                <span class="order-card__newbadge-qty"><t t-esc="this.formatNewLineQuantity(entry.quantity)"/>x</span>
+                                <span class="order-card__newbadge-name"><t t-esc="entry.product_name"/></span>
+                                <span class="order-card__newbadge-note" t-if="entry.note"><t t-esc="entry.note"/></span>
                               </div>
-                              <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
-                            </li>
+                            </t>
+                          </div>
+                        </li>
+                      </t>
+                      <t t-else="">
+                        <t t-foreach="this.sortedLineIds(order)" t-as="lineId" t-key="'line-' + (order.ticket_uid or order.id) + '-' + lineId">
+                          <t t-set="line" t-value="state.lines.find(l => l.id === lineId)"/>
+                          <t t-if="line">
+                            <t t-set="isModifier" t-value="this.isModifierLine(line)"/>
+                            <t t-if="!isModifier">
+                              <li class="list-group-item order-card__item"
+                                  t-att-class="{'completed': line.order_status === 'ready'}"
+                                  t-on-click="() => this.accept_order_line(line.id)">
+                                <div class="order-card__qty"><t t-esc="line.qty"/>x</div>
+                                <div class="order-card__product"><t t-esc="line.full_product_name"/></div>
+                                <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                                <i class="fa" t-att-class="line.order_status === 'ready' ? 'fa-check-circle text-success' : 'fa-circle-thin text-muted'" aria-hidden="true"></i>
+                              </li>
+                            </t>
+                            <t t-else="">
+                              <li class="list-group-item order-card__item modifier">
+                                <div class="order-card__qty"></div>
+                                <div class="order-card__product">
+                                  <span class="modifier-info">
+                                    <t t-esc="line.full_product_name"/>
+                                  </span>
+                                </div>
+                                <div class="order-card__note" t-if="line.note"><i class="fa fa-tag"/><t t-esc="line.note"/></div>
+                              </li>
+                            </t>
                           </t>
                         </t>
                       </t>
