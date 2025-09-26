@@ -66,7 +66,7 @@
             <span>Table <t t-esc="order.table_id[1]"/></span>
           </div>
           <!-- header newLines removed -->
-          <!-- newLines header chips removed
+          <!-- newLines header chips removed -->
             <div class="order-card__newlines-group">
               <t t-foreach="newLines" t-as="entry" t-key="entry.product_id or loop.index">
                 <div class="order-card__newbadge">
@@ -76,7 +76,7 @@
                 </div>
               </t>
             </div>
-          </t>
+          
         </div>
       </header>
 
