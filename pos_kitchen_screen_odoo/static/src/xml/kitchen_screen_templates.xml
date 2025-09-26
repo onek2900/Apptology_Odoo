@@ -163,7 +163,7 @@
 
           <div class="dashboard-section">
             <div t-if="orderInProgress.length" class="row g-4">
-              <t t-foreach="orderInProgress" t-as="order" t-key="order.id">
+              <t t-foreach="orderInProgress" t-as="order" t-key="order.ticket_uid or order.id">
                 <div class="col-12 col-md-4 fade-in">
                   <!-- Order Card with interactive header and items -->
                   <article class="order-card order-card--inprogress"
@@ -268,7 +268,7 @@
 
           <div class="dashboard-section">
             <div t-if="orderCompleted.length" class="row g-4">
-              <t t-foreach="orderCompleted" t-as="order" t-key="order.id">
+              <t t-foreach="orderCompleted" t-as="order" t-key="order.ticket_uid or order.id">
                 <div class="col-12 col-md-4 fade-in">
                   <t t-call="KitchenOrderCard">
                     <t t-set="order" t-value="order"/>
