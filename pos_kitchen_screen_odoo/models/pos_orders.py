@@ -195,7 +195,7 @@ class PosOrder(models.Model):
         return {
             "orders": pos_orders.read(),
             "order_lines": pos_orders.lines.read(),
-            "tickets": tickets.read(["order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state"]),
+            "tickets": tickets.read(["id", "order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state"]),
         }
 
     def action_pos_order_paid(self):

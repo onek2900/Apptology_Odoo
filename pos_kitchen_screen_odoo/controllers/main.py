@@ -91,7 +91,7 @@ class OrderScreen(http.Controller):
         values = {
             "orders": combined_orders.read(),
             "order_lines": combined_orders.lines.read(),
-            "tickets": tickets.read(["order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state"]),
+            "tickets": tickets.read(["id", "order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state"]),
         }
         return values
 

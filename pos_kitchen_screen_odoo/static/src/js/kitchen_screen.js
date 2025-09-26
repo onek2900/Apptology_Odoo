@@ -242,7 +242,7 @@ const fetchOrderDetails = async () => {
                     const order = byId.get(oid) || {};
                     return {
                         ...order,
-                        ticket_uid: t.ticket_uid || `ticket-${oid}-${t.press_index}`,
+                        ticket_uid: (t.id ? `kt-${t.id}` : (t.ticket_uid || `ticket-${oid}-${t.press_index}`)),
                         ticket_created_at: t.created_at || order.write_date,
                         lines: Array.isArray(t.line_ids) ? t.line_ids.map((n) => Number(n)) : [],
                         kitchen_press_index: typeof t.press_index === 'number' ? t.press_index : undefined,
