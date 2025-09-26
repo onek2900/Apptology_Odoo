@@ -10,6 +10,26 @@ from odoo import api, fields, models
 _logger = logging.getLogger(__name__)
 
 
+class PosKitchenTicket(models.Model):
+    _name = "pos.kitchen.ticket"
+    _description = "Kitchen ticket per press"
+
+    order_id = fields.Many2one("pos.order", required=True, ondelete="cascade", index=True)
+    line_ids = fields.Many2many("pos.order.line", string="Lines")
+    press_index = fields.Integer(string="Press Index", default=0, index=True)
+    ticket_uid = fields.Char(string="Ticket UID", index=True)
+    created_at = fields.Datetime(string="Created At", default=fields.Datetime.now)
+    state = fields.Selection([
+        ("inprogress", "In Progress"),
+        ("completed", "Completed"),
+    ], compute="_compute_state")
+
+    def _compute_state(self):
+        for rec in self:
+            mains = rec.line_ids.filtered(lambda l: not getattr(l, "product_sh_is_topping", False) and not getattr(l, "sh_is_topping", False))
+            rec.state = "completed" if (mains and all(l.order_status == "ready" for l in mains)) else "inprogress"
+
+
 class PosOrder(models.Model):
     _inherit = "pos.order"
 
@@ -124,10 +144,10 @@ class PosOrder(models.Model):
     def get_details(self, shop_id, order=None):
         order_record = self.env["pos.order"]
         if order:
-            # Minimal upsert of order/lines without legacy logs/delta fields
+            # Minimal upsert of order/lines and create a per-press kitchen ticket
             payload = order[0].copy()
+            ticket_uid = payload.pop("ticket_uid", None)
             payload.pop("kitchen_new_lines", None)
-            payload.pop("ticket_uid", None)
             order_ref = payload.get("pos_reference")
             order_record = self.search([("pos_reference", "=", order_ref)])
             if not order_record:
@@ -135,6 +155,24 @@ class PosOrder(models.Model):
             else:
                 order_record.lines = False
                 order_record.write(payload)
+            # Create/update kitchen ticket for this send
+            if ticket_uid:
+                ticket_lines = order_record.lines.filtered(lambda l: str(getattr(l, "kitchen_ticket_uid", "")) == str(ticket_uid))
+                existing = self.env["pos.kitchen.ticket"].sudo().search([("order_id", "=", order_record.id)])
+                press_index = len(existing)
+                kt = self.env["pos.kitchen.ticket"].sudo().search([("ticket_uid", "=", ticket_uid), ("order_id", "=", order_record.id)], limit=1)
+                vals = {
+                    "order_id": order_record.id,
+                    "press_index": press_index,
+                    "ticket_uid": ticket_uid,
+                    "created_at": fields.Datetime.now(),
+                }
+                if kt:
+                    kt.write(vals)
+                else:
+                    kt = self.env["pos.kitchen.ticket"].sudo().create(vals)
+                if ticket_lines:
+                    kt.write({"line_ids": [(6, 0, ticket_lines.ids)]})
         kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
         pos_session_id = self.env["pos.session"].search([("config_id", "=", shop_id), ("state", "=", "opened")], limit=1)
         pos_orders = self.env["pos.order"].search(
@@ -146,13 +184,19 @@ class PosOrder(models.Model):
             ],
             order="date_order",
         )
-        # After persisting/updating orders/lines, notify kitchen screens once.
+        # Collect tickets for these orders
+        tickets = self.env["pos.kitchen.ticket"].sudo().search([("order_id", "in", pos_orders.ids)])
+        # After persisting/updating, notify kitchen screens once.
         try:
             message = {"res_model": self._name, "message": "pos_order_created"}
             self.env["bus.bus"]._sendone("pos_order_created", "notification", message)
         except Exception:
             pass
-        return {"orders": pos_orders.read(), "order_lines": pos_orders.lines.read()}
+        return {
+            "orders": pos_orders.read(),
+            "order_lines": pos_orders.lines.read(),
+            "tickets": tickets.read(["order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state"]),
+        }
 
     def action_pos_order_paid(self):
         res = super().action_pos_order_paid()

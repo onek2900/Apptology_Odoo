@@ -86,7 +86,13 @@ class OrderScreen(http.Controller):
             )
         except Exception:
             pass
-        values = {"orders": combined_orders.read(), "order_lines": combined_orders.lines.read()}
+        # Include per-press kitchen tickets for these orders
+        tickets = request.env["pos.kitchen.ticket"].sudo().search([("order_id", "in", combined_orders.ids)])
+        values = {
+            "orders": combined_orders.read(),
+            "order_lines": combined_orders.lines.read(),
+            "tickets": tickets.read(["order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state"]),
+        }
         return values
 
     @http.route("/apptology_kitchen_screen", auth="public", type="http", website=True)

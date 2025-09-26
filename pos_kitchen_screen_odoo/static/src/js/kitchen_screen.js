@@ -232,15 +232,34 @@ const fetchOrderDetails = async () => {
             return normalized;
         });
 
-            // Build one ticket per order using current server lines (live deltas are appended separately)
-            let tickets = (normalizedOrders || [])
-                .map((order) => ({
-                    ...order,
-                    ticket_uid: `order-${order.id}-full`,
-                    ticket_created_at: order.write_date,
-                    lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
-                }))
-                .filter((t) => Array.isArray(t.lines) && t.lines.length);
+            // Prefer explicit per-press tickets from server if present
+            const rawTickets = Array.isArray(result?.tickets) ? result.tickets : [];
+            let tickets = [];
+            if (rawTickets.length) {
+                const byId = new Map((normalizedOrders || []).map((o) => [o.id, o]));
+                tickets = rawTickets.map((t) => {
+                    const oid = Array.isArray(t.order_id) ? Number(t.order_id[0]) : Number(t.order_id);
+                    const order = byId.get(oid) || {};
+                    return {
+                        ...order,
+                        ticket_uid: t.ticket_uid || `ticket-${oid}-${t.press_index}`,
+                        ticket_created_at: t.created_at || order.write_date,
+                        lines: Array.isArray(t.line_ids) ? t.line_ids.map((n) => Number(n)) : [],
+                        kitchen_press_index: typeof t.press_index === 'number' ? t.press_index : undefined,
+                        ticket_state: t.state || 'inprogress',
+                    };
+                }).filter((tk) => Array.isArray(tk.lines) && tk.lines.length);
+            } else {
+                // Fallback: one ticket per order using current lines
+                tickets = (normalizedOrders || [])
+                    .map((order) => ({
+                        ...order,
+                        ticket_uid: `order-${order.id}-full`,
+                        ticket_created_at: order.write_date,
+                        lines: Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : [],
+                    }))
+                    .filter((t) => Array.isArray(t.lines) && t.lines.length);
+            }
         return {
             order_details: normalizedOrders,
             tickets,
