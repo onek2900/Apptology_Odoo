@@ -27,6 +27,22 @@ class OrderScreen(http.Controller):
         if kitchen_screen.pos_categ_ids:
             cat_domain = [("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids)]
 
+        Ticket = request.env["pos.kitchen.ticket"].sudo()
+        ticket_domain = [("order_id.session_id", "=", pos_session_id.id)]
+        tickets = Ticket.search(ticket_domain)
+        if kitchen_screen.pos_categ_ids:
+            allowed_categs = kitchen_screen.pos_categ_ids
+            def _ticket_in_scope(ticket):
+                if getattr(ticket, "snapshot", False):
+                    return True
+                relevant_lines = ticket.line_ids.filtered(lambda line: bool(line.product_id.pos_categ_ids & allowed_categs))
+                return bool(relevant_lines)
+            tickets = tickets.filtered(_ticket_in_scope)
+        else:
+            tickets = tickets.filtered(lambda t: bool(t.line_ids) or bool(getattr(t, "snapshot", False)))
+        ticket_orders = tickets.mapped("order_id")
+        tickets = tickets.filtered(lambda t: bool(t.line_ids) or bool(getattr(t, "snapshot", False)))
+
         # Build domains safely even if online order fields do not exist
         Order = request.env["pos.order"].sudo()
         has_online = "is_online_order" in Order._fields
@@ -63,7 +79,7 @@ class OrderScreen(http.Controller):
         else:
             ready_online = Order.browse([])
 
-        combined_orders = pos_orders | approved_deliverect_orders | ready_instore | ready_online
+        combined_orders = pos_orders | approved_deliverect_orders | ready_instore | ready_online | ticket_orders
 
         # Debug/diagnostic logging
         try:
@@ -87,9 +103,7 @@ class OrderScreen(http.Controller):
         except Exception:
             pass
         # Include per-press kitchen tickets for these orders
-        tickets = request.env["pos.kitchen.ticket"].sudo().search([("order_id", "in", combined_orders.ids)])
-        # Keep a ticket if it has server lines or a saved snapshot
-        tickets = tickets.filtered(lambda t: bool(t.line_ids) or bool(getattr(t, 'snapshot', False)))
+        tickets = tickets.filtered(lambda t: t.order_id in combined_orders)
         values = {
             "orders": combined_orders.read(),
             "order_lines": combined_orders.lines.read(),
