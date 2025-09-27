@@ -1042,9 +1042,24 @@ recomputeTicketCounts() {
      */
     async accept_order_line(lineId) {
         try {
-            const id = Number(lineId);
-            if (!Number.isFinite(id) || id <= 0) return;
-            const line = this.state.lines.find((l) => l.id === id);
+            let id = Number(lineId);
+            if (!Number.isFinite(id)) return;
+            let line = this.state.lines.find((l) => l.id === id);
+            // If virtual, resolve the ticket and pick a real main line
+            if (!line || id < 0) {
+                const ticket = this.getTicketByLineId(lineId);
+                if (ticket && ticket.ticket_uid) {
+                    const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                    try { await this.rpc('/pos/kitchen/resolve_ticket', { shop_id: sid, ticket_uid: ticket.ticket_uid }); } catch (_) {}
+                    await this.refreshOrderDetails();
+                    const real = (ticket.lines || [])
+                        .map((lid) => this.state.lines.find((l) => l.id === lid))
+                        .filter(Boolean)
+                        .filter((l) => !this.isModifierLine(l))
+                        .find((l) => l.order_status !== ORDER_STATUSES.READY);
+                    if (real) { id = real.id; line = real; }
+                }
+            }
             if (!line) return;
             // Do not toggle toppings/modifiers
             if (this.isModifierLine(line)) return;
@@ -1087,6 +1102,16 @@ recomputeTicketCounts() {
             const targetLineIds = Array.isArray(ticketLineIds) && ticketLineIds.length
                 ? ticketLineIds.map((lid) => Number(lid))
                 : (Array.isArray(order.lines) ? order.lines.map((lid) => Number(lid)) : []);
+
+            // If any virtual ids present (from snapshot), resolve the ticket first
+            if (targetLineIds.some((n) => Number.isFinite(n) && n < 0)) {
+                const ticket = (this.state.tickets || []).find((t) => Array.isArray(t.lines) && t.lines.some((n) => Number(n) < 0) && Number(t.id) === id);
+                if (ticket && ticket.ticket_uid) {
+                    const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+                    try { await this.rpc('/pos/kitchen/resolve_ticket', { shop_id: sid, ticket_uid: ticket.ticket_uid }); } catch (_) {}
+                    await this.refreshOrderDetails();
+                }
+            }
 
             const targetLines = targetLineIds
                 .map((lid) => this.state.lines.find((l) => l.id === lid))
