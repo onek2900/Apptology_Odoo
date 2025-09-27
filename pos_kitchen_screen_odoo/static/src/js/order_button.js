@@ -84,33 +84,36 @@ patch(ActionpadWidget.prototype, {
                     }
                     await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
                     const currentOrder = this.currentOrder;
-                    for (const orders of currentOrder.orderlines) {
-                        if (!orders.product) {
-                            continue;
-                        }
-                        const product = orders.product;
-                        const taxes = typeof orders.get_taxes === 'function' ? orders.get_taxes() : [];
+                    // Persist only lines that do not yet have a kitchen_ticket_uid assigned
+                    for (const ol of currentOrder.orderlines) {
+                        if (!ol.product) continue;
+                        // Skip lines already sent in a previous press
+                        if (ol.kitchen_ticket_uid) continue;
+                        const product = ol.product;
+                        const taxes = typeof ol.get_taxes === 'function' ? ol.get_taxes() : [];
                         const taxIds = taxes.map((tax) => tax.id);
-                        const prices = typeof orders.get_all_prices === 'function' ? orders.get_all_prices() : {};
+                        const prices = typeof ol.get_all_prices === 'function' ? ol.get_all_prices() : {};
                         const productIsTopping = Boolean(product.is_topping ?? product.sh_is_topping);
                         const payload = {
-                            qty: orders.quantity,
-                            price_unit: orders.price,
-                            price_subtotal: prices.priceWithoutTax ?? orders.quantity * orders.price,
-                            price_subtotal_incl: prices.priceWithTax ?? orders.get_display_price(),
-                            discount: orders.discount,
+                            qty: ol.quantity,
+                            price_unit: ol.price,
+                            price_subtotal: prices.priceWithoutTax ?? ol.quantity * ol.price,
+                            price_subtotal_incl: prices.priceWithTax ?? ol.get_display_price(),
+                            discount: ol.discount,
                             product_id: product.id,
                             tax_ids: [[6, 0, taxIds]],
                             pack_lot_ids: [],
                             full_product_name: product.display_name,
-                            price_extra: orders.price_extra,
+                            price_extra: ol.price_extra,
                             is_cooking: true,
-                            note: orders.customerNote,
+                            note: ol.customerNote,
                             sh_is_topping: productIsTopping,
                             product_sh_is_topping: Boolean(product.sh_is_topping),
                             kitchen_ticket_uid: ticketUid,
                         };
                         line.push([0, 0, payload]);
+                        // Mark this line as assigned to this ticket so we don't resend it on next presses
+                        try { ol.kitchen_ticket_uid = ticketUid; } catch (_) {}
                     }
                     var orders = [{
                         'pos_reference': this.pos.get_order().name,
@@ -152,6 +155,18 @@ patch(ActionpadWidget.prototype, {
 
                     // Persist order + lines so fetch includes sent-but-unpaid orders
                     await self.orm.call("pos.order", "get_details", ["", self.pos.config.id, orders])
+                    // Defensive: if nothing new was persisted (no unsent lines), still push a delta so UI shows a separate ticket
+                    if (!line.length) {
+                        try {
+                            await this.rpc('/pos/kitchen/push_delta', {
+                                shop_id: this.pos.config.id,
+                                order_ref: this.pos.get_order().name,
+                                ticket_uid: ticketUid,
+                                new_lines: newLineSummary,
+                                meta: {},
+                            });
+                        } catch (_) {}
+                    }
                     // Eagerly resolve ticket to real line_ids and broadcast to kitchen
                     try {
                         await this.rpc('/pos/kitchen/resolve_ticket', {
