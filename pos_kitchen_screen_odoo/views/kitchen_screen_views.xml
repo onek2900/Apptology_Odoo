@@ -70,23 +70,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <div class="text-muted">
-                                    <div>
-                                        <field name="shop_number" invisible="1"/>
-                                        <button name="render_order_screen"
-                                                type="object"
-                                                context="{'default_shop_id': shop_number}"
-                                                string="Order Screen"
-                                                target="new"
-                                                class="btn-primary"
-                                                help="Got To the Order Screen"/>
-                                        <br/>
-                                        <br/>
-                                    </div>
-                                    Click Here to See the Order Screen
-                                </div>
-                            </div>
+                            <!-- Order Screen button removed -->
                         </div>
                     </div>
                 </sheet>

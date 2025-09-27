@@ -40,13 +40,6 @@ class KitchenScreen(models.Model):
             'url': '/apptology_kitchen_screen?shop_id=%s' % self.pos_config_id.id,
         }
 
-    def render_order_screen(self):
-        return {
-            'type': 'ir.actions.act_url',
-            'target': 'new',
-            'url': '/apptology_order_screen?screen_id=%s' % self.id,
-        }
-
     @api.model
     def create(self, vals):
         """Used to create sequence"""

@@ -30,20 +30,4 @@ patch(Navbar.prototype, {
             url: `/apptology_kitchen_screen?shop_id=${this.pos.config.id}`,
         });
     },
-
-    async openOrderScreen() {
-        const kitchenScreen = await this.orm.searchRead(
-            "kitchen.screen",
-            [
-                ["pos_config_id", "=", this.pos.config.id],
-            ],
-            ["id"]
-        );
-        const kitchenScreenId = kitchenScreen[0]?.id;
-        this.action.doAction({
-            type: "ir.actions.act_url",
-            target: 'new',
-            url: `/apptology_order_screen?screen_id=${kitchenScreenId}`,
-        });
-    },
 });

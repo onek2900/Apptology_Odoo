@@ -8,11 +8,6 @@
                         Open Kitchen Screen
                     </a>
                 </li>
-                <li t-on-click="openOrderScreen">
-                    <a class="dropdown-item with-badge py-2">
-                        Open Order Screen
-                    </a>
-                </li>
             </t>
         </xpath>
     </t>
