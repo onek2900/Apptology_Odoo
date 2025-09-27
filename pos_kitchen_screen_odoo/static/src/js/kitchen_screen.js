@@ -274,6 +274,8 @@ const fetchOrderDetails = async () => {
                     lines: Array.isArray(t.line_ids) ? t.line_ids.map((n) => Number(n)) : [],
                     kitchen_press_index: typeof t.press_index === 'number' ? t.press_index : undefined,
                     ticket_state: t.state || 'inprogress',
+                    // preserve all order lines for whole-order readiness checks
+                    order_all_lines: Array.isArray(order.lines) ? order.lines.slice() : [],
                 };
                 // If server did not keep line links (e.g., later sync rewrote them) but we have a snapshot
                 // reconstruct virtual lines so the ticket remains visible
@@ -1055,10 +1057,14 @@ recomputeTicketCounts() {
                 ? ORDER_STATUSES.WAITING
                 : ORDER_STATUSES.READY;
 
-            // If all main items are ready, mark the order as ready
-            const order = this.getOrderByLineId(id);
-            if (order && this.areAllMainItemsReady(order)) {
-                await this.done_order(order.id);
+            // Recompute counts; move ticket between sections automatically
+            this.recomputeTicketCounts();
+
+            // Optionally mark the whole order ready only if ALL non-modifier lines
+            // across the entire order are ready.
+            const ticket = this.getTicketByLineId(id);
+            if (ticket && this.areAllOrderItemsReady(ticket.id)) {
+                await this.done_order(ticket.id);
             }
 
             this.notification.add("Item status updated", { title: "Success", type: "success" });
@@ -1097,7 +1103,10 @@ recomputeTicketCounts() {
                 }
             }
 
-            if (this.areAllMainItemsReady(order)) {
+            // recompute ticket counts; UI will move this ticket to completed if all its items are ready
+            this.recomputeTicketCounts();
+            // Only mark the entire order as ready when all non-modifier lines across the whole order are ready
+            if (this.areAllOrderItemsReady(id)) {
                 await this.done_order(id);
             } else {
                 await this.refreshOrderDetails();
@@ -1119,10 +1128,43 @@ recomputeTicketCounts() {
     }
 
     /**
+     * Find ticket containing given line id
+     */
+    getTicketByLineId(lineId) {
+        return (this.state.tickets || []).find((t) => Array.isArray(t.lines) && t.lines.includes(lineId)) || null;
+    }
+
+    /**
      * True if all non-modifier lines are ready for a given order
      */
     areAllMainItemsReady(order) {
         const ids = Array.isArray(order.lines) ? order.lines : [];
+        const mains = ids
+            .map((id) => this.state.lines.find((l) => l.id === id))
+            .filter(Boolean)
+            .filter((l) => !this.isModifierLine(l));
+        return mains.length > 0 && mains.every((l) => l.order_status === ORDER_STATUSES.READY);
+    }
+
+    /**
+     * True if all non-modifier lines across the entire order are ready
+     */
+    areAllOrderItemsReady(orderId) {
+        const oid = Number(orderId);
+        if (!Number.isFinite(oid)) return false;
+        // Find any ticket carrying this order id and use its order_all_lines if present
+        const anyTicket = (this.state.tickets || []).find((t) => Number(t.id) === oid);
+        let ids = [];
+        if (anyTicket && Array.isArray(anyTicket.order_all_lines) && anyTicket.order_all_lines.length) {
+            ids = anyTicket.order_all_lines.slice();
+        } else {
+            // Fallback: union of lines from all tickets with the same order id
+            const related = (this.state.tickets || []).filter((t) => Number(t.id) === oid);
+            for (const t of related) {
+                if (Array.isArray(t.lines)) ids.push(...t.lines);
+            }
+            ids = Array.from(new Set(ids));
+        }
         const mains = ids
             .map((id) => this.state.lines.find((l) => l.id === id))
             .filter(Boolean)

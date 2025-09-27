@@ -27,41 +27,41 @@ class OrderScreen(http.Controller):
         if kitchen_screen.pos_categ_ids:
             cat_domain = [("lines.product_id.pos_categ_ids", "in", kitchen_screen.pos_categ_ids.ids)]
 
-        # In‑progress: only orders with cooking lines; split in‑store vs online (allow open/approved/finalized)
-        pos_orders = request.env["pos.order"].sudo().search(
-            [("lines.is_cooking", "=", True), ("is_online_order", "=", False), ("session_id", "=", pos_session_id.id)]
-            + cat_domain,
-            order="date_order",
-        )
+        # Build domains safely even if online order fields do not exist
+        Order = request.env["pos.order"].sudo()
+        has_online = "is_online_order" in Order._fields
+        has_online_status = "online_order_status" in Order._fields
 
-        approved_deliverect_orders = request.env["pos.order"].sudo().search(
-            [
-                ("lines.is_cooking", "=", True),
-                ("session_id", "=", pos_session_id.id),
-                ("is_online_order", "=", True),
-                # Only show approved/finalized online orders in kitchen (exclude 'open')
-                ("online_order_status", "in", ["approved", "finalized"]),
-            ]
-            + cat_domain,
-            order="date_order",
-        )
+        # In-progress: only orders with cooking lines
+        pos_orders_domain = [("lines.is_cooking", "=", True), ("session_id", "=", pos_session_id.id)] + cat_domain
+        if has_online:
+            pos_orders_domain.append(("is_online_order", "=", False))
+        pos_orders = Order.search(pos_orders_domain, order="date_order")
+
+        # Online in-progress (only when fields exist)
+        if has_online:
+            online_dom = [("lines.is_cooking", "=", True), ("session_id", "=", pos_session_id.id)] + cat_domain
+            online_dom.append(("is_online_order", "=", True))
+            if has_online_status:
+                online_dom.append(("online_order_status", "in", ["approved", "finalized"]))
+            approved_deliverect_orders = Order.search(online_dom, order="date_order")
+        else:
+            approved_deliverect_orders = Order.browse([])
 
         # Completed: include READY orders for the same session (ignore is_cooking flags)
-        ready_instore = request.env["pos.order"].sudo().search(
-            [("order_status", "=", "ready"), ("is_online_order", "=", False), ("session_id", "=", pos_session_id.id)]
-            + cat_domain,
-            order="date_order",
-        )
-        ready_online = request.env["pos.order"].sudo().search(
-            [
-                ("order_status", "=", "ready"),
-                ("session_id", "=", pos_session_id.id),
-                ("is_online_order", "=", True),
-                ("online_order_status", "in", ["approved", "finalized"]),
-            ]
-            + cat_domain,
-            order="date_order",
-        )
+        ready_instore_domain = [("order_status", "=", "ready"), ("session_id", "=", pos_session_id.id)] + cat_domain
+        if has_online:
+            ready_instore_domain.append(("is_online_order", "=", False))
+        ready_instore = Order.search(ready_instore_domain, order="date_order")
+
+        if has_online:
+            ready_online_dom = [("order_status", "=", "ready"), ("session_id", "=", pos_session_id.id)] + cat_domain
+            ready_online_dom.append(("is_online_order", "=", True))
+            if has_online_status:
+                ready_online_dom.append(("online_order_status", "in", ["approved", "finalized"]))
+            ready_online = Order.search(ready_online_dom, order="date_order")
+        else:
+            ready_online = Order.browse([])
 
         combined_orders = pos_orders | approved_deliverect_orders | ready_instore | ready_online
 
