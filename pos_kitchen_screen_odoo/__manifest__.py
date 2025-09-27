@@ -23,15 +23,40 @@
             'pos_kitchen_screen_odoo/static/src/js/navbar.js',
             'pos_kitchen_screen_odoo/static/src/xml/navbar.xml'
         ],
-        # Load the standalone kitchen page via frontend assets instead of a custom bundle
-        'web.assets_frontend': [
-            # Ensure bus service is available on the standalone page
+        # Restore custom bundle for the standalone kitchen page
+        'apptology_order_tracking.assets': [
+            ("include", "web._assets_helpers"),
+            ("include", "web._assets_backend_helpers"),
+            ("include", "web._assets_primary_variables"),
+
+            # Bootstrap core
+            "web/static/src/scss/pre_variables.scss",
+            "web/static/lib/bootstrap/scss/_functions.scss",
+            "web/static/lib/bootstrap/scss/_variables.scss",
+            ("include", "web._assets_bootstrap"),
+
+            'web/static/src/libs/fontawesome/css/font-awesome.css',
+            'web/static/lib/odoo_ui_icons/*',
+            'web/static/src/webclient/navbar/navbar.scss',
+            'web/static/src/scss/animation.scss',
+            'web/static/src/scss/fontawesome_overridden.scss',
+            'web/static/src/scss/mimetypes.scss',
+            'web/static/src/scss/ui.scss',
+            'web/static/src/views/fields/translation_dialog.scss',
+            'web/static/src/legacy/scss/ui.scss',
+
+            # Core web assets
+            ('include', 'web._assets_core'),
+            ("remove", "web/static/src/core/debug/**/*"),
+
+            # Realtime bus
             'bus/static/src/*.js',
             'bus/static/src/services/**/*.js',
             'bus/static/src/workers/websocket_worker.js',
             'bus/static/src/workers/websocket_worker_utils.js',
+            "point_of_sale/static/src/utils.js",
 
-            # Kitchen app assets
+            # Module-specific assets (Kitchen only)
             'pos_kitchen_screen_odoo/static/src/css/kitchen.scss',
             'pos_kitchen_screen_odoo/static/src/js/kitchen_screen.js',
             'pos_kitchen_screen_odoo/static/src/xml/kitchen_screen_templates.xml',
