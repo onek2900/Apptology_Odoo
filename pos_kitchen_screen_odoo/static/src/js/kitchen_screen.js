@@ -1046,18 +1046,22 @@ recomputeTicketCounts() {
             let id = Number(lineId);
             if (!Number.isFinite(id)) return;
             let line = this.state.lines.find((l) => l.id === id);
-            // If virtual, resolve the ticket and pick a real main line
+            // If virtual, resolve the ticket and pick a real main line on the updated ticket
             if (!line || id < 0) {
-                const ticket = this.getTicketByLineId(lineId);
-                if (ticket && ticket.ticket_uid) {
+                const t0 = this.getTicketByLineId(lineId);
+                const uid = t0 && t0.ticket_uid ? String(t0.ticket_uid) : '';
+                if (uid) {
                     const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
-                    try { await this.rpc('/pos/kitchen/resolve_ticket', { shop_id: sid, ticket_uid: ticket.ticket_uid }); } catch (_) {}
+                    try { await this.rpc('/pos/kitchen/resolve_ticket', { shop_id: sid, ticket_uid: uid }); } catch (_) {}
                     await this.refreshOrderDetails();
-                    const real = (ticket.lines || [])
-                        .map((lid) => this.state.lines.find((l) => l.id === lid))
-                        .filter(Boolean)
-                        .filter((l) => !this.isModifierLine(l))
-                        .find((l) => l.order_status !== ORDER_STATUSES.READY);
+                    const t1 = (this.state.tickets || []).find((t) => String(t.ticket_uid || '') === uid);
+                    const real = t1 && Array.isArray(t1.lines)
+                        ? t1.lines
+                            .map((lid) => this.state.lines.find((l) => l.id === lid))
+                            .filter(Boolean)
+                            .filter((l) => !this.isModifierLine(l))
+                            .find((l) => l.order_status !== ORDER_STATUSES.READY)
+                        : null;
                     if (real) { id = real.id; line = real; }
                 }
             }
