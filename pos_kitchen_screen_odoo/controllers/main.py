@@ -128,10 +128,13 @@ class OrderScreen(http.Controller):
         return False
 
     @http.route("/pos/kitchen/line_status", auth="public", type="json", website=False)
-    def change_order_line_status(self, line_ids=None):
-        """Toggle the readiness of given order line(s) using sudo.
+    def change_order_line_status(self, line_ids=None, status=None):
+        """Update the readiness of given order line(s).
 
         Accepts a single id or a list of ids in `line_ids`.
+        Optional `status` can be provided to set an explicit target value
+        (e.g., `ready`/`waiting`). Falls back to toggle behaviour for
+        legacy callers.
         Returns True on success, False otherwise.
         """
         if not line_ids:
@@ -148,11 +151,36 @@ class OrderScreen(http.Controller):
         ids = [i for i in ids if isinstance(i, int) and i > 0]
         if not ids:
             return False
-        # Filter to existing records to avoid warnings on invalid ids
+
         lines = request.env["pos.order.line"].sudo().browse(ids).exists()
         if not lines:
             return False
-        lines.order_progress_change()
+
+        target = None
+        if isinstance(status, str):
+            normalized = status.strip().lower()
+            alias = {
+                "ready": "ready",
+                "completed": "ready",
+                "done": "ready",
+                "waiting": "waiting",
+                "cooking": "waiting",
+                "draft": "draft",
+                "cancel": "cancel",
+                "cancelled": "cancel",
+            }
+            target = alias.get(normalized)
+
+        if target:
+            to_update = lines.filtered(lambda l: l.order_status != target)
+            if to_update:
+                to_update.write({"order_status": target})
+        else:
+            lines.order_progress_change()
+
+        orders = lines.mapped("order_id")
+        if orders:
+            orders.order_progress_change()
         return True
 
     @http.route("/pos/kitchen/get_ticket_lines", auth="public", type="json", website=False)

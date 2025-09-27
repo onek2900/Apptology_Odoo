@@ -970,7 +970,7 @@ recomputeTicketCounts() {
                     .map((l) => Number(l.id))
                     .filter((n) => Number.isFinite(n) && n > 0);
                 if (nonReadyIds.length) {
-                    await this.rpc("/pos/kitchen/line_status", { line_ids: nonReadyIds });
+                    await this.rpc("/pos/kitchen/line_status", { line_ids: nonReadyIds, status: ORDER_STATUSES.READY });
                     // Optimistic UI update
                     for (const l of targetLines) l.order_status = ORDER_STATUSES.READY;
                 }
@@ -1024,12 +1024,13 @@ recomputeTicketCounts() {
             }
 
             // Use backend endpoint with sudo to avoid ACL issues on public sessions
-            await this.rpc("/pos/kitchen/line_status", { line_ids: [id] });
-
-            // Local UI update
-            line.order_status = line.order_status === ORDER_STATUSES.READY
+            const nextStatus = line.order_status === ORDER_STATUSES.READY
                 ? ORDER_STATUSES.WAITING
                 : ORDER_STATUSES.READY;
+            await this.rpc("/pos/kitchen/line_status", { line_ids: [id], status: nextStatus });
+
+            // Local UI update
+            line.order_status = nextStatus;
 
             // Recompute counts; move ticket between sections automatically
             this.recomputeTicketCounts();
@@ -1081,7 +1082,7 @@ recomputeTicketCounts() {
             if (targetLines.length) {
                 const idsToToggle = targetLines.map((line) => Number(line.id));
                 // Use backend endpoint with sudo to avoid ACL issues on public sessions
-                await this.rpc("/pos/kitchen/line_status", { line_ids: idsToToggle });
+                await this.rpc("/pos/kitchen/line_status", { line_ids: idsToToggle, status: ORDER_STATUSES.READY });
                 for (const line of targetLines) {
                     line.order_status = ORDER_STATUSES.READY;
                 }
