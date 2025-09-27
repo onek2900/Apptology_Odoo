@@ -624,17 +624,18 @@ export class KitchenScreenDashboard extends Component {
             Object.assign(this.state, details);
             const hasServerTickets = Array.isArray(details && details.tickets) && details.tickets.length > 0;
             if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] hasServerTickets', hasServerTickets, 'serverTickets', (details.tickets||[]).length, 'prevLive', (persisted.tickets||[]).length);
-            // Preserve live (pushed) virtual lines/tickets when skipping server persistence
-            const liveTickets = hasServerTickets
-                ? []
-                : [...(prevTickets || []), ...(persisted.tickets || [])].filter((t) => {
-                const uid = String(t && t.ticket_uid || '');
+            // Always preserve live (pushed) virtual tickets until the server returns a concrete
+            // ticket for the same uid (or resolves their lines). This prevents the UI from
+            // "flickering" back to merged-per-order cards between push and persistence.
+            const serverUids = new Set((details.tickets || []).map((t) => String((t && t.ticket_uid) || '')));
+            const liveTickets = [...(prevTickets || []), ...(persisted.tickets || [])].filter((t) => {
+                const uid = String((t && t.ticket_uid) || '');
                 const hasVirtual = Array.isArray(t && t.lines) && t.lines.some((id) => Number(id) < 0);
-                return uid.startsWith('ticket-live-') || hasVirtual;
+                const isLive = uid.startsWith('ticket-live-') || hasVirtual;
+                // Drop live ticket if the server already has the same uid
+                return isLive && (uid ? !serverUids.has(uid) : true);
             });
-            const liveLines = hasServerTickets
-                ? []
-                : [...(prevLines || []), ...(persisted.lines || [])].filter((l) => typeof l?.id === 'number' && l.id < 0);
+            const liveLines = [...(prevLines || []), ...(persisted.lines || [])].filter((l) => typeof l?.id === 'number' && l.id < 0);
             if (liveLines.length) {
                 const byId = new Map((this.state.lines || []).map((x) => [x.id, x]));
                 for (const v of liveLines) {
@@ -643,15 +644,15 @@ export class KitchenScreenDashboard extends Component {
                     }
                 }
             }
-            if (liveTickets.length) {
-                const byUid = new Map();
-                for (const t of liveTickets) {
-                    const key = String(t && t.ticket_uid || `t-${Math.random()}`);
-                    if (!byUid.has(key)) byUid.set(key, t);
-                }
-                // Prepend unique live tickets, keep server tickets after
+            // Prepend unique live tickets, keep server tickets after
+            const byUid = new Map();
+            for (const t of liveTickets) {
+                const key = String((t && t.ticket_uid) || `t-${Math.random()}`);
+                if (!byUid.has(key)) byUid.set(key, t);
+            }
+            if (byUid.size) {
                 this.state.tickets = [...byUid.values(), ...(this.state.tickets || [])];
-                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] merged live tickets', liveTickets.length, 'final tickets', (this.state.tickets||[]).length);
+                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] merged live tickets', byUid.size, 'final tickets', (this.state.tickets||[]).length);
             }
             // Resolve live tickets (virtual lines) to real line ids using kitchen_ticket_uid (only when no server tickets present)
             if (!hasServerTickets) {
