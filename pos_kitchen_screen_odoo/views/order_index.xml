@@ -22,7 +22,7 @@
                         'screen': screen,
                     })" />;
                 </script>
-                <t t-call-assets="apptology_order_tracking.assets" />
+                <t t-call-assets="web.assets_frontend" />
             </head>
             <body></body>
         </html>
