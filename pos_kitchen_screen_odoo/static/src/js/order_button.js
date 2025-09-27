@@ -131,7 +131,6 @@ patch(ActionpadWidget.prototype, {
                         'amount_total': 0,
                         'amount_paid': 0,
                         'amount_return': '0',
-                        'amount_tax': 2.18,
                         'lines': line,
                         'is_cooking': true,
                         'order_status': 'draft',

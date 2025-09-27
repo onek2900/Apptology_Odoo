@@ -17,8 +17,6 @@
     ],
     'assets': {
         'point_of_sale._assets_pos': [
-            'pos_kitchen_screen_odoo/static/src/js/fields_load.js',
-            'pos_kitchen_screen_odoo/static/src/js/order_payment.js',
             'pos_kitchen_screen_odoo/static/src/js/order_button.js',
             'pos_kitchen_screen_odoo/static/src/js/navbar.js',
             'pos_kitchen_screen_odoo/static/src/xml/navbar.xml'

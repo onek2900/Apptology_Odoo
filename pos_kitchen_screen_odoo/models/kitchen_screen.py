@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import base64
-import secrets
-
 from odoo import api, fields, models
 
 

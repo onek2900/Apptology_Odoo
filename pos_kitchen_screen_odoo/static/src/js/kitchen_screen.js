@@ -202,31 +202,9 @@ const fetchOrderDetails = async () => {
 
         const rawOrders = Array.isArray(result?.orders) ? result.orders : [];
         if (__KITCHEN_DEBUG__) console.debug('[Kitchen][fetch] rawOrders', rawOrders.length);
-        const normalizedOrders = rawOrders.map((order) => {
-            const summaryRaw = Array.isArray(order.kitchen_new_line_summary) ? order.kitchen_new_line_summary : [];
-            const sanitizedSummary = summaryRaw.map((entry) => ({
-                product_id: entry && entry.product_id,
-                product_name: (entry && (entry.product_name || entry.name)) || '',
-                quantity: Number(entry && entry.quantity) || 0,
-                note: entry && entry.note ? entry.note : '',
-                ticket_uid: entry && entry.ticket_uid,
-            }));
-            let explicitCount = 0;
-            if (typeof order.kitchen_new_line_count === 'number') {
-                explicitCount = order.kitchen_new_line_count;
-            } else {
-                explicitCount = sanitizedSummary.reduce((acc, entry) => {
-                    const numeric = Number(entry.quantity) || 0;
-                    return acc + (numeric > 0 ? numeric : 0);
-                }, 0);
-            }
-            const normalizedCount = Math.round(explicitCount * 100) / 100;
-            return {
-                ...order,
-                kitchen_new_line_summary: sanitizedSummary,
-                kitchen_new_line_count: normalizedCount,
-            };
-        });
+        const normalizedOrders = rawOrders.map((order) => ({
+            ...order,
+        }));
 
         // Normalize lines before building tickets
         const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
@@ -814,37 +792,6 @@ export class KitchenScreenDashboard extends Component {
     get orderCompleted() {
         return this.ticketsCompleted;
     }
-
-    newLineSummary(order) {
-        if (!order) return [];
-        // Prefer per-ticket summary when available (built from log snapshots)
-        if (Array.isArray(order.ticket_summary)) {
-            return order.ticket_summary;
-        }
-        const summary = order.kitchen_new_line_summary;
-        return Array.isArray(summary) ? summary : [];
-    }
-
-    newLineCount(order) {
-        if (!order) {
-            return 0;
-        }
-        if (typeof order.kitchen_new_line_count === 'number') {
-            return Math.round(order.kitchen_new_line_count * 100) / 100;
-        }
-        const total = this.newLineSummary(order).reduce((acc, entry) => {
-            const quantity = entry && entry.quantity;
-            const numeric = Number(quantity) || 0;
-            return acc + (numeric > 0 ? numeric : 0);
-        }, 0);
-        return Math.round(total * 100) / 100;
-    }
-
-    formatNewLineQuantity(quantity) {
-        const numeric = Number(quantity) || 0;
-        return Math.round(numeric * 100) / 100;
-    }
-
 
     buildTickets(orders) {
         // Build one ticket per order using all current order lines

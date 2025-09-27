@@ -159,16 +159,10 @@ class OrderScreen(http.Controller):
     def get_ticket_lines(self, shop_id=None, order_ref=None, ticket_uid=None):
         """Return real pos.order.line ids for a given ticket_uid.
 
-        Optionally restrict by current opened session of shop_id.
+        Additional params are kept for backward compatibility with legacy clients.
         """
         if not ticket_uid:
             return {"line_ids": [], "order_id": False}
-        domain = [("kitchen_ticket_uid", "=", str(ticket_uid))]
-        if shop_id:
-            config = request.env["pos.config"].sudo().browse(int(shop_id))
-            session = config.current_session_id
-            if session:
-                domain = request.env["pos.order.line"].sudo()._where_calc(domain).get_sql()
         lines = request.env["pos.order.line"].sudo().search([("kitchen_ticket_uid", "=", str(ticket_uid))])
         order_id = lines[:1].order_id.id if lines else False
         return {"line_ids": lines.ids, "order_id": order_id}

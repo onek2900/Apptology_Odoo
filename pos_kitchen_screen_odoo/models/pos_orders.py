@@ -125,22 +125,6 @@ class PosOrder(models.Model):
                 vals["name"] = self._compute_order_name()
         return super(PosOrder, self).write(vals)
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        # Do not emit kitchen bus from generic create path; handled by callers that
-        # change kitchen-visible state (e.g., get_details).
-        for vals in vals_list:
-            pos_orders = self.search([("pos_reference", "=", vals.get("pos_reference"))])
-            if pos_orders:
-                return super().create(vals_list)
-            if vals.get("order_id") and not vals.get("name"):
-                config = self.env["pos.order"].browse(vals["order_id"]).session_id.config_id
-                if config.sequence_line_id:
-                    vals["name"] = config.sequence_line_id._next()
-            if not vals.get("name"):
-                vals["name"] = self.env["ir.sequence"].next_by_code("pos.order.line")
-        return super().create(vals_list)
-
     # Kitchen helpers and transitions
     def get_details(self, shop_id, order=None):
         order_record = self.env["pos.order"]
@@ -393,13 +377,6 @@ class PosOrderLine(models.Model):
     product_sh_is_topping = fields.Boolean(
         string="Product Is Topping", default=False, help="Denormalized product topping flag"
     )
-
-    def get_product_details(self, ids):
-        lines = self.env["pos.order"].browse(ids)
-        res = []
-        for rec in lines:
-            res.append({"product_id": rec.product_id.id, "name": rec.product_id.name, "qty": rec.qty})
-        return res
 
     def order_progress_change(self):
         for line in self:
