@@ -202,37 +202,6 @@ const fetchOrderDetails = async () => {
             };
         });
 
-        // Normalize lines before building tickets
-        const rawLines = Array.isArray(result?.order_lines) ? result.order_lines : [];
-        if (__KITCHEN_DEBUG__) console.debug('[Kitchen][fetch] rawLines', rawLines.length);
-        let normalizedLines = rawLines.map((line) => {
-            const flags = extractToppingFlags(line, null);
-            const isModifier = flags.is_topping;
-            const normalized = {
-                ...line,
-                is_topping: flags.is_topping,
-                sh_is_topping: flags.sh_is_topping,
-                product_is_topping: flags.product_is_topping,
-                product_sh_is_topping: flags.product_sh_is_topping,
-                sh_is_has_topping: flags.sh_is_has_topping,
-                is_modifier: isModifier,
-            };
-            if (__KITCHEN_DEBUG__) console.debug('[Kitchen] normalized line', {
-                id: normalized.id,
-                product: normalized.full_product_name,
-                qty: normalized.qty,
-                raw_line_is_topping: line ? line.is_topping : undefined,
-                raw_sh_is_topping: line ? line.sh_is_topping : undefined,
-                raw_product_is_topping: line ? line.product_is_topping : undefined,
-                raw_product_sh_is_topping: line ? line.product_sh_is_topping : undefined,
-                raw_sh_is_has_topping: line ? line.sh_is_has_topping : undefined,
-                normalized_is_topping: normalized.is_topping,
-                normalized_product_is_topping: normalized.product_is_topping,
-                normalized_sh_is_has_topping: normalized.sh_is_has_topping,
-                is_modifier: normalized.is_modifier,
-            });
-            return normalized;
-        });
 
             // Tickets-only path: render per-press tickets from server (no full-order fallback)
             const rawTickets = Array.isArray(result?.tickets) ? result.tickets : [];
