@@ -269,7 +269,8 @@ const fetchOrderDetails = async () => {
                 const order = byId.get(oid) || {};
                 const base = {
                     ...order,
-                    ticket_uid: (t.id ? `kt-${t.id}` : (t.ticket_uid || `ticket-${oid}-${t.press_index}`)),
+                    // Preserve the true press uid if present; only synthesize if missing
+                    ticket_uid: (t && t.ticket_uid) ? t.ticket_uid : (t.id ? `kt-${t.id}` : `ticket-${oid}-${t.press_index}`),
                     ticket_created_at: t.created_at || order.write_date,
                     lines: Array.isArray(t.line_ids) ? t.line_ids.map((n) => Number(n)) : [],
                     kitchen_press_index: typeof t.press_index === 'number' ? t.press_index : undefined,
@@ -1063,6 +1064,13 @@ recomputeTicketCounts() {
             if (!line) return;
             // Do not toggle toppings/modifiers
             if (this.isModifierLine(line)) return;
+
+            // Ensure we never send virtual ids
+            if (!(Number.isFinite(id) && id > 0)) {
+                if (__KITCHEN_DEBUG__) console.debug('[Kitchen] skip toggle, unresolved line id', id);
+                this.notification.add(_t('Please try again in a moment'), { title: _t('Resolving lines'), type: 'warning' });
+                return;
+            }
 
             // Use backend endpoint with sudo to avoid ACL issues on public sessions
             await this.rpc("/pos/kitchen/line_status", { line_ids: [id] });
