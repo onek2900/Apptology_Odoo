@@ -84,36 +84,45 @@ patch(ActionpadWidget.prototype, {
                     }
                     await this.pos.sendOrderInPreparationUpdateLastChange(this.currentOrder);
                     const currentOrder = this.currentOrder;
-                    // Persist only lines that do not yet have a kitchen_ticket_uid assigned
+                    // Persist only the delta lines from this press (based on change summary)
+                    // Fallbacks use existing orderline with same product to derive price/taxes.
+                    const byProduct = new Map();
                     for (const ol of currentOrder.orderlines) {
                         if (!ol.product) continue;
-                        // Skip lines already sent in a previous press
-                        if (ol.kitchen_ticket_uid) continue;
-                        const product = ol.product;
-                        const taxes = typeof ol.get_taxes === 'function' ? ol.get_taxes() : [];
-                        const taxIds = taxes.map((tax) => tax.id);
-                        const prices = typeof ol.get_all_prices === 'function' ? ol.get_all_prices() : {};
-                        const productIsTopping = Boolean(product.is_topping ?? product.sh_is_topping);
+                        if (!byProduct.has(ol.product.id)) byProduct.set(ol.product.id, []);
+                        byProduct.get(ol.product.id).push(ol);
+                    }
+                    for (const entry of newLineSummary) {
+                        const productId = entry.product_id;
+                        const qty = Number(entry.quantity) || 0;
+                        if (!productId || qty <= 0) continue;
+                        const refLine = (byProduct.get(productId) || [])[0];
+                        const product = this.pos?.db?.product_by_id?.[productId] || (refLine && refLine.product) || null;
+                        const taxes = refLine && typeof refLine.get_taxes === 'function' ? refLine.get_taxes() : [];
+                        const taxIds = Array.isArray(taxes) ? taxes.map((t) => t.id) : (Array.isArray(product?.taxes_id) ? product.taxes_id : []);
+                        const prices = refLine && typeof refLine.get_all_prices === 'function' ? refLine.get_all_prices() : {};
+                        const unitPrice = refLine ? refLine.price : (product?.lst_price || product?.price || 0);
+                        const priceSubtotal = prices.priceWithoutTax ?? qty * unitPrice;
+                        const priceSubtotalIncl = prices.priceWithTax ?? unitPrice * qty; // approx when no refLine
+                        const productIsTopping = Boolean(product?.is_topping ?? product?.sh_is_topping);
                         const payload = {
-                            qty: ol.quantity,
-                            price_unit: ol.price,
-                            price_subtotal: prices.priceWithoutTax ?? ol.quantity * ol.price,
-                            price_subtotal_incl: prices.priceWithTax ?? ol.get_display_price(),
-                            discount: ol.discount,
-                            product_id: product.id,
+                            qty,
+                            price_unit: unitPrice,
+                            price_subtotal: priceSubtotal,
+                            price_subtotal_incl: priceSubtotalIncl,
+                            discount: refLine ? refLine.discount : 0,
+                            product_id: productId,
                             tax_ids: [[6, 0, taxIds]],
                             pack_lot_ids: [],
-                            full_product_name: product.display_name,
-                            price_extra: ol.price_extra,
+                            full_product_name: product?.display_name || entry.product_name || '',
+                            price_extra: refLine ? refLine.price_extra : 0,
                             is_cooking: true,
-                            note: ol.customerNote,
+                            note: entry.note || (refLine && refLine.customerNote) || '',
                             sh_is_topping: productIsTopping,
-                            product_sh_is_topping: Boolean(product.sh_is_topping),
+                            product_sh_is_topping: Boolean(product?.sh_is_topping),
                             kitchen_ticket_uid: ticketUid,
                         };
                         line.push([0, 0, payload]);
-                        // Mark this line as assigned to this ticket so we don't resend it on next presses
-                        try { ol.kitchen_ticket_uid = ticketUid; } catch (_) {}
                     }
                     var orders = [{
                         'pos_reference': this.pos.get_order().name,

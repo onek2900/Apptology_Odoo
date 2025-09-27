@@ -143,12 +143,22 @@ class PosOrder(models.Model):
     # Kitchen helpers and transitions
     def get_details(self, shop_id, order=None):
         order_record = self.env["pos.order"]
+        # Debug logging for per-press persistence
+        try:
+            _logger.info("[Kitchen][get_details] shop_id=%s has_order_payload=%s", shop_id, bool(order))
+        except Exception:
+            pass
         if order:
             # Minimal upsert of order/lines and create a per-press kitchen ticket
             payload = order[0].copy()
             ticket_uid = payload.pop("ticket_uid", None)
             payload.pop("kitchen_new_lines", None)
             order_ref = payload.get("pos_reference")
+            try:
+                _logger.info("[Kitchen][get_details] upsert ref=%s ticket_uid=%s lines_in_payload=%s",
+                             order_ref, ticket_uid, len(payload.get("lines") or []))
+            except Exception:
+                pass
             order_record = self.search([("pos_reference", "=", order_ref)])
             if not order_record:
                 # First press: create order with provided lines as-is
@@ -177,6 +187,11 @@ class PosOrder(models.Model):
                         write_vals[k] = payload[k]
                 if write_vals:
                     order_record.write(write_vals)
+                try:
+                    _logger.info("[Kitchen][get_details] appended press lines: added=%s total_lines=%s",
+                                 len(press_cmds or []), len(order_record.lines))
+                except Exception:
+                    pass
             # Create/update kitchen ticket for this send
             if ticket_uid:
                 ticket_lines = order_record.lines.filtered(lambda l: str(getattr(l, "kitchen_ticket_uid", "")) == str(ticket_uid))
@@ -193,9 +208,16 @@ class PosOrder(models.Model):
                     }
                     if kt:
                         kt.write(vals)
+                        action = "updated"
                     else:
                         kt = self.env["pos.kitchen.ticket"].sudo().create(vals)
+                        action = "created"
                     kt.write({"line_ids": [(6, 0, ticket_lines.ids)]})
+                    try:
+                        _logger.info("[Kitchen][get_details] ticket %s id=%s uid=%s lines=%s press_index=%s",
+                                     action, kt.id, ticket_uid, len(ticket_lines), press_index)
+                    except Exception:
+                        pass
         kitchen_screen = self.env["kitchen.screen"].sudo().search([("pos_config_id", "=", shop_id)])
         pos_session_id = self.env["pos.session"].search([("config_id", "=", shop_id), ("state", "=", "opened")], limit=1)
         pos_orders = self.env["pos.order"].search(
