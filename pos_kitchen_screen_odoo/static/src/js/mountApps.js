@@ -1,9 +1,5 @@
 /** @odoo-module */
- import { createKitchenApp } from "./kitchen_screen"
- import { createOrderApp } from "./order_screen"
+import { createKitchenApp } from "./kitchen_screen";
 
-if (odoo.screen === "order") {
-    createOrderApp()
-} else if (odoo.screen === "kitchen") {
-    createKitchenApp()
-}
+// Phase out order screen: only mount kitchen app
+createKitchenApp();
