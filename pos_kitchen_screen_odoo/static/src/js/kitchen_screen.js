@@ -608,7 +608,94 @@ export class KitchenScreenDashboard extends Component {
         return flag;
     }
 
-    
+    /**
+     * Refresh order details
+     */
+    async refreshOrderDetails() {
+        try {
+            this.state.loading = true;
+            this.state.error = null;
+            const previousSessionError = this.state.session_error;
+            const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
+            const prevTickets = Array.isArray(this.state.tickets) ? this.state.tickets.slice() : [];
+            const prevLines = Array.isArray(this.state.lines) ? this.state.lines.slice() : [];
+            const persisted = loadLiveState(sid);
+            const details = await this.orderManagement.fetchOrderDetails();
+            Object.assign(this.state, details);
+            const hasServerTickets = Array.isArray(details && details.tickets) && details.tickets.length > 0;
+            if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] hasServerTickets', hasServerTickets, 'serverTickets', (details.tickets||[]).length, 'prevLive', (persisted.tickets||[]).length);
+            // Preserve live (pushed) virtual lines/tickets when skipping server persistence
+            const liveTickets = hasServerTickets
+                ? []
+                : [...(prevTickets || []), ...(persisted.tickets || [])].filter((t) => {
+                const uid = String(t && t.ticket_uid || '');
+                const hasVirtual = Array.isArray(t && t.lines) && t.lines.some((id) => Number(id) < 0);
+                return uid.startsWith('ticket-live-') || hasVirtual;
+            });
+            const liveLines = hasServerTickets
+                ? []
+                : [...(prevLines || []), ...(persisted.lines || [])].filter((l) => typeof l?.id === 'number' && l.id < 0);
+            if (liveLines.length) {
+                const byId = new Map((this.state.lines || []).map((x) => [x.id, x]));
+                for (const v of liveLines) {
+                    if (!byId.has(v.id)) {
+                        (this.state.lines || []).push(v);
+                    }
+                }
+            }
+            if (liveTickets.length) {
+                const byUid = new Map();
+                for (const t of liveTickets) {
+                    const key = String(t && t.ticket_uid || `t-${Math.random()}`);
+                    if (!byUid.has(key)) byUid.set(key, t);
+                }
+                // Prepend unique live tickets, keep server tickets after
+                this.state.tickets = [...byUid.values(), ...(this.state.tickets || [])];
+                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] merged live tickets', liveTickets.length, 'final tickets', (this.state.tickets||[]).length);
+            }
+            // Resolve live tickets (virtual lines) to real line ids using kitchen_ticket_uid (only when no server tickets present)
+            if (!hasServerTickets) {
+                try {
+                    const all = Array.isArray(this.state.lines) ? this.state.lines : [];
+                    for (const t of this.state.tickets || []) {
+                        const uid = String(t && t.ticket_uid || '');
+                        if (!uid) continue;
+                        // If ticket already has positive ids, skip
+                        const hasReal = Array.isArray(t.lines) && t.lines.some((id) => Number(id) > 0);
+                        if (hasReal) continue;
+                        const ids = all
+                            .filter((l) => String(l && l.kitchen_ticket_uid || '') === uid)
+                            .map((l) => Number(l.id))
+                            .filter((n) => Number.isFinite(n) && n > 0);
+                        if (ids.length) {
+                            t.lines = ids;
+                        }
+                    }
+                    if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] resolved virtual to real where possible');
+                } catch (_) { /* ignore */ }
+            }
+            this.recomputeTicketCounts();
+            // Persist back merged live state
+            const currentLiveTickets = (this.state.tickets || []).filter((t) => String(t.ticket_uid || '').startsWith('ticket-live-'));
+            const currentLiveLines = (this.state.lines || []).filter((l) => typeof l?.id === 'number' && l.id < 0);
+            saveLiveState(sid, currentLiveTickets, currentLiveLines);
+
+            if (this.state.session_error && !previousSessionError) {
+                this.notification.add(_t("No open POS session found. Please start a session to display kitchen orders."), {
+                    title: _t("Kitchen Screen"),
+                    type: "warning",
+                });
+            }
+        } catch (error) {
+            this.state.error = "Failed to refresh orders";
+            this.notification.add("Failed to refresh orders", {
+                title: "Error",
+                type: "danger"
+            });
+        } finally {
+            this.state.loading = false;
+        }
+    }
 
     /**
      * Update order status
