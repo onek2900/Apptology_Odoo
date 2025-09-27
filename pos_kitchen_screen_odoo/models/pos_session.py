@@ -77,8 +77,7 @@ class PosSession(models.Model):
             # Notify kitchen screens to clear local, live state for this shop/config
             try:
                 payload = {"type": "kitchen_session_closed", "shop_id": session.config_id.id}
-                # Send to bus: type is channel, payload is message
-                self.env['bus.bus']._sendone('kitchen.session', payload)
+                self.env['bus.bus']._sendone('kitchen.session', 'notification', payload)
             except Exception:
                 pass
         return res
@@ -89,8 +88,7 @@ class PosSession(models.Model):
         for session in self:
             try:
                 payload = {"type": "kitchen_session_opened", "shop_id": session.config_id.id}
-                # Send to bus: type is channel, payload is message
-                self.env['bus.bus']._sendone('kitchen.session', payload)
+                self.env['bus.bus']._sendone('kitchen.session', 'notification', payload)
             except Exception:
                 # Non-blocking
                 pass

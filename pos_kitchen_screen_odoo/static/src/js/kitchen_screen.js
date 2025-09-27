@@ -484,15 +484,14 @@ export class KitchenScreenDashboard extends Component {
      */
     async handleNotification(message) {
         const note = (message && message.detail && message.detail[0]) || {};
-        const type = note.type;
-        const payload = note.payload;
-        if (payload && payload.message === BUS_EVENT.MESSAGE &&
-            payload.res_model === BUS_EVENT.MODEL) {
+        const channel = note.type || note.channel || '';
+        const payload = note.payload || note;
+        if (payload && payload.message === BUS_EVENT.MESSAGE && payload.res_model === BUS_EVENT.MODEL) {
             await this.refreshOrderDetails();
             return;
         }
         // Live delta push from POS
-        if (type === 'kitchen.delta') {
+        if (channel === 'kitchen.delta') {
             try {
                 const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
                 if (Number(payload.shop_id) !== Number(sid)) return;
@@ -504,7 +503,7 @@ export class KitchenScreenDashboard extends Component {
             } catch (_) { /* ignore */ }
         }
         // Resolution push: replace virtual ids with real line_ids for this ticket
-        if (type === 'kitchen.delta' && payload && payload.type === 'kitchen_ticket_resolved') {
+        if (channel === 'kitchen.delta' && payload && payload.type === 'kitchen_ticket_resolved') {
             try {
                 const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
                 if (Number(payload.shop_id) !== Number(sid)) return;
