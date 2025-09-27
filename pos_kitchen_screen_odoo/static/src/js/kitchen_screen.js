@@ -67,6 +67,22 @@ const isDebugEnabled = () => {
 };
 const __KITCHEN_DEBUG__ = isDebugEnabled();
 
+// Lightweight ticket debugger: summarize tickets for readable console output
+const ticketDebugSummary = (arr) => (arr || []).map((t) => {
+    const uid = (t && (t.ticket_uid || (t.id ? `id-${t.id}` : ''))) || '';
+    const orderId = Array.isArray(t && t.order_id) ? t.order_id[0] : (t && t.order_id);
+    const pressIndex = (t && (t.kitchen_press_index ?? t.press_index));
+    const linesArr = Array.isArray(t && t.lines) ? t.lines : (Array.isArray(t && t.line_ids) ? t.line_ids : []);
+    const hasVirtual = Array.isArray(linesArr) && linesArr.some((id) => Number(id) < 0);
+    return {
+        uid,
+        order_id: Number(orderId) || null,
+        lines: Array.isArray(linesArr) ? linesArr.length : 0,
+        hasVirtual,
+        press_index: typeof pressIndex === 'number' ? pressIndex : undefined,
+    };
+});
+
 const normalizeBooleanFlag = (value) => {
     if (Array.isArray(value)) {
         return value.some((item) => normalizeBooleanFlag(item));
@@ -161,6 +177,16 @@ const fetchOrderDetails = async () => {
         const result = await rpc("/pos/kitchen/get_order_details", {
             shop_id: shopId
         });
+        if (__KITCHEN_DEBUG__) {
+            try {
+                console.debug('[Kitchen][fetch][json]', result);
+                console.debug('[Kitchen][fetch][summary]', {
+                    orders: Array.isArray(result?.orders) ? result.orders.length : 0,
+                    order_lines: Array.isArray(result?.order_lines) ? result.order_lines.length : 0,
+                    tickets: ticketDebugSummary(result?.tickets),
+                });
+            } catch (_) { /* ignore */ }
+        }
 
         if (result && result.error === "no_open_session") {
             return {
@@ -468,7 +494,10 @@ export class KitchenScreenDashboard extends Component {
             try {
                 const sid = this.state.shop_id || sessionStorage.getItem('shop_id');
                 if (Number(payload.shop_id) !== Number(sid)) return;
-                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][bus] kitchen_delta', { uid: payload.ticket_uid, items: (payload.items||[]).length });
+                if (__KITCHEN_DEBUG__) {
+                    console.debug('[Kitchen][bus] kitchen_delta', { uid: payload.ticket_uid, items: (payload.items||[]).length });
+                    console.debug('[Kitchen][bus][delta][json]', payload);
+                }
                 this.appendLiveDeltaTicket(payload);
             } catch (_) { /* ignore */ }
         }
@@ -479,7 +508,10 @@ export class KitchenScreenDashboard extends Component {
                 if (Number(payload.shop_id) !== Number(sid)) return;
                 const uid = String(payload.ticket_uid || '');
                 const realIds = (payload.line_ids || []).map((n) => Number(n)).filter((n) => Number.isFinite(n) && n > 0);
-                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][bus] ticket_resolved', { uid, real: realIds.length });
+                if (__KITCHEN_DEBUG__) {
+                    console.debug('[Kitchen][bus] ticket_resolved', { uid, real: realIds.length });
+                    console.debug('[Kitchen][bus][resolved][json]', payload);
+                }
                 if (uid && realIds.length) {
                     const t = (this.state.tickets || []).find((x) => String(x.ticket_uid || '') === uid);
                     if (t) {
@@ -623,7 +655,10 @@ export class KitchenScreenDashboard extends Component {
             const details = await this.orderManagement.fetchOrderDetails();
             Object.assign(this.state, details);
             const hasServerTickets = Array.isArray(details && details.tickets) && details.tickets.length > 0;
-            if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] hasServerTickets', hasServerTickets, 'serverTickets', (details.tickets||[]).length, 'prevLive', (persisted.tickets||[]).length);
+            if (__KITCHEN_DEBUG__) {
+                console.debug('[Kitchen][refresh] hasServerTickets', hasServerTickets, 'serverTickets', (details.tickets||[]).length, 'prevLive', (persisted.tickets||[]).length);
+                console.debug('[Kitchen][refresh][serverTickets]', ticketDebugSummary(details.tickets));
+            }
             // Always preserve live (pushed) virtual tickets until the server returns a concrete
             // ticket for the same uid (or resolves their lines). This prevents the UI from
             // "flickering" back to merged-per-order cards between push and persistence.
@@ -636,6 +671,9 @@ export class KitchenScreenDashboard extends Component {
                 return isLive && (uid ? !serverUids.has(uid) : true);
             });
             const liveLines = [...(prevLines || []), ...(persisted.lines || [])].filter((l) => typeof l?.id === 'number' && l.id < 0);
+            if (__KITCHEN_DEBUG__) {
+                console.debug('[Kitchen][refresh][liveTickets]', ticketDebugSummary(liveTickets));
+            }
             if (liveLines.length) {
                 const byId = new Map((this.state.lines || []).map((x) => [x.id, x]));
                 for (const v of liveLines) {
@@ -652,7 +690,12 @@ export class KitchenScreenDashboard extends Component {
             }
             if (byUid.size) {
                 this.state.tickets = [...byUid.values(), ...(this.state.tickets || [])];
-                if (__KITCHEN_DEBUG__) console.debug('[Kitchen][refresh] merged live tickets', byUid.size, 'final tickets', (this.state.tickets||[]).length);
+                if (__KITCHEN_DEBUG__) {
+                    console.debug('[Kitchen][refresh] merged live tickets', byUid.size, 'final tickets', (this.state.tickets||[]).length);
+                    console.debug('[Kitchen][refresh][finalTickets]', ticketDebugSummary(this.state.tickets));
+                }
+            } else if (__KITCHEN_DEBUG__) {
+                console.debug('[Kitchen][refresh][finalTickets]', ticketDebugSummary(this.state.tickets));
             }
             // Resolve live tickets (virtual lines) to real line ids using kitchen_ticket_uid (only when no server tickets present)
             if (!hasServerTickets) {
