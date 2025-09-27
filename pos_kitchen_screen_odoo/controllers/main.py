@@ -172,12 +172,21 @@ class OrderScreen(http.Controller):
             target = alias.get(normalized)
 
         if target:
-            to_update = lines.filtered(lambda l: l.order_status != target)
-            if to_update:
-                to_update.write({"order_status": target})
+            pending_states = {"draft", "waiting"}
+            lines.write({
+                "order_status": target,
+                "is_cooking": target in pending_states,
+            })
         else:
             lines.order_progress_change()
-
+            pending_states = {"draft", "waiting"}
+            refreshed = request.env["pos.order.line"].sudo().browse(lines.ids)
+            ready_lines = refreshed.filtered(lambda l: l.order_status not in pending_states)
+            cooking_lines = refreshed - ready_lines
+            if ready_lines:
+                ready_lines.write({"is_cooking": False})
+            if cooking_lines:
+                cooking_lines.write({"is_cooking": True})
         orders = lines.mapped("order_id")
         if orders:
             orders.order_progress_change()
