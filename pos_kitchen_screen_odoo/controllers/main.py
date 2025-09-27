@@ -185,7 +185,8 @@ class OrderScreen(http.Controller):
                 "line_ids": out.get("line_ids", []),
                 "order_id": out.get("order_id"),
             }
-            request.env["bus.bus"]._sendone("kitchen.delta", "notification", payload)
+            # Send to bus: type is channel, payload is message
+            request.env["bus.bus"]._sendone("kitchen.delta", payload)
             return {"ok": True, **payload}
         except Exception:
             return {"ok": False}
@@ -217,5 +218,6 @@ class OrderScreen(http.Controller):
             "meta": meta or {},
         }
         # Fanout to the custom kitchen channel; clients subscribe via bus_service
-        request.env["bus.bus"]._sendone("kitchen.delta", "notification", payload)
+        # Send to bus: type is channel, payload is message
+        request.env["bus.bus"]._sendone("kitchen.delta", payload)
         return {"ok": True}

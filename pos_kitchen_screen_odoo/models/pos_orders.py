@@ -212,7 +212,8 @@ class PosOrder(models.Model):
         # After persisting/updating, notify kitchen screens once.
         try:
             message = {"res_model": self._name, "message": "pos_order_created"}
-            self.env["bus.bus"]._sendone("pos_order_created", "notification", message)
+            # Send to bus: type is channel, payload is message
+            self.env["bus.bus"]._sendone("pos_order_created", message)
         except Exception:
             pass
         return {
