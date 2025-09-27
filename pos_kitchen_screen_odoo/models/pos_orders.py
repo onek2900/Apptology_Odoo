@@ -19,6 +19,7 @@ class PosKitchenTicket(models.Model):
     press_index = fields.Integer(string="Press Index", default=0, index=True)
     ticket_uid = fields.Char(string="Ticket UID", index=True)
     created_at = fields.Datetime(string="Created At", default=fields.Datetime.now)
+    snapshot = fields.Json(string="Items Snapshot")
     state = fields.Selection([
         ("inprogress", "In Progress"),
         ("completed", "Completed"),
@@ -152,7 +153,7 @@ class PosOrder(models.Model):
             # Minimal upsert of order/lines and create a per-press kitchen ticket
             payload = order[0].copy()
             ticket_uid = payload.pop("ticket_uid", None)
-            payload.pop("kitchen_new_lines", None)
+            snapshot_lines = payload.pop("kitchen_new_lines", None)
             order_ref = payload.get("pos_reference")
             try:
                 _logger.info("[Kitchen][get_details] upsert ref=%s ticket_uid=%s lines_in_payload=%s",
@@ -212,7 +213,10 @@ class PosOrder(models.Model):
                     else:
                         kt = self.env["pos.kitchen.ticket"].sudo().create(vals)
                         action = "created"
-                    kt.write({"line_ids": [(6, 0, ticket_lines.ids)]})
+                    write_ticket_vals = {"line_ids": [(6, 0, ticket_lines.ids)]}
+                    if snapshot_lines:
+                        write_ticket_vals["snapshot"] = snapshot_lines
+                    kt.write(write_ticket_vals)
                     try:
                         _logger.info("[Kitchen][get_details] ticket %s id=%s uid=%s lines=%s press_index=%s",
                                      action, kt.id, ticket_uid, len(ticket_lines), press_index)

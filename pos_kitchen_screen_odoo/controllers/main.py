@@ -88,12 +88,12 @@ class OrderScreen(http.Controller):
             pass
         # Include per-press kitchen tickets for these orders
         tickets = request.env["pos.kitchen.ticket"].sudo().search([("order_id", "in", combined_orders.ids)])
-        # Filter out empty tickets (no lines) for cleaner UI payload
-        tickets = tickets.filtered(lambda t: bool(t.line_ids))
+        # Keep a ticket if it has server lines or a saved snapshot
+        tickets = tickets.filtered(lambda t: bool(t.line_ids) or bool(getattr(t, 'snapshot', False)))
         values = {
             "orders": combined_orders.read(),
             "order_lines": combined_orders.lines.read(),
-            "tickets": tickets.read(["id", "order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state"]),
+            "tickets": tickets.read(["id", "order_id", "line_ids", "press_index", "ticket_uid", "created_at", "state", "snapshot"]),
         }
         return values
 

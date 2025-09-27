@@ -267,7 +267,7 @@ const fetchOrderDetails = async () => {
             const tickets = rawTickets.map((t) => {
                 const oid = Array.isArray(t.order_id) ? Number(t.order_id[0]) : Number(t.order_id);
                 const order = byId.get(oid) || {};
-                return {
+                const base = {
                     ...order,
                     ticket_uid: (t.id ? `kt-${t.id}` : (t.ticket_uid || `ticket-${oid}-${t.press_index}`)),
                     ticket_created_at: t.created_at || order.write_date,
@@ -275,6 +275,32 @@ const fetchOrderDetails = async () => {
                     kitchen_press_index: typeof t.press_index === 'number' ? t.press_index : undefined,
                     ticket_state: t.state || 'inprogress',
                 };
+                // If server did not keep line links (e.g., later sync rewrote them) but we have a snapshot
+                // reconstruct virtual lines so the ticket remains visible
+                if ((!base.lines || !base.lines.length) && Array.isArray(t.snapshot) && t.snapshot.length) {
+                    const vIds = [];
+                    for (const entry of t.snapshot) {
+                        const qty = Number(entry && entry.quantity) || 0;
+                        if (qty <= 0) continue;
+                        const v = {
+                            id: __deltaVirtualId--,
+                            full_product_name: (entry && (entry.product_name || entry.name)) || 'Item',
+                            qty: qty,
+                            order_status: 'waiting',
+                            is_modifier: Boolean(entry && entry.is_topping === true),
+                            is_topping: Boolean(entry && entry.is_topping === true),
+                            sh_is_topping: Boolean(entry && entry.is_topping === true),
+                            product_is_topping: Boolean(entry && entry.is_topping === true),
+                            product_sh_is_topping: Boolean(entry && entry.is_topping === true),
+                            sh_is_has_topping: false,
+                            note: entry && entry.note || '',
+                        };
+                        normalizedLines.push(v);
+                        vIds.push(v.id);
+                    }
+                    base.lines = vIds;
+                }
+                return base;
             }).filter((tk) => Array.isArray(tk.lines) && tk.lines.length);
             if (__KITCHEN_DEBUG__) console.debug('[Kitchen][fetch] built tickets', tickets.length);
         return {
